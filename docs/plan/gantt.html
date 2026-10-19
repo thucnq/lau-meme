@@ -1,0 +1,340 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ƯỚC LƯỢNG TẠM - LẨU MEME</title>
+<style>
+:root{
+  --bg:#f6f5f2;--panel:#ffffff;--ink:#1d1f23;--muted:#6b6f78;--line:#e3e1dc;--soft:#efeee9;
+  --weekend:#f1efea;--holiday:#fbe9e4;--accent:#2f5bd3;
+  --done:#2e8b57;--doing:#2f5bd3;--todo:#9aa0aa;--late:#d1453b;--base:#c9c6bf;
+  --row:34px;--left:380px;
+}
+@media (prefers-color-scheme:dark){:root{
+  --bg:#141518;--panel:#1c1e22;--ink:#e8e8ea;--muted:#9a9ea7;--line:#2c2f35;--soft:#23262b;
+  --weekend:#1f2125;--holiday:#3a2522;--accent:#7c9cff;
+  --done:#4fb07a;--doing:#6f8fff;--todo:#6d727c;--late:#ef6b60;--base:#4a4d54;
+}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+header{padding:20px 24px 8px}
+h1{font-size:20px;margin:0 0 4px;letter-spacing:-.01em}
+.sub{color:var(--muted);font-size:13px}
+.kpis{display:flex;flex-wrap:wrap;gap:10px;margin:14px 0 6px}
+.kpi{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px 14px;min-width:120px}
+.kpi b{display:block;font-size:20px;font-variant-numeric:tabular-nums}
+.kpi span{color:var(--muted);font-size:12px}
+.kpi.warn b{color:var(--late)}
+.meter{height:6px;background:var(--soft);border-radius:4px;overflow:hidden;margin-top:6px}
+.meter i{display:block;height:100%;background:var(--done)}
+.toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:8px 24px 12px;position:sticky;top:0;background:var(--bg);z-index:20;border-bottom:1px solid var(--line)}
+.toolbar input,.toolbar select,.toolbar button{font:inherit;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:6px 10px}
+.toolbar button{cursor:pointer}
+.toolbar button.on{border-color:var(--accent);color:var(--accent)}
+.toolbar .primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.toolbar .primary:disabled{opacity:.45;cursor:default}
+.seg{display:inline-flex}.seg button{border-radius:0}.seg button:first-child{border-radius:8px 0 0 8px}.seg button:last-child{border-radius:0 8px 8px 0}
+.spacer{flex:1}
+.note{margin:0 24px 10px;padding:8px 12px;border-radius:8px;background:var(--soft);color:var(--muted);font-size:12.5px;display:none}
+.note.show{display:block}
+.wrap{display:grid;grid-template-columns:var(--left) 1fr;margin:0 24px 24px;background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.left{border-right:1px solid var(--line)}
+.right{overflow-x:auto;position:relative}
+.hdr{height:52px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--panel)}
+.left .hdr{display:grid;grid-template-columns:1fr 58px 64px;align-items:end;padding:0 12px 6px;color:var(--muted);font-size:12px}
+.row{height:var(--row);display:flex;align-items:center;border-bottom:1px solid var(--soft)}
+.left .row{display:grid;grid-template-columns:22px 1fr 58px 64px;gap:6px;padding:0 12px;cursor:pointer}
+.left .row:hover,.left .row.sel{background:var(--soft)}
+.left .row.mod{display:flex}
+.left .mod{font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);padding-left:12px;background:var(--bg)}
+.right .mod{background:var(--bg)}
+.nm{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nm small{color:var(--muted);margin-right:6px;font-variant-numeric:tabular-nums}
+.who{color:var(--muted);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pc{text-align:right;font-variant-numeric:tabular-nums;font-size:12.5px}
+.dot{width:10px;height:10px;border-radius:50%;display:inline-block}
+.s-done{background:var(--done)}.s-doing{background:var(--doing)}.s-todo{background:var(--todo)}.s-late{background:var(--late)}
+.cb{width:16px;height:16px;accent-color:var(--done);margin:0}
+.grid{position:relative;min-width:100%}
+.timehdr{position:relative;height:52px}
+.timehdr .m{position:absolute;top:6px;font-size:12px;font-weight:600;white-space:nowrap;padding-left:4px;border-left:1px solid var(--line);height:20px}
+.timehdr .d{position:absolute;top:30px;font-size:11px;color:var(--muted);text-align:center;font-variant-numeric:tabular-nums}
+.col{position:absolute;top:0;bottom:0}
+.col.we{background:var(--weekend)}.col.ho{background:var(--holiday)}
+.col.wk{border-left:1px solid var(--soft)}
+.today{position:absolute;top:0;bottom:0;width:2px;background:var(--late);z-index:5;opacity:.8}
+.today::after{content:"Hôm nay";position:absolute;top:2px;left:4px;font-size:10.5px;color:var(--late);white-space:nowrap}
+.bars{position:relative}
+.bar{position:absolute;height:16px;line-height:14px;top:9px;border-radius:5px;background:color-mix(in srgb,var(--c) 28%,transparent);border:1px solid var(--c);overflow:hidden;z-index:3;cursor:pointer}
+.bar i{position:absolute;left:0;top:0;bottom:0;background:var(--c)}
+.bar span{position:relative;font-size:10.5px;padding:0 5px;line-height:14px;white-space:nowrap;color:var(--ink)}
+.base{position:absolute;height:4px;top:27px;border-radius:2px;background:var(--base);z-index:2}
+.ms{position:absolute;top:10px;width:14px;height:14px;transform:rotate(45deg);background:var(--accent);z-index:3}
+.detail{position:fixed;top:0;right:0;bottom:0;width:min(480px,100vw);background:var(--panel);border-left:1px solid var(--line);box-shadow:-10px 0 30px rgba(0,0,0,.12);padding:16px 18px;overflow:auto;z-index:40;transform:translateX(105%);transition:transform .18s ease}
+.detail.open{transform:none}
+.detail .x{position:absolute;top:10px;right:12px;font:inherit;font-size:18px;background:none;border:none;color:var(--muted);cursor:pointer}
+.detail h3{margin:0 0 4px;font-size:14px}
+.detail .meta{color:var(--muted);font-size:12px;margin-bottom:8px}
+.fields{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin:8px 0}
+.fields label{font-size:11.5px;color:var(--muted);display:flex;flex-direction:column;gap:3px}
+.fields input{font:inherit;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:5px 7px}
+.acs{list-style:none;margin:6px 0 0;padding:0}
+.acs li{display:flex;gap:8px;align-items:flex-start;padding:3px 0;font-size:12.5px}
+.acs code{font-size:11.5px;color:var(--muted);white-space:nowrap}
+.tag{font-size:10.5px;padding:0 6px;border-radius:9px;border:1px solid var(--line);color:var(--muted);white-space:nowrap}
+.tag.ok{color:var(--done);border-color:var(--done)}
+.tip{position:fixed;z-index:50;pointer-events:none;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-size:12px;box-shadow:0 6px 20px rgba(0,0,0,.15);display:none;max-width:320px}
+.legend{display:flex;gap:14px;flex-wrap:wrap;color:var(--muted);font-size:12px;margin:0 24px 10px}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+@media (max-width:760px){:root{--left:190px}.left .row{grid-template-columns:18px 1fr 44px}.left .hdr{grid-template-columns:1fr 44px}.who,.left .hdr .h-who{display:none}header,.toolbar{padding-left:12px;padding-right:12px}.wrap,.legend,.note{margin-left:8px;margin-right:8px}}
+@media print{.toolbar,.note{display:none}.wrap{border:none}}
+</style>
+</head>
+<body>
+<header>
+  <h1 id="title"></h1>
+  <div class="sub" id="sub"></div>
+  <div class="kpis" id="kpis"></div>
+</header>
+<div class="toolbar">
+  <input id="q" type="search" placeholder="Tìm hạng mục, AC, người…" aria-label="Tìm">
+  <select id="fStatus" aria-label="Trạng thái"><option value="">Mọi trạng thái</option></select>
+  <select id="fModule" aria-label="Phân hệ"><option value="">Mọi phân hệ</option></select>
+  <select id="fOwner" aria-label="Người làm"><option value="">Mọi người</option></select>
+  <div class="seg" role="group" aria-label="Thu phóng">
+    <button data-z="22">Ngày</button><button data-z="9" class="on">Tuần</button><button data-z="3.5">Tháng</button>
+  </div>
+  <button id="tBase" class="on" title="Vạch xám: kế hoạch gốc (KH)">Kế hoạch gốc</button>
+  <span class="spacer"></span>
+  <button id="reset" title="Bỏ các thay đổi chưa tải về">Bỏ thay đổi</button>
+  <button id="dl" class="primary" disabled>Tải tien-do.md</button>
+</div>
+<div class="note" id="note"></div>
+<div class="legend">
+  <span><i class="dot s-done"></i>Xong</span><span><i class="dot s-doing"></i>Đang làm</span>
+  <span><i class="dot s-late"></i>Trễ so với KH</span><span><i class="dot s-todo"></i>Chưa bắt đầu</span>
+  <span><i style="display:inline-block;width:22px;height:4px;background:var(--base);border-radius:2px"></i>Kế hoạch gốc</span>
+  <span><i style="display:inline-block;width:12px;height:12px;background:var(--holiday);border:1px solid var(--line)"></i>Ngày nghỉ lễ</span>
+</div>
+<div class="wrap">
+  <div class="left"><div class="hdr"><span>Hạng mục</span><span class="h-who">Người</span><span style="text-align:right">Tiến độ</span></div><div id="L"></div></div>
+  <div class="right" id="R"><div class="grid" id="G"><div class="hdr timehdr" id="TH"></div><div class="bars" id="B"></div></div></div>
+</div>
+<div class="tip" id="tip"></div>
+<aside class="detail" id="drawer" aria-label="Chi tiết hạng mục"></aside>
+<script>
+const DATA = {"meta": {"title": "ƯỚC LƯỢNG TẠM - LẨU MEME", "start": "2026-10-26", "today": "2026-10-19", "lanes": ["Thuc"], "khUat": ["2027-07-28", "2027-07-28"], "fcUat": ["2027-07-28", "2027-07-28"], "holidays": ["2027-01-01", "2027-02-04", "2027-02-05", "2027-02-06", "2027-02-07", "2027-02-08", "2027-02-09", "2027-02-10", "2027-04-30", "2027-05-01", "2027-09-02"], "pct": 0.0, "counts": {"done": 0, "doing": 0, "todo": 15, "late": 0}, "slip": 0, "uatWeeks": 0, "statusVi": {"done": "Xong", "doing": "Đang làm", "todo": "Chưa bắt đầu", "late": "Trễ"}}, "items": [{"id": "NEN", "module": "Nền tảng", "name": "Khởi tạo dự án & hạ tầng", "points": 3.0, "days": 7, "risk": "LOW", "deps": [], "owner": "", "lane": "Thuc", "pct": 0, "pctAuto": false, "status": "todo", "slip": 0, "note": "", "startActual": "", "finishActual": "", "kh": ["2026-10-26", "2026-11-03"], "fc": ["2026-10-26", "2026-11-03"], "line": 7, "acs": []}, {"id": "GRAPH", "module": "Nội dung", "name": "Graph mã hóa + manifest + rollback", "points": 5.0, "days": 11, "risk": "MEDIUM", "deps": ["NEN"], "owner": "", "lane": "Thuc", "pct": 0, "pctAuto": false, "status": "todo", "slip": 0, "note": "", "startActual": "", "finishActual": "", "kh": ["2026-11-04", "2026-11-18"], "fc": ["2026-11-04", "2026-11-18"], "line": 10, "acs": []}, {"id": "SEED", "module": "Nội dung", "name": "Nạp lõi nội dung classic", "points": 2.0, "days": 5, "risk": "LOW", "deps": ["NEN"], "owner": "", "lane": "Thuc", "pct": 0, "pctAuto": false, "status": "todo", "slip": 0, "note": "", "startActual": "", "finishActual": "", "kh": ["2026-11-19", "2026-11-25"], "fc": ["2026-11-19", "2026-11-25"], "line": 11, "acs": []}, {"id": "GAME", "module": "Trò chơi", "name": "Chơi ghép (Nhúng lẩu)", "points": 10.0, "days": 22, "risk": "MEDIUM", "deps": ["GRAPH", "SEED"], "owner": "", "lane": "Thuc", "pct": 0, "pctAuto": false, "status": "todo", "slip": 0, "note": "", "startActual": "", "finishActual": "", "kh": ["2026-11-26", "2026-12-25"], "fc": ["2026-11-26", "2026-12-25"], "line": 14, "acs": []}, {"id": "MOD", "module": "Nội dung", "name": "Kiểm duyệt nội dung tự động", "points": 8.0, "days": 18, "risk": "HIGH", "deps": ["SEED"], "owner": "", "lane": "Thuc", "pct": 0, "pctAuto": false, "status": "todo", "slip": 0, "note": "", "startActual": "", "finishActual": "", "kh": ["2026-12-28", "2027-01-21"], "fc": ["2026-12-28", "2027-01-21"], "line": 17, "acs": []}, {"id": "PIPE", "module": "Nội dung", "name": "Pipeline Mẻ nhúng mới", "points": 15.0, "days": 33, "risk": "HIGH", "deps": ["MOD", "GRAPH"], "owner": "", "lane": "Thuc", "pct": 0, "pctAuto": false, "status": "todo", "slip": 0, "note": "", "startActual": "", "finishActual": "", "kh": ["2027-01-22", "2027-03-16"], "fc": ["2027-01-22", "2027-03-16"], "line": 18, "acs": []}, {"id": "ART", "module": "Nội dung", "name": "Ảnh minh họa tự tạo", "points": 6.0, "days": 14, "risk": "HIGH", "deps": ["MOD"], "owner": "", "lane": "Thuc", "pct": 0, "pctAuto": false, "status": "todo", "slip": 0, "note": "", "startActual": "", "finishActual": "", "kh": ["2027-03-17", "2027-04-05"], "fc": ["2027-03-17", "2027-04-05"], "line": 19, "acs": []}, {"id": "DISC", "module": "Cộng đồng", "name": "Công thức gia truyền", "points": 4.0, "days": 9, "risk": "HIGH", "deps": ["GAME"], "owner": "", "lane": "Thuc", "pct": 0, "pctAuto": false, "status": "todo", "slip": 0, "note": "", "startActual": "", "finishActual": "", "kh": ["2027-04-06", "2027-04-16"], "fc": ["2027-04-06", "2027-04-16"], "line": 22, "acs": []}, {"id": "DAILY", "module": "Trò chơi", "name": "Món đặc biệt hôm nay", "points": 5.0, "days": 11, "risk": "MEDIUM", "deps": ["GAME", "DISC"], "owner": "", "lane": "Thuc", "pct": 0, "pctAuto": false, "status": "todo", "slip": 0, "note": "", "startActual": "", "finishActual": "", "kh": ["2027-04-19", "2027-05-04"], "fc": ["2027-04-19", "2027-05-04"], "line": 25, "acs": []}, {"id": "SHARE", "module": "Cộng đồng", "name": "Thẻ chia sẻ", "points": 3.5, "days": 8, "risk": "MEDIUM", "deps": ["DAILY"], "owner": "", "lane": "Thuc", "pct": 0, "pctAuto": false, "status": "todo", "slip": 0, "note": "", "startActual": "", "finishActual": "", "kh": ["2027-05-05", "2027-05-14"], "fc": ["2027-05-05", "2027-05-14"], "line": 28, "acs": []}, {"id": "REPORT", "module": "An toàn", "name": "Báo cáo + chặn nóng", "points": 3.5, "days": 8, "risk": "MEDIUM", "deps": ["GAME"], "owner": "", "lane": "Thuc", "pct": 0, "pctAuto": false, "status": "todo", "slip": 0, "note": "", "startActual": "", "finishActual": "", "kh": ["2027-05-17", "2027-05-26"], "fc": ["2027-05-17", "2027-05-26"], "line": 31, "acs": []}, {"id": "ADMIN", "module": "An toàn", "name": "Trang quản trị tối giản", "points": 4.0, "days": 9, "risk": "MEDIUM", "deps": ["REPORT"], "owner": "", "lane": "Thuc", "pct": 0, "pctAuto": false, "status": "todo", "slip": 0, "note": "", "startActual": "", "finishActual": "", "kh": ["2027-05-27", "2027-06-08"], "fc": ["2027-05-27", "2027-06-08"], "line": 32, "acs": []}, {"id": "METRIC", "module": "Vận hành", "name": "Đo chỉ số thành công", "points": 2.5, "days": 6, "risk": "MEDIUM", "deps": ["DAILY"], "owner": "", "lane": "Thuc", "pct": 0, "pctAuto": false, "status": "todo", "slip": 0, "note": "", "startActual": "", "finishActual": "", "kh": ["2027-06-09", "2027-06-16"], "fc": ["2027-06-09", "2027-06-16"], "line": 35, "acs": []}, {"id": "PRIV", "module": "Vận hành", "name": "Chính sách quyền riêng tư", "points": 2.0, "days": 5, "risk": "HIGH", "deps": ["DISC"], "owner": "", "lane": "Thuc", "pct": 0, "pctAuto": false, "status": "todo", "slip": 0, "note": "", "startActual": "", "finishActual": "", "kh": ["2027-06-17", "2027-06-23"], "fc": ["2027-06-17", "2027-06-23"], "line": 36, "acs": []}, {"id": "UAT", "module": "Kiểm thử", "name": "Kiểm thử nghiệm thu & sửa lỗi", "points": 10.5, "days": 24, "risk": "MEDIUM", "deps": ["*"], "owner": "", "lane": "Thuc", "pct": 0, "pctAuto": false, "status": "todo", "slip": 0, "note": "", "startActual": "", "finishActual": "", "kh": ["2027-06-24", "2027-07-27"], "fc": ["2027-06-24", "2027-07-27"], "line": 39, "acs": []}], "md": ["# Tiến độ — ƯỚC LƯỢNG TẠM - LẨU MEME", "", "> Sinh bởi `/dk:plan` (gen-plan.py) từ `docs\\estimate\\items.json`. **Người sửa trực tiếp file này**: dấu `[x]` (hạng mục hoặc AC), `tiến độ: N%`, `người`, `bắt đầu`, `xong` (YYYY-MM-DD), `ghi chú` — giữ nguyên dấu ` · ` giữa các trường. Chạy lại `/dk:plan` để tính dự báo và vẽ lại `gantt.html`. `KH` là kế hoạch gốc, chỉ đổi bằng `/dk:plan rebaseline`.", "> Bắt đầu dự án: 2026-10-26 · Kỹ sư: 1 (Thuc) · Giờ/tuần: 20 · Nghiệm thu KH: 2027-07-28 · Dự báo: 2027-07-28 · Cập nhật: 2026-10-19", "", "", "## Nền tảng", "- [ ] **NEN** Khởi tạo dự án & hạ tầng · 3đ · rủi ro: LOW · KH: 2026-10-26 → 2026-11-03 · tiến độ: 0% · người:  · bắt đầu:  · xong:  · ghi chú: ", "", "## Nội dung", "- [ ] **GRAPH** Graph mã hóa + manifest + rollback · 5đ · rủi ro: MEDIUM · KH: 2026-11-04 → 2026-11-18 · tiến độ: 0% · người:  · bắt đầu:  · xong:  · ghi chú: ", "- [ ] **SEED** Nạp lõi nội dung classic · 2đ · rủi ro: LOW · KH: 2026-11-19 → 2026-11-25 · tiến độ: 0% · người:  · bắt đầu:  · xong:  · ghi chú: ", "", "## Trò chơi", "- [ ] **GAME** Chơi ghép (Nhúng lẩu) · 10đ · rủi ro: MEDIUM · KH: 2026-11-26 → 2026-12-25 · tiến độ: 0% · người:  · bắt đầu:  · xong:  · ghi chú: ", "", "## Nội dung", "- [ ] **MOD** Kiểm duyệt nội dung tự động · 8đ · rủi ro: HIGH · KH: 2026-12-28 → 2027-01-21 · tiến độ: 0% · người:  · bắt đầu:  · xong:  · ghi chú: ", "- [ ] **PIPE** Pipeline Mẻ nhúng mới · 15đ · rủi ro: HIGH · KH: 2027-01-22 → 2027-03-16 · tiến độ: 0% · người:  · bắt đầu:  · xong:  · ghi chú: ", "- [ ] **ART** Ảnh minh họa tự tạo · 6đ · rủi ro: HIGH · KH: 2027-03-17 → 2027-04-05 · tiến độ: 0% · người:  · bắt đầu:  · xong:  · ghi chú: ", "", "## Cộng đồng", "- [ ] **DISC** Công thức gia truyền · 4đ · rủi ro: HIGH · KH: 2027-04-06 → 2027-04-16 · tiến độ: 0% · người:  · bắt đầu:  · xong:  · ghi chú: ", "", "## Trò chơi", "- [ ] **DAILY** Món đặc biệt hôm nay · 5đ · rủi ro: MEDIUM · KH: 2027-04-19 → 2027-05-04 · tiến độ: 0% · người:  · bắt đầu:  · xong:  · ghi chú: ", "", "## Cộng đồng", "- [ ] **SHARE** Thẻ chia sẻ · 3.5đ · rủi ro: MEDIUM · KH: 2027-05-05 → 2027-05-14 · tiến độ: 0% · người:  · bắt đầu:  · xong:  · ghi chú: ", "", "## An toàn", "- [ ] **REPORT** Báo cáo + chặn nóng · 3.5đ · rủi ro: MEDIUM · KH: 2027-05-17 → 2027-05-26 · tiến độ: 0% · người:  · bắt đầu:  · xong:  · ghi chú: ", "- [ ] **ADMIN** Trang quản trị tối giản · 4đ · rủi ro: MEDIUM · KH: 2027-05-27 → 2027-06-08 · tiến độ: 0% · người:  · bắt đầu:  · xong:  · ghi chú: ", "", "## Vận hành", "- [ ] **METRIC** Đo chỉ số thành công · 2.5đ · rủi ro: MEDIUM · KH: 2027-06-09 → 2027-06-16 · tiến độ: 0% · người:  · bắt đầu:  · xong:  · ghi chú: ", "- [ ] **PRIV** Chính sách quyền riêng tư · 2đ · rủi ro: HIGH · KH: 2027-06-17 → 2027-06-23 · tiến độ: 0% · người:  · bắt đầu:  · xong:  · ghi chú: ", "", "## Kiểm thử", "- [ ] **UAT** Kiểm thử nghiệm thu & sửa lỗi · 10.5đ · rủi ro: MEDIUM · KH: 2027-06-24 → 2027-07-27 · tiến độ: 0% · người:  · bắt đầu:  · xong:  · ghi chú: "]};
+(function(){
+const $ = s => document.querySelector(s), el = (t, c, h) => { const e = document.createElement(t); if (c) e.className = c; if (h != null) e.innerHTML = h; return e; };
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const M = DATA.meta, SV = M.statusVi, DAY = 864e5;
+const D = s => new Date(s + 'T00:00:00Z'), iso = d => d.toISOString().slice(0, 10);
+const fmt = s => s ? s.slice(8, 10) + '/' + s.slice(5, 7) + '/' + s.slice(0, 4) : '';
+const KEY = 'dk-plan:' + M.title + ':' + M.start;
+let store = {}; try { store = JSON.parse(localStorage.getItem(KEY) || '{}'); } catch (e) { store = {}; }
+store.items = store.items || {}; store.acs = store.acs || {};
+const save = () => { try { localStorage.setItem(KEY, JSON.stringify(store)); } catch (e) {} };
+const holidays = new Set(M.holidays);
+let zoom = 9, showBase = true, open = null;
+
+// ---------- apply local edits on top of the generated data
+function view(it) {
+  const o = store.items[it.id] || {};
+  const v = Object.assign({}, it, o);
+  v.acs = it.acs.map(a => Object.assign({}, a, { done: store.acs[a.id] ?? a.done }));
+  if (o.checked === true) v.pct = 100;
+  else if (o.checked === false && it.pct === 100) v.pct = o.pct != null && o.pct < 100 ? o.pct : 0;
+  else if (o.pct != null) v.pct = o.pct;
+  else if (it.pctAuto && v.acs.length)
+    v.pct = Math.min(99, Math.round(100 * v.acs.filter(a => a.done).length / v.acs.length));
+  v.status = v.pct >= 100 ? 'done' : (v.pct > 0 || v.startActual) ? 'doing' : 'todo';
+  if (v.status !== 'done' && (v.fc[1] > v.kh[1] || (v.status === 'todo' && M.today > v.kh[0]))) v.status = 'late';
+  return v;
+}
+const dirty = () => Object.keys(store.items).length + Object.keys(store.acs).length;
+
+// ---------- header
+function header() {
+  const items = DATA.items.map(view);
+  const pts = items.reduce((s, i) => s + i.points, 0) || 1;
+  const pct = items.reduce((s, i) => s + i.points * i.pct, 0) / pts;
+  const c = { done: 0, doing: 0, late: 0, todo: 0 }; items.forEach(i => c[i.status]++);
+  $('#title').textContent = M.title;
+  $('#sub').textContent = `Bắt đầu ${fmt(M.start)} · ${M.lanes.length} kỹ sư (${M.lanes.join(', ')}) · số liệu đến ${fmt(M.today)}`;
+  $('#kpis').innerHTML =
+    `<div class="kpi"><b>${pct.toFixed(0)}%</b><span>Hoàn thành (theo điểm)</span><div class="meter"><i style="width:${pct.toFixed(1)}%"></i></div></div>` +
+    `<div class="kpi"><b>${c.done}/${items.length}</b><span>Hạng mục xong</span></div>` +
+    `<div class="kpi"><b>${c.doing}</b><span>Đang làm</span></div>` +
+    `<div class="kpi ${c.late ? 'warn' : ''}"><b>${c.late}</b><span>Trễ so với KH</span></div>` +
+    `<div class="kpi"><b>${fmt(M.khUat[1])}</b><span>Nghiệm thu theo KH</span></div>` +
+    `<div class="kpi ${M.slip ? 'warn' : ''}"><b>${fmt(M.fcUat[1])}</b><span>Dự báo${M.slip ? ` · trễ ${M.slip} ngày LV` : ' · đúng hạn'}</span></div>`;
+  const n = dirty();
+  $('#dl').disabled = !n; $('#dl').textContent = n ? `Tải tien-do.md (${n} thay đổi)` : 'Tải tien-do.md';
+  const note = $('#note');
+  note.className = 'note' + (n ? ' show' : '');
+  note.innerHTML = n ? 'Thay đổi đang lưu trong trình duyệt này. <b>Tải tien-do.md</b> → chép đè <code>docs/plan/tien-do.md</code> → chạy <code>/dk:plan</code> để tính lại lịch dự báo và chia sẻ với nhóm.' : '';
+}
+
+// ---------- filters
+const statuses = ['late', 'doing', 'todo', 'done'];
+statuses.forEach(s => $('#fStatus').append(new Option(SV[s], s)));
+[...new Set(DATA.items.map(i => i.module))].forEach(m => $('#fModule').append(new Option(m, m)));
+[...new Set(DATA.items.map(i => i.owner || i.lane).filter(Boolean))].forEach(o => $('#fOwner').append(new Option(o, o)));
+function visible(v) {
+  const q = $('#q').value.trim().toLowerCase(), fs = $('#fStatus').value, fm = $('#fModule').value, fo = $('#fOwner').value;
+  if (fs && v.status !== fs) return false;
+  if (fm && v.module !== fm) return false;
+  if (fo && (v.owner || v.lane) !== fo) return false;
+  if (q && !(v.id + ' ' + v.name + ' ' + (v.owner || '') + ' ' + v.acs.map(a => a.id + ' ' + a.title).join(' ')).toLowerCase().includes(q)) return false;
+  return true;
+}
+
+// ---------- timeline geometry
+const t0 = new Date(D(M.start).getTime() - 7 * DAY);
+const t1 = new Date(D(M.fcUat[1] > M.khUat[1] ? M.fcUat[1] : M.khUat[1]).getTime() + 14 * DAY);
+const nDays = Math.round((t1 - t0) / DAY);
+const x = s => Math.round((D(s) - t0) / DAY * zoom);
+const w = (a, b) => Math.max(zoom * 0.8, Math.round((D(b) - D(a)) / DAY * zoom + zoom));
+
+function timeHeader() {
+  const th = $('#TH'); th.innerHTML = '';
+  const G = $('#G'); G.style.width = (nDays * zoom) + 'px';
+  let lastM = -1;
+  for (let k = 0; k < nDays; k++) {
+    const d = new Date(t0.getTime() + k * DAY), dd = d.getUTCDate(), dow = d.getUTCDay(), s = iso(d);
+    if (d.getUTCMonth() !== lastM) { lastM = d.getUTCMonth(); const m = el('div', 'm', `Th${lastM + 1}/${d.getUTCFullYear()}`); m.style.left = (k * zoom) + 'px'; th.append(m); }
+    if (zoom >= 18 || (zoom >= 8 && dow === 1)) { const t = el('div', 'd', String(dd)); t.style.left = (k * zoom) + 'px'; t.style.width = (zoom >= 18 ? zoom : 7 * zoom) + 'px'; if (zoom < 18) t.style.textAlign = 'left'; th.append(t); }
+  }
+}
+function columns(container) {
+  for (let k = 0; k < nDays; k++) {
+    const d = new Date(t0.getTime() + k * DAY), dow = d.getUTCDay(), s = iso(d);
+    let cls = holidays.has(s) ? 'col ho' : (dow === 0 || dow === 6) && zoom >= 8 ? 'col we' : (dow === 1 && zoom < 8 ? 'col wk' : '');
+    if (!cls) continue;
+    const c = el('div', cls); c.style.left = (k * zoom) + 'px'; c.style.width = zoom + 'px';
+    if (holidays.has(s)) c.title = 'Nghỉ lễ ' + fmt(s);
+    container.append(c);
+  }
+  if (M.today >= iso(t0) && M.today <= iso(t1)) { const t = el('div', 'today'); t.style.left = (x(M.today) + zoom / 2) + 'px'; container.append(t); }
+}
+
+// ---------- rows
+function render() {
+  header(); timeHeader();
+  const L = $('#L'), B = $('#B'); L.innerHTML = ''; B.innerHTML = '';
+  const bg = el('div'); bg.style.cssText = 'position:absolute;inset:0'; B.append(bg);
+  let mod = null;
+  const rows = DATA.items.map(view).filter(visible);
+  for (const v of rows) {
+    if (v.module !== mod) {
+      mod = v.module;
+      L.append(el('div', 'row mod', esc(mod)));
+      B.append(el('div', 'row mod'));
+    }
+    const r = el('div', 'row' + (open === v.id ? ' sel' : ''));
+    r.innerHTML = `<input type="checkbox" class="cb" ${v.pct >= 100 ? 'checked' : ''} aria-label="Đánh dấu xong ${esc(v.id)}">` +
+      `<span class="nm" title="${esc(v.name)}"><i class="dot s-${v.status}" style="margin-right:6px"></i><small>${esc(v.id)}</small>${esc(v.name)}</span>` +
+      `<span class="who">${esc(v.owner || v.lane || '')}</span><span class="pc">${v.pct}%</span>`;
+    r.querySelector('input').addEventListener('click', e => { e.stopPropagation(); setItem(v.id, { checked: e.target.checked, pct: e.target.checked ? 100 : 0 }); });
+    r.addEventListener('click', () => { open = open === v.id ? null : v.id; render(); });
+    L.append(r);
+    const br = el('div', 'row'); br.style.position = 'relative';
+    const c = { done: 'var(--done)', doing: 'var(--doing)', todo: 'var(--todo)', late: 'var(--late)' }[v.status];
+    if (showBase) { const b = el('div', 'base'); b.style.left = x(v.kh[0]) + 'px'; b.style.width = w(v.kh[0], v.kh[1]) + 'px'; br.append(b); }
+    const bar = el('div', 'bar'); bar.style.setProperty('--c', c); bar.style.left = x(v.fc[0]) + 'px'; bar.style.width = w(v.fc[0], v.fc[1]) + 'px';
+    bar.innerHTML = `<i style="width:${v.pct}%"></i><span>${zoom >= 6 ? esc(v.id) + ' · ' : ''}${v.pct}%</span>`;
+    bar.addEventListener('mousemove', e => tip(e, v)); bar.addEventListener('mouseleave', () => $('#tip').style.display = 'none');
+    bar.addEventListener('click', () => { open = open === v.id ? null : v.id; render(); });
+    br.append(bar); B.append(br);
+  }
+  const dr = $('#drawer'); const ov = open && DATA.items.find(i => i.id === open);
+  if (ov) { dr.replaceChildren(...detail(view(ov)).childNodes); dr.classList.add('open'); } else dr.classList.remove('open');
+  // hand-over section
+  L.append(el('div', 'row mod', 'Bàn giao')); B.append(el('div', 'row mod'));
+  const u = el('div', 'row'); u.innerHTML = `<span></span><span class="nm">UAT ${M.uatWeeks} tuần + nghiệm thu</span><span class="who"></span><span class="pc">${fmt(M.fcUat[1]).slice(0, 5)}</span>`; L.append(u);
+  const ub = el('div', 'row'); ub.style.position = 'relative';
+  if (showBase) { const b = el('div', 'base'); b.style.left = x(M.khUat[0]) + 'px'; b.style.width = w(M.khUat[0], M.khUat[1]) + 'px'; ub.append(b); }
+  const bar = el('div', 'bar'); bar.style.setProperty('--c', 'var(--accent)'); bar.style.left = x(M.fcUat[0]) + 'px'; bar.style.width = w(M.fcUat[0], M.fcUat[1]) + 'px'; bar.innerHTML = '<span>UAT</span>'; ub.append(bar);
+  const ms = el('div', 'ms'); ms.style.left = (x(M.fcUat[1]) + zoom) + 'px'; ms.title = 'Nghiệm thu dự báo ' + fmt(M.fcUat[1]); ub.append(ms);
+  B.append(ub);
+  columns(bg);
+}
+
+function tip(e, v) {
+  const t = $('#tip'), tested = v.acs.filter(a => a.tested).length;
+  t.innerHTML = `<b>${esc(v.id)} ${esc(v.name)}</b><br>${SV[v.status]} · ${v.pct}% · ${v.points}đ (${v.days} ngày công) · rủi ro ${esc(v.risk)}` +
+    `<br>KH: ${fmt(v.kh[0])} → ${fmt(v.kh[1])}<br>Dự báo: ${fmt(v.fc[0])} → ${fmt(v.fc[1])}${v.slip ? ` <b style="color:var(--late)">(+${v.slip} ngày)</b>` : ''}` +
+    (v.acs.length ? `<br>AC: ${v.acs.filter(a => a.done).length}/${v.acs.length} xong · ${tested}/${v.acs.length} có test` : '') +
+    (v.deps.length ? `<br>Phụ thuộc: ${esc(v.deps.join(', '))}` : '') + (v.note ? `<br>Ghi chú: ${esc(v.note)}` : '');
+  t.style.display = 'block';
+  t.style.left = Math.min(e.clientX + 14, innerWidth - 340) + 'px'; t.style.top = (e.clientY + 14) + 'px';
+}
+
+function detail(v) {
+  const d = el('div');
+  d.innerHTML = `<button class="x" aria-label="Đóng">×</button><h3>${esc(v.id)} · ${esc(v.name)}</h3>` +
+    `<div class="meta">${esc(v.module)} · ${v.points}đ · ${v.days} ngày công · rủi ro ${esc(v.risk)} · KH ${fmt(v.kh[0])}→${fmt(v.kh[1])} · dự báo ${fmt(v.fc[0])}→${fmt(v.fc[1])}${v.deps.length ? ' · phụ thuộc ' + esc(v.deps.join(', ')) : ''}</div>` +
+    `<div class="fields">` +
+    `<label>Tiến độ (%)<input type="number" min="0" max="100" step="5" data-k="pct" value="${v.pct}"></label>` +
+    `<label>Người làm<input data-k="owner" value="${esc(v.owner)}" placeholder="${esc(v.lane || '')}"></label>` +
+    `<label>Bắt đầu thực tế<input type="date" data-k="startActual" value="${esc(v.startActual)}"></label>` +
+    `<label>Xong thực tế<input type="date" data-k="finishActual" value="${esc(v.finishActual)}"></label>` +
+    `<label style="grid-column:1/-1">Ghi chú<input data-k="note" value="${esc(v.note)}"></label></div>` +
+    (v.acs.length ? `<b style="font-size:12.5px">Tiêu chí nghiệm thu (${v.acs.filter(a => a.done).length}/${v.acs.length})</b><ul class="acs">` +
+      v.acs.map(a => `<li><input type="checkbox" class="cb" data-ac="${esc(a.id)}" ${a.done ? 'checked' : ''}><code>${esc(a.id)}</code><span style="flex:1">${esc(a.title)}${a.optional ? ' <i class="tag">tùy chọn</i>' : ''}</span>${a.tested ? '<i class="tag ok">có test</i>' : '<i class="tag">chưa có test</i>'}</li>`).join('') + '</ul>'
+      : '<div class="meta">Chưa gắn tiêu chí nghiệm thu (thêm "ac" cho hạng mục trong items.json).</div>');
+  d.querySelector('.x').addEventListener('click', () => { open = null; render(); });
+  d.querySelectorAll('input[data-k]').forEach(i => i.addEventListener('change', () => {
+    const k = i.dataset.k; let val = i.value;
+    if (k === 'pct') { val = Math.max(0, Math.min(100, parseInt(val || '0', 10))); setItem(v.id, { pct: val, checked: val >= 100 }); }
+    else setItem(v.id, { [k]: val.replace(/ · /g, ', ') });
+  }));
+  d.querySelectorAll('input[data-ac]').forEach(i => i.addEventListener('change', () => {
+    const orig = v.acs.find(a => a.id === i.dataset.ac);
+    const base = DATA.items.find(x => x.id === v.id).acs.find(a => a.id === orig.id).done;
+    if (i.checked === base) delete store.acs[orig.id]; else store.acs[orig.id] = i.checked;
+    save(); render();
+  }));
+  return d;
+}
+
+function setItem(id, patch) {
+  const base = DATA.items.find(i => i.id === id);
+  const cur = Object.assign({}, store.items[id] || {}, patch);
+  for (const k of Object.keys(cur)) {
+    const b = k === 'checked' ? base.pct >= 100 : base[k];
+    if (cur[k] === b || (cur[k] === '' && !b)) delete cur[k];
+  }
+  if (Object.keys(cur).length) store.items[id] = cur; else delete store.items[id];
+  save(); render();
+}
+
+// ---------- export the edited checklist in the exact format gen-plan.py reads
+function exportMd() {
+  const md = DATA.md.slice();
+  for (const it of DATA.items) {
+    const v = view(it), clean = s => String(s || '').replace(/ · /g, ', ');
+    md[it.line] = `- [${v.pct >= 100 ? 'x' : ' '}] **${it.id}** ${it.name} · ${it.points}đ · rủi ro: ${it.risk} · KH: ${it.kh[0]} → ${it.kh[1]}` +
+      ` · tiến độ: ${v.pct}%${it.pctAuto && (store.items[it.id] || {}).pct == null && v.pct < 100 ? ' (theo AC)' : ''} · người: ${clean(v.owner)} · bắt đầu: ${clean(v.startActual)} · xong: ${clean(v.finishActual)} · ghi chú: ${clean(v.note)}`;
+    for (const a of v.acs) md[a.line] = md[a.line].replace(/^(\s+- \[)[ xX](\])/, `$1${a.done ? 'x' : ' '}$2`);
+  }
+  const blob = new Blob([md.join('\n') + '\n'], { type: 'text/markdown;charset=utf-8' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'tien-do.md'; a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+
+$('#dl').addEventListener('click', exportMd);
+$('#reset').addEventListener('click', () => { if (!dirty() || confirm('Bỏ mọi thay đổi chưa tải về?')) { store = { items: {}, acs: {} }; save(); render(); } });
+['#q', '#fStatus', '#fModule', '#fOwner'].forEach(s => $(s).addEventListener('input', render));
+document.querySelectorAll('.seg button').forEach(b => b.addEventListener('click', () => {
+  document.querySelectorAll('.seg button').forEach(o => o.classList.toggle('on', o === b)); zoom = +b.dataset.z; render();
+}));
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && open) { open = null; render(); } });
+$('#tBase').addEventListener('click', e => { showBase = !showBase; e.target.classList.toggle('on', showBase); render(); });
+render();
+const R = $('#R'); R.scrollLeft = Math.max(0, x(M.today < M.start ? M.start : M.today) - 120);
+})();
+</script>
+</body>
+</html>

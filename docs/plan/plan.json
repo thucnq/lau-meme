@@ -1,0 +1,541 @@
+{
+ "meta": {
+  "title": "ƯỚC LƯỢNG TẠM - LẨU MEME",
+  "start": "2026-10-26",
+  "today": "2026-10-19",
+  "lanes": [
+   "Thuc"
+  ],
+  "khUat": [
+   "2027-07-28",
+   "2027-07-28"
+  ],
+  "fcUat": [
+   "2027-07-28",
+   "2027-07-28"
+  ],
+  "holidays": [
+   "2027-01-01",
+   "2027-02-04",
+   "2027-02-05",
+   "2027-02-06",
+   "2027-02-07",
+   "2027-02-08",
+   "2027-02-09",
+   "2027-02-10",
+   "2027-04-30",
+   "2027-05-01",
+   "2027-09-02"
+  ],
+  "pct": 0.0,
+  "counts": {
+   "done": 0,
+   "doing": 0,
+   "todo": 15,
+   "late": 0
+  },
+  "slip": 0,
+  "uatWeeks": 0,
+  "statusVi": {
+   "done": "Xong",
+   "doing": "Đang làm",
+   "todo": "Chưa bắt đầu",
+   "late": "Trễ"
+  }
+ },
+ "items": [
+  {
+   "id": "NEN",
+   "module": "Nền tảng",
+   "name": "Khởi tạo dự án & hạ tầng",
+   "points": 3.0,
+   "days": 7,
+   "risk": "LOW",
+   "deps": [],
+   "owner": "",
+   "lane": "Thuc",
+   "pct": 0,
+   "pctAuto": false,
+   "status": "todo",
+   "slip": 0,
+   "note": "",
+   "startActual": "",
+   "finishActual": "",
+   "kh": [
+    "2026-10-26",
+    "2026-11-03"
+   ],
+   "fc": [
+    "2026-10-26",
+    "2026-11-03"
+   ],
+   "line": 7,
+   "acs": []
+  },
+  {
+   "id": "GRAPH",
+   "module": "Nội dung",
+   "name": "Graph mã hóa + manifest + rollback",
+   "points": 5.0,
+   "days": 11,
+   "risk": "MEDIUM",
+   "deps": [
+    "NEN"
+   ],
+   "owner": "",
+   "lane": "Thuc",
+   "pct": 0,
+   "pctAuto": false,
+   "status": "todo",
+   "slip": 0,
+   "note": "",
+   "startActual": "",
+   "finishActual": "",
+   "kh": [
+    "2026-11-04",
+    "2026-11-18"
+   ],
+   "fc": [
+    "2026-11-04",
+    "2026-11-18"
+   ],
+   "line": 10,
+   "acs": []
+  },
+  {
+   "id": "SEED",
+   "module": "Nội dung",
+   "name": "Nạp lõi nội dung classic",
+   "points": 2.0,
+   "days": 5,
+   "risk": "LOW",
+   "deps": [
+    "NEN"
+   ],
+   "owner": "",
+   "lane": "Thuc",
+   "pct": 0,
+   "pctAuto": false,
+   "status": "todo",
+   "slip": 0,
+   "note": "",
+   "startActual": "",
+   "finishActual": "",
+   "kh": [
+    "2026-11-19",
+    "2026-11-25"
+   ],
+   "fc": [
+    "2026-11-19",
+    "2026-11-25"
+   ],
+   "line": 11,
+   "acs": []
+  },
+  {
+   "id": "GAME",
+   "module": "Trò chơi",
+   "name": "Chơi ghép (Nhúng lẩu)",
+   "points": 10.0,
+   "days": 22,
+   "risk": "MEDIUM",
+   "deps": [
+    "GRAPH",
+    "SEED"
+   ],
+   "owner": "",
+   "lane": "Thuc",
+   "pct": 0,
+   "pctAuto": false,
+   "status": "todo",
+   "slip": 0,
+   "note": "",
+   "startActual": "",
+   "finishActual": "",
+   "kh": [
+    "2026-11-26",
+    "2026-12-25"
+   ],
+   "fc": [
+    "2026-11-26",
+    "2026-12-25"
+   ],
+   "line": 14,
+   "acs": []
+  },
+  {
+   "id": "MOD",
+   "module": "Nội dung",
+   "name": "Kiểm duyệt nội dung tự động",
+   "points": 8.0,
+   "days": 18,
+   "risk": "HIGH",
+   "deps": [
+    "SEED"
+   ],
+   "owner": "",
+   "lane": "Thuc",
+   "pct": 0,
+   "pctAuto": false,
+   "status": "todo",
+   "slip": 0,
+   "note": "",
+   "startActual": "",
+   "finishActual": "",
+   "kh": [
+    "2026-12-28",
+    "2027-01-21"
+   ],
+   "fc": [
+    "2026-12-28",
+    "2027-01-21"
+   ],
+   "line": 17,
+   "acs": []
+  },
+  {
+   "id": "PIPE",
+   "module": "Nội dung",
+   "name": "Pipeline Mẻ nhúng mới",
+   "points": 15.0,
+   "days": 33,
+   "risk": "HIGH",
+   "deps": [
+    "MOD",
+    "GRAPH"
+   ],
+   "owner": "",
+   "lane": "Thuc",
+   "pct": 0,
+   "pctAuto": false,
+   "status": "todo",
+   "slip": 0,
+   "note": "",
+   "startActual": "",
+   "finishActual": "",
+   "kh": [
+    "2027-01-22",
+    "2027-03-16"
+   ],
+   "fc": [
+    "2027-01-22",
+    "2027-03-16"
+   ],
+   "line": 18,
+   "acs": []
+  },
+  {
+   "id": "ART",
+   "module": "Nội dung",
+   "name": "Ảnh minh họa tự tạo",
+   "points": 6.0,
+   "days": 14,
+   "risk": "HIGH",
+   "deps": [
+    "MOD"
+   ],
+   "owner": "",
+   "lane": "Thuc",
+   "pct": 0,
+   "pctAuto": false,
+   "status": "todo",
+   "slip": 0,
+   "note": "",
+   "startActual": "",
+   "finishActual": "",
+   "kh": [
+    "2027-03-17",
+    "2027-04-05"
+   ],
+   "fc": [
+    "2027-03-17",
+    "2027-04-05"
+   ],
+   "line": 19,
+   "acs": []
+  },
+  {
+   "id": "DISC",
+   "module": "Cộng đồng",
+   "name": "Công thức gia truyền",
+   "points": 4.0,
+   "days": 9,
+   "risk": "HIGH",
+   "deps": [
+    "GAME"
+   ],
+   "owner": "",
+   "lane": "Thuc",
+   "pct": 0,
+   "pctAuto": false,
+   "status": "todo",
+   "slip": 0,
+   "note": "",
+   "startActual": "",
+   "finishActual": "",
+   "kh": [
+    "2027-04-06",
+    "2027-04-16"
+   ],
+   "fc": [
+    "2027-04-06",
+    "2027-04-16"
+   ],
+   "line": 22,
+   "acs": []
+  },
+  {
+   "id": "DAILY",
+   "module": "Trò chơi",
+   "name": "Món đặc biệt hôm nay",
+   "points": 5.0,
+   "days": 11,
+   "risk": "MEDIUM",
+   "deps": [
+    "GAME",
+    "DISC"
+   ],
+   "owner": "",
+   "lane": "Thuc",
+   "pct": 0,
+   "pctAuto": false,
+   "status": "todo",
+   "slip": 0,
+   "note": "",
+   "startActual": "",
+   "finishActual": "",
+   "kh": [
+    "2027-04-19",
+    "2027-05-04"
+   ],
+   "fc": [
+    "2027-04-19",
+    "2027-05-04"
+   ],
+   "line": 25,
+   "acs": []
+  },
+  {
+   "id": "SHARE",
+   "module": "Cộng đồng",
+   "name": "Thẻ chia sẻ",
+   "points": 3.5,
+   "days": 8,
+   "risk": "MEDIUM",
+   "deps": [
+    "DAILY"
+   ],
+   "owner": "",
+   "lane": "Thuc",
+   "pct": 0,
+   "pctAuto": false,
+   "status": "todo",
+   "slip": 0,
+   "note": "",
+   "startActual": "",
+   "finishActual": "",
+   "kh": [
+    "2027-05-05",
+    "2027-05-14"
+   ],
+   "fc": [
+    "2027-05-05",
+    "2027-05-14"
+   ],
+   "line": 28,
+   "acs": []
+  },
+  {
+   "id": "REPORT",
+   "module": "An toàn",
+   "name": "Báo cáo + chặn nóng",
+   "points": 3.5,
+   "days": 8,
+   "risk": "MEDIUM",
+   "deps": [
+    "GAME"
+   ],
+   "owner": "",
+   "lane": "Thuc",
+   "pct": 0,
+   "pctAuto": false,
+   "status": "todo",
+   "slip": 0,
+   "note": "",
+   "startActual": "",
+   "finishActual": "",
+   "kh": [
+    "2027-05-17",
+    "2027-05-26"
+   ],
+   "fc": [
+    "2027-05-17",
+    "2027-05-26"
+   ],
+   "line": 31,
+   "acs": []
+  },
+  {
+   "id": "ADMIN",
+   "module": "An toàn",
+   "name": "Trang quản trị tối giản",
+   "points": 4.0,
+   "days": 9,
+   "risk": "MEDIUM",
+   "deps": [
+    "REPORT"
+   ],
+   "owner": "",
+   "lane": "Thuc",
+   "pct": 0,
+   "pctAuto": false,
+   "status": "todo",
+   "slip": 0,
+   "note": "",
+   "startActual": "",
+   "finishActual": "",
+   "kh": [
+    "2027-05-27",
+    "2027-06-08"
+   ],
+   "fc": [
+    "2027-05-27",
+    "2027-06-08"
+   ],
+   "line": 32,
+   "acs": []
+  },
+  {
+   "id": "METRIC",
+   "module": "Vận hành",
+   "name": "Đo chỉ số thành công",
+   "points": 2.5,
+   "days": 6,
+   "risk": "MEDIUM",
+   "deps": [
+    "DAILY"
+   ],
+   "owner": "",
+   "lane": "Thuc",
+   "pct": 0,
+   "pctAuto": false,
+   "status": "todo",
+   "slip": 0,
+   "note": "",
+   "startActual": "",
+   "finishActual": "",
+   "kh": [
+    "2027-06-09",
+    "2027-06-16"
+   ],
+   "fc": [
+    "2027-06-09",
+    "2027-06-16"
+   ],
+   "line": 35,
+   "acs": []
+  },
+  {
+   "id": "PRIV",
+   "module": "Vận hành",
+   "name": "Chính sách quyền riêng tư",
+   "points": 2.0,
+   "days": 5,
+   "risk": "HIGH",
+   "deps": [
+    "DISC"
+   ],
+   "owner": "",
+   "lane": "Thuc",
+   "pct": 0,
+   "pctAuto": false,
+   "status": "todo",
+   "slip": 0,
+   "note": "",
+   "startActual": "",
+   "finishActual": "",
+   "kh": [
+    "2027-06-17",
+    "2027-06-23"
+   ],
+   "fc": [
+    "2027-06-17",
+    "2027-06-23"
+   ],
+   "line": 36,
+   "acs": []
+  },
+  {
+   "id": "UAT",
+   "module": "Kiểm thử",
+   "name": "Kiểm thử nghiệm thu & sửa lỗi",
+   "points": 10.5,
+   "days": 24,
+   "risk": "MEDIUM",
+   "deps": [
+    "*"
+   ],
+   "owner": "",
+   "lane": "Thuc",
+   "pct": 0,
+   "pctAuto": false,
+   "status": "todo",
+   "slip": 0,
+   "note": "",
+   "startActual": "",
+   "finishActual": "",
+   "kh": [
+    "2027-06-24",
+    "2027-07-27"
+   ],
+   "fc": [
+    "2027-06-24",
+    "2027-07-27"
+   ],
+   "line": 39,
+   "acs": []
+  }
+ ],
+ "md": [
+  "# Tiến độ — ƯỚC LƯỢNG TẠM - LẨU MEME",
+  "",
+  "> Sinh bởi `/dk:plan` (gen-plan.py) từ `docs\\estimate\\items.json`. **Người sửa trực tiếp file này**: dấu `[x]` (hạng mục hoặc AC), `tiến độ: N%`, `người`, `bắt đầu`, `xong` (YYYY-MM-DD), `ghi chú` — giữ nguyên dấu ` · ` giữa các trường. Chạy lại `/dk:plan` để tính dự báo và vẽ lại `gantt.html`. `KH` là kế hoạch gốc, chỉ đổi bằng `/dk:plan rebaseline`.",
+  "> Bắt đầu dự án: 2026-10-26 · Kỹ sư: 1 (Thuc) · Giờ/tuần: 20 · Nghiệm thu KH: 2027-07-28 · Dự báo: 2027-07-28 · Cập nhật: 2026-10-19",
+  "",
+  "",
+  "## Nền tảng",
+  "- [ ] **NEN** Khởi tạo dự án & hạ tầng · 3đ · rủi ro: LOW · KH: 2026-10-26 → 2026-11-03 · tiến độ: 0% · người:  · bắt đầu:  · xong:  · ghi chú: ",
+  "",
+  "## Nội dung",
+  "- [ ] **GRAPH** Graph mã hóa + manifest + rollback · 5đ · rủi ro: MEDIUM · KH: 2026-11-04 → 2026-11-18 · tiến độ: 0% · người:  · bắt đầu:  · xong:  · ghi chú: ",
+  "- [ ] **SEED** Nạp lõi nội dung classic · 2đ · rủi ro: LOW · KH: 2026-11-19 → 2026-11-25 · tiến độ: 0% · người:  · bắt đầu:  · xong:  · ghi chú: ",
+  "",
+  "## Trò chơi",
+  "- [ ] **GAME** Chơi ghép (Nhúng lẩu) · 10đ · rủi ro: MEDIUM · KH: 2026-11-26 → 2026-12-25 · tiến độ: 0% · người:  · bắt đầu:  · xong:  · ghi chú: ",
+  "",
+  "## Nội dung",
+  "- [ ] **MOD** Kiểm duyệt nội dung tự động · 8đ · rủi ro: HIGH · KH: 2026-12-28 → 2027-01-21 · tiến độ: 0% · người:  · bắt đầu:  · xong:  · ghi chú: ",
+  "- [ ] **PIPE** Pipeline Mẻ nhúng mới · 15đ · rủi ro: HIGH · KH: 2027-01-22 → 2027-03-16 · tiến độ: 0% · người:  · bắt đầu:  · xong:  · ghi chú: ",
+  "- [ ] **ART** Ảnh minh họa tự tạo · 6đ · rủi ro: HIGH · KH: 2027-03-17 → 2027-04-05 · tiến độ: 0% · người:  · bắt đầu:  · xong:  · ghi chú: ",
+  "",
+  "## Cộng đồng",
+  "- [ ] **DISC** Công thức gia truyền · 4đ · rủi ro: HIGH · KH: 2027-04-06 → 2027-04-16 · tiến độ: 0% · người:  · bắt đầu:  · xong:  · ghi chú: ",
+  "",
+  "## Trò chơi",
+  "- [ ] **DAILY** Món đặc biệt hôm nay · 5đ · rủi ro: MEDIUM · KH: 2027-04-19 → 2027-05-04 · tiến độ: 0% · người:  · bắt đầu:  · xong:  · ghi chú: ",
+  "",
+  "## Cộng đồng",
+  "- [ ] **SHARE** Thẻ chia sẻ · 3.5đ · rủi ro: MEDIUM · KH: 2027-05-05 → 2027-05-14 · tiến độ: 0% · người:  · bắt đầu:  · xong:  · ghi chú: ",
+  "",
+  "## An toàn",
+  "- [ ] **REPORT** Báo cáo + chặn nóng · 3.5đ · rủi ro: MEDIUM · KH: 2027-05-17 → 2027-05-26 · tiến độ: 0% · người:  · bắt đầu:  · xong:  · ghi chú: ",
+  "- [ ] **ADMIN** Trang quản trị tối giản · 4đ · rủi ro: MEDIUM · KH: 2027-05-27 → 2027-06-08 · tiến độ: 0% · người:  · bắt đầu:  · xong:  · ghi chú: ",
+  "",
+  "## Vận hành",
+  "- [ ] **METRIC** Đo chỉ số thành công · 2.5đ · rủi ro: MEDIUM · KH: 2027-06-09 → 2027-06-16 · tiến độ: 0% · người:  · bắt đầu:  · xong:  · ghi chú: ",
+  "- [ ] **PRIV** Chính sách quyền riêng tư · 2đ · rủi ro: HIGH · KH: 2027-06-17 → 2027-06-23 · tiến độ: 0% · người:  · bắt đầu:  · xong:  · ghi chú: ",
+  "",
+  "## Kiểm thử",
+  "- [ ] **UAT** Kiểm thử nghiệm thu & sửa lỗi · 10.5đ · rủi ro: MEDIUM · KH: 2027-06-24 → 2027-07-27 · tiến độ: 0% · người:  · bắt đầu:  · xong:  · ghi chú: "
+ ]
+}

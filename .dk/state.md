@@ -2,3 +2,4 @@
 phase: spec
 project: lau-meme
 stack: py-ts-cloudflare
+spec: scope-draft
