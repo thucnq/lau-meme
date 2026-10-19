@@ -29,9 +29,7 @@ def add_reachable(core: dict, name: str, emoji: str) -> None:
     for a in STARTERS:
         for b in names:
             if frozenset((a, b)) not in taken:
-                core["elements"].append(
-                    {"name": name, "emoji": emoji, "origin": "V", "depth": 9, "image_hint": "x"}
-                )
+                core["elements"].append({"name": name, "emoji": emoji, "origin": "V", "depth": 9, "image_hint": "x"})
                 core["recipes"].append({"a": a, "b": b, "result": name, "best": False})
                 return
     raise AssertionError("no free pair")
