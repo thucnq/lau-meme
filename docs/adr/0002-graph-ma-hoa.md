@@ -7,7 +7,8 @@
 Graph phải tải hết về trình duyệt để ghép < 50 ms không gọi mạng (AC-GAME-14), nhưng không được lộ cây công thức dạng đọc được (AC-GRAPH-01..03, AC-INV-04). Pipeline phải xuất byte-giống-hệt khi chạy lại (AC-INV-05, AC-PIPE-10). Worker phải kiểm lại khám phá và đường ghép Daily mà không cần tên dạng rõ trong phản hồi (AC-DISC-07, AC-DAILY-06). Danh sách chặn chỉ được chứa mã/băm (AC-REPORT-06).
 
 ## Quyết định
-Ký hiệu: `fold(s)` là hàm chuẩn hóa đã có ở pipeline (AC-HEALTH-03: bỏ dấu, chữ thường, bỏ dấu câu, gộp khoảng trắng), cài lại y hệt bằng TypeScript cho web và worker; cả ba dùng chung một file vector kiểm thử (`pipeline/tests/golden/fold-vectors.json`). `b64u` = base64url không đệm. Với cặp tên (a, b): `x, y` = `fold(a), fold(b)` sắp xếp tăng dần theo byte UTF-8.
+Ký hiệu: `fold(s)` là hàm chuẩn hóa đã có ở pipeline (`text.fold`, AC-HEALTH-03: đ→d, NFD rồi bỏ dấu thanh/dấu mũ, chữ thường, gộp khoảng trắng — **không** bỏ dấu câu; bỏ dấu câu là bước riêng của khử trùng AC-PIPE-05 và lọc nickname AC-DISC-03), cài lại y hệt bằng TypeScript cho web và worker; cả ba dùng chung một file vector kiểm thử (`pipeline/tests/golden/fold-vectors.json`).
+`added_version` của phần tử lõi classic là `0`. `b64u` = base64url không đệm. Với cặp tên (a, b): `x, y` = `fold(a), fold(b)` sắp xếp tăng dần theo byte UTF-8.
 
 | Thứ | Công thức |
 |---|---|
