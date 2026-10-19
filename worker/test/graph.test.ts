@@ -55,9 +55,9 @@ async function batchBody(version: number, batchAt = BATCH_AT) {
       { id: r3, name: 'Món Đặc Biệt', fold: 'mon dac biet', emoji: '🍲', depth: 4, origin: 'vn' },
     ],
     recipes: [
-      await pair(starters[0], starters[1], r1),
-      await pair(r1, starters[3], r2),
-      await pair(r2, starters[2], r3),
+      await pair(starters[0]!, starters[1]!, r1),
+      await pair(r1, starters[3]!, r2),
+      await pair(r2, starters[2]!, r3),
     ],
     starters,
     daily_element_id: r3,
@@ -112,7 +112,7 @@ describe('graph', () => {
     const body = (await res.json()) as { title: string; status: number }
     expect(body.status).toBe(503)
     expect(body.title.length).toBeGreaterThan(0)
-    expect(body.title).toMatch(/[^\x00-\x7F]/)
+    expect([...body.title].some((c) => c.charCodeAt(0) > 0x7f)).toBe(true)
   })
 
   it('AC-GRAPH-04: đăng version 1 rồi manifest và graph được phục vụ với cache đúng', async () => {

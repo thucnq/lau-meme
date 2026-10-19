@@ -1,3 +1,4 @@
+/// <reference types="node" />
 import { createHash, webcrypto } from 'node:crypto'
 import { beforeAll, describe, expect, it, vi } from 'vitest'
 import { decryptEntry, elementId, fold, lookupKey } from './crypto'
@@ -81,7 +82,7 @@ describe('graph crypto', () => {
 
   it('AC-GRAPH-02: mục bị đặt sai khóa hoặc bản mã hỏng thì trả null', async () => {
     const graph = await makeGraph()
-    const [[key, value]] = Object.entries(graph.entries)
+    const [key, value] = Object.entries(graph.entries)[0]!
     const otherKey = sha('lm1|k|cay\0toang')
     await expect(
       decryptEntry({ ...graph, entries: { [otherKey]: value } }, 'Cay', 'Toang'),

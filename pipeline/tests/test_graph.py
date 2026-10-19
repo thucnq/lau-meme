@@ -1,6 +1,7 @@
 import base64
 import json
-from datetime import datetime, timezone
+import re
+from datetime import UTC, datetime, timezone
 from hashlib import sha256
 from pathlib import Path
 
@@ -18,7 +19,7 @@ ROOT = Path(__file__).resolve().parents[2]
 CORE_PATH = ROOT / "docs" / "input" / "noi-dung-loi.json"
 ROLLBACK_WORKFLOW = ROOT / ".github" / "workflows" / "rollback.yml"
 STARTERS = ["Cay", "Cười", "Toang", "Deadline"]
-BATCH_AT = datetime(2026, 10, 20, 5, 30, 0, tzinfo=timezone.utc)
+BATCH_AT = datetime(2026, 10, 20, 5, 30, 0, tzinfo=UTC)
 
 
 def real_core() -> dict:
@@ -146,9 +147,7 @@ def test_ac_graph_02_sai_doi_tac_hoac_thieu_muc_thi_tra_none():
     assert decrypt_entry(graph, r["a"], wrong) is None
     assert decrypt_entry(graph, "Không Có Thật", "Cũng Không Có") is None
     # mục của cặp (a, b) đặt dưới khóa của cặp khác: thẻ GCM không khớp => None
-    victim = next(
-        x for x in core["recipes"] if {x["a"], x["b"]} != pair
-    )
+    victim = next(x for x in core["recipes"] if {x["a"], x["b"]} != pair)
     tampered = json.loads(json.dumps(graph))
     tampered["entries"][recipe_id(victim["a"], victim["b"])] = graph["entries"][recipe_id(r["a"], r["b"])]
     assert decrypt_entry(tampered, victim["a"], victim["b"]) is None
@@ -160,11 +159,14 @@ def test_ac_graph_02_sai_doi_tac_hoac_thieu_muc_thi_tra_none():
 
 def test_ac_graph_02_khop_cai_dat_doc_lap_theo_adr_0002():
     """AC-GRAPH-02: HKDF-SHA256 + AES-256-GCM (aad = khóa tra cứu) cài độc lập giải ra đúng bản rõ."""
+    core = real_core()
+    rec = next(r for r in core["recipes"] if {r["a"], r["b"]} == {"Cay", "Cười"})
+    expected = next(e for e in core["elements"] if e["name"] == rec["result"])
     graph = export_graph(build_store(), 7)
     plain = adr_decrypt(graph, "Cay", "Cười")
-    assert plain["id"] == element_id("Tới Công Chuyện")
-    assert plain["name"] == "Tới Công Chuyện"
-    assert plain["emoji"] == "🔥"
+    assert plain["id"] == element_id(expected["name"])
+    assert plain["name"] == expected["name"]
+    assert plain["emoji"] == expected["emoji"]
     assert plain["added_version"] == 0
     assert plain["image_key"] is None
     assert set(plain) == {"id", "name", "emoji", "depth", "added_version", "image_key"}
@@ -172,16 +174,39 @@ def test_ac_graph_02_khop_cai_dat_doc_lap_theo_adr_0002():
     assert decrypt_entry(graph, "Cay", "Cười") == plain
 
 
+B64URL = re.compile(r"^[A-Za-z0-9_-]+$")
+
+
+def needs_search(s: str) -> bool:
+    """Tên dài >= 6 hoặc có ký tự ngoài bảng base64url thì phải không xuất hiện trong graph."""
+    return len(s) >= 6 or not B64URL.match(s)
+
+
+def string_values(node) -> list[str]:
+    if isinstance(node, str):
+        return [node]
+    if isinstance(node, dict):
+        return [v for x in node.values() for v in string_values(x)]
+    if isinstance(node, list):
+        return [v for x in node for v in string_values(x)]
+    return []
+
+
 def test_ac_graph_03_graph_khong_lo_ten_va_emoji_ket_qua():
-    """AC-GRAPH-03: file graph không chứa tên (gốc, fold) hay emoji của phần tử depth >= 1."""
+    """AC-GRAPH-03: graph chỉ có 3 khóa, khóa/giá trị base64url; không chứa tên dài/có dấu hay emoji depth >= 1."""
     core = real_core()
-    blob = graph_to_bytes(export_graph(build_store(), 3))
+    graph = export_graph(build_store(), 3)
+    blob = graph_to_bytes(graph)
     text = blob.decode("utf-8")
+    assert set(graph) == {"format", "version", "entries"}
+    for k, v in graph["entries"].items():
+        assert B64URL.match(k) and B64URL.match(v)
     hidden = hidden_elements(core)
     assert len(hidden) >= 100
     for e in hidden:
-        assert e["name"].encode("utf-8") not in blob, e["name"]
-        assert fold(e["name"]).encode("utf-8") not in blob, e["name"]
+        for form in (e["name"], fold(e["name"])):
+            if needs_search(form):
+                assert form.encode("utf-8") not in blob, e["name"]
         assert e["emoji"] not in text, e["name"]
 
 
@@ -191,11 +216,12 @@ def test_ac_graph_03_manifest_chi_lo_ten_4_phan_tu_khoi_dau():
     manifest = make_manifest(build_store())
     assert [s["name"] for s in manifest["starters"]] == STARTERS
     assert [s["id"] for s in manifest["starters"]] == [element_id(s) for s in STARTERS]
-    rest = {k: v for k, v in manifest.items() if k != "miss_lines"}
-    text = json.dumps(rest, ensure_ascii=False)
+    values = string_values({k: v for k, v in manifest.items() if k != "miss_lines"})
     for e in hidden_elements(core):
-        assert e["name"] not in text, e["name"]
-        assert fold(e["name"]) not in text, e["name"]
+        for form in (e["name"], fold(e["name"])):
+            pattern = re.compile(r"(?<!\w)" + re.escape(form) + r"(?!\w)")
+            for v in values:
+                assert not pattern.search(v), (e["name"], v)
 
 
 def test_ac_graph_04_xuat_hai_lan_cho_byte_giong_nhau():
@@ -205,7 +231,9 @@ def test_ac_graph_04_xuat_hai_lan_cho_byte_giong_nhau():
     assert first == graph_to_bytes(export_graph(build_store(), 3))
     assert first != graph_to_bytes(export_graph(store, 4))
     assert json.loads(first)["version"] == 3
-    assert first == json.dumps(json.loads(first), sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
+    assert first == json.dumps(json.loads(first), sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode(
+        "utf-8"
+    )
 
 
 def test_ac_graph_04_manifest_co_version_va_gio_that():
