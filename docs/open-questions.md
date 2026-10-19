@@ -20,4 +20,4 @@
 | 13 | (Giai đoạn 2) R2 có đòi khai báo thẻ thanh toán không; hạn mức Workers AI gói free hiện hành? (Q9, Q14 ghi chú họp) | Quyết định nơi lưu ảnh và số ảnh vẽ được mỗi đợt | Dùng R2; nếu bị đòi thẻ thì đóng gói ảnh làm static assets | Có |
 | 14 | (Giai đoạn 2) Meme không nối được: giữ trong hàng chờ **bao nhiêu đợt** rồi bỏ? | Hàng chờ phình to, tốn quota | 6 đợt (3 ngày) (AC-PIPE-07) | Không |
 | 15 | (Tùy chọn FEEDBACK) Ngưỡng ẩn công thức "Nhạt"? | Ẩn quá tay sẽ làm tăng tỉ lệ trượt | ≥ 10 phiếu và ≥ 60 % "Nhạt" (AC-FEEDBACK-04) | Không |
-| 16 | Danh sách từ cấm lưu ở đâu — trong repo public hay GitHub Secret/kho riêng? | Danh sách từ cấm tiếng Việt có thể bị dùng để lách | Kho riêng / secret, pipeline và Worker đọc lúc chạy (`/dk:design` chốt) | Không |
+| 16 | Danh sách từ cấm lưu ở đâu — trong repo public hay GitHub Secret/kho riêng? | Danh sách từ cấm tiếng Việt có thể bị dùng để lách | Kho riêng / secret, pipeline và Worker đọc lúc chạy — thiết kế: GitHub Secret `BANNED_WORDS`, pipeline đồng bộ vào D1 mỗi mẻ (ADR 0005) | Không |

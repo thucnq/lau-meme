@@ -1,15 +1,35 @@
 openapi: 3.1.0
 info:
   title: lau-meme API
-  version: 0.1.0
+  version: 0.2.0
+  description: |
+    API của Worker Lẩu Meme. Ba chủ thể (BRD mục 2): thực khách ẩn danh (header `X-Player-Id` = UUID v4
+    sinh trên trình duyệt), quản trị (`Authorization: Bearer <ADMIN_TOKEN>`), pipeline
+    (`Authorization: Bearer <PIPELINE_TOKEN>`). Mọi lỗi là `application/problem+json` (RFC 9457), `title`
+    tiếng Việt. Mọi endpoint ghi của thực khách cần bản ghi đồng ý mục đích `play` cho version chính sách
+    hiện hành (AC-PRIV-02/09) — thiếu thì 403; và bị giới hạn tần suất theo UUID và IP băm — vượt thì 429
+    kèm `Retry-After`. Định danh phần tử/công thức là băm (ADR 0002), không bao giờ là tên đọc được.
 servers:
   - url: /api
 security: []
+tags:
+  - name: content
+    description: Manifest, graph, danh sách chặn (GRAPH, REPORT)
+  - name: player
+    description: Đồng ý, nickname, dữ liệu của tôi (PRIV, DISC)
+  - name: play
+    description: Khám phá, Daily, báo cáo, phiếu, sự kiện
+  - name: admin
+    description: Trang quản trị (ADMIN)
+  - name: pipeline
+    description: Mẻ nhúng đăng nội dung, rollback, số liệu (PIPE, GRAPH, METRIC)
 paths:
   /health:
     get:
       operationId: getHealth
+      tags: [content]
       summary: Trạng thái Worker và schema D1
+      security: []
       x-ac: [AC-HEALTH-01]
       responses:
         '200':
@@ -25,13 +45,824 @@ paths:
                   schema: { type: [string, 'null'] }
         default:
           $ref: '#/components/responses/Problem'
+
+  # ---------------------------------------------------------------- content
+  /manifest:
+    get:
+      operationId: getManifest
+      tags: [content]
+      summary: Manifest của version hiện hành
+      description: '`Cache-Control: public, max-age=60`. Chưa có mẻ nào thì 503.'
+      security: []
+      x-ac: [AC-GRAPH-04, AC-GRAPH-06, AC-GRAPH-08, AC-DAILY-03, AC-DAILY-12, AC-GAME-17, AC-PRIV-09]
+      responses:
+        '200':
+          description: Manifest hiện hành
+          headers:
+            Cache-Control: { $ref: '#/components/headers/CacheShort' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Manifest' }
+        '503': { $ref: '#/components/responses/ServiceUnavailable' }
+        default: { $ref: '#/components/responses/Problem' }
+  /graph/{version}:
+    get:
+      operationId: getGraph
+      tags: [content]
+      summary: Graph mã hóa của một version (bất biến)
+      description: '`Cache-Control: public, max-age=31536000, immutable`; Worker đặt vào Cache API.'
+      security: []
+      x-ac: [AC-GRAPH-01, AC-GRAPH-02, AC-GRAPH-03, AC-GRAPH-04, AC-GAME-14]
+      parameters:
+        - $ref: '#/components/parameters/Version'
+      responses:
+        '200':
+          description: Graph
+          headers:
+            Cache-Control: { $ref: '#/components/headers/CacheImmutable' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Graph' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        default: { $ref: '#/components/responses/Problem' }
+  /blocklist:
+    get:
+      operationId: getBlocklist
+      tags: [content]
+      summary: Danh sách chặn nóng (phần tử, công thức, ảnh)
+      description: '`Cache-Control: public, max-age=60`; `?fresh=1` bỏ qua cache (AC-REPORT-04).'
+      security: []
+      x-ac: [AC-REPORT-04, AC-REPORT-05, AC-REPORT-06, AC-REPORT-07, AC-GAME-15, AC-ADMIN-03, AC-ADMIN-04, AC-ART-07]
+      parameters:
+        - name: fresh
+          in: query
+          required: false
+          schema: { type: integer, enum: [1] }
+      responses:
+        '200':
+          description: Danh sách chặn
+          headers:
+            Cache-Control: { $ref: '#/components/headers/CacheShort' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Blocklist' }
+        default: { $ref: '#/components/responses/Problem' }
+
+  # ---------------------------------------------------------------- player
+  /consents:
+    post:
+      operationId: createConsent
+      tags: [player]
+      summary: Ghi đồng ý hoặc rút đồng ý (append-only)
+      description: Không cần đồng ý trước (đây là nơi tạo đồng ý). Lưu IP băm, kênh "web".
+      security: [{ PlayerId: [] }]
+      x-ac: [AC-PRIV-02, AC-PRIV-03, AC-PRIV-04, AC-PRIV-06, AC-PRIV-09]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ConsentRequest' }
+      responses:
+        '201':
+          description: Đã ghi
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Consent' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '422': { $ref: '#/components/responses/Unprocessable' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        default: { $ref: '#/components/responses/Problem' }
+  /me:
+    get:
+      operationId: getMyData
+      tags: [player]
+      summary: Xem / xuất dữ liệu của tôi
+      description: UUID chưa có dữ liệu trả cấu trúc rỗng, không bao giờ dữ liệu của người khác. Không cần đồng ý.
+      security: [{ PlayerId: [] }]
+      x-ac: [AC-PRIV-08]
+      responses:
+        '200':
+          description: Dữ liệu của UUID gửi lên
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/MyData' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        default: { $ref: '#/components/responses/Problem' }
+    delete:
+      operationId: deleteMyData
+      tags: [player]
+      summary: Xóa dữ liệu của tôi (idempotent)
+      description: |
+        Xóa nickname, kết quả Daily, streak, phiếu, sự kiện; khám phá và báo cáo giữ nhưng bỏ UUID; đồng ý giữ
+        và thêm dòng `erase` (xóa hẳn sau 1 năm). Không cần đồng ý.
+      security: [{ PlayerId: [] }]
+      x-ac: [AC-PRIV-05]
+      responses:
+        '204': { description: Đã xóa (hoặc không có gì để xóa) }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        default: { $ref: '#/components/responses/Problem' }
+  /me/nickname:
+    put:
+      operationId: putNickname
+      tags: [player]
+      summary: Đặt / đổi nickname
+      description: Cần đồng ý mục đích `nickname` (thiếu → 403). Lọc từ cấm + bí danh trên dạng `fold`.
+      security: [{ PlayerId: [] }]
+      x-ac: [AC-DISC-02, AC-DISC-03, AC-DISC-04, AC-DISC-12, AC-PRIV-03, AC-MOD-06, AC-ADMIN-05]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/NicknameRequest' }
+      responses:
+        '200':
+          description: Nickname đã lưu (đã cắt khoảng trắng)
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required: [nickname]
+                properties:
+                  nickname: { type: string }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '422': { $ref: '#/components/responses/Unprocessable' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        default: { $ref: '#/components/responses/Problem' }
+  /me/streak:
+    get:
+      operationId: getMyStreak
+      tags: [player]
+      summary: Streak của tôi
+      security: [{ PlayerId: [] }]
+      x-ac: [AC-DAILY-10]
+      responses:
+        '200':
+          description: Streak hiện tại (0 nếu đã đứt) và dài nhất
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Streak' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        default: { $ref: '#/components/responses/Problem' }
+
+  # ---------------------------------------------------------------- play
+  /discoveries:
+    get:
+      operationId: listDiscoveries
+      tags: [play]
+      summary: Công thức gia truyền của các phần tử
+      description: 'Không chứa UUID, không chứa công thức đã dùng. `Cache-Control: public, max-age=60`.'
+      security: []
+      x-ac: [AC-DISC-09, AC-PRIV-05]
+      parameters:
+        - name: ids
+          in: query
+          required: true
+          description: Tối đa 50 id phần tử, cách nhau bằng dấu phẩy
+          style: form
+          explode: false
+          schema:
+            type: array
+            minItems: 1
+            maxItems: 50
+            items: { $ref: '#/components/schemas/ElementId' }
+      responses:
+        '200':
+          description: Chỉ có các phần tử đã được khám phá
+          headers:
+            Cache-Control: { $ref: '#/components/headers/CacheShort' }
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required: [items]
+                properties:
+                  items:
+                    type: array
+                    maxItems: 50
+                    items: { $ref: '#/components/schemas/Discovery' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        default: { $ref: '#/components/responses/Problem' }
+    post:
+      operationId: createDiscovery
+      tags: [play]
+      summary: Gửi khám phá (ghi người đầu tiên)
+      description: |
+        Server kiểm A + B = result là công thức đang hoạt động ở version hiện hành (không bị chặn), result không
+        phải phần tử khởi đầu. Ràng buộc duy nhất theo phần tử trong D1 quyết định ai là người đầu tiên.
+      security: [{ PlayerId: [] }]
+      x-ac: [AC-DISC-05, AC-DISC-06, AC-DISC-07, AC-DISC-08, AC-DISC-10, AC-DISC-11, AC-DISC-12, AC-REPORT-09, AC-INV-08, AC-PRIV-02]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Combination' }
+      responses:
+        '200':
+          description: Đã có người khám phá trước (`first = false`)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/DiscoveryResult' }
+        '201':
+          description: Người đầu tiên (`first = true`)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/DiscoveryResult' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '422': { $ref: '#/components/responses/Unprocessable' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '503': { $ref: '#/components/responses/ServiceUnavailable' }
+        default: { $ref: '#/components/responses/Problem' }
+  /daily/{version}/results:
+    post:
+      operationId: submitDailyResult
+      tags: [play]
+      summary: Nộp kết quả Món đặc biệt
+      description: |
+        Chỉ nhận cho version hiện hành (version cũ → 410). Đường ghép được kiểm lại từng bước theo graph của
+        version đó (AC-DAILY-06/07). Lưu 1 lần cho (UUID, version); cập nhật streak theo ngày GMT+7 của `batch_at`.
+      security: [{ PlayerId: [] }]
+      x-ac: [AC-DAILY-06, AC-DAILY-07, AC-DAILY-08, AC-DAILY-10, AC-DAILY-13, AC-INV-11, AC-REPORT-09, AC-PRIV-02]
+      parameters:
+        - $ref: '#/components/parameters/Version'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/DailyResultRequest' }
+      responses:
+        '201':
+          description: Đã lưu
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/DailyResult' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409':
+          description: Đã nộp cho version này — kèm kết quả đã lưu, không ghi đè
+          content:
+            application/problem+json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Problem'
+                  - type: object
+                    required: [result]
+                    properties:
+                      result: { $ref: '#/components/schemas/DailyResult' }
+        '410': { $ref: '#/components/responses/Gone' }
+        '422': { $ref: '#/components/responses/Unprocessable' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        default: { $ref: '#/components/responses/Problem' }
+  /daily/{version}/leaderboard:
+    get:
+      operationId: getDailyLeaderboard
+      tags: [play]
+      summary: Bảng xếp hạng đợt (top 20 cố định theo AC, không phân trang)
+      description: '`X-Player-Id` tùy chọn — có thì kèm hạng của mình kể cả ngoài top 20.'
+      security: [{}, { PlayerId: [] }]
+      x-ac: [AC-DAILY-09]
+      parameters:
+        - $ref: '#/components/parameters/Version'
+      responses:
+        '200':
+          description: Bảng xếp hạng (rỗng nếu chưa có kết quả)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/DailyLeaderboard' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        default: { $ref: '#/components/responses/Problem' }
+  /streaks/leaderboard:
+    get:
+      operationId: getStreakLeaderboard
+      tags: [play]
+      summary: Bảng xếp hạng streak (top 20 cố định theo AC, không phân trang)
+      security: []
+      x-ac: [AC-DAILY-11]
+      responses:
+        '200':
+          description: Streak hiện tại > 0, giảm dần, hòa thì ai đạt trước đứng trước
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/StreakLeaderboard' }
+        default: { $ref: '#/components/responses/Problem' }
+  /reports:
+    post:
+      operationId: createReport
+      tags: [play]
+      summary: Báo cáo phần tử hoặc ảnh
+      description: |
+        Mỗi UUID tính 1 lần cho mỗi đích (trong chu kỳ đếm hiện tại). Phần tử: đủ 3 UUID khác nhau ⇒ tự ẩn
+        trong cùng yêu cầu. Ảnh: 1 báo cáo ⇒ ảnh vào danh sách chặn.
+      security: [{ PlayerId: [] }]
+      x-ac: [AC-REPORT-01, AC-REPORT-02, AC-REPORT-03, AC-REPORT-04, AC-REPORT-05, AC-REPORT-08, AC-INV-09, AC-PRIV-02]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ReportRequest' }
+      responses:
+        '200':
+          description: UUID này đã báo cáo đích này — trả báo cáo đã có
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Report' }
+        '201':
+          description: Đã ghi
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Report' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '422': { $ref: '#/components/responses/Unprocessable' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        default: { $ref: '#/components/responses/Problem' }
+  /votes:
+    put:
+      operationId: putVote
+      tags: [play]
+      summary: Bỏ phiếu Ngon / Nhạt cho công thức (tùy chọn — FEEDBACK)
+      security: [{ PlayerId: [] }]
+      x-ac: [AC-FEEDBACK-01, AC-FEEDBACK-02, AC-FEEDBACK-03, AC-PRIV-02]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/VoteRequest' }
+      responses:
+        '200':
+          description: Phiếu đã lưu (thay phiếu cũ của UUID cho cặp không thứ tự)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Vote' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '422': { $ref: '#/components/responses/Unprocessable' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        default: { $ref: '#/components/responses/Problem' }
+  /events:
+    post:
+      operationId: createEvents
+      tags: [play]
+      summary: Gửi lô sự kiện ẩn danh
+      description: '`text/plain` = cùng JSON gửi bằng `navigator.sendBeacon` (không đặt được header), UUID nằm trong `player_id`. Cả lô hợp lệ hoặc không ghi gì. Không lưu IP, user agent, referrer. Giới hạn 20 lô/phút/UUID.'
+      security: [{ PlayerId: [] }]
+      x-ac: [AC-METRIC-02, AC-METRIC-03, AC-METRIC-04, AC-SHARE-06, AC-PRIV-02]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EventBatch' }
+          text/plain:
+            schema: { $ref: '#/components/schemas/EventBatch' }
+      responses:
+        '202': { description: Đã nhận }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '422': { $ref: '#/components/responses/Unprocessable' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        default: { $ref: '#/components/responses/Problem' }
+
+  # ---------------------------------------------------------------- admin
+  /admin/reports:
+    get:
+      operationId: adminListReports
+      tags: [admin]
+      summary: Báo cáo gom theo đích
+      security: [{ AdminToken: [] }]
+      x-ac: [AC-ADMIN-01, AC-ADMIN-02, AC-ADMIN-06]
+      parameters:
+        - name: status
+          in: query
+          schema: { type: string, enum: [new, resolved], default: new }
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Size'
+      responses:
+        '200':
+          description: Xếp theo số UUID giảm dần; không có UUID người báo cáo
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ReportSummaryPage' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        default: { $ref: '#/components/responses/Problem' }
+  /admin/elements:
+    get:
+      operationId: adminListElements
+      tags: [admin]
+      summary: Danh mục phần tử (tìm không dấu, lọc trạng thái)
+      security: [{ AdminToken: [] }]
+      x-ac: [AC-ADMIN-01, AC-ADMIN-03, AC-ADMIN-05, AC-ADMIN-10]
+      parameters:
+        - name: q
+          in: query
+          schema: { type: string, maxLength: 100 }
+        - name: state
+          in: query
+          schema: { $ref: '#/components/schemas/TargetState' }
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Size'
+      responses:
+        '200':
+          description: Trang phần tử
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AdminElementPage' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        default: { $ref: '#/components/responses/Problem' }
+  /admin/recipes:
+    get:
+      operationId: adminListRecipes
+      tags: [admin]
+      summary: Công thức có một phần tử (đầu vào hoặc kết quả)
+      security: [{ AdminToken: [] }]
+      x-ac: [AC-ADMIN-01, AC-ADMIN-04, AC-ADMIN-10]
+      parameters:
+        - name: element_id
+          in: query
+          required: true
+          schema: { $ref: '#/components/schemas/ElementId' }
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Size'
+      responses:
+        '200':
+          description: Trang công thức
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AdminRecipePage' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        default: { $ref: '#/components/responses/Problem' }
+  /admin/moderation:
+    post:
+      operationId: adminModerate
+      tags: [admin]
+      summary: Ẩn / hiện / chặn / gỡ chặn / bỏ qua báo cáo
+      description: |
+        Có hiệu lực ngay trên `/blocklist` (không cần deploy). Mỗi lệnh thành công ghi đúng 1 dòng audit trong
+        cùng `DB.batch`; lệnh 4xx không ghi audit. `block` một phần tử còn thêm `fold` của nó vào danh sách bí
+        danh. `show` trên phần tử đã `blocked` → 409. `show`/`dismiss_reports` chuyển báo cáo sang đã xử lý và
+        mở chu kỳ đếm mới.
+      security: [{ AdminToken: [] }]
+      x-ac: [AC-ADMIN-01, AC-ADMIN-02, AC-ADMIN-03, AC-ADMIN-04, AC-ADMIN-05, AC-ADMIN-07, AC-ADMIN-09, AC-REPORT-09]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ModerationRequest' }
+      responses:
+        '200':
+          description: Đã áp dụng
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ModerationResult' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '422': { $ref: '#/components/responses/Unprocessable' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        default: { $ref: '#/components/responses/Problem' }
+  /admin/batches:
+    get:
+      operationId: adminListBatches
+      tags: [admin]
+      summary: Nhật ký các đợt (mới nhất trước)
+      security: [{ AdminToken: [] }]
+      x-ac: [AC-ADMIN-01, AC-ADMIN-08]
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Size'
+      responses:
+        '200':
+          description: Trang đợt
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/BatchPage' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        default: { $ref: '#/components/responses/Problem' }
+  /admin/audit:
+    get:
+      operationId: adminListAudit
+      tags: [admin]
+      summary: Nhật ký audit (mới nhất trước)
+      security: [{ AdminToken: [] }]
+      x-ac: [AC-ADMIN-01, AC-ADMIN-09]
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Size'
+      responses:
+        '200':
+          description: Trang audit
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AuditPage' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        default: { $ref: '#/components/responses/Problem' }
+
+  # ---------------------------------------------------------------- pipeline
+  /metrics/summary:
+    get:
+      operationId: getMetricsSummary
+      tags: [pipeline]
+      summary: Số liệu tổng hợp một ngày GMT+7 (không UUID, không sự kiện thô)
+      security: [{ PipelineToken: [] }, { AdminToken: [] }]
+      x-ac: [AC-METRIC-05, AC-METRIC-06, AC-PIPE-13]
+      parameters:
+        - name: day
+          in: query
+          required: true
+          schema: { type: string, format: date }
+      responses:
+        '200':
+          description: Số liệu
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/MetricsSummary' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        default: { $ref: '#/components/responses/Problem' }
+  /pipeline/state:
+    get:
+      operationId: getPipelineState
+      tags: [pipeline]
+      summary: Trạng thái pipeline cần cho mẻ mới
+      description: |
+        Chỉ dữ liệu nội dung và tổng hợp ẩn danh: version hiện hành, danh sách chặn, bí danh bị chặn
+        (nguồn `mod`/`admin`), lịch sử Món đặc biệt, tỉ lệ "Nhạt" theo công thức. Không có dữ liệu người chơi.
+      security: [{ PipelineToken: [] }]
+      x-ac: [AC-PIPE-13, AC-DAILY-01, AC-MOD-10, AC-FEEDBACK-04, AC-INV-03]
+      responses:
+        '200':
+          description: Trạng thái
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PipelineState' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        default: { $ref: '#/components/responses/Problem' }
+  /pipeline/banned-terms/{source}:
+    put:
+      operationId: putBannedTerms
+      tags: [pipeline]
+      summary: Thay toàn bộ tập từ cấm của một nguồn (wordlist từ GitHub Secret, hoặc bí danh do MOD sinh)
+      security: [{ PipelineToken: [] }]
+      x-ac: [AC-DISC-03, AC-MOD-06]
+      parameters:
+        - name: source
+          in: path
+          required: true
+          schema: { type: string, enum: [wordlist, mod] }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [terms]
+              properties:
+                terms:
+                  type: array
+                  maxItems: 5000
+                  items: { type: string, minLength: 1, maxLength: 100 }
+      responses:
+        '204': { description: Đã thay }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '422': { $ref: '#/components/responses/Unprocessable' }
+        default: { $ref: '#/components/responses/Problem' }
+  /pipeline/batches:
+    post:
+      operationId: publishBatch
+      tags: [pipeline]
+      summary: Đăng một version mới (nguyên tử) hoặc ghi một đợt lỗi
+      description: |
+        `status = success`: ghi danh mục phần tử/công thức, nội dung version, chuyển `current_version` và xóa
+        version ngoài 14 bản mới nhất — tất cả trong một `DB.batch` (lỗi ⇒ không đổi gì, AC-PIPE-11).
+        `version` phải lớn hơn mọi version đã đăng (409). `status = error`: chỉ ghi nhật ký đợt, không đổi bản
+        đang chạy.
+      security: [{ PipelineToken: [] }]
+      x-ac: [AC-PIPE-01, AC-PIPE-11, AC-GRAPH-04, AC-GRAPH-05, AC-SEED-01, AC-SEED-08, AC-DAILY-01, AC-DAILY-02, AC-INV-06]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PublishBatchRequest' }
+      responses:
+        '201':
+          description: Đã ghi
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/BatchRun' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '413': { $ref: '#/components/responses/PayloadTooLarge' }
+        '422': { $ref: '#/components/responses/Unprocessable' }
+        default: { $ref: '#/components/responses/Problem' }
+  /pipeline/batches/{id}:
+    patch:
+      operationId: patchBatchRun
+      tags: [pipeline]
+      summary: Gắn link GitHub Issue báo cáo đợt
+      security: [{ PipelineToken: [] }]
+      x-ac: [AC-PIPE-14, AC-ADMIN-08]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [issue_url]
+              properties:
+                issue_url: { type: string, format: uri, pattern: '^https://github\.com/', maxLength: 300 }
+      responses:
+        '200':
+          description: Đã gắn
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/BatchRun' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        default: { $ref: '#/components/responses/Problem' }
+  /pipeline/rollback:
+    post:
+      operationId: rollbackBatch
+      tags: [pipeline]
+      summary: Chuyển version hiện hành về bản trước (hoặc version chỉ định)
+      description: Ghi một dòng nhật ký `rollback`. Không có bản trước / version không còn lưu ⇒ 409 / 404, bản hiện hành không đổi.
+      security: [{ PipelineToken: [] }]
+      x-ac: [AC-GRAPH-06, AC-GRAPH-07, AC-PIPE-14]
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                version: { type: integer, minimum: 1 }
+      responses:
+        '200':
+          description: Đã chuyển
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/BatchRun' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        default: { $ref: '#/components/responses/Problem' }
+
+  # ---------------------------------------------------------------- images (phase 2)
+  /img/{key}:
+    servers:
+      - url: /
+    get:
+      operationId: getImage
+      tags: [content]
+      summary: Ảnh minh họa từ R2 (giai đoạn 2)
+      security: []
+      x-ac: [AC-ART-05]
+      parameters:
+        - name: key
+          in: path
+          required: true
+          schema: { type: string, pattern: '^[0-9a-f]{12}\.webp$' }
+      responses:
+        '200':
+          description: Ảnh WebP 256×256
+          headers:
+            Cache-Control: { $ref: '#/components/headers/CacheImmutable' }
+          content:
+            image/webp:
+              schema: { type: string, format: binary }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        default: { $ref: '#/components/responses/Problem' }
+
 components:
+  securitySchemes:
+    PlayerId:
+      type: apiKey
+      in: header
+      name: X-Player-Id
+      description: UUID v4 sinh bằng `crypto.randomUUID()` (định danh ẩn danh, không phải xác thực). Sai định dạng → 400.
+    AdminToken:
+      type: http
+      scheme: bearer
+      description: '`ADMIN_TOKEN` (Cloudflare secret), so hằng thời gian; 5 lần sai/phút/IP băm ⇒ khóa 15 phút (429).'
+    PipelineToken:
+      type: http
+      scheme: bearer
+      description: '`PIPELINE_TOKEN` (Cloudflare secret + GitHub Secret). Chỉ mở được `/pipeline/*` và `/metrics/summary`.'
+
+  parameters:
+    Version:
+      name: version
+      in: path
+      required: true
+      schema: { type: integer, minimum: 1 }
+    Page:
+      name: page
+      in: query
+      schema: { type: integer, minimum: 1, default: 1 }
+    Size:
+      name: size
+      in: query
+      schema: { type: integer, minimum: 1, maximum: 100, default: 50 }
+
+  headers:
+    CacheShort:
+      schema: { type: string, example: 'public, max-age=60' }
+    CacheImmutable:
+      schema: { type: string, example: 'public, max-age=31536000, immutable' }
+    RetryAfter:
+      description: Số giây chờ trước khi thử lại
+      schema: { type: integer, minimum: 1 }
+
   responses:
     Problem:
       description: Lỗi theo RFC 9457
       content:
         application/problem+json:
           schema: { $ref: '#/components/schemas/Problem' }
+    BadRequest:
+      description: Thiếu/sai định dạng (UUID, tham số, JSON, trường lạ)
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    Unauthorized:
+      description: Thiếu hoặc sai token
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    Forbidden:
+      description: Chưa có đồng ý cần thiết cho version chính sách hiện hành
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    NotFound:
+      description: Không tồn tại
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    Conflict:
+      description: Xung đột trạng thái
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    Gone:
+      description: Mẻ đã qua
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    PayloadTooLarge:
+      description: Nội dung vượt giới hạn
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    Unprocessable:
+      description: Đúng định dạng nhưng sai nghiệp vụ (công thức không có thật, nickname không hợp lệ…)
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    TooManyRequests:
+      description: Vượt giới hạn tần suất
+      headers:
+        Retry-After: { $ref: '#/components/headers/RetryAfter' }
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    ServiceUnavailable:
+      description: Chưa có mẻ nào được đăng
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+
   schemas:
     Problem:
       type: object
@@ -41,3 +872,619 @@ components:
         title: { type: string }
         status: { type: integer }
         detail: { type: string }
+
+    ElementId:
+      type: string
+      description: base64url(SHA-256("lm1|e|" + fold(tên))) — ADR 0002
+      pattern: '^[A-Za-z0-9_-]{43}$'
+    RecipeId:
+      type: string
+      description: Khóa tra cứu của cặp không thứ tự — ADR 0002
+      pattern: '^[A-Za-z0-9_-]{43}$'
+    Name:
+      type: string
+      minLength: 1
+      maxLength: 100
+    TargetState:
+      type: string
+      enum: [active, hidden, blocked]
+    Instant:
+      type: string
+      format: date-time
+      description: ISO 8601 UTC
+
+    Starter:
+      type: object
+      additionalProperties: false
+      required: [id, name, emoji]
+      properties:
+        id: { $ref: '#/components/schemas/ElementId' }
+        name: { type: string }
+        emoji: { type: string }
+    Manifest:
+      type: object
+      additionalProperties: false
+      required: [version, batch_at, graph_url, starters, miss_lines, daily, policy_version]
+      properties:
+        version: { type: integer, minimum: 1 }
+        batch_at: { $ref: '#/components/schemas/Instant' }
+        graph_url: { type: string, example: /api/graph/12 }
+        starters:
+          type: array
+          minItems: 4
+          maxItems: 4
+          items: { $ref: '#/components/schemas/Starter' }
+        miss_lines:
+          type: array
+          minItems: 1
+          items: { type: string, maxLength: 200 }
+        daily:
+          type: object
+          additionalProperties: false
+          required: [element_id, emoji, hint, depth]
+          description: Không có tên món (AC-DAILY-03); client so `element_id` với id của kết quả đã giải mã
+          properties:
+            element_id: { $ref: '#/components/schemas/ElementId' }
+            emoji: { type: string }
+            hint: { type: string, maxLength: 200 }
+            depth: { type: integer, minimum: 4, maximum: 8 }
+        policy_version:
+          type: integer
+          minimum: 1
+          description: Do Worker thêm (biến `POLICY_VERSION`), không thuộc nội dung pipeline
+    Graph:
+      type: object
+      additionalProperties: false
+      required: [format, version, entries]
+      description: |
+        `entries[lookup_key] = base64url(AES-256-GCM ciphertext+tag)`; khóa và IV dẫn xuất từ 2 tên đầu vào
+        (ADR 0002). Bản rõ là `GraphResult`.
+      properties:
+        format: { type: integer, enum: [1] }
+        version: { type: integer, minimum: 1 }
+        entries:
+          type: object
+          propertyNames: { pattern: '^[A-Za-z0-9_-]{43}$' }
+          additionalProperties: { type: string }
+    GraphResult:
+      type: object
+      description: Bản rõ sau khi giải mã một mục (chỉ có trên client)
+      required: [id, name, emoji, depth, added_version]
+      properties:
+        id: { $ref: '#/components/schemas/ElementId' }
+        name: { type: string }
+        emoji: { type: string }
+        depth: { type: integer, minimum: 1 }
+        added_version: { type: integer }
+        image_key: { type: [string, 'null'], pattern: '^[0-9a-f]{12}\.webp$' }
+    Blocklist:
+      type: object
+      additionalProperties: false
+      required: [elements, recipes, images]
+      properties:
+        elements: { type: array, items: { $ref: '#/components/schemas/ElementId' } }
+        recipes: { type: array, items: { $ref: '#/components/schemas/RecipeId' } }
+        images:
+          type: array
+          description: Id phần tử có ảnh bị chặn
+          items: { $ref: '#/components/schemas/ElementId' }
+
+    ConsentRequest:
+      type: object
+      additionalProperties: false
+      required: [purpose, action, policy_version]
+      properties:
+        purpose: { type: string, enum: [play, nickname] }
+        action: { type: string, enum: [grant, withdraw] }
+        policy_version: { type: integer, minimum: 1, description: Phải bằng version hiện hành (khác → 422) }
+    Consent:
+      type: object
+      additionalProperties: false
+      required: [purpose, action, policy_version, created_at]
+      properties:
+        purpose: { type: string, enum: [play, nickname, all] }
+        action: { type: string, enum: [grant, withdraw, erase] }
+        policy_version: { type: integer }
+        created_at: { $ref: '#/components/schemas/Instant' }
+    NicknameRequest:
+      type: object
+      additionalProperties: false
+      required: [nickname]
+      properties:
+        nickname:
+          type: string
+          maxLength: 100
+          description: Sau khi cắt khoảng trắng phải dài 2–20, chỉ chữ (có dấu), số, khoảng trắng, `_`, `-` (sai → 422)
+    Streak:
+      type: object
+      additionalProperties: false
+      required: [current, longest]
+      properties:
+        current: { type: integer, minimum: 0 }
+        longest: { type: integer, minimum: 0 }
+    MyData:
+      type: object
+      additionalProperties: false
+      required: [nickname, discoveries, daily_results, streak, reports, votes, consents, event_counts]
+      properties:
+        nickname: { type: [string, 'null'] }
+        discoveries:
+          type: array
+          items:
+            type: object
+            required: [element_id, discovered_at]
+            properties:
+              element_id: { $ref: '#/components/schemas/ElementId' }
+              discovered_at: { $ref: '#/components/schemas/Instant' }
+        daily_results:
+          type: array
+          items: { $ref: '#/components/schemas/DailyResult' }
+        streak: { $ref: '#/components/schemas/Streak' }
+        reports:
+          type: array
+          items:
+            type: object
+            required: [target, id, reason, created_at]
+            properties:
+              target: { type: string, enum: [element, image] }
+              id: { $ref: '#/components/schemas/ElementId' }
+              reason: { $ref: '#/components/schemas/ReportReason' }
+              created_at: { $ref: '#/components/schemas/Instant' }
+        votes:
+          type: array
+          items: { $ref: '#/components/schemas/Vote' }
+        consents:
+          type: array
+          items: { $ref: '#/components/schemas/Consent' }
+        event_counts:
+          type: object
+          additionalProperties: { type: integer, minimum: 0 }
+
+    Combination:
+      type: object
+      additionalProperties: false
+      required: [a, b, result]
+      properties:
+        a: { $ref: '#/components/schemas/Name' }
+        b: { $ref: '#/components/schemas/Name' }
+        result: { $ref: '#/components/schemas/Name' }
+    Discovery:
+      type: object
+      additionalProperties: false
+      required: [element_id, nickname, discovered_at]
+      properties:
+        element_id: { $ref: '#/components/schemas/ElementId' }
+        nickname: { type: string, description: '"Thực khách ẩn danh" khi không có nickname hoặc đã xóa' }
+        discovered_at: { $ref: '#/components/schemas/Instant' }
+    DiscoveryResult:
+      allOf:
+        - $ref: '#/components/schemas/Discovery'
+        - type: object
+          required: [first]
+          properties:
+            first: { type: boolean }
+    DailyResultRequest:
+      type: object
+      additionalProperties: false
+      required: [steps, path]
+      properties:
+        steps: { type: integer, minimum: 1, maximum: 200, description: Số lượt ghép kể cả trượt }
+        path:
+          type: array
+          minItems: 1
+          maxItems: 200
+          items: { $ref: '#/components/schemas/Combination' }
+    DailyResult:
+      type: object
+      additionalProperties: false
+      required: [version, steps, rank, streak, submitted_at]
+      properties:
+        version: { type: integer }
+        steps: { type: integer }
+        rank: { type: integer, minimum: 1 }
+        streak: { $ref: '#/components/schemas/Streak' }
+        submitted_at: { $ref: '#/components/schemas/Instant' }
+    LeaderboardRow:
+      type: object
+      additionalProperties: false
+      required: [rank, nickname, value]
+      properties:
+        rank: { type: integer, minimum: 1 }
+        nickname: { type: string }
+        value: { type: integer, description: Số bước (Daily) hoặc streak hiện tại }
+    DailyLeaderboard:
+      type: object
+      additionalProperties: false
+      required: [version, rows, me]
+      properties:
+        version: { type: integer }
+        rows:
+          type: array
+          maxItems: 20
+          items: { $ref: '#/components/schemas/LeaderboardRow' }
+        me:
+          oneOf:
+            - type: 'null'
+            - $ref: '#/components/schemas/LeaderboardRow'
+    StreakLeaderboard:
+      type: object
+      additionalProperties: false
+      required: [rows]
+      properties:
+        rows:
+          type: array
+          maxItems: 20
+          items: { $ref: '#/components/schemas/LeaderboardRow' }
+    ReportReason:
+      type: string
+      enum: [real_person, politics_religion, sexual, discrimination, violence_drugs_selfharm, inappropriate_image, other]
+    ReportRequest:
+      type: object
+      additionalProperties: false
+      required: [target, id, reason]
+      properties:
+        target: { type: string, enum: [element, image] }
+        id: { $ref: '#/components/schemas/ElementId' }
+        reason: { $ref: '#/components/schemas/ReportReason' }
+        note: { type: string, maxLength: 1000, description: Chỉ với `other`; dài hơn 200 ký tự → 422 }
+    Report:
+      type: object
+      additionalProperties: false
+      required: [target, id, reason, status, created_at]
+      properties:
+        target: { type: string, enum: [element, image] }
+        id: { $ref: '#/components/schemas/ElementId' }
+        reason: { $ref: '#/components/schemas/ReportReason' }
+        status: { type: string, enum: [new, resolved_hidden, resolved_shown, resolved_dismissed] }
+        created_at: { $ref: '#/components/schemas/Instant' }
+    VoteRequest:
+      type: object
+      additionalProperties: false
+      required: [a, b, value]
+      properties:
+        a: { $ref: '#/components/schemas/Name' }
+        b: { $ref: '#/components/schemas/Name' }
+        value: { type: string, maxLength: 10, description: '`ngon` hoặc `nhat` (khác → 422)' }
+    Vote:
+      type: object
+      additionalProperties: false
+      required: [recipe_id, value, updated_at]
+      properties:
+        recipe_id: { $ref: '#/components/schemas/RecipeId' }
+        value: { type: string, enum: [ngon, nhat] }
+        updated_at: { $ref: '#/components/schemas/Instant' }
+
+    EventBatch:
+      type: object
+      additionalProperties: false
+      required: [events]
+      properties:
+        player_id:
+          type: string
+          format: uuid
+          description: Chỉ dùng khi gửi bằng `sendBeacon` (không có header `X-Player-Id`)
+        events:
+          type: array
+          minItems: 1
+          maxItems: 50
+          items: { $ref: '#/components/schemas/Event' }
+    Event:
+      oneOf:
+        - type: object
+          additionalProperties: false
+          required: [type]
+          properties:
+            type: { const: session_start }
+        - type: object
+          additionalProperties: false
+          required: [type, ok, miss]
+          properties:
+            type: { const: combine_summary }
+            ok: { type: integer, minimum: 0, maximum: 10000 }
+            miss: { type: integer, minimum: 0, maximum: 10000 }
+        - type: object
+          additionalProperties: false
+          required: [type, version]
+          properties:
+            type: { const: daily_start }
+            version: { type: integer, minimum: 1 }
+        - type: object
+          additionalProperties: false
+          required: [type, version, steps]
+          properties:
+            type: { const: daily_complete }
+            version: { type: integer, minimum: 1 }
+            steps: { type: integer, minimum: 1, maximum: 200 }
+        - type: object
+          additionalProperties: false
+          required: [type, card, method]
+          properties:
+            type: { const: share }
+            card: { type: string, enum: [daily, discovery] }
+            method: { type: string, enum: [copy, native, image] }
+        - type: object
+          additionalProperties: false
+          required: [type, target]
+          properties:
+            type: { const: report }
+            target: { type: string, enum: [element, image] }
+        - type: object
+          additionalProperties: false
+          required: [type, value]
+          properties:
+            type: { const: feedback }
+            value: { type: string, enum: [ngon, nhat] }
+
+    Page:
+      type: object
+      required: [page, size, total]
+      properties:
+        page: { type: integer }
+        size: { type: integer }
+        total: { type: integer }
+    ReportSummaryPage:
+      allOf:
+        - $ref: '#/components/schemas/Page'
+        - type: object
+          required: [items]
+          properties:
+            items:
+              type: array
+              items:
+                type: object
+                additionalProperties: false
+                required: [target, id, name, emoji, reporters, reasons, last_reported_at, state]
+                properties:
+                  target: { type: string, enum: [element, image] }
+                  id: { $ref: '#/components/schemas/ElementId' }
+                  name: { type: string }
+                  emoji: { type: string }
+                  reporters: { type: integer, description: Số UUID khác nhau trong chu kỳ đếm }
+                  reasons:
+                    type: object
+                    propertyNames: { $ref: '#/components/schemas/ReportReason' }
+                    additionalProperties: { type: integer }
+                  last_reported_at: { $ref: '#/components/schemas/Instant' }
+                  state: { $ref: '#/components/schemas/TargetState' }
+    AdminElementPage:
+      allOf:
+        - $ref: '#/components/schemas/Page'
+        - type: object
+          required: [items]
+          properties:
+            items:
+              type: array
+              items:
+                type: object
+                additionalProperties: false
+                required: [id, name, emoji, depth, state, image_state, last_version]
+                properties:
+                  id: { $ref: '#/components/schemas/ElementId' }
+                  name: { type: string }
+                  emoji: { type: string }
+                  depth: { type: integer }
+                  state: { $ref: '#/components/schemas/TargetState' }
+                  image_key: { type: [string, 'null'] }
+                  image_state: { type: string, enum: [none, active, hidden] }
+                  last_version: { type: integer }
+    AdminRecipePage:
+      allOf:
+        - $ref: '#/components/schemas/Page'
+        - type: object
+          required: [items]
+          properties:
+            items:
+              type: array
+              items:
+                type: object
+                additionalProperties: false
+                required: [id, a, b, result, state]
+                properties:
+                  id: { $ref: '#/components/schemas/RecipeId' }
+                  a: { $ref: '#/components/schemas/Starter' }
+                  b: { $ref: '#/components/schemas/Starter' }
+                  result: { $ref: '#/components/schemas/Starter' }
+                  state: { type: string, enum: [active, hidden] }
+    ModerationRequest:
+      type: object
+      additionalProperties: false
+      required: [target_kind, target_id, action]
+      properties:
+        target_kind: { type: string, enum: [element, recipe, image] }
+        target_id: { type: string, pattern: '^[A-Za-z0-9_-]{43}$', description: 'Id phần tử (element, image) hoặc id công thức' }
+        action: { type: string, enum: [hide, show, block, unblock, dismiss_reports], description: '`block`/`unblock` chỉ cho element' }
+        reason: { type: string, maxLength: 200 }
+    ModerationResult:
+      type: object
+      additionalProperties: false
+      required: [target_kind, target_id, before, after]
+      properties:
+        target_kind: { type: string, enum: [element, recipe, image] }
+        target_id: { type: string }
+        before: { $ref: '#/components/schemas/TargetState' }
+        after: { $ref: '#/components/schemas/TargetState' }
+    BatchRun:
+      type: object
+      additionalProperties: false
+      required: [id, version, batch_at, mode, status, stats, created_at]
+      properties:
+        id: { type: string, format: uuid }
+        version: { type: [integer, 'null'] }
+        batch_at: { $ref: '#/components/schemas/Instant' }
+        mode: { type: string, enum: [core, full] }
+        status: { type: string, enum: [success, error, rollback] }
+        failed_step: { type: [string, 'null'] }
+        rollback_to: { type: [integer, 'null'] }
+        stats: { $ref: '#/components/schemas/BatchStats' }
+        issue_url: { type: [string, 'null'] }
+        created_at: { $ref: '#/components/schemas/Instant' }
+    BatchStats:
+      type: object
+      additionalProperties: false
+      properties:
+        crawled: { type: integer, minimum: 0 }
+        added: { type: integer, minimum: 0 }
+        blocked:
+          type: object
+          description: Số bị chặn theo danh mục
+          additionalProperties: { type: integer, minimum: 0 }
+        queued: { type: integer, minimum: 0 }
+        source_errors:
+          type: array
+          items:
+            type: object
+            additionalProperties: false
+            required: [source, error]
+            properties:
+              source: { type: string, maxLength: 50 }
+              error: { type: string, maxLength: 200 }
+        quota_used: { type: integer, minimum: 0 }
+    BatchPage:
+      allOf:
+        - $ref: '#/components/schemas/Page'
+        - type: object
+          required: [items]
+          properties:
+            items:
+              type: array
+              items: { $ref: '#/components/schemas/BatchRun' }
+    AuditPage:
+      allOf:
+        - $ref: '#/components/schemas/Page'
+        - type: object
+          required: [items]
+          properties:
+            items:
+              type: array
+              items:
+                type: object
+                additionalProperties: false
+                required: [action, target_kind, target_id, before, after, token_fp, created_at]
+                properties:
+                  action: { type: string, enum: [hide, show, block, unblock, dismiss_reports] }
+                  target_kind: { type: string, enum: [element, recipe, image] }
+                  target_id: { type: string }
+                  before: { $ref: '#/components/schemas/TargetState' }
+                  after: { $ref: '#/components/schemas/TargetState' }
+                  reason: { type: [string, 'null'] }
+                  token_fp: { type: string, pattern: '^[0-9a-f]{8}$' }
+                  created_at: { $ref: '#/components/schemas/Instant' }
+
+    MetricsSummary:
+      type: object
+      additionalProperties: false
+      required: [day, daily_players, daily_completions, d1_retention, d7_retention, shares, miss_rate, nhat_rate, reports]
+      properties:
+        day: { type: string, format: date }
+        daily_players: { type: integer, minimum: 0 }
+        daily_completions: { type: integer, minimum: 0 }
+        d1_retention: { type: [number, 'null'], minimum: 0, maximum: 1 }
+        d7_retention: { type: [number, 'null'], minimum: 0, maximum: 1 }
+        shares:
+          type: object
+          additionalProperties: false
+          required: [daily, discovery]
+          properties:
+            daily: { type: integer, minimum: 0 }
+            discovery: { type: integer, minimum: 0 }
+        miss_rate: { type: [number, 'null'], minimum: 0, maximum: 1 }
+        nhat_rate: { type: [number, 'null'], minimum: 0, maximum: 1 }
+        reports: { type: integer, minimum: 0 }
+    PipelineState:
+      type: object
+      additionalProperties: false
+      required: [current_version, blocklist, banned_aliases, daily_history, feedback]
+      properties:
+        current_version: { type: [integer, 'null'] }
+        blocklist: { $ref: '#/components/schemas/Blocklist' }
+        banned_aliases:
+          type: array
+          description: '`fold` do MOD sinh hoặc quản trị chặn (không gồm wordlist — pipeline đã có từ secret)'
+          items: { type: string }
+        daily_history:
+          type: array
+          items:
+            type: object
+            additionalProperties: false
+            required: [version, element_id, batch_at]
+            properties:
+              version: { type: integer }
+              element_id: { $ref: '#/components/schemas/ElementId' }
+              batch_at: { $ref: '#/components/schemas/Instant' }
+        feedback:
+          type: array
+          description: Tổng hợp ẩn danh theo công thức (không UUID)
+          items:
+            type: object
+            additionalProperties: false
+            required: [recipe_id, votes, nhat]
+            properties:
+              recipe_id: { $ref: '#/components/schemas/RecipeId' }
+              votes: { type: integer, minimum: 0 }
+              nhat: { type: integer, minimum: 0 }
+
+    PublishBatchRequest:
+      oneOf:
+        - type: object
+          additionalProperties: false
+          required: [status, version, batch_at, mode, manifest, graph, content, stats]
+          properties:
+            status: { const: success }
+            version: { type: integer, minimum: 1 }
+            batch_at: { $ref: '#/components/schemas/Instant' }
+            mode: { type: string, enum: [core, full] }
+            manifest:
+              description: Manifest không có `policy_version` (Worker tự thêm)
+              type: object
+            graph: { $ref: '#/components/schemas/Graph' }
+            content: { $ref: '#/components/schemas/BatchContent' }
+            stats: { $ref: '#/components/schemas/BatchStats' }
+        - type: object
+          additionalProperties: false
+          required: [status, batch_at, mode, failed_step, stats]
+          properties:
+            status: { const: error }
+            batch_at: { $ref: '#/components/schemas/Instant' }
+            mode: { type: string, enum: [core, full] }
+            failed_step: { type: string, maxLength: 100 }
+            stats: { $ref: '#/components/schemas/BatchStats' }
+    BatchContent:
+      type: object
+      additionalProperties: false
+      required: [elements, recipes, starters, daily_element_id]
+      description: Nội dung đang hoạt động của version (Worker dùng để kiểm DISC/DAILY và cập nhật danh mục)
+      properties:
+        elements:
+          type: array
+          maxItems: 20000
+          items:
+            type: object
+            additionalProperties: false
+            required: [id, name, fold, emoji, depth]
+            properties:
+              id: { $ref: '#/components/schemas/ElementId' }
+              name: { type: string, maxLength: 100 }
+              fold: { type: string, maxLength: 100 }
+              emoji: { type: string, maxLength: 16 }
+              depth: { type: integer, minimum: 0 }
+              origin: { type: string, enum: [vn, intl] }
+              image_key: { type: [string, 'null'], pattern: '^[0-9a-f]{12}\.webp$' }
+        recipes:
+          type: array
+          maxItems: 50000
+          items:
+            type: object
+            additionalProperties: false
+            required: [id, a, b, result]
+            properties:
+              id: { $ref: '#/components/schemas/RecipeId' }
+              a: { $ref: '#/components/schemas/ElementId' }
+              b: { $ref: '#/components/schemas/ElementId' }
+              result: { $ref: '#/components/schemas/ElementId' }
+              score: { type: integer, minimum: 1, maximum: 5 }
+        starters:
+          type: array
+          minItems: 4
+          maxItems: 4
+          items: { $ref: '#/components/schemas/ElementId' }
+        daily_element_id: { $ref: '#/components/schemas/ElementId' }
