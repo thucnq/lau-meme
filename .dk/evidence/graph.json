@@ -36,5 +36,43 @@
     "test": "(không biên dịch)"
    }
   }
+ },
+ "green": {
+  "ts": "2026-10-19T19:23:40+00:00",
+  "commit": "d37413c",
+  "results": {
+   "AC-GRAPH-01": {
+    "status": "PASS",
+    "test": "test_graph#test_ac_graph_01_khoa_tra_cuu_la_bam_cap_da_sap_xep"
+   },
+   "AC-GRAPH-02": {
+    "status": "PASS",
+    "test": "test_graph#test_ac_graph_02_giai_ma_dung_ket_qua_hai_chieu"
+   },
+   "AC-GRAPH-03": {
+    "status": "PASS",
+    "test": "test_graph#test_ac_graph_03_graph_khong_lo_ten_va_emoji_ket_qua"
+   },
+   "AC-GRAPH-04": {
+    "status": "PASS",
+    "test": "test_graph#test_ac_graph_04_xuat_hai_lan_cho_byte_giong_nhau"
+   },
+   "AC-GRAPH-05": {
+    "status": "PASS",
+    "test": "graph.test.ts#graph > AC-GRAPH-05: đăng mẻ thứ 15 thì còn đúng 14 bản, bản cũ nhất bị xóa"
+   },
+   "AC-GRAPH-06": {
+    "status": "PASS",
+    "test": "test_graph#test_ac_graph_06_rollback_thanh_cong_khong_tham_so"
+   },
+   "AC-GRAPH-07": {
+    "status": "PASS",
+    "test": "test_graph#test_ac_graph_07_khong_co_ban_truoc_that_bai_ro_rang"
+   },
+   "AC-GRAPH-08": {
+    "status": "PASS",
+    "test": "graph.test.ts#graph > AC-GRAPH-08: môi trường mới chưa có mẻ nào thì manifest trả 503 problem+json tiếng Việt"
+   }
+  }
  }
 }

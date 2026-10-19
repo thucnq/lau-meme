@@ -5,6 +5,8 @@ declare namespace Cloudflare {
     ASSETS: Fetcher
     APP_ENV: string
     ADMIN_TOKEN?: string
+    PIPELINE_TOKEN?: string
+    POLICY_VERSION?: string
   }
 }
 type Env = Cloudflare.Env

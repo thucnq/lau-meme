@@ -1,0 +1,254 @@
+import { json, problem, readJson } from '../../http'
+import { dayGmt7, uuidv7 } from '../../uuid'
+import { arr, fail, id43, instant, int, obj, oneOf, str } from '../../validate'
+import { currentVersion } from '../content/content'
+
+/** Pipeline publishing (ADR 0003): one DB.batch per version, keep the 14 newest, rollback = pointer switch. */
+const KEEP_VERSIONS = 14
+const MODES = ['core', 'full'] as const
+
+type Element = { id: string; name: string; fold: string; emoji: string; depth: number; origin: string | null; image_key: string | null }
+type Recipe = { id: string; a: string; b: string; result: string; score: number | null }
+
+type BatchRunRow = {
+  id: string
+  version: number | null
+  batch_at: number
+  mode: string
+  status: string
+  failed_step: string | null
+  rollback_to: number | null
+  stats_json: string
+  issue_url: string | null
+  created_at: number
+}
+
+export function toBatchRun(row: BatchRunRow) {
+  return {
+    id: row.id,
+    version: row.version,
+    batch_at: new Date(row.batch_at).toISOString(),
+    mode: row.mode,
+    status: row.status,
+    failed_step: row.failed_step,
+    rollback_to: row.rollback_to,
+    stats: JSON.parse(row.stats_json) as object,
+    issue_url: row.issue_url,
+    created_at: new Date(row.created_at).toISOString(),
+  }
+}
+
+function parseStats(value: unknown): string {
+  const stats = obj(value, 'stats', ['crawled', 'added', 'blocked', 'queued', 'source_errors', 'quota_used'], [])
+  return JSON.stringify(stats)
+}
+
+function parseElements(value: unknown): Element[] {
+  return arr(value, 'content.elements', 20000, 1).map((v, i) => {
+    const p = `content.elements[${i}]`
+    const e = obj(v, p, ['id', 'name', 'fold', 'emoji', 'depth', 'origin', 'image_key'], ['id', 'name', 'fold', 'emoji', 'depth'])
+    const imageKey = e.image_key ?? null
+    if (imageKey !== null && (typeof imageKey !== 'string' || !/^[0-9a-f]{12}\.webp$/.test(imageKey))) fail(`${p}.image_key: sai định dạng`)
+    return {
+      id: id43(e.id, `${p}.id`),
+      name: str(e.name, `${p}.name`, 100),
+      fold: str(e.fold, `${p}.fold`, 100),
+      emoji: str(e.emoji, `${p}.emoji`, 16),
+      depth: int(e.depth, `${p}.depth`, 0),
+      origin: e.origin === undefined ? null : oneOf(e.origin, `${p}.origin`, ['vn', 'intl']),
+      image_key: imageKey as string | null,
+    }
+  })
+}
+
+function parseRecipes(value: unknown, known: Set<string>): Recipe[] {
+  return arr(value, 'content.recipes', 50000).map((v, i) => {
+    const p = `content.recipes[${i}]`
+    const r = obj(v, p, ['id', 'a', 'b', 'result', 'score'], ['id', 'a', 'b', 'result'])
+    const [a, b] = [id43(r.a, `${p}.a`), id43(r.b, `${p}.b`)].sort() as [string, string]
+    const result = id43(r.result, `${p}.result`)
+    for (const ref of [a, b, result]) if (!known.has(ref)) fail(`${p}: tham chiếu phần tử không có trong content.elements`)
+    return {
+      id: id43(r.id, `${p}.id`),
+      a,
+      b,
+      result,
+      score: r.score === undefined ? null : int(r.score, `${p}.score`, 1, 5),
+    }
+  })
+}
+
+function parseGraph(value: unknown, version: number): string {
+  const g = obj(value, 'graph', ['format', 'version', 'entries'])
+  if (g.format !== 1) fail('graph.format: phải là 1')
+  if (g.version !== version) fail('graph.version: phải bằng version')
+  const entries = obj(g.entries, 'graph.entries', Object.keys(g.entries ?? {}), [])
+  for (const [k, v] of Object.entries(entries)) {
+    id43(k, 'graph.entries.<khóa>')
+    if (typeof v !== 'string' || !/^[A-Za-z0-9_-]+$/.test(v)) fail('graph.entries: giá trị phải là base64url')
+  }
+  return JSON.stringify(g)
+}
+
+async function maxPublishedVersion(db: D1Database): Promise<number> {
+  const row = await db
+    .prepare('SELECT MAX(v) AS v FROM (SELECT MAX(version) AS v FROM batch_run UNION ALL SELECT MAX(version) FROM batch_content)')
+    .first<{ v: number | null }>()
+  return row?.v ?? 0
+}
+
+/** POST /api/pipeline/batches — AC-GRAPH-04/05, AC-PIPE-11. */
+export async function publishBatch(req: Request, env: Env): Promise<Response> {
+  const body = await readJson(req)
+  const now = Date.now()
+  const status = oneOf(body.status, 'status', ['success', 'error'])
+
+  if (status === 'error') {
+    const b = obj(body, 'body', ['status', 'batch_at', 'mode', 'failed_step', 'stats'])
+    const run: BatchRunRow = {
+      id: uuidv7(now),
+      version: null,
+      batch_at: instant(b.batch_at, 'batch_at'),
+      mode: oneOf(b.mode, 'mode', MODES),
+      status: 'error',
+      failed_step: str(b.failed_step, 'failed_step', 100),
+      rollback_to: null,
+      stats_json: parseStats(b.stats),
+      issue_url: null,
+      created_at: now,
+    }
+    await insertRun(env.DB, run).run()
+    return json(toBatchRun(run), { status: 201 })
+  }
+
+  const b = obj(body, 'body', ['status', 'version', 'batch_at', 'mode', 'manifest', 'graph', 'content', 'stats'])
+  const version = int(b.version, 'version', 1)
+  const batchAt = instant(b.batch_at, 'batch_at')
+  const mode = oneOf(b.mode, 'mode', MODES)
+  const manifest = obj(b.manifest, 'manifest', ['version', 'batch_at', 'graph_url', 'starters', 'miss_lines', 'daily'])
+  if (manifest.version !== version) fail('manifest.version: phải bằng version')
+  const graphJson = parseGraph(b.graph, version)
+  const content = obj(b.content, 'content', ['elements', 'recipes', 'starters', 'daily_element_id'])
+  const elements = parseElements(content.elements)
+  const known = new Set(elements.map((e) => e.id))
+  const recipes = parseRecipes(content.recipes, known)
+  const starters = arr(content.starters, 'content.starters', 4, 4).map((s, i) => id43(s, `content.starters[${i}]`))
+  const daily = id43(content.daily_element_id, 'content.daily_element_id')
+  for (const ref of [...starters, daily]) if (!known.has(ref)) fail('content: khởi đầu / Món đặc biệt không có trong content.elements')
+  const statsJson = parseStats(b.stats)
+
+  if (version <= (await maxPublishedVersion(env.DB))) {
+    return problem(409, 'Version phải lớn hơn mọi version đã đăng')
+  }
+
+  const serverJson = JSON.stringify({
+    starters,
+    daily_element_id: daily,
+    elements: elements.map((e) => [e.id, e.depth]),
+    recipes: recipes.map((r) => [r.id, r.a, r.b, r.result]),
+  })
+  const run: BatchRunRow = {
+    id: uuidv7(now),
+    version,
+    batch_at: batchAt,
+    mode,
+    status: 'success',
+    failed_step: null,
+    rollback_to: null,
+    stats_json: statsJson,
+    issue_url: null,
+    created_at: now,
+  }
+  const db = env.DB
+  await db.batch([
+    db
+      .prepare(
+        `INSERT INTO element (id, name, name_fold, emoji, depth, origin, image_key, first_version, last_version, updated_at)
+         SELECT json_extract(value, '$.id'), json_extract(value, '$.name'), json_extract(value, '$.fold'),
+                json_extract(value, '$.emoji'), json_extract(value, '$.depth'), json_extract(value, '$.origin'),
+                json_extract(value, '$.image_key'), ?2, ?2, ?3
+         FROM json_each(?1) WHERE true
+         ON CONFLICT (id) DO UPDATE SET name = excluded.name, name_fold = excluded.name_fold, emoji = excluded.emoji,
+           depth = excluded.depth, origin = excluded.origin, image_key = excluded.image_key,
+           last_version = excluded.last_version, updated_at = excluded.updated_at`,
+      )
+      .bind(JSON.stringify(elements), version, now),
+    db
+      .prepare(
+        `INSERT INTO recipe (id, a_id, b_id, result_id, score, first_version, last_version, updated_at)
+         SELECT json_extract(value, '$.id'), json_extract(value, '$.a'), json_extract(value, '$.b'),
+                json_extract(value, '$.result'), json_extract(value, '$.score'), ?2, ?2, ?3
+         FROM json_each(?1) WHERE true
+         ON CONFLICT (id) DO UPDATE SET a_id = excluded.a_id, b_id = excluded.b_id, result_id = excluded.result_id,
+           score = excluded.score, last_version = excluded.last_version, updated_at = excluded.updated_at`,
+      )
+      .bind(JSON.stringify(recipes), version, now),
+    db
+      .prepare(
+        `INSERT INTO batch_content (version, batch_at, day, manifest_json, graph_json, server_json, created_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      )
+      .bind(version, batchAt, dayGmt7(batchAt), JSON.stringify(manifest), graphJson, serverJson, now),
+    setCurrent(db, version, now),
+    insertRun(db, { ...run, stats_json: statsJson }, daily),
+    db
+      .prepare('DELETE FROM batch_content WHERE version NOT IN (SELECT version FROM batch_content ORDER BY version DESC LIMIT ?)')
+      .bind(KEEP_VERSIONS),
+  ])
+  return json(toBatchRun(run), { status: 201 })
+}
+
+function setCurrent(db: D1Database, version: number, now: number): D1PreparedStatement {
+  return db
+    .prepare(
+      `INSERT INTO app_meta (key, value, updated_at) VALUES ('current_version', ?1, ?2)
+       ON CONFLICT (key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at`,
+    )
+    .bind(String(version), now)
+}
+
+function insertRun(db: D1Database, run: BatchRunRow, dailyElementId: string | null = null): D1PreparedStatement {
+  return db
+    .prepare(
+      `INSERT INTO batch_run (id, version, batch_at, mode, status, failed_step, rollback_to, daily_element_id, stats_json, issue_url, created_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    )
+    .bind(run.id, run.version, run.batch_at, run.mode, run.status, run.failed_step, run.rollback_to, dailyElementId, run.stats_json, run.issue_url, run.created_at)
+}
+
+/** POST /api/pipeline/rollback — AC-GRAPH-06/07. */
+export async function rollbackBatch(req: Request, env: Env): Promise<Response> {
+  const body = obj(await readJson(req), 'body', ['version'], [])
+  const requested = body.version === undefined ? null : int(body.version, 'version', 1)
+  const current = await currentVersion(env.DB)
+  if (current === null) return problem(409, 'Chưa có version nào để rollback')
+
+  let target: number | null
+  if (requested !== null) {
+    const row = await env.DB.prepare('SELECT version FROM batch_content WHERE version = ?').bind(requested).first<{ version: number }>()
+    if (!row) return problem(404, 'Không còn lưu version này')
+    if (requested === current) return problem(409, 'Version này đang là bản hiện hành')
+    target = requested
+  } else {
+    const row = await env.DB.prepare('SELECT MAX(version) AS v FROM batch_content WHERE version < ?').bind(current).first<{ v: number | null }>()
+    target = row?.v ?? null
+    if (target === null) return problem(409, 'Không có bản trước để rollback')
+  }
+
+  const now = Date.now()
+  const source = await env.DB.prepare('SELECT mode FROM batch_run WHERE version = ?').bind(target).first<{ mode: string }>()
+  const run: BatchRunRow = {
+    id: uuidv7(now),
+    version: null,
+    batch_at: now,
+    mode: source?.mode ?? 'core',
+    status: 'rollback',
+    failed_step: null,
+    rollback_to: target,
+    stats_json: JSON.stringify({}),
+    issue_url: null,
+    created_at: now,
+  }
+  await env.DB.batch([setCurrent(env.DB, target, now), insertRun(env.DB, run)])
+  return json(toBatchRun(run))
+}

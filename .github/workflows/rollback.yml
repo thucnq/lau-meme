@@ -1,0 +1,41 @@
+# Rollback graph về bản trước (hoặc version chỉ định) — chạy tay, ≤ 5 phút (AC-GRAPH-06/07, ADR 0003).
+# Worker kiểm và chuyển `current_version`; không có bản trước / version không còn lưu ⇒ job thất bại, bản hiện hành giữ nguyên.
+name: rollback
+
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: Môi trường
+        type: choice
+        options: [staging, production]
+        default: staging
+      version:
+        description: Version muốn quay về (để trống = bản trước)
+        type: string
+        required: false
+        default: ''
+
+concurrency:
+  group: batch-${{ inputs.target }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  rollback:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    environment: ${{ inputs.target }}
+    defaults: { run: { working-directory: pipeline } }
+    steps:
+      - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@v6
+      - run: uv sync --frozen --no-dev
+      - name: Rollback
+        env:
+          API_BASE_URL: ${{ secrets.API_BASE_URL }}
+          PIPELINE_TOKEN: ${{ secrets.PIPELINE_TOKEN }}
+          VERSION: ${{ inputs.version }}
+        run: uv run python -m lau_meme_pipeline.rollback ${VERSION:+--version "$VERSION"}

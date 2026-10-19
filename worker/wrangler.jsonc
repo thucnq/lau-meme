@@ -16,14 +16,14 @@
   "d1_databases": [
     { "binding": "DB", "database_name": "lau-meme-prod", "database_id": "00000000-0000-0000-0000-000000000000", "migrations_dir": "migrations" }
   ],
-  "vars": { "APP_ENV": "production" },
+  "vars": { "APP_ENV": "production", "POLICY_VERSION": "1" },
   "env": {
     "staging": {
       "name": "lau-meme-staging",
       "d1_databases": [
         { "binding": "DB", "database_name": "lau-meme-staging", "database_id": "00000000-0000-0000-0000-000000000000", "migrations_dir": "migrations" }
       ],
-      "vars": { "APP_ENV": "staging" }
+      "vars": { "APP_ENV": "staging", "POLICY_VERSION": "1" }
     }
   }
 }
