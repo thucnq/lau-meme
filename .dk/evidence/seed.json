@@ -1,0 +1,40 @@
+{
+ "red": {
+  "ts": "2026-10-19T18:04:35+00:00",
+  "commit": "128a6a7",
+  "results": {
+   "AC-SEED-01": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-SEED-02": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-SEED-03": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-SEED-04": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-SEED-05": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-SEED-06": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-SEED-07": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-SEED-08": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   }
+  }
+ }
+}
