@@ -18,6 +18,8 @@ from lau_meme_pipeline.text import fold
 CLASSIC = "classic"
 ACTIVE = "active"
 MAX_NAME_WORDS = 4
+# Source file codes → values accepted by D1 `element.origin` (worker/migrations/0002_content.sql).
+ORIGINS = {"V": "vn", "Q": "intl"}
 
 
 @dataclass(frozen=True)
@@ -100,6 +102,8 @@ def _check_elements(elements: list[Mapping]) -> list[str]:
             problems.append(f"Tên dài hơn {MAX_NAME_WORDS} từ: {name}")
         if not emoji:
             problems.append(f"Emoji rỗng: {name}")
+        if e.get("origin") not in ORIGINS:
+            problems.append(f"Nguồn không hợp lệ ({e.get('origin')!r}, cần V hoặc Q): {name}")
         if name:
             by_fold.setdefault(fold(name), []).append(name)
         if emoji:
@@ -175,23 +179,18 @@ def load_core(core: Mapping, store: ContentStore) -> SeedResult:
             name=name,
             fold=fold(name),
             emoji=e["emoji"].strip(),
-            origin=e.get("origin", ""),
+            origin=ORIGINS[e["origin"]],
             depth=bfs_depth,
             image_hint=e.get("image_hint", ""),
             batch=CLASSIC,
             status=ACTIVE,
         )
-    new_recipes = {
-        recipe_id(r["a"], r["b"]): StoredRecipe(
-            id=recipe_id(r["a"], r["b"]),
-            a=element_id(r["a"]),
-            b=element_id(r["b"]),
-            result=element_id(r["result"]),
-            batch=CLASSIC,
-            status=ACTIVE,
-        )
-        for r in recipes
-    }
+    new_recipes: dict[str, StoredRecipe] = {}
+    for r in recipes:
+        # Unordered pair stored as a <= b, the order D1 requires (CHECK a_id <= b_id, BINARY collation).
+        a, b = sorted((element_id(r["a"]), element_id(r["b"])))
+        rid = recipe_id(r["a"], r["b"])
+        new_recipes[rid] = StoredRecipe(id=rid, a=a, b=b, result=element_id(r["result"]), batch=CLASSIC, status=ACTIVE)
 
     merged = ContentStore(
         elements={**store.elements, **new_elements},
