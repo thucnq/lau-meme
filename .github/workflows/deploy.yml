@@ -1,0 +1,40 @@
+name: deploy
+# Manual deploys. staging: anyone with write access. production: GitHub environment `production` with
+# required reviewers (Settings → Environments) — the human gate. Never on push.
+on:
+  workflow_dispatch:
+    inputs:
+      env:
+        description: staging hoặc production
+        required: true
+        default: staging
+        type: choice
+        options: [staging, production]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-${{ inputs.env }}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: ${{ inputs.env }}
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      WRANGLER_SEND_METRICS: 'false'
+      ENV_FLAG: ${{ inputs.env == 'staging' && '--env staging' || '' }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with: { node-version: '22' }
+      - run: npm --prefix web ci && npm --prefix web run build && npm --prefix worker ci
+      - name: Migrate D1 (expand-only)
+        working-directory: worker
+        run: npx wrangler d1 migrations apply DB $ENV_FLAG --remote
+      - name: Deploy Worker (API + web)
+        working-directory: worker
+        run: npx wrangler deploy $ENV_FLAG

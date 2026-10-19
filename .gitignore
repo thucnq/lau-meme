@@ -1,0 +1,33 @@
+node_modules/
+dist/
+.wrangler/
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+.coverage
+coverage/
+htmlcov/
+.idea/
+.vscode/
+.DS_Store
+# secrets: wrangler local vars and env files never go into the (public) repo
+.dev.vars
+.dev.vars.*
+!.dev.vars.example
+.env
+.env.*
+!.env.example
+# dk tool state
+.dk/check-report.md
+.dk/reviews/
+.dk/pr-body.md
+.dk/junit/
+.dk/tmp/
+.dk/log/.sessions/
+# personal Claude Code settings / plugins
+.claude/settings.local.json
+# raw inputs that must not be published
+docs/input/client-data/
+pipeline/data/

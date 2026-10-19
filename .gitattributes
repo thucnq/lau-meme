@@ -1,0 +1,17 @@
+# Mọi thứ chạy trong Linux/WSL: luôn LF, kể cả khi ai đó checkout bằng Git for Windows
+* text=auto eol=lf
+*.sh        text eol=lf
+*.py        text eol=lf
+mvnw        text eol=lf
+# Chỉ file chạy trên Windows mới dùng CRLF
+*.ps1       text eol=crlf
+*.cmd       text eol=crlf
+*.bat       text eol=crlf
+# Nhị phân
+*.xlsx      binary
+*.xls       binary
+*.png       binary
+*.jpg       binary
+*.ico       binary
+*.jar       binary
+*.woff2     binary

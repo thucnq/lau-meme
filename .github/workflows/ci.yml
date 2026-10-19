@@ -1,0 +1,94 @@
+name: CI
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  WRANGLER_SEND_METRICS: 'false'
+
+jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      pipeline: ${{ steps.f.outputs.pipeline }}
+      worker: ${{ steps.f.outputs.worker }}
+      web: ${{ steps.f.outputs.web }}
+    steps:
+      - uses: actions/checkout@v5
+        with: { fetch-depth: 0 }
+      - id: f
+        run: |
+          base="${{ github.event.pull_request.base.sha || github.event.before }}"
+          if [ -z "$base" ] || ! git cat-file -e "$base" 2>/dev/null; then
+            for c in pipeline worker web; do echo "$c=true" >> "$GITHUB_OUTPUT"; done; exit 0
+          fi
+          files="$(git diff --name-only "$base" HEAD)"
+          for c in pipeline worker web; do
+            echo "$c=$(echo "$files" | grep -qE "^($c/|docs/acceptance/|\.github/)" && echo true || echo false)" >> "$GITHUB_OUTPUT"
+          done
+
+  requirements:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v5
+        with: { fetch-depth: 0 }
+      - name: Acceptance criteria traceability (every mandatory AC of a started feature has a test)
+        run: python3 tools/ac-trace.py --started-only
+      - name: D1 migrations are expand-only, numbered, committed ones untouched
+        if: github.event_name == 'pull_request'
+        run: bash tools/check-migrations.sh --kind wrangler-seq --dir worker/migrations "${{ github.event.pull_request.base.sha }}" HEAD
+      - name: OpenAPI lint
+        run: npx -y @redocly/cli@1 lint docs/api/openapi.yaml
+
+  secrets:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v5
+        with: { fetch-depth: 0 }
+      # gitleaks CLI instead of gitleaks-action (the action needs PR API permissions)
+      - name: gitleaks
+        env:
+          GITLEAKS_VERSION: 8.30.1
+        run: |
+          curl -sSfL "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz" | tar -xz gitleaks
+          ./gitleaks git --redact --no-banner --config .gitleaks.toml .
+
+  pipeline:
+    needs: changes
+    if: needs.changes.outputs.pipeline == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults: { run: { working-directory: pipeline } }
+    steps:
+      - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@v6
+      - run: uv sync --locked
+      - run: uv run ruff format --check . && uv run ruff check .
+      - run: uv run pytest -q --cov=src --cov-fail-under=80
+
+  worker:
+    needs: changes
+    if: needs.changes.outputs.worker == 'true' || needs.changes.outputs.web == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with: { node-version: '22' }
+      - run: npm --prefix web ci && npm --prefix worker ci
+      - name: Web
+        working-directory: web
+        run: npm run typecheck && npm run lint && npx vitest run --coverage && npm run build
+      - name: Worker
+        working-directory: worker
+        run: npm run typecheck && npm run lint && npx vitest run --coverage && npx wrangler deploy --dry-run --outdir=dist

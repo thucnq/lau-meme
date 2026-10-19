@@ -1,0 +1,10 @@
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Public-by-design examples and tool state"
+paths = [
+  '''(^|/)\.dev\.vars\.example$''',
+  # Claude Code / dk tool state: session cursors contain random ids that look like keys (false positives)
+  '''\.dk/log/\.sessions/''',
+]

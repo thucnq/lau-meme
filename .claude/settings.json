@@ -1,0 +1,36 @@
+{
+  "extraKnownMarketplaces": {
+    "thuc-devkit": {
+      "source": { "source": "github", "repo": "marketplace_repo" }
+    }
+  },
+  "enabledPlugins": {
+    "dk@thuc-devkit": true
+  },
+  "permissions": {
+    "allow": [
+      "Bash(npm:*)",
+      "Bash(npx vitest:*)",
+      "Bash(npx wrangler dev:*)",
+      "Bash(npx wrangler d1 migrations create:*)",
+      "Bash(npx wrangler types:*)",
+      "Bash(uv:*)",
+      "Bash(ruff:*)",
+      "Bash(python3:*)",
+      "Bash(git status:*)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git switch:*)",
+      "Bash(git branch:*)"
+    ],
+    "deny": [
+      "Read(./**/.dev.vars)",
+      "Read(./**/.dev.vars.*)",
+      "Read(./.env)",
+      "Read(./.env.*)",
+      "Read(./**/*.pem)"
+    ]
+  }
+}

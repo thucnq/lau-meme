@@ -1,0 +1,31 @@
+# dk stack profile — đọc bởi plugin dk ≥ 0.7.0 (scripts/dk_stack.py). Sửa file này là sửa cổng kiểm tra:
+# mọi thay đổi đi qua PR và người duyệt.
+schema = 1
+profile = "py-ts-cloudflare"
+
+[[component]]
+name = "pipeline"
+kind = "python"
+root = "pipeline"
+src_dirs = ["pipeline/src"]
+test_dirs = ["pipeline/tests"]
+read_ok = ["pipeline/pyproject.toml"]
+
+# web trước worker: worker đóng gói web/dist làm static assets
+[[component]]
+name = "web"
+kind = "react-vite"
+root = "web"
+src_dirs = ["web/src"]
+test_dirs = ["web/src"]
+read_ok = ["web/package.json"]
+
+[[component]]
+name = "worker"
+kind = "ts-worker"
+root = "worker"
+src_dirs = ["worker/src"]
+test_dirs = ["worker/test"]
+read_ok = ["worker/wrangler.jsonc", "worker/package.json"]
+migration = { kind = "wrangler-seq", dir = "worker/migrations" }
+deploy = { kind = "cloudflare", config = "worker/wrangler.jsonc", health = "/api/health", nonprod_envs = ["staging"], d1_binding = "DB", build = "npm --prefix web run -s build" }
