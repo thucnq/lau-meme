@@ -1,7 +1,7 @@
 # Phạm vi đề xuất — Lẩu Meme
 
-> Trạng thái: Nháp — sửa trực tiếp file này (xóa dòng, đổi Ưu tiên, thêm ghi chú), rồi đổi thành "Đã chốt" và chạy lại /dk:spec
-> Nguồn: docs/input/ghi-chu-hop (1).md, docs/input/noi-dung-loi.md, docs/input/noi-dung-loi.json, docs/input/noi_dung.py, docs/input/tong-hop-plugin-dk-qldn.md (mục 6), docs/input/README.md
+> Trạng thái: Đã chốt
+> Nguồn: docs/input/ghi-chu-hop.md, docs/input/noi-dung-loi.md, docs/input/noi-dung-loi.json, docs/input/noi_dung.py, docs/input/tong-hop-plugin-dk-qldn.md (mục 6), docs/input/README.md
 
 | Mã | Tính năng | Mô tả ngắn | Nguồn | Ưu tiên | Cỡ | Hạng mục báo giá |
 |---|---|---|---|---|---|---|
@@ -33,7 +33,12 @@ Chưa có báo giá — dự án cá nhân, không báo giá (ghi-chu-hop.md m�
 
 ## Cần hỏi trước khi chốt phạm vi
 1. Có chấp nhận **go-live giai đoạn 1 chỉ với lõi classic (SEED) + chạy pipeline tay**, rồi bật cron tự động đăng ở giai đoạn 2 không? (Quyết định PIPE/MOD có nằm trong mốc ra mắt hay không.)
+có chấp nhận
 2. Ảnh minh họa (ART) có bắt buộc cho ngày ra mắt không, hay emoji trước, ảnh bổ sung sau?
+emoji trước, ảnh bổ sung sau
 3. Đo chỉ số: Cloudflare Web Analytics có đủ, hay cần bảng sự kiện riêng trong D1 (bắt buộc nếu muốn đo D1/D7 retention và lượt chia sẻ)? (câu hỏi mở 2)
+cần bảng sự kiện
 4. Bảng xếp hạng Daily: chỉ đợt hiện tại, hay thêm chuỗi ngày liên tiếp (streak)? (câu hỏi mở 3)
+thêm streak
 5. Có cần trang giới thiệu/landing riêng cho kênh ra mắt (Facebook group, TikTok) không? (câu hỏi mở 5)
+không
