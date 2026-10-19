@@ -1,0 +1,42 @@
+{
+  "title": "ƯỚC LƯỢNG TẠM - LẨU MEME",
+  "subtitle": "Dự án cá nhân · 1 người · 20 giờ/tuần · ước lượng từ docs/scope.md bản nháp, chưa có AC — ước lượng lại sau /dk:approve spec",
+  "params": {
+    "no_quote": true,
+    "hours_per_day": 8,
+    "overhead_pct": 0.1,
+    "engineers": 1,
+    "team": ["Thuc"],
+    "hours_per_week": 20,
+    "working_days_per_month": 22,
+    "uat_weeks": 0
+  },
+  "infra": [],
+  "items": [
+    {"id": "NEN", "module": "Nền tảng", "name": "Khởi tạo dự án & hạ tầng", "desc": "Golden path py-ts-cloudflare, CI/CD, môi trường staging", "points": 3, "risk": "LOW"},
+    {"id": "GRAPH", "module": "Nội dung", "name": "Graph mã hóa + manifest + rollback", "desc": "GRAPH · AC-GRAPH (chưa có) · băm cặp tên, mã hóa kết quả bằng khóa dẫn xuất, manifest, giữ 14 bản, workflow rollback, client giải mã", "points": 5, "deps": ["NEN"], "ac": ["AC-GRAPH"], "risk": "MEDIUM"},
+    {"id": "SEED", "module": "Nội dung", "name": "Nạp lõi nội dung classic", "desc": "SEED · AC-SEED (chưa có) · 139 phần tử, 363 công thức, kiểm tới được, không trùng", "points": 2, "deps": ["NEN"], "ac": ["AC-SEED"], "risk": "LOW"},
+    {"id": "GAME", "module": "Trò chơi", "name": "Chơi ghép (Nhúng lẩu)", "desc": "GAME · AC-GAME (chưa có) · nồi lẩu kéo thả chuột/cảm ứng, Đĩa nhúng tìm không dấu + sắp xếp, Nồi trào, gợi ý, nhãn MỚI, lưu cục bộ, chế độ tối, hướng dẫn lần đầu", "points": 10, "deps": ["GRAPH", "SEED"], "ac": ["AC-GAME"], "risk": "MEDIUM"},
+    {"id": "MOD", "module": "Nội dung", "name": "Kiểm duyệt nội dung tự động", "desc": "MOD · AC-MOD (chưa có) · từ cấm + LLM theo danh mục cấm, luật người thật 7.1, danh sách bí danh, hoãn nội dung nóng 30 ngày", "points": 8, "deps": ["SEED"], "ac": ["AC-MOD"], "risk": "HIGH",
+     "open": true, "question": "Go-live giai đoạn 1 chỉ với lõi classic + chạy pipeline tay (MOD/PIPE sang giai đoạn 2) được không? (scope.md câu 1)"},
+    {"id": "PIPE", "module": "Nội dung", "name": "Pipeline Mẻ nhúng mới", "desc": "PIPE · AC-PIPE (chưa có) · cron GitHub Actions, 5 adapter crawl, khử trùng, liên kết ngược + BFS, công thức bổ sung, giám khảo hài, chọn Món đặc biệt, idempotent, gom lô Gemini, báo cáo đợt qua Issue", "points": 15, "deps": ["MOD", "GRAPH"], "ac": ["AC-PIPE"], "risk": "HIGH",
+     "open": true, "question": "PIPE (cron tự động đăng) có nằm trong mốc ra mắt không, hay chạy tay ở giai đoạn 1? Bỏ bước công thức bổ sung + giám khảo hài giảm khoảng 4 điểm (scope.md câu 1)"},
+    {"id": "ART", "module": "Nội dung", "name": "Ảnh minh họa tự tạo", "desc": "ART · AC-ART (chưa có) · Workers AI FLUX.1 schnell, kiểm duyệt ảnh bằng Gemini, R2 + Cache API, emoji dự phòng", "points": 6, "deps": ["MOD"], "ac": ["AC-ART"], "risk": "HIGH",
+     "open": true, "question": "Ảnh minh họa có bắt buộc cho ngày ra mắt, hay emoji trước, ảnh sau? (scope.md câu 2)"},
+    {"id": "DISC", "module": "Cộng đồng", "name": "Công thức gia truyền", "desc": "DISC · AC-DISC (chưa có) · UUID cục bộ + nickname lọc từ cấm/bí danh, server kiểm công thức, ghi người đầu tiên, giới hạn tần suất theo UUID và IP băm", "points": 4, "deps": ["GAME"], "ac": ["AC-DISC"], "risk": "HIGH"},
+    {"id": "DAILY", "module": "Trò chơi", "name": "Món đặc biệt hôm nay", "desc": "DAILY · AC-DAILY (chưa có) · món độ sâu [4, 8], gợi ý mờ, đếm bước, bảng xếp hạng theo nickname (server kiểm đường ghép), đồng hồ theo manifest", "points": 5, "deps": ["GAME", "DISC"], "ac": ["AC-DAILY"], "risk": "MEDIUM",
+     "open": true, "question": "Bảng xếp hạng chỉ đợt hiện tại, hay thêm chuỗi ngày liên tiếp (streak)? Streak thêm khoảng 1,5 điểm (scope.md câu 4)"},
+    {"id": "SHARE", "module": "Cộng đồng", "name": "Thẻ chia sẻ", "desc": "SHARE · AC-SHARE (chưa có) · thẻ Daily kiểu Wordle (chữ + PNG nồi lẩu) và thẻ Công thức gia truyền, sao chép / chia sẻ hệ thống", "points": 3.5, "deps": ["DAILY"], "ac": ["AC-SHARE"], "risk": "MEDIUM"},
+    {"id": "REPORT", "module": "An toàn", "name": "Báo cáo + chặn nóng", "desc": "REPORT · AC-REPORT (chưa có) · báo cáo phần tử và ảnh, 3 UUID ⇒ tự ẩn, danh sách chặn nóng tải khi khởi động", "points": 3.5, "deps": ["GAME"], "ac": ["AC-REPORT"], "risk": "MEDIUM"},
+    {"id": "ADMIN", "module": "An toàn", "name": "Trang quản trị tối giản", "desc": "ADMIN · AC-ADMIN (chưa có) · token Cloudflare secret, xem báo cáo, ẩn/hiện/chặn, nhật ký đợt, audit thao tác", "points": 4, "deps": ["REPORT"], "ac": ["AC-ADMIN"], "risk": "MEDIUM"},
+    {"id": "FEEDBACK", "module": "Cộng đồng", "name": "Ngon / Nhạt", "desc": "FEEDBACK · AC-FEEDBACK (chưa có) · 1 phiếu/UUID/công thức, pipeline hạ điểm công thức Nhạt", "points": 2, "optional": true, "deps": ["GAME"], "ac": ["AC-FEEDBACK"], "risk": "LOW"},
+    {"id": "METRIC", "module": "Vận hành", "name": "Đo chỉ số thành công", "desc": "METRIC · AC-METRIC (chưa có) · Cloudflare Web Analytics + bảng sự kiện ẩn danh D1 (Daily/ngày, D1/D7, chia sẻ, ghép trượt, Nhạt, báo cáo)", "points": 2.5, "deps": ["DAILY"], "ac": ["AC-METRIC"], "risk": "MEDIUM",
+     "open": true, "question": "Chỉ dùng Cloudflare Web Analytics (khoảng 0,5 điểm) hay cần bảng sự kiện D1 để đo D1/D7 và lượt chia sẻ? (scope.md câu 3)"},
+    {"id": "PRIV", "module": "Vận hành", "name": "Chính sách quyền riêng tư", "desc": "PRIV · AC-PRIV (chưa có) · trang chính sách, IP băm + xóa sau thời hạn, người chơi tự xóa dữ liệu qua UUID", "points": 2, "deps": ["DISC"], "ac": ["AC-PRIV"], "risk": "HIGH"},
+    {"id": "UAT", "module": "Kiểm thử", "name": "Kiểm thử nghiệm thu & sửa lỗi", "desc": "15% điểm tính năng bắt buộc; gồm chạy pipeline thật vài ngày trên staging và kiểm trên 2–3 điện thoại", "points": 10.5, "deps": ["*"], "risk": "MEDIUM"}
+  ],
+  "questions": [
+    {"q": "Có cần trang giới thiệu/landing riêng cho kênh ra mắt (Facebook group, TikTok) không?", "why": "Thêm khoảng 2 điểm nếu cần (scope.md câu 5)", "default": "Không — trang chơi là trang chủ"},
+    {"q": "Ước lượng này dựa trên scope.md bản nháp, chưa có AC", "why": "Điểm sẽ đổi khi chốt phạm vi và viết AC", "default": "Chạy lại /dk:estimate --no-quote sau /dk:approve spec"}
+  ]
+}
