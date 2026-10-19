@@ -108,5 +108,6 @@ def main():
 
 
 if __name__ == "__main__":
-    signal.signal(signal.SIGPIPE, signal.SIG_DFL)
+    if hasattr(signal, "SIGPIPE"):  # không có trên Windows
+        signal.signal(signal.SIGPIPE, signal.SIG_DFL)
     sys.exit(main())
