@@ -32,8 +32,11 @@ export function policyVersion(env: Env): number {
 export async function getGraph(req: Request, env: Env, ctx: ExecutionContext, params: string[]): Promise<Response> {
   const raw = params[0] ?? ''
   if (!/^[1-9]\d{0,9}$/.test(raw)) throw new HttpError(400, 'Version không hợp lệ')
+  // Key = origin + path only: a query string must not create a new cache entry (and a D1 read) per request.
+  const url = new URL(req.url)
+  const cacheKey = new Request(url.origin + url.pathname, { method: 'GET' })
   const cache = caches.default
-  const hit = await cache.match(req.url)
+  const hit = await cache.match(cacheKey)
   if (hit) return hit
   const row = await env.DB.prepare('SELECT graph_json FROM batch_content WHERE version = ?')
     .bind(Number(raw))
@@ -42,6 +45,6 @@ export async function getGraph(req: Request, env: Env, ctx: ExecutionContext, pa
   const res = new Response(row.graph_json, {
     headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': IMMUTABLE },
   })
-  ctx.waitUntil(cache.put(req.url, res.clone()))
+  ctx.waitUntil(cache.put(cacheKey, res.clone()))
   return res
 }

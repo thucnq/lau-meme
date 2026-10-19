@@ -90,6 +90,46 @@ function parseGraph(value: unknown, version: number): string {
   return JSON.stringify(g)
 }
 
+type ManifestRefs = { version: number; batchAt: number; starters: string[]; daily: string; byId: Map<string, Element> }
+
+/**
+ * The manifest is served as-is by GET /api/manifest, so it must match the contract's Manifest schema and agree
+ * with the content of the same request (starters, Món đặc biệt, version, batch_at).
+ */
+function parseManifest(value: unknown, refs: ManifestRefs): string {
+  const m = obj(value, 'manifest', ['version', 'batch_at', 'graph_url', 'starters', 'miss_lines', 'daily'])
+  if (m.version !== refs.version) fail('manifest.version: phải bằng version')
+  if (instant(m.batch_at, 'manifest.batch_at') !== refs.batchAt) fail('manifest.batch_at: phải bằng batch_at')
+  if (m.graph_url !== `/api/graph/${refs.version}`) fail(`manifest.graph_url: phải là /api/graph/${refs.version}`)
+  const starters = arr(m.starters, 'manifest.starters', 4, 4).map((v, i) => {
+    const p = `manifest.starters[${i}]`
+    const s = obj(v, p, ['id', 'name', 'emoji'])
+    const el = refs.byId.get(refs.starters[i] ?? '')
+    if (s.id !== refs.starters[i] || s.name !== el?.name || s.emoji !== el?.emoji) fail(`${p}: phải khớp content.starters`)
+    return { id: s.id, name: s.name, emoji: s.emoji }
+  })
+  const missLines = arr(m.miss_lines, 'manifest.miss_lines', 1000, 1).map((v, i) => str(v, `manifest.miss_lines[${i}]`, 200))
+  const d = obj(m.daily, 'manifest.daily', ['element_id', 'emoji', 'hint', 'depth'])
+  const target = refs.byId.get(refs.daily)
+  if (d.element_id !== refs.daily) fail('manifest.daily.element_id: phải bằng content.daily_element_id')
+  const depth = int(d.depth, 'manifest.daily.depth', 4, 8)
+  if (depth !== target?.depth) fail('manifest.daily.depth: phải bằng depth của Món đặc biệt')
+  const daily = {
+    element_id: refs.daily,
+    emoji: str(d.emoji, 'manifest.daily.emoji', 16),
+    hint: str(d.hint, 'manifest.daily.hint', 200),
+    depth,
+  }
+  return JSON.stringify({
+    version: refs.version,
+    batch_at: m.batch_at,
+    graph_url: m.graph_url,
+    starters,
+    miss_lines: missLines,
+    daily,
+  })
+}
+
 async function maxPublishedVersion(db: D1Database): Promise<number> {
   const row = await db
     .prepare('SELECT MAX(v) AS v FROM (SELECT MAX(version) AS v FROM batch_run UNION ALL SELECT MAX(version) FROM batch_content)')
@@ -125,16 +165,16 @@ export async function publishBatch(req: Request, env: Env): Promise<Response> {
   const version = int(b.version, 'version', 1)
   const batchAt = instant(b.batch_at, 'batch_at')
   const mode = oneOf(b.mode, 'mode', MODES)
-  const manifest = obj(b.manifest, 'manifest', ['version', 'batch_at', 'graph_url', 'starters', 'miss_lines', 'daily'])
-  if (manifest.version !== version) fail('manifest.version: phải bằng version')
   const graphJson = parseGraph(b.graph, version)
   const content = obj(b.content, 'content', ['elements', 'recipes', 'starters', 'daily_element_id'])
   const elements = parseElements(content.elements)
-  const known = new Set(elements.map((e) => e.id))
+  const byId = new Map(elements.map((e) => [e.id, e]))
+  const known = new Set(byId.keys())
   const recipes = parseRecipes(content.recipes, known)
   const starters = arr(content.starters, 'content.starters', 4, 4).map((s, i) => id43(s, `content.starters[${i}]`))
   const daily = id43(content.daily_element_id, 'content.daily_element_id')
   for (const ref of [...starters, daily]) if (!known.has(ref)) fail('content: khởi đầu / Món đặc biệt không có trong content.elements')
+  const manifestJson = parseManifest(b.manifest, { version, batchAt, starters, daily, byId })
   const statsJson = parseStats(b.stats)
 
   if (version <= (await maxPublishedVersion(env.DB))) {
@@ -188,7 +228,7 @@ export async function publishBatch(req: Request, env: Env): Promise<Response> {
         `INSERT INTO batch_content (version, batch_at, day, manifest_json, graph_json, server_json, created_at)
          VALUES (?, ?, ?, ?, ?, ?, ?)`,
       )
-      .bind(version, batchAt, dayGmt7(batchAt), JSON.stringify(manifest), graphJson, serverJson, now),
+      .bind(version, batchAt, dayGmt7(batchAt), manifestJson, graphJson, serverJson, now),
     setCurrent(db, version, now),
     insertRun(db, { ...run, stats_json: statsJson }, daily),
     db
