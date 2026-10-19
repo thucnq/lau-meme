@@ -1,0 +1,40 @@
+{
+ "red": {
+  "ts": "2026-10-19T18:55:45+00:00",
+  "commit": "6601dac",
+  "results": {
+   "AC-GRAPH-01": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-GRAPH-02": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-GRAPH-03": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-GRAPH-04": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-GRAPH-05": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-GRAPH-06": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-GRAPH-07": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-GRAPH-08": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   }
+  }
+ }
+}
