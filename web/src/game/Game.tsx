@@ -480,15 +480,25 @@ export function Game({ onDiscover, onItems, heirlooms = {}, onReport, blocklistR
               ♨️
             </div>
           )}
+          {/* Drawn as a two-broth hot pot (lẩu uyên ương): one slot per broth, steam above, burner below. */}
           <div className="pot" data-testid="pot" data-state={potState} aria-label="Nồi lẩu">
-            {([1, 2] as const).map((n) => {
-              const it = slots[n - 1]
-              return (
-                <div key={n} className="pot-slot" data-testid={`pot-slot-${n}`} data-slot={n}>
-                  {it ? `${it.emoji} ${it.name}` : ''}
-                </div>
-              )
-            })}
+            <span className="pot-steam" aria-hidden="true">
+              <i />
+              <i />
+              <i />
+            </span>
+            <div className="pot-rim">
+              {([1, 2] as const).map((n) => {
+                const it = slots[n - 1]
+                return (
+                  <div key={n} className="pot-slot" data-testid={`pot-slot-${n}`} data-slot={n}>
+                    {it ? `${it.emoji} ${it.name}` : ''}
+                  </div>
+                )
+              })}
+            </div>
+            <span className="pot-body" aria-hidden="true" />
+            <span className="pot-burner" aria-hidden="true" />
           </div>
           <div className="miss" aria-live="polite">
             {miss && <p data-testid="miss-line">{miss.line}</p>}
