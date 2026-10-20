@@ -136,6 +136,22 @@ def test_ac_disc_03_tu_cam_khong_xuat_hien_trong_log_hay_bao_cao():
     assert "sieu bi mat" not in haystack
 
 
+def test_ac_disc_03_bao_cao_ghi_banned_words_trong_khi_rong():
+    """AC-DISC-03: banned_words rỗng thì nội dung báo cáo có dòng "BANNED_WORDS trống"."""
+    outcome = run(FakeClient(), banned_words=())
+    assert "BANNED_WORDS trống" in outcome.report_body
+
+
+def test_ac_disc_03_bao_cao_ghi_so_tu_da_dong_bo_khong_lo_tu():
+    """AC-DISC-03: có 3 từ thì báo cáo ghi "Từ cấm nickname: 3 từ đã đồng bộ" và không chứa từ nào."""
+    words = ["Từ Cấm Alpha", "Bê Ta Hai", "Gam Ma Ba"]
+    outcome = run(FakeClient(), banned_words=words)
+    assert "Từ cấm nickname: 3 từ đã đồng bộ" in outcome.report_body
+    body = outcome.report_body.lower()
+    for w in ("từ cấm alpha", "tu cam alpha", "bê ta hai", "be ta hai", "gam ma ba"):
+        assert w not in body
+
+
 def test_ac_disc_03_put_loi_thi_khong_dang_mau_success():
     """AC-DISC-03: put_banned_terms ném lỗi thì không đăng bản success nào (như AC-PIPE-11), từ cấm không lộ ra log."""
     client, reporter = FakeClient(fail_put=True), FakeReporter()

@@ -634,6 +634,47 @@ describe('disc', () => {
     expect(row?.nickname).toBe('Cũ Kỹ')
   })
 
+  // ------------------------------------------------------------------------ AC-INV-08
+  it(
+    'AC-INV-08: ~200 bộ ba (a, b, result) ngẫu nhiên cố định hạt giống không phải công thức thật đều bị 422 và bảng discovery không đổi',
+    async () => {
+      const mulberry32 = (seed: number) => () => {
+        seed = (seed + 0x6d2b79f5) | 0
+        let t = Math.imul(seed ^ (seed >>> 15), 1 | seed)
+        t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t
+        return ((t ^ (t >>> 14)) >>> 0) / 4294967296
+      }
+      const names = [...STARTER_DEFS.map((s) => s.name), ...[...CHAIN, SIDE].map((d) => d.result)]
+      const ids = new Map(await Promise.all(names.map(async (n) => [n, await elementId(n)] as const)))
+      const key = (a: string, b: string, r: string) => [[ids.get(a)!, ids.get(b)!].sort().join('|'), ids.get(r)!].join('>')
+      const real = new Set([...CHAIN, SIDE].map((d) => key(d.a, d.b, d.result)))
+
+      const rand = mulberry32(20261020)
+      const pick = () => names[Math.floor(rand() * names.length)]!
+      const triples: Array<{ a: string; b: string; result: string }> = []
+      while (triples.length < 200) {
+        const t = { a: pick(), b: pick(), result: pick() }
+        if (!real.has(key(t.a, t.b, t.result))) triples.push(t)
+      }
+
+      const players = Array.from({ length: 8 }, () => newId()) // 25 requests each: below the 30/min UUID limit
+      await env.DB.batch([
+        ...players.flatMap((p) => allowed(p)),
+        ins.discovery(ids.get('Khét Lẹt')!, null, Date.parse('2026-10-19T03:00:00.000Z')),
+      ])
+      const snapshot = async () => (await env.DB.prepare('SELECT * FROM discovery ORDER BY element_id').all<Record<string, unknown>>()).results
+      const before = await snapshot()
+
+      for (const [i, t] of triples.entries()) {
+        const p = players[Math.floor(i / 25)]!
+        const res = await post(p, t, `10.${100 + Math.floor(i / 25)}.0.1`)
+        expect(res.status, JSON.stringify(t)).toBe(422)
+      }
+      expect(await snapshot()).toEqual(before)
+    },
+    240_000,
+  )
+
   // ------------------------------------------------------------------------ AC-DISC-VALIDATION
   it('AC-DISC-VALIDATION: chưa có version hiện hành thì POST khám phá trả 503 problem+json và không ghi gì', async () => {
     const u = newId()

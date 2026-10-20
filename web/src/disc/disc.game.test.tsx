@@ -77,6 +77,7 @@ const headerOf = (input: RequestInfo | URL, init: RequestInit | undefined, name:
 
 let fetchMock: ReturnType<typeof vi.fn>
 let discoveryReply: () => Response
+let discoveriesGetReply: () => Response = () => json({ items: [] })
 
 async function installNet(): Promise<void> {
   const manifest = manifestOf()
@@ -89,7 +90,7 @@ async function installNet(): Promise<void> {
     if (url.includes('/blocklist')) return json({ elements: [], recipes: [], images: [] })
     if (url.includes('/health')) return json({ status: 'ok', env: 'test', schema: '1' })
     if (url.includes('/api/discoveries') && method === 'POST') return discoveryReply()
-    if (url.includes('/api/discoveries') && method === 'GET') return json({ items: [] })
+    if (url.includes('/api/discoveries') && method === 'GET') return discoveriesGetReply()
     if (url.endsWith('/api/consents') && method === 'POST') return json({ created_at: '2026-10-20T00:00:00.000Z' }, 201)
     return new Response(null, { status: 204 })
   })
@@ -152,6 +153,7 @@ beforeEach(() => {
   localStorage.clear()
   window.history.pushState({}, '', '/lau-meme/')
   dropTarget = null
+  discoveriesGetReply = () => json({ items: [] })
   discoveryReply = () =>
     json({ element_id: eid('Tới Công Chuyện'), nickname: 'Bếp Trưởng', discovered_at: '2026-10-20T03:00:01.000Z', first: true }, 201)
   ;(document as unknown as { elementFromPoint: () => Element | null }).elementFromPoint = () => dropTarget
@@ -260,6 +262,54 @@ describe('disc: Root', () => {
     await potCombine('Cay', 'Cười')
     await waitFor(() => expect(discoveryPosts()).toHaveLength(1))
     expect(plateItem('Tới Công Chuyện')).toBeTruthy()
+    expect(screen.queryByText(/Công thức gia truyền của/)).toBeNull()
+  })
+})
+
+describe('disc: Root, Công thức gia truyền trên Đĩa và lỗi gửi', () => {
+  it('AC-DISC-09: Đĩa đọc công khai GET /discoveries (không X-Player-Id, không cần đồng ý); phần tử C có title "Công thức gia truyền của Bếp Trưởng", D không có title', async () => {
+    discoveriesGetReply = () =>
+      json({ items: [{ element_id: eid('Tới Công Chuyện'), nickname: 'Bếp Trưởng', discovered_at: '2026-10-19T03:00:00.000Z' }] })
+    await installNet()
+    seed((p) => {
+      p.items.push(owned('Tới Công Chuyện', '🔥'), owned('Chạy Deadline', '🏃'))
+    })
+    render(<Root />)
+    await screen.findByRole('list', { name: 'Đĩa nhúng' })
+    await waitFor(() => expect(plateItem('Tới Công Chuyện').getAttribute('title')).toBe('Công thức gia truyền của Bếp Trưởng'))
+    expect(plateItem('Chạy Deadline').hasAttribute('title')).toBe(false)
+    const gets = calls().filter((c) => c.method === 'GET' && c.url.includes('/lau-meme/api/discoveries'))
+    expect(gets.length).toBeGreaterThanOrEqual(1)
+    const ids = gets.map((g) => decodeURIComponent(g.url)).join(',')
+    expect(ids).toContain(eid('Tới Công Chuyện'))
+    expect(ids).toContain(eid('Chạy Deadline'))
+    expect(gets.every((g) => g.player === null)).toBe(true)
+    expect(calls().filter((c) => c.player !== null)).toEqual([])
+  })
+
+  it('AC-DISC-11: POST khám phá trả 429 thì hiện "Gửi quá nhanh, thử lại sau." và không có dòng Công thức gia truyền', async () => {
+    saveConsent(localStorage, 1, 'granted')
+    discoveryReply = () => json({ type: 'about:blank', title: 'Quá nhanh', status: 429 }, 429)
+    await installNet()
+    seed()
+    render(<Root />)
+    await screen.findByRole('list', { name: 'Đĩa nhúng' })
+    await waitFor(() => expect(pot().dataset.state).toBe('idle'))
+    await potCombine('Cay', 'Cười')
+    expect(await screen.findByText('Gửi quá nhanh, thử lại sau.')).toBeTruthy()
+    expect(screen.queryByText(/Công thức gia truyền của/)).toBeNull()
+  })
+
+  it('AC-DISC-11: POST khám phá trả lỗi khác (500) thì hiện "Không gửi được khám phá, thử lại sau." và không có dòng Công thức gia truyền', async () => {
+    saveConsent(localStorage, 1, 'granted')
+    discoveryReply = () => json({ type: 'about:blank', title: 'Lỗi', status: 500 }, 500)
+    await installNet()
+    seed()
+    render(<Root />)
+    await screen.findByRole('list', { name: 'Đĩa nhúng' })
+    await waitFor(() => expect(pot().dataset.state).toBe('idle'))
+    await potCombine('Cay', 'Cười')
+    expect(await screen.findByText('Không gửi được khám phá, thử lại sau.')).toBeTruthy()
     expect(screen.queryByText(/Công thức gia truyền của/)).toBeNull()
   })
 })
