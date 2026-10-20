@@ -158,7 +158,8 @@
    "emoji": "📈",
    "origin": "Q",
    "depth": 4,
-   "image_hint": "biểu đồ đi lên, nhân vật đầu tượng 3D mặc vest (tự vẽ, không chép)"
+   "image_hint": "biểu đồ đi lên, nhân vật đầu tượng 3D mặc vest (tự vẽ, không chép)",
+   "daily_hint": "Mất sạch mà vẫn thấy ổn"
   },
   {
    "name": "Sếp Tổng",
@@ -200,7 +201,8 @@
    "emoji": "🍜",
    "origin": "V",
    "depth": 4,
-   "image_hint": "gói mì tôm phát sáng như báu vật"
+   "image_hint": "gói mì tôm phát sáng như báu vật",
+   "daily_hint": "Cứu tinh của những ngày cuối tháng"
   },
   {
    "name": "Chạy Deadline",
@@ -305,21 +307,24 @@
    "emoji": "🧸",
    "origin": "V",
    "depth": 4,
-   "image_hint": "gấu bông ôm điện thoại nhắn tin"
+   "image_hint": "gấu bông ôm điện thoại nhắn tin",
+   "daily_hint": "Hết cảnh đi chơi một mình"
   },
   {
    "name": "Cơm Chó",
    "emoji": "🍚",
    "origin": "V",
    "depth": 5,
-   "image_hint": "bát cơm đầy tràn, chú chó nhìn tủi thân"
+   "image_hint": "bát cơm đầy tràn, chú chó nhìn tủi thân",
+   "daily_hint": "Người ta tình tứ, mình ngồi ăn no"
   },
   {
    "name": "Chia Tay",
    "emoji": "💔",
    "origin": "Q",
    "depth": 5,
-   "image_hint": "trái tim xé đôi, mỗi nửa đi một ngả"
+   "image_hint": "trái tim xé đôi, mỗi nửa đi một ngả",
+   "daily_hint": "Từ hai thành một"
   },
   {
    "name": "Nhạc Suy",
@@ -340,7 +345,8 @@
    "emoji": "🧍",
    "origin": "Q",
    "depth": 4,
-   "image_hint": "người đứng giữa đám đông các cặp đôi"
+   "image_hint": "người đứng giữa đám đông các cặp đôi",
+   "daily_hint": "Lễ tình nhân chỉ có mình với mình"
   },
   {
    "name": "Friendzone",
@@ -375,35 +381,40 @@
    "emoji": "🎆",
    "origin": "V",
    "depth": 4,
-   "image_hint": "pháo hoa trên tờ lịch tháng 12"
+   "image_hint": "pháo hoa trên tờ lịch tháng 12",
+   "daily_hint": "Lúc ai cũng hứa năm sau sẽ khác"
   },
   {
    "name": "Tết",
    "emoji": "🌸",
    "origin": "V",
    "depth": 5,
-   "image_hint": "cành hoa đào, bánh chưng"
+   "image_hint": "cành hoa đào, bánh chưng",
+   "daily_hint": "Dịp cả họ hỏi bạn nhiều câu nhất"
   },
   {
    "name": "Lì Xì",
    "emoji": "🧧",
    "origin": "V",
    "depth": 6,
-   "image_hint": "phong bao đỏ nhỏ xíu"
+   "image_hint": "phong bao đỏ nhỏ xíu",
+   "daily_hint": "Trẻ con mong, người lớn lo"
   },
   {
    "name": "Mẹ Giữ Hộ",
    "emoji": "👛",
    "origin": "V",
    "depth": 7,
-   "image_hint": "chiếc ví khóa ba lớp"
+   "image_hint": "chiếc ví khóa ba lớp",
+   "daily_hint": "Tiền của bạn, nhưng người khác giữ... vĩnh viễn"
   },
   {
    "name": "Thưởng Tết",
    "emoji": "💰",
    "origin": "V",
    "depth": 5,
-   "image_hint": "túi tiền có dây buộc"
+   "image_hint": "túi tiền có dây buộc",
+   "daily_hint": "Cả năm chờ một phong bì"
   },
   {
    "name": "Thưởng Bằng Niềm Tin",
@@ -417,28 +428,32 @@
    "emoji": "🍵",
    "origin": "V",
    "depth": 6,
-   "image_hint": "ấm trà và những dấu hỏi bay quanh"
+   "image_hint": "ấm trà và những dấu hỏi bay quanh",
+   "daily_hint": "Quan tâm theo kiểu khiến bạn muốn trốn"
   },
   {
    "name": "Bao Giờ Cưới",
    "emoji": "💍",
    "origin": "V",
    "depth": 5,
-   "image_hint": "chiếc nhẫn kèm dấu hỏi khổng lồ"
+   "image_hint": "chiếc nhẫn kèm dấu hỏi khổng lồ",
+   "daily_hint": "Câu hỏi bất hủ mỗi dịp Tết"
   },
   {
    "name": "Lương Bao Nhiêu",
    "emoji": "💵",
    "origin": "V",
    "depth": 7,
-   "image_hint": "máy tính cầm tay bị soi đèn"
+   "image_hint": "máy tính cầm tay bị soi đèn",
+   "daily_hint": "Câu hỏi khiến ai cũng muốn đổi chủ đề"
   },
   {
    "name": "Con Nhà Người Ta",
    "emoji": "🏅",
    "origin": "V",
    "depth": 6,
-   "image_hint": "huy chương vàng treo nhà hàng xóm, tỏa sáng"
+   "image_hint": "huy chương vàng treo nhà hàng xóm, tỏa sáng",
+   "daily_hint": "Người luôn giỏi hơn bạn trong lời của mẹ"
   },
   {
    "name": "Nồi Lẩu",
@@ -473,7 +488,8 @@
    "emoji": "🍖",
    "origin": "V",
    "depth": 5,
-   "image_hint": "đĩa thức ăn chồng cao như núi"
+   "image_hint": "đĩa thức ăn chồng cao như núi",
+   "daily_hint": "Trả tiền rồi thì phải ăn cho đáng"
   },
   {
    "name": "Chấm Mắm Tôm",
@@ -508,21 +524,24 @@
    "emoji": "🤑",
    "origin": "V",
    "depth": 4,
-   "image_hint": "tin nhắn biến động số dư phát sáng"
+   "image_hint": "tin nhắn biến động số dư phát sáng",
+   "daily_hint": "Vài ngày trong tháng thấy mình giàu"
   },
   {
    "name": "Trà Sữa Full Topping",
    "emoji": "🧋",
    "origin": "V",
    "depth": 5,
-   "image_hint": "ly trà sữa đầy trân châu tràn miệng"
+   "image_hint": "ly trà sữa đầy trân châu tràn miệng",
+   "daily_hint": "Uống thì ít, nhai thì nhiều"
   },
   {
    "name": "Cháy Túi",
    "emoji": "💸",
    "origin": "V",
    "depth": 5,
-   "image_hint": "chiếc ví bốc cháy, tiền bay"
+   "image_hint": "chiếc ví bốc cháy, tiền bay",
+   "daily_hint": "Ví nhẹ hẳn sau một ngày vui"
   },
   {
    "name": "Mưa",
@@ -557,35 +576,40 @@
    "emoji": "🛵",
    "origin": "V",
    "depth": 7,
-   "image_hint": "xe máy chất hàng cao ngất"
+   "image_hint": "xe máy chất hàng cao ngất",
+   "daily_hint": "Người được mong chờ nhất mỗi ngày"
   },
   {
    "name": "Bom Hàng",
    "emoji": "💣",
    "origin": "V",
    "depth": 7,
-   "image_hint": "gói hàng có ngòi nổ, shipper ôm đầu"
+   "image_hint": "gói hàng có ngòi nổ, shipper ôm đầu",
+   "daily_hint": "Đặt rồi mà không nhận"
   },
   {
    "name": "Săn Sale",
    "emoji": "🛒",
    "origin": "V",
    "depth": 5,
-   "image_hint": "giỏ hàng lao vun vút lúc 0 giờ"
+   "image_hint": "giỏ hàng lao vun vút lúc 0 giờ",
+   "daily_hint": "Thức canh nửa đêm chỉ vì giảm giá"
   },
   {
    "name": "Mua Rồi Để Đó",
    "emoji": "📦",
    "origin": "V",
    "depth": 6,
-   "image_hint": "chồng hộp hàng chưa bóc trong góc phòng"
+   "image_hint": "chồng hộp hàng chưa bóc trong góc phòng",
+   "daily_hint": "Đặt về cho vui, chưa từng mở hộp"
   },
   {
    "name": "Chốt Đơn",
    "emoji": "✅",
    "origin": "V",
    "depth": 6,
-   "image_hint": "nút chốt đơn bị bấm lún"
+   "image_hint": "nút chốt đơn bị bấm lún",
+   "daily_hint": "Một cú bấm, ví khóc"
   },
   {
    "name": "Thánh Nhọ",
@@ -620,7 +644,8 @@
    "emoji": "🧗",
    "origin": "Q",
    "depth": 4,
-   "image_hint": "người leo bậc thang huy hiệu"
+   "image_hint": "người leo bậc thang huy hiệu",
+   "daily_hint": "Thắng một trận lên một bậc, thua một trận tụt ba"
   },
   {
    "name": "GG",
@@ -655,28 +680,32 @@
    "emoji": "💎",
    "origin": "Q",
    "depth": 5,
-   "image_hint": "viên kim cương đeo kính râm"
+   "image_hint": "viên kim cương đeo kính râm",
+   "daily_hint": "Có gì cũng phải cho cả thế giới biết"
   },
   {
    "name": "Sống Ảo",
    "emoji": "📸",
    "origin": "V",
    "depth": 6,
-   "image_hint": "điện thoại có 12 bộ lọc chồng lên nhau"
+   "image_hint": "điện thoại có 12 bộ lọc chồng lên nhau",
+   "daily_hint": "Chụp trăm tấm, đăng một tấm"
   },
   {
    "name": "Phông Bạt",
    "emoji": "🎭",
    "origin": "V",
    "depth": 6,
-   "image_hint": "tấm phông nền hình siêu xe, phía sau là xe đạp"
+   "image_hint": "tấm phông nền hình siêu xe, phía sau là xe đạp",
+   "daily_hint": "Ảnh thì sang, đời thì khác"
   },
   {
    "name": "Đu Trend",
    "emoji": "🏄",
    "origin": "V",
    "depth": 7,
-   "image_hint": "người lướt sóng trên làn sóng biểu tượng hashtag"
+   "image_hint": "người lướt sóng trên làn sóng biểu tượng hashtag",
+   "daily_hint": "Cái gì đang hot là làm theo liền"
   },
   {
    "name": "Hóng Biến",
@@ -711,14 +740,16 @@
    "emoji": "⛏️",
    "origin": "V",
    "depth": 4,
-   "image_hint": "cái xẻng đào lên một chồng ảnh chụp màn hình cũ phủ bụi"
+   "image_hint": "cái xẻng đào lên một chồng ảnh chụp màn hình cũ phủ bụi",
+   "daily_hint": "Chuyện cũ bị lôi lên lại"
   },
   {
    "name": "Fan Quay Xe",
    "emoji": "🔄",
    "origin": "V",
    "depth": 4,
-   "image_hint": "đoàn xe máy gắn cờ cổ vũ quay đầu đồng loạt"
+   "image_hint": "đoàn xe máy gắn cờ cổ vũ quay đầu đồng loạt",
+   "daily_hint": "Hôm qua còn mê, hôm nay đã khác"
   },
   {
    "name": "Anh Hùng Bàn Phím",
@@ -788,7 +819,8 @@
    "emoji": "🌟",
    "origin": "Q",
    "depth": 6,
-   "image_hint": "ánh đèn sân khấu chiếu một người giữa phố"
+   "image_hint": "ánh đèn sân khấu chiếu một người giữa phố",
+   "daily_hint": "Cả thế giới xoay quanh mình"
   },
   {
    "name": "NPC",
@@ -802,14 +834,16 @@
    "emoji": "🪄",
    "origin": "Q",
    "depth": 4,
-   "image_hint": "cây đũa phép bắn ra tim"
+   "image_hint": "cây đũa phép bắn ra tim",
+   "daily_hint": "Nói câu nào người ta xiêu lòng câu đó"
   },
   {
    "name": "Sigma",
    "emoji": "🐺",
    "origin": "Q",
    "depth": 4,
-   "image_hint": "con sói đeo tai nghe đi một mình"
+   "image_hint": "con sói đeo tai nghe đi một mình",
+   "daily_hint": "Một mình một lối, không cần ai hiểu"
   },
   {
    "name": "Lướt Tới Sáng",
@@ -837,14 +871,16 @@
    "emoji": "🌈",
    "origin": "Q",
    "depth": 5,
-   "image_hint": "vầng hào quang +1000 trên đầu"
+   "image_hint": "vầng hào quang +1000 trên đầu",
+   "daily_hint": "Không cần nói gì vẫn ngầu"
   },
   {
    "name": "Âm Aura",
    "emoji": "📉",
    "origin": "Q",
    "depth": 4,
-   "image_hint": "vầng hào quang tắt ngóm, -1000"
+   "image_hint": "vầng hào quang tắt ngóm, -1000",
+   "daily_hint": "Vừa làm một việc mất sạch phong độ"
   },
   {
    "name": "Lương 404",
@@ -921,28 +957,32 @@
    "emoji": "🏔️",
    "origin": "V",
    "depth": 5,
-   "image_hint": "người cắm cờ trên đỉnh núi biểu đồ, phía sau là vực"
+   "image_hint": "người cắm cờ trên đỉnh núi biểu đồ, phía sau là vực",
+   "daily_hint": "Mua đúng lúc giá cao nhất"
   },
   {
    "name": "Cắt Lỗ",
    "emoji": "✂️",
    "origin": "V",
    "depth": 5,
-   "image_hint": "cây kéo cắt đường biểu đồ đỏ"
+   "image_hint": "cây kéo cắt đường biểu đồ đỏ",
+   "daily_hint": "Thà mất ít còn hơn mất hết"
   },
   {
    "name": "Chờ Về Bờ",
    "emoji": "🏖️",
    "origin": "V",
    "depth": 6,
-   "image_hint": "người ôm phao nhìn bờ biển xa tít"
+   "image_hint": "người ôm phao nhìn bờ biển xa tít",
+   "daily_hint": "Ôm hàng ngồi đợi giá lên lại"
   },
   {
    "name": "Not Stonks",
    "emoji": "🥶",
    "origin": "Q",
    "depth": 5,
-   "image_hint": "biểu đồ cắm đầu xuống, nhân vật vest run cầm cập"
+   "image_hint": "biểu đồ cắm đầu xuống, nhân vật vest run cầm cập",
+   "daily_hint": "Mua xong là thấy đỏ"
   },
   {
    "name": "Doge",

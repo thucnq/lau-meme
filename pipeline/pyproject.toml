@@ -3,7 +3,9 @@ name = "lau-meme-pipeline"
 version = "0.1.0"
 description = "Batch pipeline (crawl → process → publish) for lau-meme"
 requires-python = ">=3.11"
-dependencies = []
+dependencies = [
+    "cryptography>=44",
+]
 
 [dependency-groups]
 dev = ["pytest>=8", "pytest-cov>=6", "ruff>=0.14"]

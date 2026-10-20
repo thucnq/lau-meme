@@ -1,0 +1,150 @@
+{
+ "red": {
+  "ts": "2026-10-20T01:26:47+00:00",
+  "commit": "398d680",
+  "results": {
+   "AC-GAME-01": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-GAME-02": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-GAME-03": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-GAME-04": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-GAME-05": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-GAME-06": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-GAME-07": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-GAME-08": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-GAME-09": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-GAME-10": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-GAME-11": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-GAME-12": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-GAME-13": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-GAME-14": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-GAME-15": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-GAME-16": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-GAME-17": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   }
+  }
+ },
+ "green": {
+  "ts": "2026-10-20T01:37:34+00:00",
+  "commit": "831cf3b",
+  "results": {
+   "AC-GAME-01": {
+    "status": "PASS",
+    "test": "Game.test.tsx#Game > AC-GAME-01: lần đầu Đĩa có đúng 4 phần tử khởi đầu từ manifest, nồi có 2 chỗ thả trống"
+   },
+   "AC-GAME-02": {
+    "status": "PASS",
+    "test": "Game.test.tsx#Game > AC-GAME-02: thả A và B vào nồi — nồi sôi tối đa 1,2 s, bỏ qua thao tác lúc sôi, C lên bàn và vào Đĩa"
+   },
+   "AC-GAME-03": {
+    "status": "PASS",
+    "test": "Game.test.tsx#Game > AC-GAME-03: kéo A thả chồng lên B trên bàn thì thay bằng C tại vị trí của B, hơi lẩu <= 0,6 s"
+   },
+   "AC-GAME-04": {
+    "status": "PASS",
+    "test": "Game.test.tsx#Game > AC-GAME-04: ghép ra phần tử đã có thì C hiện trên bàn nhưng Đĩa không trùng, thời điểm cũ giữ nguyên"
+   },
+   "AC-GAME-05": {
+    "status": "PASS",
+    "test": "Game.test.tsx#Game > AC-GAME-05: cùng một câu Nồi trào cho "
+   },
+   "AC-GAME-06": {
+    "status": "PASS",
+    "test": "Game.test.tsx#Game > AC-GAME-06: lần trượt thứ 3 hiện thêm gợi ý \"Thử <emoji> <tên> xem\" cùng câu Nồi trào"
+   },
+   "AC-GAME-07": {
+    "status": "PASS",
+    "test": "Game.test.tsx#Game > AC-GAME-07: gõ \"ca phe\" "
+   },
+   "AC-GAME-08": {
+    "status": "PASS",
+    "test": "Game.test.tsx#Game > AC-GAME-08: sắp xếp Mới khám phá / Tên / Độ sâu và nhớ lựa chọn sau khi tải lại"
+   },
+   "AC-GAME-09": {
+    "status": "PASS",
+    "test": "Game.test.tsx#Game > AC-GAME-09: chỉ phần tử thêm ở mẻ hiện tại có nhãn MỚI "
+   },
+   "AC-GAME-10": {
+    "status": "PASS",
+    "test": "Game.test.tsx#Game > AC-GAME-10: tải lại khôi phục Đĩa, vị trí trên bàn, sắp xếp, đã xem hướng dẫn; không gọi API ghi"
+   },
+   "AC-GAME-11": {
+    "status": "PASS",
+    "test": "Game.test.tsx#Game > AC-GAME-11: Dọn bàn chỉ xóa bàn; Hủy không đổi gì; Xóa đưa Đĩa về 4 phần tử và giữ UUID/nickname/Daily"
+   },
+   "AC-GAME-12": {
+    "status": "PASS",
+    "test": "Game.test.tsx#Game > AC-GAME-12: hướng dẫn hiện lần đầu, không hiện lại sau khi đóng, nút \"?\" mở lại"
+   },
+   "AC-GAME-13": {
+    "status": "PASS",
+    "test": "Game.test.tsx#Game > AC-GAME-13: theo hệ thống tối khi chưa chọn; nút chuyển sang sáng và được nhớ, ưu tiên hơn hệ thống"
+   },
+   "AC-GAME-14": {
+    "status": "PASS",
+    "test": "Game.test.tsx#Game > AC-GAME-14: ghép trên giao diện chỉ tra bộ nhớ, không phát thêm yêu cầu mạng nào"
+   },
+   "AC-GAME-15": {
+    "status": "PASS",
+    "test": "Game.test.tsx#Game > AC-GAME-15: phần tử bị chặn không hiện ở Đĩa/bàn nhưng còn trong lưu trữ; ghép ra nó là trượt"
+   },
+   "AC-GAME-16": {
+    "status": "PASS",
+    "test": "Game.test.tsx#Game > lỗi tải: manifest trả 503 > AC-GAME-16: manifest trả 503 -> role=alert + \"Thử lại\", Đĩa từ lưu trữ cục bộ, tiến độ còn, ghép bị vô hiệu"
+   },
+   "AC-GAME-17": {
+    "status": "PASS",
+    "test": "Game.test.tsx#Game > AC-GAME-17: tiến độ của V1 khi manifest là V2 — giữ mọi phần tử, tra theo graph V2, không hỏi gì"
+   }
+  }
+ }
+}

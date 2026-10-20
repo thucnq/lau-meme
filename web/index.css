@@ -1,0 +1,84 @@
+:root {
+  color-scheme: light;
+  --bg: #fffaf3;
+  --fg: #2b1d12;
+  --muted: #7a6656;
+  --accent: #d9480f;
+  --surface: #ffffff;
+  --line: #ecd9c6;
+  --pot: #fbe3d0;
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}
+/* System dark until the player picks a theme; the stored choice wins (AC-GAME-13). */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    color-scheme: dark;
+    --bg: #1a120c; --fg: #f6eadf; --muted: #bfa893; --accent: #ff8a4c;
+    --surface: #261a12; --line: #3d2b1e; --pot: #3a2416;
+  }
+}
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --bg: #1a120c; --fg: #f6eadf; --muted: #bfa893; --accent: #ff8a4c;
+  --surface: #261a12; --line: #3d2b1e; --pot: #3a2416;
+}
+body { margin: 0; background: var(--bg); color: var(--fg); }
+h1 { color: var(--accent); margin: 0; font-size: 1.4rem; }
+button {
+  font: inherit; color: var(--fg); background: var(--surface); border: 1px solid var(--line);
+  border-radius: 0.5rem; padding: 0.35rem 0.7rem; cursor: pointer;
+}
+button:hover { border-color: var(--accent); }
+
+.game { max-width: 64rem; margin: 0 auto; padding: 1rem; }
+.game-bar { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; justify-content: space-between; }
+.game-actions { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+.game-error { margin: 0.75rem 0; padding: 0.6rem 0.8rem; border: 1px solid var(--accent); border-radius: 0.5rem; }
+.game-board { display: grid; grid-template-columns: 1fr 16rem; gap: 1rem; margin-top: 1rem; }
+@media (max-width: 40rem) { .game-board { grid-template-columns: 1fr; } }
+
+.game-table {
+  position: relative; min-height: 24rem; overflow: hidden; touch-action: none;
+  background: var(--surface); border: 1px dashed var(--line); border-radius: 0.75rem;
+}
+.pot {
+  position: absolute; left: 50%; bottom: 1rem; transform: translateX(-50%);
+  display: flex; gap: 0.5rem; padding: 0.75rem 1rem; border-radius: 999px; background: var(--pot);
+}
+.pot[data-state='disabled'] { opacity: 0.5; }
+.pot[data-state='boiling'] { animation: boil 0.25s ease-in-out infinite alternate; }
+@keyframes boil { to { transform: translateX(-50%) scale(1.06); } }
+.pot-slot {
+  min-width: 6.5rem; min-height: 2.2rem; display: flex; align-items: center; justify-content: center;
+  border: 2px dashed var(--accent); border-radius: 0.5rem; padding: 0 0.4rem;
+}
+.miss { position: absolute; left: 0; right: 0; bottom: 5.5rem; text-align: center; color: var(--muted); }
+.miss p { margin: 0.2rem; }
+.steam { position: absolute; pointer-events: none; font-size: 1.6rem; animation: steam 0.5s ease-out forwards; }
+@keyframes steam { to { opacity: 0; transform: translateY(-1.2rem); } }
+
+.chip {
+  display: inline-flex; gap: 0.3rem; align-items: center; padding: 0.3rem 0.6rem; border-radius: 999px;
+  background: var(--bg); border: 1px solid var(--line); user-select: none; cursor: grab;
+  touch-action: none; /* AC-GAME-02: touch drag needs it; the plate scrolls from the gaps between chips */
+}
+.on-table { position: absolute; }
+.ghost { position: fixed; pointer-events: none; z-index: 10; opacity: 0.85; transform: translate(-50%, -50%); }
+.badge { font-size: 0.65rem; font-weight: 700; color: #fff; background: var(--accent); border-radius: 0.3rem; padding: 0 0.25rem; }
+
+.plate { display: flex; flex-direction: column; gap: 0.5rem; }
+.plate input, .plate select {
+  font: inherit; color: var(--fg); background: var(--surface); border: 1px solid var(--line);
+  border-radius: 0.5rem; padding: 0.35rem 0.5rem;
+}
+.plate ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 0.4rem; }
+
+.modal {
+  position: fixed; inset: auto 1rem 1rem; max-width: 26rem; margin: 0 auto; z-index: 20;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 0.75rem; padding: 1rem;
+  box-shadow: 0 0.5rem 2rem rgb(0 0 0 / 0.2);
+}
+.modal h2 { margin-top: 0; font-size: 1.1rem; }
+.modal button + button { margin-left: 0.5rem; }
+
+.health { max-width: 64rem; margin: 0 auto; padding: 0 1rem 1rem; color: var(--muted); font-size: 0.8rem; }

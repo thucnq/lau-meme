@@ -1,0 +1,122 @@
+{
+ "red": {
+  "ts": "2026-10-20T00:11:39+00:00",
+  "commit": "d05ebe2",
+  "results": {
+   "AC-DAILY-01": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-DAILY-02": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-DAILY-03": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-DAILY-04": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-DAILY-05": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-DAILY-06": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-DAILY-07": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-DAILY-08": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-DAILY-09": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-DAILY-10": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-DAILY-11": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-DAILY-12": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-DAILY-13": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   }
+  }
+ },
+ "green": {
+  "ts": "2026-10-20T01:20:07+00:00",
+  "commit": "898f6dd",
+  "results": {
+   "AC-DAILY-01": {
+    "status": "PASS",
+    "test": "test_daily#test_ac_daily_01_chi_chon_ung_vien_thoa_moi_dieu_kien"
+   },
+   "AC-DAILY-02": {
+    "status": "PASS",
+    "test": "test_daily#test_ac_daily_02_khong_co_ung_vien_nao_thi_bao_loi_ro_rang"
+   },
+   "AC-DAILY-03": {
+    "status": "PASS",
+    "test": "test_daily#test_ac_daily_03_khoi_daily_chi_co_khoa_bam_emoji_goi_y_depth"
+   },
+   "AC-DAILY-04": {
+    "status": "PASS",
+    "test": "challenge.test.ts#challenge > AC-DAILY-04: bàn bắt đầu từ 4 phần tử khởi đầu, 7 lượt "
+   },
+   "AC-DAILY-05": {
+    "status": "PASS",
+    "test": "challenge.test.ts#challenge > AC-DAILY-05: tải lại trong cùng mẻ khôi phục bàn, phần tử đã có và bộ đếm 4 bước; chơi tiếp được"
+   },
+   "AC-DAILY-06": {
+    "status": "PASS",
+    "test": "daily.test.ts#daily > AC-DAILY-06: đường ghép hợp lệ trả 201 với số bước, hạng hiện tại, streak mới và lưu đúng một lần"
+   },
+   "AC-DAILY-07": {
+    "status": "PASS",
+    "test": "daily.test.ts#daily > AC-DAILY-07: mọi dạng đường ghép không hợp lệ trả 422 problem+json, không ghi gì, không đổi streak"
+   },
+   "AC-DAILY-08": {
+    "status": "PASS",
+    "test": "daily.test.ts#daily > AC-DAILY-08: nộp lại cho cùng version trả 409 kèm kết quả đã lưu và không ghi đè"
+   },
+   "AC-DAILY-09": {
+    "status": "FAIL",
+    "test": "daily.test.ts#daily > AC-DAILY-09: bảng xếp hạng đợt có 30 kết quả: tối đa 20 dòng, xếp theo bước rồi giờ nộp, ẩn danh, không lộ UUID"
+   },
+   "AC-DAILY-10": {
+    "status": "PASS",
+    "test": "daily.test.ts#daily > AC-DAILY-10: streak đếm theo ngày GMT+7 của batch_at: 20,21,22 => 3; bỏ 23, làm 24 => 1; dài nhất 3; hai món một ngày tính 1"
+   },
+   "AC-DAILY-11": {
+    "status": "PASS",
+    "test": "daily.test.ts#daily > AC-DAILY-11: bảng xếp hạng streak tối đa 20 dòng, giảm dần, hòa thì ai đạt trước đứng trước, ẩn danh khi không nickname"
+   },
+   "AC-DAILY-12": {
+    "status": "PASS",
+    "test": "countdown.test.ts#countdown > AC-DAILY-12: lúc 17:30 UTC đếm tới mốc 05:00 UTC kế tiếp sau batch_at "
+   },
+   "AC-DAILY-13": {
+    "status": "FAIL",
+    "test": "daily.test.ts#daily > AC-DAILY-13: cùng IP băm nhưng nhiều UUID khác nhau cũng bị chặn, IP khác không bị ảnh hưởng"
+   },
+   "AC-DAILY-ABUSE": {
+    "status": "PASS",
+    "test": "daily.test.ts#daily > AC-DAILY-ABUSE: đầu vào độc hại "
+   }
+  }
+ }
+}

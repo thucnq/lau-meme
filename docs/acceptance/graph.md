@@ -17,8 +17,8 @@
 
 ### AC-GRAPH-03: Graph công khai không lộ tên kết quả
 - **Cho** graph xuất từ lõi classic
-- **Khi** tìm trong file graph mọi tên phần tử có depth ≥ 1, cả dạng gốc lẫn dạng `fold`, và mọi emoji của chúng
-- **Thì** không tìm thấy chuỗi nào; chỉ tên 4 phần tử khởi đầu được phép xuất hiện dạng đọc được (trong manifest)
+- **Khi** kiểm file graph và manifest với mọi phần tử có depth ≥ 1
+- **Thì** graph ngoài 3 khóa cố định (`format`, `version`, `entries`) chỉ chứa khóa và giá trị dạng base64url; trong graph không tìm thấy chuỗi con là tên (dạng gốc hoặc `fold`) dài ≥ 6 ký tự hoặc có ký tự ngoài bảng base64url (dấu cách, chữ có dấu), cũng không có emoji nào của chúng; trong manifest (trừ `miss_lines`) không giá trị chuỗi nào chứa tên hoặc `fold` của chúng dưới dạng nguyên từ; chỉ tên 4 phần tử khởi đầu được phép xuất hiện dạng đọc được (trong manifest). Tên ngắn dạng ASCII (vd `fold("Ế")` = "e", "gg") được bảo vệ bởi ràng buộc chỉ-base64url vì chúng trùng ngẫu nhiên với bản mã.
 - Ưu tiên: Bắt buộc
 
 ### AC-GRAPH-04: Manifest có version và giờ mẻ thật

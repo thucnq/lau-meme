@@ -580,6 +580,28 @@ Hai món này friendzone nhau rồi.
 DAILY = ["Stonks", "Bao Giờ Cưới", "Mẹ Giữ Hộ"]
 DAILY_HINT = {"Stonks": "Mất sạch mà vẫn thấy ổn", "Bao Giờ Cưới": "Câu hỏi bất hủ mỗi dịp Tết",
               "Mẹ Giữ Hộ": "Tiền của bạn, nhưng người khác giữ... vĩnh viễn"}
+# Gợi ý mờ cho mọi ứng viên Món đặc biệt (depth 4–8): không nêu tên món, không nhắc người thật hay vụ việc (mục 7.1).
+DAILY_HINT.update({
+    "Cuối Năm": "Lúc ai cũng hứa năm sau sẽ khác", "Có Gấu": "Hết cảnh đi chơi một mình",
+    "FA": "Lễ tình nhân chỉ có mình với mình", "Fan Quay Xe": "Hôm qua còn mê, hôm nay đã khác",
+    "Leo Rank": "Thắng một trận lên một bậc, thua một trận tụt ba", "Lương Về": "Vài ngày trong tháng thấy mình giàu",
+    "Mì Tôm": "Cứu tinh của những ngày cuối tháng", "Rizz": "Nói câu nào người ta xiêu lòng câu đó",
+    "Sigma": "Một mình một lối, không cần ai hiểu", "Âm Aura": "Vừa làm một việc mất sạch phong độ",
+    "Đào Mả Phốt": "Chuyện cũ bị lôi lên lại", "Aura": "Không cần nói gì vẫn ngầu",
+    "Chia Tay": "Từ hai thành một", "Cháy Túi": "Ví nhẹ hẳn sau một ngày vui",
+    "Cơm Chó": "Người ta tình tứ, mình ngồi ăn no", "Cắt Lỗ": "Thà mất ít còn hơn mất hết",
+    "Flex": "Có gì cũng phải cho cả thế giới biết", "Not Stonks": "Mua xong là thấy đỏ",
+    "Săn Sale": "Thức canh nửa đêm chỉ vì giảm giá", "Thưởng Tết": "Cả năm chờ một phong bì",
+    "Trà Sữa Full Topping": "Uống thì ít, nhai thì nhiều", "Tết": "Dịp cả họ hỏi bạn nhiều câu nhất",
+    "Ăn Buffet Gỡ Vốn": "Trả tiền rồi thì phải ăn cho đáng", "Đu Đỉnh": "Mua đúng lúc giá cao nhất",
+    "Chốt Đơn": "Một cú bấm, ví khóc", "Chờ Về Bờ": "Ôm hàng ngồi đợi giá lên lại",
+    "Con Nhà Người Ta": "Người luôn giỏi hơn bạn trong lời của mẹ",
+    "Hỏi Thăm Ngày Tết": "Quan tâm theo kiểu khiến bạn muốn trốn", "Lì Xì": "Trẻ con mong, người lớn lo",
+    "Main Character": "Cả thế giới xoay quanh mình", "Mua Rồi Để Đó": "Đặt về cho vui, chưa từng mở hộp",
+    "Phông Bạt": "Ảnh thì sang, đời thì khác", "Sống Ảo": "Chụp trăm tấm, đăng một tấm",
+    "Bom Hàng": "Đặt rồi mà không nhận", "Lương Bao Nhiêu": "Câu hỏi khiến ai cũng muốn đổi chủ đề",
+    "Shipper": "Người được mong chờ nhất mỗi ngày", "Đu Trend": "Cái gì đang hot là làm theo liền",
+})
 BEST = {("Còn Cái Nịt", "This Is Fine"), ("Sếp", "Để Mai Tính"), ("Cười", "Deadline"), ("Flex", "Còn Cái Nịt"),
         ("Mạng Lag", "Cà Khịa"), ("Ăn Hành", "Cà Khịa"), ("Thưởng Tết", "Còn Cái Nịt"), ("Ngập", "This Is Fine"),
         ("Shipper", "Seen Không Rep"), ("Hỏi Thăm Ngày Tết", "Ăn Hành"), ("Lì Xì", "Để Mai Tính"),
@@ -642,6 +664,9 @@ def check():
     for n in E:
         if len(n.split()) > 4:
             errs.append(f"tên > 4 từ: {n}")
+    for n in E:
+        if 4 <= depth.get(n, -1) <= 8 and n not in DAILY_HINT:
+            errs.append(f"ứng viên Món đặc biệt {n} chưa có gợi ý (DAILY_HINT)")
     for t in DAILY:
         if t in depth and not 4 <= depth[t] <= 8:
             errs.append(f"món đặc biệt {t} có độ sâu {depth[t]} ngoài [4, 8]")
@@ -697,7 +722,8 @@ def main():
     out = Path(sys.argv[1]) if len(sys.argv) > 1 else Path(".")
     data = {
         "starters": STARTERS,
-        "elements": [{"name": n, "emoji": e, "origin": o, "depth": depth[n], "image_hint": h} for n, (e, o, h) in E.items()],
+        "elements": [{"name": n, "emoji": e, "origin": o, "depth": depth[n], "image_hint": h}
+                     | ({"daily_hint": DAILY_HINT[n]} if n in DAILY_HINT else {}) for n, (e, o, h) in E.items()],
         "recipes": [{"a": a, "b": b, "result": r, "best": (a, b) in BEST or (b, a) in BEST} for a, b, r in rec],
         "miss_lines": TRUOT.strip().splitlines(),
         "daily_examples": [{"target": t, "hint": DAILY_HINT[t], "path": [list(s) for s in shortest_path(rec, t)]} for t in DAILY],
