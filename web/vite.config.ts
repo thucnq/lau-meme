@@ -58,6 +58,8 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: ['./src/test/setup.ts'],
     css: false,
+    // jsdom is slow on WSL2; the default 5 s is too tight for the heavier engine tests.
+    testTimeout: 30_000,
     // Vitest serves from "/" and sets BASE_URL to "/"; give the code under test the base the build uses.
     env: { BASE_URL: base },
     coverage: { provider: 'istanbul', include: ['src/**'], exclude: ['src/main.tsx', 'src/test/**'], thresholds: { lines: 70 } },
