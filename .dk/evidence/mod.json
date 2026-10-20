@@ -1,0 +1,94 @@
+{
+ "red": {
+  "ts": "2026-10-20T06:41:23+00:00",
+  "commit": "3287e07",
+  "results": {
+   "AC-MOD-01": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-MOD-02": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-MOD-03": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-MOD-04": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-MOD-05": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-MOD-06": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-MOD-07": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-MOD-08": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-MOD-09": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-MOD-10": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   }
+  }
+ },
+ "green": {
+  "ts": "2026-10-20T06:47:38+00:00",
+  "commit": "0fee7f6",
+  "results": {
+   "AC-MOD-01": {
+    "status": "PASS",
+    "test": "test_mod#test_ac_mod_01_tu_cam_bi_loai_o_lop_1_khong_gui_llm"
+   },
+   "AC-MOD-02": {
+    "status": "PASS",
+    "test": "test_mod#test_ac_mod_02_danh_muc_chinh_tri_bi_loai_an_toan_di_tiep"
+   },
+   "AC-MOD-03": {
+    "status": "PASS",
+    "test": "test_mod#test_ac_mod_03_khong_chac_bi_loai"
+   },
+   "AC-MOD-04": {
+    "status": "PASS",
+    "test": "test_mod#test_ac_mod_04_ten_ket_qua_cong_thuc_vi_pham_bi_loai"
+   },
+   "AC-MOD-05": {
+    "status": "PASS",
+    "test": "test_mod#test_ac_mod_05_tg_kem_ngu_canh_nguon_bi_loai_va_them_ten_bi_danh"
+   },
+   "AC-MOD-06": {
+    "status": "PASS",
+    "test": "test_mod#test_ac_mod_06_bi_danh_bi_chan_loai_o_lop_1"
+   },
+   "AC-MOD-07": {
+    "status": "PASS",
+    "test": "test_mod#test_ac_mod_07_con_cai_nit_tieng_long_chung_di_tiep"
+   },
+   "AC-MOD-08": {
+    "status": "PASS",
+    "test": "test_mod#test_ac_mod_08_noi_dung_nong_vi_mot_nguoi_bi_hoan_30_ngay"
+   },
+   "AC-MOD-09": {
+    "status": "PASS",
+    "test": "test_mod#test_ac_mod_09_cao_buoc_bi_loai_du_an_toan_va_confidence_cao"
+   },
+   "AC-MOD-10": {
+    "status": "PASS",
+    "test": "test_mod#test_ac_mod_10_ten_bi_quan_tri_chan_khong_quay_lai"
+   }
+  }
+ }
+}
