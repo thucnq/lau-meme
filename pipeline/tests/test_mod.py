@@ -761,3 +761,131 @@ def test_ac_mod_03_khong_coi_an_toan_khi_dau_vao_rong_hoac_khong_co_llm_loi():
     assert llm.calls == []
     assert result.passed == [] and result.rejected == {} and result.queued == []
     assert result.new_aliases == frozenset()
+
+
+# ---------------------------------------------------------------- review gaps
+
+
+def test_ac_mod_03_flagged_fields_khong_phai_chuoi_bi_loai_khong_crash():
+    """AC-MOD-03: flagged_fields chứa phần tử không phải chuỗi thì bị loại "invalid_response", không ném lỗi."""
+    for bad in ([["x"]], [1], [None], [{"a": 1}]):
+        llm = FakeLlm(answers={"c": {**verdict("c"), "flagged_fields": bad}})
+        result = run([concept("c", "A")], llm)
+        assert result.rejected == {"c": "invalid_response"}, bad
+        assert result.passed == []
+
+
+def test_ac_mod_03_key_khong_phai_chuoi_bi_bo_qua_khai_niem_khong_co_phan_hoi():
+    """AC-MOD-03: phản hồi có key không phải chuỗi bị bỏ qua; khái niệm không có phản hồi bị loại "invalid_response"."""
+    concepts = [concept("a", "A"), concept("b", "B")]
+
+    def classify(items):
+        return [{**verdict("a"), "key": ["a"]}, verdict("b")]
+
+    result = run(concepts, classify)
+    assert result.rejected == {"a": "invalid_response"}
+    assert passed_keys(result) == ["b"]
+
+
+def test_ac_mod_03_key_xuat_hien_hai_lan_bi_loai_du_ca_hai_an_toan():
+    """AC-MOD-03: cùng một key xuất hiện hai lần trong phản hồi thì khái niệm đó bị loại "invalid_response"."""
+    concepts = [concept("a", "A"), concept("b", "B")]
+    result = run(concepts, lambda items: [verdict("a"), verdict("a"), verdict("b")])
+    assert result.rejected == {"a": "invalid_response"}
+    assert passed_keys(result) == ["b"]
+    assert result.counts["không chắc"] == 1
+
+
+@pytest.mark.parametrize("bad", [{"key": "a"}, None, "safe", 42])
+def test_ac_mod_03_phan_hoi_khong_phai_danh_sach_khong_crash(bad):
+    """AC-MOD-03: phản hồi không phải list thì mọi khái niệm của lô bị loại "invalid_response", không ném lỗi."""
+    concepts = [concept("a", "A"), concept("b", "B")]
+    result = run(concepts, lambda items: bad)
+    assert result.rejected == {"a": "invalid_response", "b": "invalid_response"}
+    assert result.passed == []
+
+
+@pytest.mark.parametrize("exc", [TimeoutError("hết giờ"), ValueError("hỏng"), RuntimeError("lạ"), KeyError("k")])
+def test_ac_mod_03_loi_khac_loai_ca_lo_llm_error_lo_sau_van_chay(exc):
+    """AC-MOD-03: classify ném lỗi bất kỳ thì cả lô bị loại "llm_error"; các lô sau vẫn chạy."""
+    concepts = [concept(f"k{i:02d}", f"M{i}") for i in range(15)]
+    llm = FakeLlm(raises={0: exc})
+    result = run(concepts, llm)
+    assert [len(c) for c in llm.calls] == [10, 5]
+    assert result.rejected == {f"k{i:02d}": "llm_error" for i in range(10)}
+    assert passed_keys(result) == [f"k{i:02d}" for i in range(10, 15)]
+    assert result.counts["không chắc"] == 10
+
+
+def test_ac_mod_05_ten_va_bi_danh_ngan_duoi_3_ky_tu_khong_duoc_them():
+    """AC-MOD-05: tên/bí danh có chữ+số sau fold ngắn hơn 3 ký tự không vào new_aliases."""
+    llm = FakeLlm(answers={"p": verdict("p", targets=True, name="a", aliases=["ba", "  ", "x9", "!!", "Ông A", "nva"])})
+    result = run([concept("p", "P")], llm)
+    assert result.rejected == {"p": "real_person"}
+    assert result.new_aliases == frozenset({"ong a", "nva"})
+
+
+def test_ac_mod_09_cao_buoc_ten_ngan_cung_khong_duoc_them():
+    """AC-MOD-09: accusation với tên chỉ 2 ký tự vẫn loại nhưng không thêm bí danh ngắn."""
+    llm = FakeLlm(answers={"p": verdict("p", accusation=True, name="Bo", aliases=["Anh Bo"])})
+    result = run([concept("p", "P")], llm)
+    assert result.rejected == {"p": "accusation"}
+    assert result.new_aliases == frozenset({"anh bo"})
+
+
+def test_ac_mod_05_toi_da_10_ten_moi_khai_niem_ten_truoc_roi_bi_danh_theo_thu_tu():
+    """AC-MOD-05: tối đa 10 tên mỗi khái niệm: tên trước, rồi các bí danh theo thứ tự."""
+    aliases = [f"alias{i:02d}" for i in range(12)]
+    llm = FakeLlm(answers={"p": verdict("p", targets=True, name="Nguyen Van", aliases=aliases)})
+    result = run([concept("p", "P")], llm)
+    assert result.new_aliases == frozenset({"nguyen van", *aliases[:9]})
+    assert len(result.new_aliases) == 10
+
+
+def test_ac_mod_09_toi_da_10_ten_cung_ap_cho_cao_buoc():
+    """AC-MOD-09: giới hạn 10 tên cũng áp cho accusation."""
+    aliases = [f"biet danh {i:02d}" for i in range(20)]
+    llm = FakeLlm(answers={"p": verdict("p", accusation=True, name="Tran Thi", aliases=aliases)})
+    result = run([concept("p", "P")], llm)
+    assert result.new_aliases == frozenset({"tran thi", *[f"biet danh {i:02d}" for i in range(9)]})
+
+
+def test_ac_mod_01_tu_cam_ngan_chi_khop_nguyen_token():
+    """AC-MOD-01: từ cấm ngắn hơn 4 ký tự chỉ khớp cả token, không khớp chuỗi con của văn bản đã nén."""
+    from lau_meme_pipeline.moderation import layer1
+
+    ml = lists(banned_words={"ma"})
+    assert layer1(concept(name="Mama Lẩu"), ml) is None
+    assert layer1(concept(name="Con Ma Đói"), ml) == "banned_word"
+    assert layer1(concept(name="MA"), ml) == "banned_word"
+    assert layer1(concept(name="Ma-quỷ"), ml) == "banned_word"
+    assert layer1(concept(name="Cây Khế", description="Có con ma xuất hiện"), ml) == "banned_word"
+    assert layer1(concept(name="Cây Khế", description="Mama mia"), ml) is None
+
+
+def test_ac_mod_01_tu_cam_ngan_khong_loai_nham_khi_chay_moderate():
+    """AC-MOD-01: "Mama Lẩu" qua lớp 1 và được gửi LLM, "Con Ma Đói" bị loại không gửi LLM."""
+    ml = lists(banned_words={"ma"})
+    llm = FakeLlm()
+    result = run([concept("a", "Mama Lẩu"), concept("b", "Con Ma Đói")], llm, ml)
+    assert result.rejected == {"b": "banned_word"}
+    assert llm.sent_keys == ["a"]
+
+
+def test_ac_mod_06_bi_danh_ngan_cung_chi_khop_nguyen_token():
+    """AC-MOD-06: bí danh ngắn hơn 4 ký tự cũng chỉ khớp cả token."""
+    from lau_meme_pipeline.moderation import layer1
+
+    ml = lists(aliases={"nva"})
+    assert layer1(concept(name="Nvađa Lẩu"), ml) is None
+    assert layer1(concept(name="Fan NVA"), ml) == "blocked_alias"
+
+
+def test_ac_mod_01_tu_tu_4_ky_tu_tro_len_van_khop_chuoi_nen():
+    """AC-MOD-01: từ cấm từ 4 ký tự trở lên giữ luật chuỗi con trên văn bản đã nén ("t.ừ c-ấm")."""
+    from lau_meme_pipeline.moderation import layer1
+
+    ml = lists(banned_words={"tu cam"}, aliases={"abcd"})
+    assert layer1(concept(name="t.ừ c-ấm"), ml) == "banned_word"
+    assert layer1(concept(name="xxabcdyy"), ml) == "blocked_alias"
+    assert layer1(concept(name="a b c d"), ml) == "blocked_alias"
