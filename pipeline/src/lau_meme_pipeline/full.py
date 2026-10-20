@@ -199,7 +199,13 @@ def run_full(
     judged = judge(proposed, scores if isinstance(scores, Mapping) else {})
     report["judge"] = {"kept": len(judged.kept), "rejected": len(judged.rejected)}
     kept_by_key: dict[str, list[dict]] = {}
+    taken: set[str] = set()
     for r in judged.kept:
+        # Two memes of this batch may get the same pair: the first keeps it, the other must not overwrite it and
+        # lose its meme (AC-INV-02); without another recipe that meme goes back to the queue.
+        if r["id"] in taken:
+            continue
+        taken.add(r["id"])
         kept_by_key.setdefault(r["key"], []).append(r)
     for p in passed:
         recipes_for = kept_by_key.get(p.concept.key, [])
@@ -276,8 +282,11 @@ def run_full(
     graph_out = export_graph(content, version)
     manifest = build_manifest(content, version=version, batch_at=batch_at, daily=daily, previous_version=None)
     check_all(graph_out, manifest, content, lists)  # raises InvariantError: nothing of this batch is published
-    report["miss_rate"] = list(simulate_miss_rate(graph_out, manifest["starters"]))
-    report["miss_rate_warning"] = miss_rate_warning(*report["miss_rate"])  # warns only (AC-INV-12)
+    try:  # warns only (AC-INV-12): a failing simulation never fails the batch
+        report["miss_rate"] = list(simulate_miss_rate(graph_out, manifest["starters"]))
+        report["miss_rate_warning"] = miss_rate_warning(*report["miss_rate"])
+    except Exception as exc:
+        report["miss_rate"], report["miss_rate_warning"] = None, f"Không chạy được mô phỏng: {type(exc).__name__}"
     out_store["queue"] = q.queue
     out_store["llm_cache"] = {k: used[k] for k in sorted(used)}
     return FullOutcome(graph=graph_out, manifest=manifest, store=out_store, report=report)

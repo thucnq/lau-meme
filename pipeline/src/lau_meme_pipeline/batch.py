@@ -148,14 +148,24 @@ def _check(store: ContentStore, graph: Mapping, content: Mapping) -> None:
 
 
 def _mod_lists(state: Mapping, banned_words: Sequence[str]) -> ModLists:
-    """Layer-1 lists for AC-INV-07. Names the admin blocked that are already in the blocklist are skipped: in core
-    mode they are still published and the Worker hides them at serve time (ADR 0003)."""
-    blocked = set(state.get("blocklist", {}).get("elements", []))
+    """Layer-1 lists for AC-INV-07. `banned_aliases` is required: it carries the MOD aliases and the names the admin
+    blocked (sources `mod` + `admin`), so a state without it must fail rather than check nothing. A term that is
+    exactly the name of an element already in the blocklist is skipped: in core mode that element is still published
+    and the Worker hides it at serve time (ADR 0003, open question 27)."""
+    blocked = set(state["blocklist"]["elements"])
     return ModLists(
         banned_words=frozenset(w for w in banned_words if w.strip()),
-        aliases=frozenset(state.get("banned_aliases", [])),
-        admin_blocked=frozenset(t for t in state.get("admin_blocked", []) if element_id(t) not in blocked),
+        aliases=frozenset(t for t in state["banned_aliases"] if element_id(t) not in blocked),
     )
+
+
+def _miss_rate(graph: Mapping, starters: Sequence[Mapping], log: Callable[[str], None]) -> tuple[float, float] | None:
+    """AC-INV-12 only warns: a failing simulation is logged and never fails the batch."""
+    try:
+        return simulate_miss_rate(graph, starters)
+    except Exception as exc:
+        log(f"Không chạy được mô phỏng chơi ngẫu nhiên: {type(exc).__name__}")
+        return None
 
 
 def _render_report(
@@ -249,7 +259,7 @@ def run_batch(
         _check(store, graph, content)
         step = "invariants"
         check_all(graph, manifest, store, _mod_lists(state, banned_words))
-        miss = simulate_miss_rate(graph, manifest["starters"])  # only warns (AC-INV-12)
+        miss = _miss_rate(graph, manifest["starters"], log)
         step = "banned"
         terms = banned_terms(banned_words)
         if terms:  # an empty secret never wipes the list already in D1

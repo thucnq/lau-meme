@@ -617,29 +617,6 @@ paths:
               schema: { $ref: '#/components/schemas/PipelineState' }
         '401': { $ref: '#/components/responses/Unauthorized' }
         default: { $ref: '#/components/responses/Problem' }
-  /pipeline/store:
-    get:
-      operationId: getPipelineStore
-      tags: [pipeline]
-      summary: Kho pipeline giai đoạn 2 của version hiện hành (hoặc `version` còn lưu)
-      description: Rỗng (`{}`) khi version đó chưa có kho (mẻ `core`). Không có dữ liệu người chơi (ADR 0009).
-      security: [{ PipelineToken: [] }]
-      x-ac: [AC-PIPE-07, AC-PIPE-10, AC-MOD-08, AC-INV-05]
-      parameters:
-        - name: version
-          in: query
-          required: false
-          schema: { type: integer, minimum: 1 }
-      responses:
-        '200':
-          description: Kho
-          content:
-            application/json:
-              schema: { $ref: '#/components/schemas/PipelineStore' }
-        '400': { $ref: '#/components/responses/BadRequest' }
-        '401': { $ref: '#/components/responses/Unauthorized' }
-        '404': { $ref: '#/components/responses/NotFound' }
-        default: { $ref: '#/components/responses/Problem' }
   /pipeline/banned-terms/{source}:
     put:
       operationId: putBannedTerms
@@ -1420,13 +1397,9 @@ components:
     PipelineState:
       type: object
       additionalProperties: false
-      required: [current_version, blocklist, banned_aliases, admin_blocked, daily_history, feedback]
+      required: [current_version, blocklist, banned_aliases, daily_history, feedback]
       properties:
         current_version: { type: [integer, 'null'] }
-        admin_blocked:
-          type: array
-          description: '`fold` các tên do quản trị chặn (nguồn `admin`) — AC-MOD-10, ADR 0009'
-          items: { type: string }
         blocklist: { $ref: '#/components/schemas/Blocklist' }
         banned_aliases:
           type: array
@@ -1454,13 +1427,6 @@ components:
               votes: { type: integer, minimum: 0 }
               nhat: { type: integer, minimum: 0 }
 
-    PipelineStore:
-      type: object
-      description: |
-        Kho pipeline giai đoạn 2 (ADR 0009) — Worker chỉ lưu và trả lại, không đọc nội dung. Các khóa: `elements`,
-        `recipes` (trend + bổ sung, có `score`), `queue` (khái niệm + `attempts` + `reason`), `llm_cache` (chỉ của mẻ
-        ghi). Không có dữ liệu người chơi. Tối đa 2 MB (giới hạn dòng D1).
-      additionalProperties: true
     PublishBatchRequest:
       oneOf:
         - type: object
@@ -1477,9 +1443,6 @@ components:
             graph: { $ref: '#/components/schemas/Graph' }
             content: { $ref: '#/components/schemas/BatchContent' }
             stats: { $ref: '#/components/schemas/BatchStats' }
-            store:
-              $ref: '#/components/schemas/PipelineStore'
-              description: Chế độ `full` (ADR 0009) — ghi vào `pipeline_store` trong cùng D1 batch với nội dung
         - type: object
           additionalProperties: false
           required: [status, batch_at, mode, failed_step, stats]

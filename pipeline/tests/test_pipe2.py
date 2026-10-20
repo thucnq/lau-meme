@@ -45,7 +45,7 @@ def raw(name="Meme Thử", quote="", context="", url="https://example.com/a", so
 
 class FakeGet:
     """get(url) -> (content_type, body). `pages` maps url -> (content_type, body) or an exception instance.
-    robots.txt of a host defaults to an empty (allow all) file."""
+    robots.txt of a host defaults to an empty (allow all) file; an exception instance is raised instead."""
 
     def __init__(self, pages=None, robots=None):
         self.pages = dict(pages or {})
@@ -56,7 +56,10 @@ class FakeGet:
         self.requested.append(url)
         if url.endswith("/robots.txt"):
             host = url.split("/")[2]
-            return ("text/plain", self.robots.get(host, ""))
+            robots = self.robots.get(host, "")
+            if isinstance(robots, Exception):
+                raise robots
+            return ("text/plain", robots)
         page = self.pages[url]
         if isinstance(page, Exception):
             raise page
@@ -250,6 +253,27 @@ def test_ac_pipe_03_robots_cam_la_loi_nguon_khong_lam_hong_dot():
     assert result.errors == [{"source": "Reddit", "error": "RobotsDenied"}]
     assert [c.name for c in result.concepts] == ["Distracted Boyfriend", "Rickroll"]
     assert REDDIT_URL not in get.requested
+
+
+@pytest.mark.parametrize(
+    ("failure", "allowed"),
+    [(404, True), (410, True), (500, False), (503, False), (401, False), (TimeoutError("hết giờ"), False)],
+    ids=["404", "410", "500", "503", "401", "timeout"],
+)
+def test_ac_pipe_03_robots_khong_co_thi_cho_phep_loi_thi_cam(failure, allowed):
+    """AC-PIPE-03: robots.txt 404/410 ⇒ không cấm gì; lỗi máy chủ, cấm truy cập hay hết giờ ⇒ coi như cấm hết
+    (RFC 9309), nguồn đó báo RobotsDenied và trang không bị tải."""
+    from lau_meme_pipeline.crawl import HttpStatus, RedditAdapter, crawl
+
+    error = HttpStatus(failure) if isinstance(failure, int) else failure
+    http, get = make_http(ALL_PAGES, robots={"www.reddit.com": error})
+    result = crawl([RedditAdapter(["vietnam"])], http)
+    if allowed:
+        assert result.errors == []
+        assert REDDIT_URL in get.requested
+    else:
+        assert result.errors == [{"source": "Reddit", "error": "RobotsDenied"}]
+        assert REDDIT_URL not in get.requested
 
 
 # ================================================================ AC-PIPE-04

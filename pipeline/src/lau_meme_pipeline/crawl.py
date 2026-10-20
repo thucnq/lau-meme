@@ -39,6 +39,17 @@ class NotText(Exception):
     """The URL or the response is media (image/video) or not a text format."""
 
 
+class HttpStatus(Exception):
+    """Non-2xx answer; the network `get` raises it so robots.txt can tell "absent" from "failing"."""
+
+    def __init__(self, status: int) -> None:
+        super().__init__(f"HTTP {status}")
+        self.status = status
+
+
+ROBOTS_ABSENT = (404, 410)  # RFC 9309 §2.3.1.3: only an unavailable robots.txt allows everything
+
+
 class Http:
     """Polite text-only fetching: `get(url) -> (content_type, body)` is the network adapter (a fake in tests)."""
 
@@ -55,8 +66,10 @@ class Http:
             try:
                 _, body = self._get(base + "/robots.txt")
                 parser.parse(body.splitlines())
-            except Exception:  # no robots.txt (or unreachable): nothing is forbidden
-                parser.parse([])
+            except HttpStatus as exc:
+                parser.parse([] if exc.status in ROBOTS_ABSENT else ["User-agent: *", "Disallow: /"])
+            except Exception:  # unreachable (5xx, timeout…): RFC 9309 says assume complete disallow
+                parser.parse(["User-agent: *", "Disallow: /"])
             self._robots[base] = parser
         return parser.can_fetch(USER_AGENT, url)
 

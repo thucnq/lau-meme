@@ -293,9 +293,8 @@ def test_golden_files_khop_generator_va_expected():
 @pytest.mark.parametrize("case", DATASETS)
 def test_ac_inv_01_doi_xung_tren_bo_vang(case):
     """AC-INV-01: mọi cặp có thứ tự (A,B)/(B,A) của graph cho cùng kết quả, đúng với công thức của bộ vàng."""
-    from lau_meme_pipeline.invariants import check_symmetric
-
     from lau_meme_pipeline.graph import decrypt_entry, export_graph
+    from lau_meme_pipeline.invariants import check_symmetric
 
     core, store = core_of(case), store_of(core_of(case))
     graph = export_graph(store, GRAPH_VERSION)
@@ -314,9 +313,8 @@ def test_ac_inv_01_doi_xung_tren_bo_vang(case):
 
 def test_ac_inv_01_phat_hien_cap_khong_doi_xung(monkeypatch):
     """AC-INV-01: tra A+B có mà B+A không thì check_symmetric báo vi phạm."""
-    from lau_meme_pipeline.invariants import check_symmetric
-
     from lau_meme_pipeline.graph import decrypt_entry, export_graph
+    from lau_meme_pipeline.invariants import check_symmetric
 
     core = core_of("classic")
     graph = export_graph(store_of(core), GRAPH_VERSION)
@@ -420,9 +418,8 @@ def single_recipe_element(core: dict) -> tuple[str, dict]:
 @pytest.mark.parametrize("case", ["classic", "synthetic-11"])
 def test_ac_inv_03_phat_hien_phan_tu_hoat_dong_nhung_mat_duong(case):
     """AC-INV-03: ẩn công thức duy nhất sinh ra X mà X vẫn hoạt động thì báo vi phạm."""
-    from lau_meme_pipeline.invariants import check_reachability
-
     from lau_meme_pipeline.ids import recipe_id
+    from lau_meme_pipeline.invariants import check_reachability
 
     core = core_of(case)
     store = store_of(core)
@@ -448,9 +445,8 @@ def test_ac_inv_03_phat_hien_depth_luu_lech_bfs(case):
 def test_ac_inv_03_phan_tu_mat_duong_do_an_thi_danh_dau_khong_hoat_dong_la_hop_le(case):
     """AC-INV-03: công thức bị ẩn làm phần tử mất đường; nếu các phần tử đó đã ở trạng thái không hoạt động trong
     graph này (và depth còn lại là BFS) thì không có vi phạm."""
-    from lau_meme_pipeline.invariants import check_reachability
-
     from lau_meme_pipeline.ids import recipe_id
+    from lau_meme_pipeline.invariants import check_reachability
 
     core = core_of(case)
     store = store_of(core)
@@ -504,9 +500,8 @@ def test_ac_inv_04_graph_bo_vang_khong_lo_va_khong_giai_ma_duoc_khi_thieu_dau_va
 @pytest.mark.parametrize("case", DATASETS)
 def test_ac_inv_04_check_opaque_khong_vi_pham_tren_bo_vang(case):
     """AC-INV-04: check_opaque trả rỗng trên graph xuất từ từng graph của bộ vàng."""
-    from lau_meme_pipeline.invariants import check_opaque
-
     from lau_meme_pipeline.graph import export_graph
+    from lau_meme_pipeline.invariants import check_opaque
 
     store = store_of(core_of(case))
     assert check_opaque(export_graph(store, GRAPH_VERSION), store) == []
@@ -515,9 +510,8 @@ def test_ac_inv_04_check_opaque_khong_vi_pham_tren_bo_vang(case):
 def test_ac_inv_04_phat_hien_ten_va_emoji_ro_ri_nhung_khong_phat_ten_khoi_dau():
     """AC-INV-04: tên hoặc emoji của phần tử depth ≥ 1 xuất hiện trong file graph thì vi phạm; tên khởi đầu (depth 0)
     thì không."""
-    from lau_meme_pipeline.invariants import check_opaque
-
     from lau_meme_pipeline.graph import export_graph
+    from lau_meme_pipeline.invariants import check_opaque
 
     core = core_of("synthetic-11")
     store = store_of(core)
@@ -535,9 +529,8 @@ def test_ac_inv_04_phat_hien_ten_va_emoji_ro_ri_nhung_khong_phat_ten_khoi_dau():
 
 def test_ac_inv_04_phat_hien_muc_giai_ma_duoc_bang_cap_thieu():
     """AC-INV-04: mục (A,B) mà giải mã được bằng khóa của (A,X), X ≠ B, thì vi phạm (graph nhỏ, kiểm toàn bộ X)."""
-    from lau_meme_pipeline.invariants import check_opaque
-
     from lau_meme_pipeline.graph import export_graph
+    from lau_meme_pipeline.invariants import check_opaque
 
     core = core_of(TINY)
     store = store_of(core)
@@ -764,7 +757,6 @@ def test_ac_inv_06_check_all_duoc_goi_truoc_khi_dang(monkeypatch, fast_sim):
 def test_ac_inv_06_run_full_goi_check_all(monkeypatch, fast_sim):
     """AC-INV-06: run_full cũng chạy check_all trên graph/manifest của đợt trước khi trả kết quả để đăng."""
     import lau_meme_pipeline.invariants as inv
-
     from lau_meme_pipeline.full import run_full
 
     original = inv.check_all
@@ -793,9 +785,8 @@ def test_ac_inv_06_check_all_khong_loi_tren_bo_vang(case, fast_sim):
 
 def test_ac_inv_06_check_all_gom_moi_vi_pham_cua_inv_02_03_07_10():
     """AC-INV-06: check_all ném InvariantError chứa vi phạm của mọi kiểm tra (đây: INV-02, 03, 07, 10)."""
-    from lau_meme_pipeline.invariants import InvariantError, check_all
-
     from lau_meme_pipeline.graph import export_graph
+    from lau_meme_pipeline.invariants import InvariantError, check_all
 
     assert issubclass(InvariantError, Exception)
     core = core_of("synthetic-11")
@@ -846,7 +837,6 @@ def test_ac_inv_07_phat_hien_khop_tu_cam_bi_danh_va_ten_bi_chan(kind):
 def test_ac_inv_07_phan_tu_khong_hoat_dong_khong_bi_xet():
     """AC-INV-07: phần tử đã ẩn/chặn không còn hoạt động nên khớp từ cấm cũng không tính."""
     from lau_meme_pipeline.invariants import check_moderation
-
     from lau_meme_pipeline.text import fold
 
     core = core_of("classic")
@@ -890,9 +880,8 @@ def daily_manifest(element_id: str) -> dict:
 
 def test_ac_inv_10_phat_hien_mon_dac_biet_khong_hop_le():
     """AC-INV-10: món là phần tử khởi đầu, depth 3, depth 9, không tồn tại, đã ẩn hoặc mất đường ⇒ đều vi phạm."""
-    from lau_meme_pipeline.invariants import check_daily
-
     from lau_meme_pipeline.ids import recipe_id
+    from lau_meme_pipeline.invariants import check_daily
 
     core = core_of("synthetic-11")
     depth = expected_of("synthetic-11")["depth"]
@@ -1022,3 +1011,59 @@ def test_ac_inv_12_dat_nguong_thi_bao_cao_khong_co_canh_bao(monkeypatch):
     outcome = run(core_of("classic"))
     assert outcome.ok is True
     assert "CẢNH BÁO GIẢ LẬP INV-12" not in outcome.report_body
+
+
+# ================================================================ review fixes: real Worker state, same pair, warn-only
+
+
+def test_ac_inv_07_ten_quan_tri_chan_den_qua_banned_aliases_cua_worker(fast_sim):
+    """AC-INV-07: /pipeline/state thật gửi tên quản trị chặn trong banned_aliases (nguồn mod + admin): khớp phần tử
+    đang hoạt động ⇒ đợt thất bại ở invariants; tên đúng của phần tử đã nằm trong blocklist ⇒ bỏ qua (câu hỏi mở 27)."""
+    from lau_meme_pipeline.text import fold
+
+    term = fold("Còn Cái Nịt")
+    state = make_state()
+    state["banned_aliases"] = [term]
+    outcome = run(core_of("classic"), FakeClient(state))
+    assert outcome.ok is False and outcome.failed_step == "invariants"
+
+    state = make_state(blocked_elements=[eid("Còn Cái Nịt")])
+    state["banned_aliases"] = [term]
+    assert run(core_of("classic"), FakeClient(state)).ok is True
+
+
+def test_ac_inv_07_trang_thai_thieu_banned_aliases_thi_dot_that_bai(fast_sim):
+    """AC-INV-07: trạng thái không có banned_aliases thì không được kiểm "rỗng" cho qua — đợt thất bại, không đăng."""
+    state = make_state()
+    del state["banned_aliases"]
+    client = FakeClient(state)
+    outcome = run(core_of("classic"), client)
+    assert outcome.ok is False
+    assert client.success_posts == []
+
+
+@pytest.mark.parametrize("seed", [1, 2, 3, 4])
+def test_ac_inv_02_hai_meme_cung_cap_khong_mat_meme(seed, fast_sim):
+    """AC-INV-02: hai meme cùng đợt được đề xuất cùng một cặp ⇒ chỉ một công thức cho cặp đó; meme còn lại không bị
+    đánh dấu đã nối mà mất công thức — mọi phần tử trend đều có công thức sinh ra nó."""
+    from lau_meme_pipeline.full import run_full
+
+    crawl_result = synthetic_crawl(seed)
+    out = run_full(core_of("classic"), {}, crawl_result, fake_llm(), T, mod_lists())
+    produced = {r["result"] for r in out.store["recipes"]}
+    assert [e["name"] for e in out.store["elements"] if e["id"] not in produced] == []
+    assert len({r["id"] for r in out.store["recipes"]}) == len(out.store["recipes"])
+    distinct = len({c.name.casefold() for c in crawl_result.concepts})
+    assert len(out.store["elements"]) + len(out.store["queue"]) == distinct  # nothing lost (fake LLM passes all)
+
+
+def test_ac_inv_12_mo_phong_loi_khong_lam_hong_dot(monkeypatch):
+    """AC-INV-12: mô phỏng chỉ cảnh báo — nó ném lỗi thì run_batch vẫn đăng success và run_full vẫn trả kết quả."""
+    from lau_meme_pipeline.full import run_full
+
+    patch_everywhere(monkeypatch, "simulate_miss_rate", boom_for("mô phỏng"))
+    client = FakeClient()
+    outcome = run(core_of("classic"), client)
+    assert outcome.ok is True and len(client.success_posts) == 1
+    out = run_full(core_of("classic"), {}, synthetic_crawl(1), fake_llm(), T, mod_lists())
+    assert out.report["miss_rate"] is None
