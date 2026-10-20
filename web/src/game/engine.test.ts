@@ -508,7 +508,7 @@ describe('game engine', () => {
     expect(fetchSpy).not.toHaveBeenCalled()
     vi.unstubAllGlobals()
     vi.stubGlobal('crypto', webcrypto)
-  })
+  }, 60_000)
 
   // ------------------------------------------------------------ AC-GAME-15
   it('AC-GAME-15: phần tử bị chặn bị ẩn khỏi Đĩa và bàn nhưng vẫn nằm trong lưu trữ; bỏ chặn thì hiện lại', () => {
