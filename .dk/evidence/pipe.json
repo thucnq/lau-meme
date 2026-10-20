@@ -1,0 +1,28 @@
+{
+ "red": {
+  "ts": "2026-10-20T02:33:23+00:00",
+  "commit": "a8afc97",
+  "results": {
+   "AC-PIPE-01": {
+    "status": "FAIL",
+    "test": "test_batch#test_ac_pipe_01_che_do_full_o_giai_doan_1_khong_dang_va_khong_cham_adapter"
+   },
+   "AC-PIPE-02": {
+    "status": "FAIL",
+    "test": "test_batch#test_ac_pipe_02_chay_module_batch_voi_quyen_tao_issue_va_secret"
+   },
+   "AC-PIPE-11": {
+    "status": "FAIL",
+    "test": "test_batch#test_ac_pipe_11_cli_tra_1_khi_that_bai_va_0_khi_thanh_cong"
+   },
+   "AC-PIPE-13": {
+    "status": "FAIL",
+    "test": "pipeline.test.ts#pipeline state > AC-PIPE-13: trạng thái pipeline chỉ có dữ liệu nội dung ẩn danh, không có trường người chơi"
+   },
+   "AC-PIPE-14": {
+    "status": "FAIL",
+    "test": "pipeline.test.ts#pipeline batch report > AC-PIPE-14: PATCH gắn link Issue vào đợt; id lạ 404; link sai 400; thiếu hoặc sai token 401"
+   }
+  }
+ }
+}
