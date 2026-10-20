@@ -1,0 +1,44 @@
+{
+ "red": {
+  "ts": "2026-10-20T04:50:51+00:00",
+  "commit": "fe09419",
+  "results": {
+   "AC-PRIV-01": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-PRIV-02": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-PRIV-03": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-PRIV-04": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-PRIV-05": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-PRIV-06": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-PRIV-07": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-PRIV-08": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-PRIV-09": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   }
+  }
+ }
+}
