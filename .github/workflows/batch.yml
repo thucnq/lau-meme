@@ -1,0 +1,53 @@
+# Mẻ nhúng (AC-PIPE-01/02/11/14, ADR 0003/0006). Đề xuất — người chép vào .github/workflows/batch.yml
+# (guard chặn agent sửa workflow). 00:00 và 12:00 GMT+7 = 17:00 và 05:00 UTC.
+# Đăng dữ liệu qua API của Worker, không deploy code; lỗi ở bất kỳ bước nào ⇒ bản hiện hành giữ nguyên, job đỏ.
+name: batch
+
+on:
+  schedule:
+    - cron: '0 17 * * *'
+    - cron: '0 5 * * *'
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: Chế độ (giai đoạn 1 chỉ có core)
+        type: choice
+        options: [core, full]
+        default: core
+      target:
+        description: Môi trường
+        type: choice
+        options: [staging, production]
+        default: staging
+
+# Dùng chung nhóm với rollback.yml: mẻ nhúng và rollback không bao giờ chạy chồng nhau.
+concurrency:
+  group: batch-${{ inputs.target || 'production' }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  batch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    # `production` có required reviewers (deploy code); mẻ nhúng chỉ đăng dữ liệu nên dùng environment
+    # `production-no-approval` (cùng secret PIPELINE_TOKEN/API_BASE_URL của production) để cron không đứng chờ duyệt.
+    environment: ${{ inputs.target == 'staging' && 'staging' || 'production-no-approval' }}
+    permissions:
+      contents: read
+      issues: write
+    defaults: { run: { working-directory: pipeline } }
+    steps:
+      - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@v6
+      - run: uv sync --frozen --no-dev
+      - name: Mẻ nhúng
+        env:
+          API_BASE_URL: ${{ secrets.API_BASE_URL }}
+          PIPELINE_TOKEN: ${{ secrets.PIPELINE_TOKEN }}
+          GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          MODE: ${{ inputs.mode || 'core' }}
+        run: uv run python -m lau_meme_pipeline.batch --mode "$MODE" --core ../docs/input/noi-dung-loi.json
