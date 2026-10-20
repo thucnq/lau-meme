@@ -3,12 +3,14 @@
  * Drag and drop uses Pointer Events; the drop target is found with document.elementFromPoint.
  * Progress lives only in localStorage — this screen never sends a write request.
  */
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import type { PointerEvent as ReactPointerEvent } from 'react'
 import { getGraph, getManifest } from '../api'
+import type { ElementRef } from '../daily/challenge'
 import { startManifestWatch } from '../daily/countdown'
+import { DailyPanel } from '../daily/DailyPanel'
 import { BLOCKLIST_POLL_MS, loadBlocklist } from '../report/blocklist'
-import type { Graph } from '../graph/crypto'
+import type { Graph, GraphResult } from '../graph/crypto'
 import { localStore as storage, migrateLegacyKeys } from '../storage'
 import {
   EMPTY_BLOCKLIST,
@@ -17,6 +19,7 @@ import {
   filterItems,
   initialProgress,
   isNew,
+  lookupRecipe,
   loadProgress,
   migrateProgress,
   resetProgress,
@@ -188,6 +191,31 @@ export function Game({ onDiscover, onItems, heirlooms = {}, onReport, blocklistR
   const blocklist = loaded?.blocklist ?? EMPTY_BLOCKLIST
   const ready = loaded !== null && progress !== null
   const ctx = loaded ? { ...loaded, now: () => new Date() } : null
+
+  // Món đặc biệt board: same graph and block list; what it finds also lands on the main plate (AC-DAILY-04).
+  // Stable callbacks reading the latest graph/block list when called (the board lives for the whole batch).
+  const dailyFound = useRef(new Map<string, GraphResult>())
+  const loadedRef = useRef(loaded)
+  useEffect(() => {
+    loadedRef.current = loaded
+  }, [loaded])
+  const dailyLookup = useCallback(async (a: string, b: string) => {
+    const current = loadedRef.current
+    if (!current) return null
+    const found = await lookupRecipe(current, a, b)
+    if (found) dailyFound.current.set(found.id, found)
+    return found
+  }, [])
+  const commitRef = useRef(commit)
+  useEffect(() => {
+    commitRef.current = commit
+  })
+  const dailyDiscover = useCallback((el: ElementRef) => {
+    const p = progressRef.current
+    const found = dailyFound.current.get(el.id)
+    if (!p || !found || p.items.some((i) => i.id === el.id)) return
+    commitRef.current({ ...p, items: [...p.items, { ...found, discovered_at: new Date().toISOString() }] })
+  }, [])
 
   // ---------------------------------------------------------------- combining
   const boil = (a: Item, b: Item) => {
@@ -414,6 +442,16 @@ export function Game({ onDiscover, onItems, heirlooms = {}, onReport, blocklistR
             Thử lại
           </button>
         </div>
+      )}
+
+      {loaded && progress && (
+        <DailyPanel
+          key={loaded.manifest.version}
+          manifest={loaded.manifest}
+          lookup={dailyLookup}
+          onDiscover={dailyDiscover}
+          storage={storage()}
+        />
       )}
 
       <div className="game-board">
