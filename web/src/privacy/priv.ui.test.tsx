@@ -315,6 +315,44 @@ describe('priv: xóa dữ liệu của mình', () => {
   })
 })
 
+describe('priv: sau khi xóa, UUID mới chưa đồng ý', () => {
+  it('AC-PRIV-05: sau deleteMyData, canSend false, readConsent null và playerFetch ném ConsentRequiredError', async () => {
+    saveConsent(localStorage, 1, 'granted')
+    getPlayerId(localStorage)
+    await deleteMyData(localStorage)
+    expect(canSend(localStorage, 1)).toBe(false)
+    expect(readConsent(localStorage)).toBeNull()
+    fetchMock.mockClear()
+    await expect(playerFetch('/api/me/streak', {}, opts())).rejects.toBeInstanceOf(ConsentRequiredError)
+    expect(fetchMock).not.toHaveBeenCalled()
+  })
+
+  it('AC-PRIV-05: sau "Xóa vĩnh viễn" trong MyDataPanel, đồng ý cục bộ bị xóa và playerFetch ném ConsentRequiredError', async () => {
+    saveConsent(localStorage, 1, 'granted')
+    render(<MyDataPanel policyVersion={1} storage={localStorage} />)
+    fireEvent.click(await screen.findByRole('button', { name: 'Xóa dữ liệu của tôi' }))
+    fireEvent.click(await screen.findByRole('button', { name: 'Xóa vĩnh viễn' }))
+    await waitFor(() => expect(calls().some((c) => c.method === 'DELETE')).toBe(true))
+    await waitFor(() => expect(readConsent(localStorage)).toBeNull())
+    expect(canSend(localStorage, 1)).toBe(false)
+    await expect(playerFetch('/api/me/streak', {}, opts())).rejects.toBeInstanceOf(ConsentRequiredError)
+  })
+
+  it('AC-PRIV-05: đang đồng ý trong Root, mở "Dữ liệu của tôi" rồi xóa thì hộp đồng ý "Dữ liệu khi chơi" hiện lại', async () => {
+    saveConsent(localStorage, 1, 'granted')
+    render(<Root />)
+    await screen.findByRole('list', { name: 'Đĩa nhúng' })
+    expect(bannerEl()).toBeNull()
+    fireEvent.click(await screen.findByRole('button', { name: 'Dữ liệu của tôi' }))
+    fireEvent.click(await screen.findByRole('button', { name: 'Xóa dữ liệu của tôi' }))
+    fireEvent.click(await screen.findByRole('button', { name: 'Xóa vĩnh viễn' }))
+    await waitFor(() => expect(calls().some((c) => c.method === 'DELETE')).toBe(true))
+    await waitFor(() => expect(bannerEl()).not.toBeNull())
+    expect(screen.getByRole('button', { name: 'Đồng ý' })).toBeTruthy()
+    expect(canSend(localStorage, 1)).toBe(false)
+  })
+})
+
 // ================================================================ AC-PRIV-08
 describe('priv: xem và xuất dữ liệu', () => {
   it('AC-PRIV-08: getMyData không cần đồng ý, GET /lau-meme/api/me kèm X-Player-Id và trả dữ liệu', async () => {

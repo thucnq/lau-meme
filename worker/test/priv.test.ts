@@ -129,6 +129,19 @@ const ins = {
     ),
 }
 
+/** Rate-limit bucket for UUID `u` already at the limit (10/minute) for the current window. */
+async function fullBucket(u: string) {
+  const now = Date.now()
+  const windowStart = now - (now % 60_000)
+  const sum = new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(u)))
+  const digest = [...sum].map((b) => b.toString(16).padStart(2, '0')).join('').slice(0, 16)
+  return env.DB.prepare('INSERT INTO rate_counter (bucket, count, expires_at) VALUES (?, ?, ?)').bind(
+    `player:u:${digest}:${windowStart}`,
+    10,
+    windowStart + 60_000,
+  )
+}
+
 /** A player with one row of every kind of personal data (single batch). */
 function seedPlayer(id: string, tag: string, now: number) {
   return [
@@ -246,7 +259,33 @@ describe('priv', () => {
     expect(await ok.json()).toEqual({ nickname: 'Bếp Trưởng' })
   })
 
+  it('AC-PRIV-03: vượt 10 yêu cầu/phút/UUID thì POST /consents trả 429 problem+json kèm Retry-After và không ghi dòng nào', async () => {
+    const u = newId()
+    await env.DB.batch([await fullBucket(u)])
+    const res = await postConsent(u, { purpose: 'play', action: 'grant', policy_version: POLICY_VERSION })
+    expect(res.status).toBe(429)
+    isProblem(res)
+    expect(Number(res.headers.get('Retry-After'))).toBeGreaterThan(0)
+    expect(await count('SELECT COUNT(*) AS n FROM consent WHERE player_id = ?', u)).toBe(0)
+  })
+
   // ============================================================== AC-PRIV-05
+  it('AC-PRIV-05: vượt giới hạn tần suất thì DELETE /me trả 429 và dữ liệu của người chơi vẫn còn nguyên', async () => {
+    const u = newId()
+    await env.DB.batch([...seedPlayer(u, 'r', Date.now()), await fullBucket(u)])
+    const res = await delMe(u)
+    expect(res.status).toBe(429)
+    isProblem(res)
+    expect(Number(res.headers.get('Retry-After'))).toBeGreaterThan(0)
+    const [player, daily, disc, erase] = await env.DB.batch<{ n: number }>([
+      env.DB.prepare('SELECT COUNT(*) AS n FROM player WHERE id = ?').bind(u),
+      env.DB.prepare('SELECT COUNT(*) AS n FROM daily_result WHERE player_id = ?').bind(u),
+      env.DB.prepare('SELECT COUNT(*) AS n FROM discovery WHERE player_id = ?').bind(u),
+      env.DB.prepare("SELECT COUNT(*) AS n FROM consent WHERE player_id = ? AND action = 'erase'").bind(u),
+    ])
+    expect([player!.results[0]!.n, daily!.results[0]!.n, disc!.results[0]!.n, erase!.results[0]!.n]).toEqual([1, 1, 2, 0])
+  })
+
   it('AC-PRIV-05: DELETE /me trả 204; xóa nickname, Daily, streak, phiếu, sự kiện; giữ khám phá và báo cáo nhưng bỏ UUID; giữ đồng ý và thêm dòng erase', async () => {
     const u = newId()
     const v = newId() // another player, must be untouched
