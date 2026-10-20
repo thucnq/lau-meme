@@ -1,0 +1,11 @@
+{"ts": "2026-10-19T23:49:35+00:00", "phase": "build", "feature": "graph", "branch": "feat/graph", "sid": "eb35e242-4e7", "cmd": "dk:doctor", "ev": "command", "args_chars": 0}
+{"ts": "2026-10-19T23:49:45+00:00", "phase": "build", "feature": "graph", "branch": "feat/graph", "sid": "eb35e242-4e7", "cmd": "dk:doctor", "ev": "usage", "usage": {"claude-opus-5-5": {"in": 6, "cache_read": 101067, "cache_write": 16800, "out": 1120, "calls": 3}}}
+{"ts": "2026-10-19T23:49:47+00:00", "phase": "build", "feature": "graph", "branch": "feat/graph", "sid": "eb35e242-4e7", "cmd": "dk:doctor", "agent": "", "ev": "subagent"}
+{"ts": "2026-10-19T23:50:54+00:00", "phase": "build", "feature": "graph", "branch": "feat/graph", "sid": "eb35e242-4e7", "cmd": "dk:doctor", "ev": "prompt", "chars": 46}
+{"ts": "2026-10-19T23:51:02+00:00", "phase": "build", "feature": "graph", "branch": "feat/graph", "sid": "eb35e242-4e7", "cmd": "dk:doctor", "ev": "tool", "tool": "Bash", "target": "git remote -v && git status --short && git branch -vv && git stash list | head; ls ~/; df -h ~ | tail -1"}
+{"ts": "2026-10-19T23:58:35+00:00", "phase": "build", "feature": "graph", "branch": "feat/graph", "sid": "2ddbed83-ac8", "cmd": "dk:doctor", "ev": "command", "args_chars": 0}
+{"ts": "2026-10-19T23:59:06+00:00", "phase": "build", "feature": "graph", "branch": "feat/graph", "sid": "2ddbed83-ac8", "cmd": "dk:doctor", "ev": "usage", "usage": {"claude-opus-5-5": {"in": 2, "cache_read": 24147, "cache_write": 18950, "out": 529, "calls": 1}}}
+{"ts": "2026-10-19T23:59:06+00:00", "phase": "build", "feature": "graph", "branch": "feat/graph", "sid": "2ddbed83-ac8", "cmd": "dk:doctor", "ev": "session_end", "reason": "prompt_input_exit"}
+{"ts": "2026-10-19T23:59:37+00:00", "phase": "build", "feature": "graph", "branch": "feat/daily", "sid": "f5b41d5b-241", "cmd": "dk:approve", "ev": "command", "args_chars": 5}
+{"ts": "2026-10-20T00:00:45+00:00", "phase": "build", "feature": "graph", "branch": "feat/daily", "sid": "f5b41d5b-241", "cmd": "dk:approve", "ev": "usage", "usage": {"claude-opus-5-5": {"in": 2, "cache_read": 26094, "cache_write": 16069, "out": 75, "calls": 1}}}
+{"ts": "2026-10-20T00:00:45+00:00", "phase": "build", "feature": "graph", "branch": "feat/daily", "sid": "f5b41d5b-241", "cmd": "dk:approve", "ev": "session_end", "reason": "prompt_input_exit"}
