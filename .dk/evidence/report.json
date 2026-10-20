@@ -40,5 +40,55 @@
     "test": "(không biên dịch)"
    }
   }
+ },
+ "green": {
+  "ts": "2026-10-20T05:33:55+00:00",
+  "commit": "9848e7e",
+  "results": {
+   "AC-REPORT-01": {
+    "status": "PASS",
+    "test": "report.ui.test.tsx#report: api > AC-REPORT-01: REASONS có đúng 7 lý do theo thứ tự với nhãn tiếng Việt"
+   },
+   "AC-REPORT-02": {
+    "status": "PASS",
+    "test": "report.ui.test.tsx#report: api > AC-REPORT-02: submitReport ném SendError mang status khi máy chủ trả 422 / 404 / 429"
+   },
+   "AC-REPORT-03": {
+    "status": "PASS",
+    "test": "report.test.ts#report > AC-REPORT-03: cùng UUID báo cáo lại cùng đích "
+   },
+   "AC-REPORT-04": {
+    "status": "PASS",
+    "test": "report.test.ts#report > AC-REPORT-04: UUID thứ 3 báo cáo phần tử thì cùng yêu cầu ghi block "
+   },
+   "AC-REPORT-05": {
+    "status": "PASS",
+    "test": "report.ui.test.tsx#report: ReportDialog > AC-REPORT-05: \"Ảnh không phù hợp\" với phần tử có ảnh gửi target image; phần tử không có ảnh hoặc lý do khác thì target element"
+   },
+   "AC-REPORT-06": {
+    "status": "PASS",
+    "test": "report.test.ts#report > AC-REPORT-06: GET blocklist trả 3 mảng id "
+   },
+   "AC-REPORT-07": {
+    "status": "PASS",
+    "test": "report.ui.test.tsx#report: danh sách chặn phía client > AC-REPORT-07: loadBlocklist GET /lau-meme/api/blocklist, trả danh sách và lưu vào localStorage laumeme:blocklist"
+   },
+   "AC-REPORT-08": {
+    "status": "PASS",
+    "test": "report.ui.test.tsx#report: ReportDialog > AC-REPORT-08: máy chủ trả 429 thì hiện \"Gửi quá nhanh, thử lại sau.\" và không hiện lời cảm ơn"
+   },
+   "AC-REPORT-09": {
+    "status": "PASS",
+    "test": "report.test.ts#report > AC-REPORT-09: P bị tự ẩn qua báo cáo thì POST khám phá công thức ra P và công thức có P làm đầu vào đều 422; công thức không liên quan vẫn 201"
+   },
+   "AC-REPORT-VALIDATION": {
+    "status": "PASS",
+    "test": "report.test.ts#report > AC-REPORT-VALIDATION: id sai định dạng "
+   },
+   "AC-REPORT-ABUSE": {
+    "status": "PASS",
+    "test": "report.test.ts#report > AC-REPORT-ABUSE: trường lạ giả danh "
+   }
+  }
  }
 }

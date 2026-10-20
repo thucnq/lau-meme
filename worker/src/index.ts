@@ -5,6 +5,7 @@ import { getDailyLeaderboard, getMyStreak, getStreakLeaderboard, submitDailyResu
 import { getPipelineState, patchBatchRun, publishBatch, rollbackBatch } from './features/pipeline/batches'
 import { cleanup } from './features/player/cleanup'
 import { createConsent, deleteMyData, getMyData, putNickname } from './features/player/me'
+import { createReport, getBlocklist } from './features/report/report'
 import { HttpError, ResponseError, json, problem } from './http'
 import { maskId } from './log'
 
@@ -36,6 +37,8 @@ const routes: Route[] = [
   { pattern: /^\/api\/daily\/([^/]+)\/results$/, methods: { POST: submitDailyResult } },
   { pattern: /^\/api\/daily\/([^/]+)\/leaderboard$/, methods: { GET: getDailyLeaderboard } },
   { pattern: /^\/api\/streaks\/leaderboard$/, methods: { GET: getStreakLeaderboard } },
+  { pattern: /^\/api\/blocklist$/, methods: { GET: getBlocklist } },
+  { pattern: /^\/api\/reports$/, methods: { POST: createReport } },
   { pattern: /^\/api\/discoveries$/, methods: { GET: listDiscoveries, POST: createDiscovery } },
   { pattern: /^\/api\/consents$/, methods: { POST: createConsent } },
   { pattern: /^\/api\/me$/, methods: { GET: getMyData, DELETE: deleteMyData } },

@@ -5,7 +5,9 @@
  */
 import { useEffect, useRef, useState } from 'react'
 import type { PointerEvent as ReactPointerEvent } from 'react'
-import { getBlocklist, getGraph, getManifest } from '../api'
+import { getGraph, getManifest } from '../api'
+import { startManifestWatch } from '../daily/countdown'
+import { loadBlocklist } from '../report/blocklist'
 import type { Graph } from '../graph/crypto'
 import { localStore as storage, migrateLegacyKeys } from '../storage'
 import {
@@ -70,9 +72,11 @@ type Props = {
   onItems?: (ids: string[]) => void
   /** Element id → "Công thức gia truyền của …" line. */
   heirlooms?: Record<string, string>
+  /** Shows a "Báo cáo" button on each plate item (AC-REPORT-01). */
+  onReport?: (item: { id: string; name: string; image_key: string | null }) => void
 }
 
-export function Game({ onDiscover, onItems, heirlooms = {} }: Props = {}) {
+export function Game({ onDiscover, onItems, heirlooms = {}, onReport }: Props = {}) {
   const onDiscoverRef = useRef(onDiscover)
   useEffect(() => {
     onDiscoverRef.current = onDiscover
@@ -125,7 +129,7 @@ export function Game({ onDiscover, onItems, heirlooms = {} }: Props = {}) {
   useEffect(() => {
     const ctrl = new AbortController()
     ;(async () => {
-      const blocklist = getBlocklist(ctrl.signal).catch(() => EMPTY_BLOCKLIST)
+      const blocklist = loadBlocklist(ctrl.signal, storage()) // last good copy when offline (AC-REPORT-07)
       const manifest = await getManifest(ctrl.signal)
       const graph = await getGraph(manifest.graph_url, ctrl.signal)
       return { manifest, graph, blocklist: await blocklist }
@@ -145,6 +149,14 @@ export function Game({ onDiscover, onItems, heirlooms = {} }: Props = {}) {
     )
     return () => ctrl.abort()
   }, [reloadKey])
+
+  // A new batch (or a new block list) without a reload of the page: once the next batch is due, re-read the
+  // manifest every 60 s and load everything again when it changed (AC-DAILY-12, AC-REPORT-07).
+  const batchAt = loaded?.manifest.batch_at
+  useEffect(() => {
+    if (!batchAt) return
+    return startManifestWatch({ batchAt, fetchManifest: () => getManifest(), onChange: () => setReloadKey((k) => k + 1) })
+  }, [batchAt])
 
   const later = (fn: () => void, ms: number) => {
     const id = window.setTimeout(() => {
@@ -463,6 +475,20 @@ export function Game({ onDiscover, onItems, heirlooms = {} }: Props = {}) {
               >
                 <span aria-hidden="true">{it.emoji}</span> {it.name}
                 {badge(it)}
+                {onReport && (
+                  <button
+                    type="button"
+                    className="report-button"
+                    aria-label={`Báo cáo ${it.name}`}
+                    title="Báo cáo"
+                    // the plate item drags on pointer down: keep the button out of it
+                    onPointerDown={(e) => e.stopPropagation()}
+                    onKeyDown={(e) => e.stopPropagation()}
+                    onClick={() => onReport({ id: it.id, name: it.name, image_key: it.image_key })}
+                  >
+                    ⚑
+                  </button>
+                )}
               </li>
             ))}
           </ul>

@@ -82,3 +82,27 @@ button:hover { border-color: var(--accent); }
 .modal button + button { margin-left: 0.5rem; }
 
 .health { max-width: 64rem; margin: 0 auto; padding: 0 1rem 1rem; color: var(--muted); font-size: 0.8rem; }
+
+/* Privacy, heirloom, report (PRIV, DISC, REPORT) */
+.consent, .report {
+  position: fixed; inset: auto 1rem 1rem; max-width: 30rem; margin: 0 auto; z-index: 15;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 0.75rem; padding: 1rem;
+  box-shadow: 0 0.5rem 2rem rgb(0 0 0 / 0.2);
+}
+.consent h2, .report h2, .my-data h2 { margin-top: 0; font-size: 1.1rem; }
+.consent-actions, .my-data-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.report fieldset { border: 0; padding: 0; margin: 0 0 0.75rem; display: grid; gap: 0.3rem; }
+.report textarea, .nickname-form input:not([type='checkbox']) {
+  font: inherit; color: var(--fg); background: var(--bg); border: 1px solid var(--line);
+  border-radius: 0.5rem; padding: 0.35rem 0.5rem; width: 100%; box-sizing: border-box;
+}
+.report > button + button { margin-left: 0.5rem; }
+.report-button { padding: 0 0.3rem; border: 0; background: transparent; color: var(--muted); cursor: pointer; }
+.my-data, .heirloom, .consent-prompt, .site-links { max-width: 64rem; margin: 0 auto; padding: 0 1rem 0.75rem; }
+.my-data { border-top: 1px solid var(--line); padding-top: 0.75rem; }
+.nickname-form { display: grid; gap: 0.4rem; margin-bottom: 0.75rem; max-width: 24rem; }
+.heirloom { color: var(--accent); font-weight: 600; }
+.site-links { display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; font-size: 0.85rem; }
+.site-links a, .policy a, .consent a, .consent-prompt a { color: var(--accent); }
+.policy { max-width: 44rem; margin: 0 auto; padding: 1rem; line-height: 1.55; }
+.policy h2 { font-size: 1.1rem; margin-top: 1.5rem; }
