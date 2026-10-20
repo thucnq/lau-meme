@@ -60,7 +60,7 @@ async function body(version: number) {
   }
 }
 
-const publish = (b: unknown) => call('/api/pipeline/batches', { method: 'POST', body: JSON.stringify(b) })
+const publish = (b: unknown) => call('/lau-meme/api/pipeline/batches', { method: 'POST', body: JSON.stringify(b) })
 
 beforeEach(async () => {
   await env.DB.batch([
@@ -99,7 +99,7 @@ describe('publish validation', () => {
 
   it('stores only the validated manifest fields', async () => {
     expect((await publish(await body(600))).status).toBe(201)
-    const res = await call('/api/manifest')
+    const res = await call('/lau-meme/api/manifest')
     const manifest = (await res.json()) as Record<string, unknown>
     expect(Object.keys(manifest).sort()).toEqual(
       ['batch_at', 'daily', 'graph_url', 'miss_lines', 'policy_version', 'starters', 'version'].sort(),
@@ -108,9 +108,9 @@ describe('publish validation', () => {
 
   it('serves the graph from one cache entry whatever the query string', async () => {
     expect((await publish(await body(700))).status).toBe(201)
-    expect((await call('/api/graph/700?x=1')).status).toBe(200)
+    expect((await call('/lau-meme/api/graph/700?x=1')).status).toBe(200)
     await env.DB.prepare('DELETE FROM batch_content').run()
-    const again = await call('/api/graph/700?x=2')
+    const again = await call('/lau-meme/api/graph/700?x=2')
     expect(again.status).toBe(200)
     expect(again.headers.get('cache-control')).toBe('public, max-age=31536000, immutable')
   })

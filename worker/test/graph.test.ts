@@ -82,17 +82,17 @@ async function batchBody(version: number, batchAt = BATCH_AT) {
 }
 
 async function publish(version: number, token: string | null = TOKEN) {
-  return call('/api/pipeline/batches', { method: 'POST', body: JSON.stringify(await batchBody(version)) }, token)
+  return call('/lau-meme/api/pipeline/batches', { method: 'POST', body: JSON.stringify(await batchBody(version)) }, token)
 }
 
 async function manifestVersion(): Promise<number> {
-  const res = await get('/api/manifest')
+  const res = await get('/lau-meme/api/manifest')
   expect(res.status).toBe(200)
   return ((await res.json()) as { version: number }).version
 }
 
 const rollback = (body: unknown, token: string | null = TOKEN) =>
-  call('/api/pipeline/rollback', { method: 'POST', body: JSON.stringify(body) }, token)
+  call('/lau-meme/api/pipeline/rollback', { method: 'POST', body: JSON.stringify(body) }, token)
 
 beforeEach(async () => {
   await env.DB.batch([
@@ -106,7 +106,7 @@ beforeEach(async () => {
 
 describe('graph', () => {
   it('AC-GRAPH-08: môi trường mới chưa có mẻ nào thì manifest trả 503 problem+json tiếng Việt', async () => {
-    const res = await get('/api/manifest')
+    const res = await get('/lau-meme/api/manifest')
     expect(res.status).toBe(503)
     expect(res.headers.get('content-type')).toContain('application/problem+json')
     const body = (await res.json()) as { title: string; status: number }
@@ -119,7 +119,7 @@ describe('graph', () => {
     const posted = await publish(1)
     expect(posted.status).toBe(201)
 
-    const res = await get('/api/manifest')
+    const res = await get('/lau-meme/api/manifest')
     expect(res.status).toBe(200)
     const maxAge = /max-age=(\d+)/.exec(res.headers.get('cache-control') ?? '')
     expect(maxAge).not.toBeNull()
@@ -134,7 +134,7 @@ describe('graph', () => {
     expect(manifest.daily).toEqual(published.manifest.daily)
     expect(Number.isInteger(manifest.policy_version)).toBe(true)
 
-    const graph = await get('/api/graph/1')
+    const graph = await get('/lau-meme/api/graph/1')
     expect(graph.status).toBe(200)
     expect(graph.headers.get('cache-control')).toBe('public, max-age=31536000, immutable')
     expect(await graph.json()).toEqual(published.graph)
@@ -156,10 +156,10 @@ describe('graph', () => {
     }
     expect(await manifestVersion()).toBe(2)
 
-    const bad = await get('/api/graph/abc')
+    const bad = await get('/lau-meme/api/graph/abc')
     expect(bad.status).toBe(400)
     expect(bad.headers.get('content-type')).toContain('application/problem+json')
-    const missing = await get('/api/graph/9999')
+    const missing = await get('/lau-meme/api/graph/9999')
     expect(missing.status).toBe(404)
     expect(missing.headers.get('content-type')).toContain('application/problem+json')
   })
@@ -168,9 +168,9 @@ describe('graph', () => {
     // Dùng dải version 100..114 để Cache API của lần chạy trước không che kết quả 404.
     for (let v = 100; v <= 114; v++) expect((await publish(v)).status).toBe(201)
     expect(await manifestVersion()).toBe(114)
-    expect((await get('/api/graph/100')).status).toBe(404)
-    expect((await get('/api/graph/101')).status).toBe(200)
-    expect((await get('/api/graph/114')).status).toBe(200)
+    expect((await get('/lau-meme/api/graph/100')).status).toBe(404)
+    expect((await get('/lau-meme/api/graph/101')).status).toBe(200)
+    expect((await get('/lau-meme/api/graph/114')).status).toBe(200)
     const count = await env.DB.prepare('SELECT COUNT(*) AS n FROM batch_content').first<{ n: number }>()
     expect(count?.n).toBe(14)
     const oldest = await env.DB.prepare('SELECT MIN(version) AS v FROM batch_content').first<{ v: number }>()
@@ -185,7 +185,7 @@ describe('graph', () => {
     expect(run.status).toBe('rollback')
     expect(run.rollback_to).toBe(201)
     expect(await manifestVersion()).toBe(201)
-    const manifest = (await (await get('/api/manifest')).json()) as { graph_url: string }
+    const manifest = (await (await get('/lau-meme/api/manifest')).json()) as { graph_url: string }
     expect(manifest.graph_url).toBe('/api/graph/201')
 
     const second = await rollback({ version: 200 })
