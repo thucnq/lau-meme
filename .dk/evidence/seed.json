@@ -1,0 +1,78 @@
+{
+ "red": {
+  "ts": "2026-10-19T18:04:35+00:00",
+  "commit": "128a6a7",
+  "results": {
+   "AC-SEED-01": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-SEED-02": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-SEED-03": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-SEED-04": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-SEED-05": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-SEED-06": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-SEED-07": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-SEED-08": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   }
+  }
+ },
+ "green": {
+  "ts": "2026-10-19T18:13:52+00:00",
+  "commit": "32100a8",
+  "results": {
+   "AC-SEED-01": {
+    "status": "PASS",
+    "test": "test_seed#test_ac_seed_01_nap_loi_hop_le"
+   },
+   "AC-SEED-02": {
+    "status": "PASS",
+    "test": "test_seed#test_ac_seed_02_phan_tu_khong_toi_duoc"
+   },
+   "AC-SEED-03": {
+    "status": "PASS",
+    "test": "test_seed#test_ac_seed_03_trung_cap_dao_thu_tu"
+   },
+   "AC-SEED-04": {
+    "status": "PASS",
+    "test": "test_seed#test_ac_seed_04_trung_ten_sau_chuan_hoa"
+   },
+   "AC-SEED-05": {
+    "status": "PASS",
+    "test": "test_seed#test_ac_seed_05_tham_chieu_dau_vao_khong_ton_tai"
+   },
+   "AC-SEED-06": {
+    "status": "PASS",
+    "test": "test_seed#test_ac_seed_06_depth_tinh_lai_bfs"
+   },
+   "AC-SEED-07": {
+    "status": "PASS",
+    "test": "test_seed#test_ac_seed_07_ten_rong"
+   },
+   "AC-SEED-08": {
+    "status": "PASS",
+    "test": "test_seed#test_ac_seed_08_nap_lai_idempotent"
+   }
+  }
+ }
+}

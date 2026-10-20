@@ -495,7 +495,7 @@ Cột Ảnh = gợi ý cho bước vẽ minh họa: vẽ **khái niệm**, khôn
 | 332 | 👄 Khẩu Nghiệp | 👄 Khẩu Nghiệp | ⌨️ Anh Hùng Bàn Phím |
 | 333 | 👄 Khẩu Nghiệp | 🧅 Ăn Hành | ✉️ Tâm Thư Xin Lỗi |
 | 334 | 🚀 Gét Gô | 🚀 Gét Gô | ⏱️ Speedrun |
-| 335 | 🚀 Gét Gô | 😩 Thứ Hai | 😩 Thứ Hai |
+| 335 | 🚀 Gét Gô | 😩 Thứ Hai | 🏃 Chạy Deadline |
 | 336 | 🚀 Gét Gô | 🛒 Săn Sale | ✅ Chốt Đơn |
 | 337 | 🚀 Gét Gô | 🐕 Doge | 💪 Swole Doge |
 | 338 | 🌿 Chill | 🌿 Chill | 🌱 Touch Grass |

@@ -1,3 +1,169 @@
-# BRD — lau-meme
+# BRD — Lẩu Meme
 
-> Chưa có nội dung. Chạy `/dk:spec <ghi chú cuộc họp>` để tạo BRD, tiêu chí nghiệm thu và danh sách câu hỏi cho khách.
+> Phiên bản: 0.1 · Ngày: 2026-10-19 · Trạng thái: Nháp
+> Nguồn: `docs/input/ghi-chu-hop.md`, `docs/input/noi-dung-loi.md|json`, `docs/scope.md` (đã chốt, kèm trả lời 5 câu hỏi phạm vi)
+
+## 1. Bối cảnh và mục tiêu
+- **Vấn đề**: chưa có trò chơi ghép kiểu Infinite Craft bằng meme Việt; người Việt trên mạng xã hội cần một trò ngắn, hài, có lý do quay lại mỗi ngày và có thứ để khoe.
+- **Sản phẩm**: web game "Lẩu Meme" — kéo 2 phần tử thả vào nồi lẩu để ghép ra phần tử mới. Tập phần tử/công thức đóng, sinh sẵn theo lô; không gọi LLM khi người chơi ghép.
+- **Mục tiêu đo được** (đo bằng METRIC):
+  - D1 retention và D7 retention theo UUID (mốc mục tiêu: chưa đặt — xem `open-questions.md`).
+  - Số người chơi Món đặc biệt mỗi ngày; số lượt chia sẻ thẻ Daily và thẻ Công thức gia truyền.
+  - Sức khỏe nội dung: ghép trượt khi chơi ngẫu nhiên 20 lượt đầu ≤ 45 %, cả ván 100 lượt ≤ 70 %; tỉ lệ "Nhạt"; số báo cáo.
+  - Vận hành $0 (không tính domain).
+- **Giai đoạn** (trả lời câu hỏi phạm vi 1–2):
+  - **Giai đoạn 1 — go-live**: GAME, GRAPH, SEED, DAILY (kèm streak), DISC, SHARE, REPORT, ADMIN, METRIC, PRIV; nội dung chỉ là lõi classic; mẻ nhúng chạy **chế độ lõi** (chỉ đổi Món đặc biệt + manifest, không crawl, không LLM) — AC-PIPE-01.
+  - **Giai đoạn 2**: PIPE đầy đủ (chạy tay trước, sau đó bật cron tự động đăng), MOD, ART (ảnh minh họa; giai đoạn 1 chỉ dùng emoji).
+  - Tùy chọn: FEEDBACK.
+- **Ngoài phạm vi**: quảng cáo/kiếm tiền, đăng nhập tài khoản, ảnh/video meme gốc, app mobile, đa ngôn ngữ, chơi với bạn bè thời gian thực, người chơi tự gửi meme, trang giới thiệu/landing riêng (câu hỏi phạm vi 5), scrape Facebook/TikTok.
+
+## 2. Người dùng và vai trò
+| Vai trò | Mô tả | Quyền chính |
+|---|---|---|
+| Thực khách (người chơi ẩn danh) | Định danh bằng UUID sinh trên trình duyệt; nickname tùy chọn | Chơi ghép, chơi Daily, gửi Công thức gia truyền, báo cáo, Ngon/Nhạt, xem/xuất/xóa dữ liệu của mình |
+| Quản trị (Thuc) | Một người, xác thực bằng 1 token lưu trong Cloudflare secret | Xem báo cáo, ẩn/hiện/chặn phần tử và công thức, xem nhật ký đợt và audit |
+| Pipeline (GitHub Actions) | Tác vụ máy, xác thực bằng token trong GitHub Secrets | Đọc nội dung, ghi nội dung + graph + manifest mới; không đọc dữ liệu người chơi |
+
+## 3. Danh sách tính năng
+| Mã | Tính năng | Mô tả ngắn | Ưu tiên (Bắt buộc/Tùy chọn) | File tiêu chí |
+|---|---|---|---|---|
+| GAME | Chơi ghép (Nhúng lẩu) | Nồi lẩu 2 chỗ thả + thả chồng; Đĩa nhúng (tìm không dấu, sắp xếp); Nồi trào cố định theo cặp + gợi ý; nhãn "MỚI"; lưu cục bộ; chế độ tối; hướng dẫn lần đầu; ghép < 50 ms | Bắt buộc | `docs/acceptance/game.md` |
+| GRAPH | Graph mã hóa + manifest + rollback | Khóa = băm cặp tên chuẩn hóa, kết quả mã hóa bằng khóa dẫn xuất từ 2 tên; manifest có version + giờ mẻ thật; giữ 14 bản; rollback bằng workflow chạy tay | Bắt buộc | `docs/acceptance/graph.md` |
+| SEED | Nạp lõi nội dung classic | Nạp `noi-dung-loi.json` (139 phần tử, 363 công thức, 40 câu Nồi trào, 4 khởi đầu); kiểm tới được, không trùng | Bắt buộc | `docs/acceptance/seed.md` |
+| PIPE | Pipeline Mẻ nhúng mới | Chế độ lõi (giai đoạn 1); crawl theo adapter, khử trùng, liên kết ngược + BFS, hàng chờ, công thức bổ sung, giám khảo, deploy; idempotent; gom lô Gemini; báo cáo đợt qua GitHub Issue (giai đoạn 2) | Bắt buộc | `docs/acceptance/pipe.md` |
+| MOD | Kiểm duyệt nội dung tự động | Từ cấm + LLM theo danh mục cấm; luật người thật dựa trên ngữ cảnh nguồn; danh sách chặn bí danh; không chắc thì loại; hoãn nội dung nóng 30 ngày (giai đoạn 2) | Bắt buộc | `docs/acceptance/mod.md` |
+| ART | Ảnh minh họa tự tạo | Workers AI vẽ khái niệm, Gemini kiểm duyệt ảnh, R2 + Cache API immutable, emoji dự phòng (giai đoạn 2) | Bắt buộc | `docs/acceptance/art.md` |
+| DAILY | Món đặc biệt hôm nay | 1 món/mẻ (độ sâu [4, 8]); emoji + gợi ý mờ; đếm mọi lượt ghép; bảng xếp hạng ít bước nhất (server kiểm đường); **streak**; đồng hồ theo manifest thật | Bắt buộc | `docs/acceptance/daily.md` |
+| DISC | Công thức gia truyền | UUID cục bộ + nickname tùy chọn (lọc từ cấm + bí danh); server kiểm công thức rồi ghi người đầu tiên; giới hạn tần suất theo UUID và IP băm | Bắt buộc | `docs/acceptance/disc.md` |
+| SHARE | Thẻ chia sẻ | Thẻ Daily kiểu Wordle (chữ + PNG) và thẻ Công thức gia truyền; sao chép / chia sẻ hệ thống; không lộ đáp án | Bắt buộc | `docs/acceptance/share.md` |
+| REPORT | Báo cáo + chặn nóng | Báo cáo phần tử và ảnh; 3 UUID khác nhau ⇒ tự ẩn; ảnh bị báo cáo về emoji; danh sách chặn nóng tải khi khởi động | Bắt buộc | `docs/acceptance/report.md` |
+| ADMIN | Trang quản trị tối giản | Token; xem báo cáo, ẩn/hiện/chặn phần tử và công thức, nhật ký đợt; audit mọi thao tác | Bắt buộc | `docs/acceptance/admin.md` |
+| FEEDBACK | Ngon / Nhạt | 1 phiếu/UUID/công thức; pipeline hạ/ẩn công thức nhiều "Nhạt" | Tùy chọn | `docs/acceptance/feedback.md` |
+| METRIC | Đo chỉ số thành công | Cloudflare Web Analytics + bảng sự kiện ẩn danh D1 (câu hỏi phạm vi 3: cần bảng sự kiện); tổng hợp D1/D7, Daily/ngày, chia sẻ, ghép trượt, "Nhạt", báo cáo | Bắt buộc | `docs/acceptance/metric.md` |
+| PRIV | Chính sách quyền riêng tư | Trang chính sách; đồng ý trước khi gửi dữ liệu; IP chỉ lưu băm, xóa sau thời hạn ngắn; xem/xuất/xóa dữ liệu qua UUID | Bắt buộc | `docs/acceptance/priv.md` |
+| INV | Bất biến nội dung và trò chơi | 12 thuộc tính phải đúng với mọi dữ liệu (ghép đối xứng, tới được, graph không lộ, idempotent…) | Bắt buộc | `docs/acceptance/inv.md` |
+
+## 4. Luồng nghiệp vụ chính
+
+### 4.1 Chơi ghép (GAME)
+1. Thực khách mở trang. Client tải manifest (`version`, `batch_at`, Daily), graph phiên bản đó và danh sách chặn nóng.
+2. Lần đầu: hiện hướng dẫn 1 màn hình; Đĩa nhúng có 4 phần tử khởi đầu (🌶️ Cay, 😂 Cười, 💀 Toang, ⏰ Deadline).
+3. Thực khách thả 2 phần tử vào nồi (hoặc thả chồng lên nhau trên bàn).
+4. Client tính khóa băm của cặp, tra graph trong bộ nhớ (< 50 ms), giải mã bằng 2 tên.
+5. Có kết quả: hiệu ứng nồi sôi ≤ 1,2 s (chạm để bỏ qua), phần tử mới vào Đĩa, lưu cục bộ. Nếu chưa ai khám phá và người chơi đã đồng ý gửi dữ liệu → luồng 4.3.
+6. Không có kết quả: hiện câu "Nồi trào" cố định theo cặp; thỉnh thoảng gợi ý một phần tử nên thử.
+- Ngoại lệ: phần tử/công thức trong danh sách chặn → coi như không có; graph tải lỗi → thông báo `role="alert"` và nút thử lại, tiến độ cục bộ không mất.
+
+### 4.2 Món đặc biệt hôm nay (DAILY)
+1. Mỗi mẻ (00:00 và 12:00 GMT+7, theo giờ chạy thật) pipeline chọn 1 món, ghi vào manifest: emoji, gợi ý mờ, khóa băm của tên (không có tên đọc được).
+2. Thực khách bấm "Thử thách": bàn riêng bắt đầu từ 4 phần tử khởi đầu (mặc định — câu hỏi mở), bộ đếm bắt đầu; mọi lượt ghép, kể cả trượt, đều tính 1 bước.
+3. Ghép ra món: tên lộ ra, client gửi đường ghép + số bước lên server.
+4. Server kiểm đường ghép có thật và hợp lệ → ghi kết quả, cập nhật streak, trả hạng.
+5. Thực khách xem bảng xếp hạng đợt, streak, tạo thẻ chia sẻ (SHARE).
+- Ngoại lệ: mẻ đã qua → không nhận kết quả; cron trễ → đồng hồ hiện "Mẻ mới sắp lên" thay vì số âm.
+
+### 4.3 Công thức gia truyền (DISC)
+1. Thực khách ghép ra phần tử chưa có người khám phá (client biết qua `GET` khám phá của phần tử).
+2. Client gửi `(uuid, a, b, result)`.
+3. Server kiểm công thức có trong nội dung đang hoạt động; ghi người đầu tiên (ràng buộc duy nhất theo phần tử).
+4. Mọi người thấy "Công thức gia truyền của <nickname>" trên phần tử đó; người đầu tiên được mời tạo thẻ chia sẻ.
+- Ngoại lệ: công thức giả → 422; đã có người → trả người hiện có; vượt tần suất → 429.
+
+### 4.4 Mẻ nhúng mới (PIPE + MOD + ART)
+- Giai đoạn 1 (chế độ lõi): chọn Món đặc biệt → xuất graph + manifest → deploy → báo cáo đợt.
+- Giai đoạn 2 (đầy đủ): crawl → khử trùng → kiểm duyệt 2 lớp → liên kết ngược → công thức bổ sung → giám khảo → vẽ minh họa → chọn Món đặc biệt → xuất graph + manifest (giữ 14 bản) → deploy → báo cáo đợt qua GitHub Issue.
+- Ngoại lệ: lỗi ở bất kỳ bước nào trước deploy → không đăng gì, bản cũ giữ nguyên; hết quota Gemini → dừng êm, đăng phần đã xong và qua kiểm duyệt, phần còn lại vào hàng chờ.
+
+### 4.5 Phanh khẩn cấp (REPORT + ADMIN + GRAPH)
+1. Thực khách báo cáo phần tử (chọn lý do) hoặc ảnh.
+2. Ảnh: 1 báo cáo → ảnh vào danh sách chặn, client về emoji. Phần tử: đủ 3 UUID khác nhau → tự ẩn ngay.
+3. Quản trị xem báo cáo trên trang admin, ẩn/hiện/chặn phần tử hoặc công thức; có hiệu lực ≤ 60 s, không cần deploy.
+4. Lỗi toàn đợt → quản trị chạy workflow rollback về bản graph trước.
+- Mục tiêu: khôi phục trong 5 phút.
+
+## 5. Dữ liệu
+
+### 5.1 Thực thể chính
+| Thực thể | Thuộc tính quan trọng | Ghi chú |
+|---|---|---|
+| Phần tử (element) | id, tên, tên chuẩn hóa (`fold`), emoji, nguồn (Việt/Quốc tế), depth, gợi ý ảnh, khóa ảnh, mẻ thêm vào, trạng thái (hoạt động/ẩn/chặn), cờ hoãn nóng đến ngày | Tên chuẩn hóa duy nhất; emoji duy nhất |
+| Công thức (recipe) | cặp (a, b) không thứ tự, kết quả, điểm hài, mẻ thêm vào, trạng thái | Mỗi cặp tối đa 1 kết quả |
+| Câu Nồi trào (miss line) | id, nội dung | 40 câu lõi |
+| Mẻ (batch) | version, `batch_at` thật, chế độ (lõi/đầy đủ), trạng thái, số thêm/chặn/lỗi nguồn, quota dùng | Manifest + graph theo version; giữ 14 bản |
+| Món đặc biệt (daily) | version mẻ, phần tử đích, gợi ý | Mỗi mẻ 1 món |
+| Kết quả Daily | version mẻ, player, số bước, đường ghép, thời điểm nộp | 1 kết quả/player/mẻ |
+| Thực khách (player) | UUID, nickname (tùy chọn), thời điểm tạo | Không có email/mật khẩu |
+| Khám phá (discovery) | phần tử, player, công thức đã dùng, thời điểm | Duy nhất theo phần tử |
+| Báo cáo (report) | đích (phần tử/ảnh), player, lý do, thời điểm, trạng thái xử lý | Duy nhất theo (đích, player) |
+| Danh sách chặn | loại (phần tử/công thức/ảnh), định danh, lý do (tự ẩn/admin), thời điểm | Client tải khi khởi động |
+| Bí danh bị chặn (alias) | chuỗi chuẩn hóa, nguồn (MOD/admin) | Áp cho phần tử mới và nickname |
+| Phiếu Ngon/Nhạt | công thức, player, giá trị | Tùy chọn (FEEDBACK) |
+| Sự kiện (event) | loại, player, thời điểm, thuộc tính nhỏ (loại thẻ…) | Không có IP, không có user agent đầy đủ |
+| Đồng ý (consent) | player, mục đích, version chính sách, thời điểm, IP băm, kênh | Append-only |
+| Audit quản trị | thao tác, đích, trước/sau, thời điểm, dấu vân token | Append-only |
+| Hàng chờ meme (pipeline) | khái niệm, nguồn, số lần thử, lần thử gần nhất | Nằm ở kho pipeline |
+
+### 5.2 Dữ liệu cá nhân
+Phân loại theo Luật BVDLCN 2025 + NĐ 356/2025: chỉ có **dữ liệu cá nhân cơ bản** (định danh trực tuyến). Không thu dữ liệu nhạy cảm; trò chơi không thu tuổi (vấn đề trẻ em: câu hỏi mở).
+
+| Trường | Loại (cơ bản/nhạy cảm) | Mục đích xử lý | Thời gian lưu | Biện pháp bảo vệ |
+|---|---|---|---|---|
+| UUID thực khách | Cơ bản (định danh trực tuyến) | Ghi khám phá, kết quả Daily, streak, báo cáo, phiếu, đo chỉ số | Đến khi thực khách xóa | Không hiển thị công khai; mask trong log; xóa theo yêu cầu (AC-PRIV) |
+| Nickname | Cơ bản | Hiển thị trên bảng xếp hạng và Công thức gia truyền | Đến khi thực khách đổi/xóa | Lọc từ cấm + bí danh; đồng ý trước khi lưu |
+| IP | Cơ bản | Giới hạn tần suất, chống gian lận | Chỉ lưu dạng băm HMAC (khóa trong secret); xóa sau 7 ngày | Không lưu IP thô; không ghi IP vào log |
+| Sự kiện chơi | Cơ bản (gắn UUID) | Đo D1/D7, chia sẻ, ghép trượt | 90 ngày | Không IP, không user agent; xóa theo UUID khi thực khách xóa dữ liệu |
+| Bằng chứng đồng ý | Cơ bản | Chứng minh đồng ý | Theo vòng đời player + 1 năm sau khi xóa (mặc định — câu hỏi mở) | Append-only |
+
+- **Không gửi dữ liệu người chơi cho LLM** hay bất kỳ dịch vụ bên thứ ba nào. Gemini và Workers AI chỉ nhận dữ liệu meme công khai ⇒ không phát sinh chuyển dữ liệu cá nhân ra nước ngoài.
+- Không dùng cookie theo dõi; Cloudflare Web Analytics không cookie.
+
+## 6. Tích hợp bên ngoài
+| Hệ thống | Chiều | Phương thức | Tần suất | Xử lý khi lỗi |
+|---|---|---|---|---|
+| Reddit API | Vào (pipeline) | REST, OAuth app token | Mỗi mẻ (giai đoạn 2) | Bỏ nguồn đó, ghi lỗi nguồn vào báo cáo đợt |
+| Know Your Meme | Vào | HTTP, tôn trọng robots.txt | Mỗi mẻ | Như trên |
+| Google Trends VN | Vào | RSS/HTTP | Mỗi mẻ | Như trên |
+| YouTube trending | Vào | YouTube Data API (key) | Mỗi mẻ | Như trên |
+| RSS trang giải trí Việt | Vào | RSS | Mỗi mẻ | Như trên |
+| Gemini API (free tier) | Ra (dữ liệu meme công khai) | REST, gom lô | Mỗi mẻ | Retry backoff; hết quota → dừng êm, phần còn lại vào hàng chờ |
+| Cloudflare Workers AI (FLUX.1 schnell) | Ra | Binding/REST | Mỗi mẻ (giai đoạn 2) | Hết hạn mức → emoji, vẽ bù đợt sau |
+| Cloudflare R2 | Ra | Binding/S3 API | Mỗi mẻ (ghi), mỗi lượt xem (đọc) | Không đọc được → client giữ emoji |
+| Cloudflare D1 + deploy | Ra | Wrangler/REST (token trong GitHub Secrets) | Mỗi mẻ | Deploy lỗi → bản cũ giữ nguyên |
+| GitHub Issues | Ra | REST (`GITHUB_TOKEN`) | Mỗi mẻ | Ghi log workflow, không làm hỏng đợt |
+| Cloudflare Web Analytics | Ra (beacon, không cookie) | Script | Mỗi lượt tải trang | Bỏ qua |
+
+## 7. Yêu cầu phi chức năng
+Stack là Cloudflare Worker + D1 + Python pipeline (không Docker/Postgres), nên các dòng mặc định về container, `pg_dump`, JWT, RLS không áp dụng. Chỉ ghi khác biệt:
+
+| Nhóm | Yêu cầu | Kiểm chứng bằng |
+|---|---|---|
+| Hiệu năng | Ghép < 50 ms (tra trong bộ nhớ, không gọi mạng); API đọc p95 < 300 ms, API ghi p95 < 800 ms; tải trang đầu < 2 s trên 4G | AC-GAME-14 (benchmark); smoke `/dk:ship`; Lighthouse thủ công trước go-live |
+| Tải | ≤ 50 người đồng thời lúc thường; đột biến khi viral do Cloudflare biên gánh (manifest/graph/ảnh cache được) | Thiết kế: graph và ảnh là file tĩnh bất biến |
+| Nội dung | Ghép trượt khi chơi ngẫu nhiên (mô phỏng): 20 lượt đầu ≤ 45 %, cả ván 100 lượt ≤ 70 % | AC-INV-12 (mô phỏng có seed cố định) |
+| Pipeline | Một đợt < 15 phút; nằm trong quota Gemini free | `timeout-minutes: 15` trong workflow; báo cáo đợt ghi quota |
+| Khả dụng | Best-effort 99 %; health check `/api/health` | `/dk:ship` |
+| Sao lưu / khôi phục | Nội dung tái tạo được từ kho pipeline + 14 bản graph; D1 dùng Time Travel (quyết định của người); khôi phục ≤ 5 phút bằng ẩn nóng hoặc rollback | AC-GRAPH-05/06, AC-REPORT-04, AC-ADMIN-03 |
+| Bảo mật | Giới hạn tần suất mọi endpoint ghi; validate đầu vào; lỗi RFC 9457 problem+json; CORS chỉ domain game; token admin chỉ trong Cloudflare secret, so sánh hằng thời gian; bí mật chỉ ở GitHub Secrets / Cloudflare secrets (repo public); SQL chỉ qua `prepare().bind()` | Test AC; gitleaks + lint trong CI |
+| Phân quyền | Không RBAC/tenant; 3 chủ thể: thực khách (UUID), quản trị (token), pipeline (token) | AC-ADMIN-01 |
+| Audit | Ghi mọi thao tác quản trị (trước/sau); lưu 12 tháng | AC-ADMIN-09 |
+| Dữ liệu cá nhân | Như 5.2: IP băm 7 ngày, sự kiện 90 ngày, xem/xuất/xóa theo UUID, đồng ý trước khi gửi dữ liệu | AC-PRIV |
+| Quan sát | Log JSON không chứa UUID thô, IP, nickname; báo cáo đợt qua GitHub Issue | AC-PRIV-07, AC-PIPE-14 |
+| Khả năng bảo trì | Pipeline: logic thuần (không mạng/đồng hồ/ngẫu nhiên), adapter mạng tách riêng và mock trong test; độ phủ theo cấu hình CI | `pytest`, `vitest` coverage trong CI |
+| Tương thích | Màn hình ≥ 375 px; Chrome/Safari di động và Chrome/Edge/Safari máy tính 2 bản gần nhất; chuột + cảm ứng (Pointer Events) | Kiểm thủ công trên 2–3 điện thoại trước go-live; Playwright smoke (tùy chọn) |
+| Ngôn ngữ | Chỉ tiếng Việt; tìm kiếm không dấu | AC-GAME-07 |
+| Chi phí | Vận hành $0 (không tính domain) | Chỉ dùng gói free: Workers, D1, R2, Workers AI, Gemini free, GitHub Actions (repo public) |
+
+## 8. Giả định và ràng buộc
+- Một người làm (Thuc), ~20 giờ/tuần; không báo giá; go-live sớm nhất, không beta kín. Giảm rủi ro bằng chạy mẻ thật trên staging vài ngày và kiểm thủ công trên 2–3 điện thoại.
+- Repo public ⇒ mọi bí mật (token admin, khóa HMAC IP, khóa Gemini, Reddit, YouTube, Cloudflare API) chỉ ở GitHub Secrets / Cloudflare secrets.
+- Nội dung lõi: `noi-dung-loi.json` là nguồn chuẩn; sửa qua `noi_dung.py` rồi sinh lại, không sửa tay.
+- Lõi có 40 phần tử độ sâu 4–8 ⇒ ở nhịp 2 món/ngày, giai đoạn 1 dùng hết món chưa lặp sau ~20 ngày (cách lặp: câu hỏi mở).
+- Cron GitHub Actions có thể trễ ⇒ mọi thứ phụ thuộc giờ mẻ dùng `batch_at` thật trong manifest.
+- Hạn mức Workers AI và việc R2 có đòi thẻ thanh toán **cần kiểm tra** trước giai đoạn 2.
+- Graph mã hóa chống đọc trộm cả cây, **không** chống dò thử từng cặp — chấp nhận.
+- Không có đăng nhập ⇒ chấp nhận còn chút gian lận ở bảng xếp hạng và Công thức gia truyền.
+
+## 9. Lịch sử thay đổi
+| Ngày | Phiên bản | Nội dung | Người duyệt |
+|---|---|---|---|
+| 2026-10-19 | 0.1 | Bản đầu từ phạm vi đã chốt (14 tính năng + bất biến); chia giai đoạn 1/2; thêm streak, bảng sự kiện D1 | — |
