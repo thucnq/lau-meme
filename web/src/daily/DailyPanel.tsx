@@ -1,0 +1,170 @@
+import { useEffect, useRef, useState } from 'react'
+import { SendError } from '../disc/api'
+import type { Manifest } from '../game/engine'
+import type { GraphResult } from '../graph/crypto'
+import { ConsentRequiredError } from '../privacy/client'
+import { ConsentPrompt } from '../privacy/ConsentPrompt'
+import { storageKey } from '../storage'
+import { getDailyLeaderboard, submitDailyResult, type DailyLeaderboard, type DailyResult } from './api'
+import { openChallenge, type Challenge, type ChallengeState, type ElementRef } from './challenge'
+import { getCountdown } from './countdown'
+import { DailyCard } from './DailyCard'
+
+type Props = {
+  manifest: Manifest
+  lookup: (a: string, b: string) => Promise<GraphResult | null>
+  onDiscover: (el: ElementRef) => void
+  storage: Storage | null
+}
+type Sent = { kind: 'result'; result: DailyResult } | { kind: 'consent' } | { kind: 'error'; text: string }
+
+/** Version whose board the player opened, so a reload goes straight back to it (AC-DAILY-05). */
+const OPEN_KEY = storageKey('daily-open')
+
+function openedVersion(storage: Storage | null): number | null {
+  try {
+    const v = Number(storage?.getItem(OPEN_KEY))
+    return Number.isInteger(v) && v > 0 ? v : null
+  } catch {
+    return null
+  }
+}
+
+/** `lookup` and `onDiscover` must stay valid for the whole batch: the page passes stable callbacks. */
+function startChallenge(
+  manifest: Manifest,
+  storage: Storage | null,
+  lookup: Props['lookup'],
+  onDiscover: Props['onDiscover'],
+): Challenge {
+  const challenge = openChallenge({
+    version: manifest.version,
+    daily: manifest.daily,
+    starters: manifest.starters,
+    lookup,
+    onDiscover,
+    storage: storage ?? undefined,
+  })
+  try {
+    storage?.setItem(OPEN_KEY, String(manifest.version))
+  } catch {
+    // storage blocked: the board just does not reopen by itself
+  }
+  return challenge
+}
+
+/** Món đặc biệt: card, countdown, challenge board, result and leaderboard (AC-DAILY-03..06, 08, 09, 12). */
+export function DailyPanel({ manifest, lookup, onDiscover, storage }: Props) {
+  const { version, daily } = manifest
+  const policyVersion = manifest.policy_version
+  // The page remounts this panel per batch (key = version): reopen the board the player had open (AC-DAILY-05).
+  const [initial] = useState(() =>
+    openedVersion(storage) === version ? startChallenge(manifest, storage, lookup, onDiscover) : null,
+  )
+  const challengeRef = useRef<Challenge | null>(initial)
+  const [state, setState] = useState<ChallengeState | null>(() => initial?.getState() ?? null)
+  const [picked, setPicked] = useState<ElementRef | null>(null)
+  const [missed, setMissed] = useState(false)
+  const [busy, setBusy] = useState(false)
+  const [sent, setSent] = useState<Sent | null>(null)
+  const [board, setBoard] = useState<DailyLeaderboard | null>(null)
+  const [now, setNow] = useState(() => new Date())
+
+  useEffect(() => {
+    const timer = window.setInterval(() => setNow(new Date()), 1000)
+    return () => window.clearInterval(timer)
+  }, [])
+
+  const open = () => {
+    const challenge = startChallenge(manifest, storage, lookup, onDiscover)
+    challengeRef.current = challenge
+    setState(challenge.getState())
+  }
+
+  const submit = (challenge: Challenge) => {
+    submitDailyResult(version, challenge.submission(), { storage, policyVersion }).then(
+      ({ result }) => setSent({ kind: 'result', result }),
+      (err: unknown) => {
+        if (err instanceof ConsentRequiredError) return setSent({ kind: 'consent' })
+        const text =
+          err instanceof SendError && err.status === 429
+            ? 'Gửi quá nhanh, thử lại sau.'
+            : 'Không gửi được kết quả, thử lại sau.'
+        setSent({ kind: 'error', text })
+      },
+    )
+  }
+
+  const pick = (el: ElementRef) => {
+    const challenge = challengeRef.current
+    if (!challenge || busy || challenge.getState().solved) return
+    if (!picked) return setPicked(el)
+    setPicked(null)
+    setBusy(true)
+    challenge
+      .combine(picked, el)
+      .then((out) => {
+        setMissed(!out.ok)
+        setState(challenge.getState())
+        if (out.solved) submit(challenge)
+      })
+      .finally(() => setBusy(false))
+  }
+
+  const showBoard = () => {
+    getDailyLeaderboard(version, { storage, policyVersion }).then(setBoard, () => undefined)
+  }
+
+  return (
+    <div className="daily">
+      <DailyCard daily={daily} solvedName={state?.solved ? state.targetLabel : null} onStart={open} />
+      <p className="daily-countdown">
+        {(() => {
+          const c = getCountdown(manifest.batch_at, now)
+          return c.kind === 'imminent' ? c.text : `Mẻ mới sau ${c.text}`
+        })()}
+      </p>
+
+      {state && (
+        <section className="daily-board" aria-label="Bàn thử thách">
+          <p>Bước: {state.steps}</p>
+          <div className="daily-items">
+            {state.board.map((el) => (
+              <button
+                key={el.id}
+                type="button"
+                aria-pressed={picked?.id === el.id}
+                disabled={busy || state.solved}
+                onClick={() => pick(el)}
+              >
+                {el.emoji} {el.name}
+              </button>
+            ))}
+          </div>
+          {missed && !state.solved && <p role="status">💨 Trượt rồi</p>}
+          {state.solved && <p>Xong sau {state.steps} bước</p>}
+          {sent?.kind === 'result' && (
+            <p role="status">
+              Hạng #{sent.result.rank} · Streak {sent.result.streak.current} ngày
+            </p>
+          )}
+          {sent?.kind === 'consent' && <ConsentPrompt />}
+          {sent?.kind === 'error' && <p role="status">{sent.text}</p>}
+        </section>
+      )}
+
+      <button type="button" onClick={showBoard}>
+        Bảng xếp hạng
+      </button>
+      {board && (
+        <ol aria-label="Bảng xếp hạng">
+          {board.rows.map((r) => (
+            <li key={r.rank}>
+              #{r.rank} {r.nickname} — {r.value} bước
+            </li>
+          ))}
+        </ol>
+      )}
+    </div>
+  )
+}
