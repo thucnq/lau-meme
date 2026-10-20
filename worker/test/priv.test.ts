@@ -147,13 +147,22 @@ function seedPlayer(id: string, tag: string, now: number) {
   ]
 }
 
-const TABLES = ['daily_result', 'streak', 'vote', 'event', 'report', 'discovery', 'consent', 'player']
 async function count(sql: string, ...binds: unknown[]): Promise<number> {
   return (await env.DB.prepare(sql).bind(...binds).first<{ n: number }>())?.n ?? 0
 }
 
 beforeEach(async () => {
-  await env.DB.batch([...TABLES.map((t) => env.DB.prepare(`DELETE FROM ${t}`)), env.DB.prepare('DELETE FROM rate_counter')])
+  await env.DB.batch([
+    env.DB.prepare('DELETE FROM daily_result'),
+    env.DB.prepare('DELETE FROM streak'),
+    env.DB.prepare('DELETE FROM vote'),
+    env.DB.prepare('DELETE FROM event'),
+    env.DB.prepare('DELETE FROM report'),
+    env.DB.prepare('DELETE FROM discovery'),
+    env.DB.prepare('DELETE FROM consent'),
+    env.DB.prepare('DELETE FROM player'),
+    env.DB.prepare('DELETE FROM rate_counter'),
+  ])
 })
 afterEach(() => {
   vi.restoreAllMocks()

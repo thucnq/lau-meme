@@ -40,5 +40,55 @@
     "test": "(không biên dịch)"
    }
   }
+ },
+ "green": {
+  "ts": "2026-10-20T04:55:17+00:00",
+  "commit": "73ffaef",
+  "results": {
+   "AC-PRIV-01": {
+    "status": "PASS",
+    "test": "priv.ui.test.tsx#priv: trang chính sách > AC-PRIV-01: PolicyPage nêu dữ liệu thu, thời hạn lưu, không gửi bên thứ ba/AI, không cookie theo dõi"
+   },
+   "AC-PRIV-02": {
+    "status": "PASS",
+    "test": "priv.ui.test.tsx#priv: đồng ý trước khi gửi > AC-PRIV-02: chưa có bản ghi đồng ý thì hiện hộp với link chính sách, hai nút, không lựa chọn nào chọn sẵn"
+   },
+   "AC-PRIV-03": {
+    "status": "PASS",
+    "test": "priv.ui.test.tsx#priv: bằng chứng đồng ý "
+   },
+   "AC-PRIV-04": {
+    "status": "PASS",
+    "test": "priv.ui.test.tsx#priv: rút lại đồng ý > AC-PRIV-04: withdrawConsent gửi bản ghi withdraw "
+   },
+   "AC-PRIV-05": {
+    "status": "PASS",
+    "test": "priv.ui.test.tsx#priv: xóa dữ liệu của mình > AC-PRIV-05: \"Xóa dữ liệu của tôi\" cần bước xác nhận \"Xóa vĩnh viễn\" rồi mới DELETE /lau-meme/api/me và sinh UUID mới"
+   },
+   "AC-PRIV-06": {
+    "status": "PASS",
+    "test": "priv.test.ts#priv > AC-PRIV-06: IP chỉ lưu dạng HMAC-SHA256 với IP_HASH_KEY; không bảng nào chứa IP thô"
+   },
+   "AC-PRIV-07": {
+    "status": "PASS",
+    "test": "priv.test.ts#priv > AC-PRIV-07: maskId giữ 8 ký tự đầu và thêm \"…\""
+   },
+   "AC-PRIV-08": {
+    "status": "PASS",
+    "test": "priv.ui.test.tsx#priv: xem và xuất dữ liệu > AC-PRIV-08: getMyData không cần đồng ý, GET /lau-meme/api/me kèm X-Player-Id và trả dữ liệu"
+   },
+   "AC-PRIV-09": {
+    "status": "PASS",
+    "test": "priv.ui.test.tsx#priv: chính sách đổi version > AC-PRIV-09: ConsentBanner không hiện khi đã có lựa chọn cho đúng version "
+   },
+   "AC-PRIV-TENANT": {
+    "status": "PASS",
+    "test": "priv.test.ts#priv > AC-PRIV-TENANT: người chơi B không đọc được và không xóa được dữ liệu của A"
+   },
+   "AC-PRIV-VALIDATION": {
+    "status": "PASS",
+    "test": "priv.test.ts#priv > AC-PRIV-VALIDATION: POST /consents từ chối purpose/action giả mạo, script tag, phiên bản sai kiểu; không ghi dòng nào"
+   }
+  }
  }
 }

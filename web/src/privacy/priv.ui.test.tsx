@@ -83,7 +83,9 @@ const calls = () => fetchMock.mock.calls.map((c) => ({ url: urlOf(c[0] as Reques
 const withPlayerHeader = () => calls().filter((c) => c.player !== null)
 
 const opts = (version = 1) => ({ storage: localStorage as Storage | null, policyVersion: version })
-const bannerEl = (): HTMLElement | null => screen.queryByRole('dialog') ?? screen.queryByRole('region', { name: /đồng ý|dữ liệu|quyền riêng tư/i }) ?? screen.queryByRole('region')
+// Only the consent box: the game's first-run tutorial is also a role="dialog" (different accessible name).
+const bannerEl = (): HTMLElement | null =>
+  screen.queryByRole('dialog', { name: /dữ liệu/i }) ?? screen.queryByRole('region', { name: /dữ liệu/i })
 
 beforeAll(() => {
   vi.stubGlobal('crypto', webcrypto)

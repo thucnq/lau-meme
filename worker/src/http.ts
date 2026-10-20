@@ -26,6 +26,13 @@ export class HttpError extends Error {
   }
 }
 
+/** A ready response thrown from deep inside a handler (e.g. a 429 with Retry-After). */
+export class ResponseError extends Error {
+  constructor(readonly response: Response) {
+    super(`HTTP ${response.status}`)
+  }
+}
+
 const MAX_BODY_BYTES = 5 * 1024 * 1024
 
 /** Parse a JSON object body; anything else is a 400 (413 when too large). */

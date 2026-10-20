@@ -2,7 +2,10 @@ import { hasBearer } from './auth'
 import { getGraph, getManifest } from './features/content/content'
 import { getDailyLeaderboard, getMyStreak, getStreakLeaderboard, submitDailyResult } from './features/daily/daily'
 import { getPipelineState, patchBatchRun, publishBatch, rollbackBatch } from './features/pipeline/batches'
-import { HttpError, json, problem } from './http'
+import { cleanup } from './features/player/cleanup'
+import { createConsent, deleteMyData, getMyData, putNickname } from './features/player/me'
+import { HttpError, ResponseError, json, problem } from './http'
+import { maskId } from './log'
 
 type Handler = (req: Request, env: Env, ctx: ExecutionContext, params: string[]) => Promise<Response>
 type Route = { pattern: RegExp; methods: Partial<Record<string, Handler>> }
@@ -32,6 +35,9 @@ const routes: Route[] = [
   { pattern: /^\/api\/daily\/([^/]+)\/results$/, methods: { POST: submitDailyResult } },
   { pattern: /^\/api\/daily\/([^/]+)\/leaderboard$/, methods: { GET: getDailyLeaderboard } },
   { pattern: /^\/api\/streaks\/leaderboard$/, methods: { GET: getStreakLeaderboard } },
+  { pattern: /^\/api\/consents$/, methods: { POST: createConsent } },
+  { pattern: /^\/api\/me$/, methods: { GET: getMyData, DELETE: deleteMyData } },
+  { pattern: /^\/api\/me\/nickname$/, methods: { PUT: putNickname } },
   { pattern: /^\/api\/me\/streak$/, methods: { GET: getMyStreak } },
   { pattern: /^\/api\/pipeline\/batches$/, methods: { POST: pipelineOnly(publishBatch) } },
   { pattern: /^\/api\/pipeline\/batches\/([^/]+)$/, methods: { PATCH: pipelineOnly(patchBatchRun) } },
@@ -49,8 +55,11 @@ async function api(req: Request, env: Env, ctx: ExecutionContext, rest: string):
     try {
       return await handler(req, env, ctx, match.slice(1))
     } catch (err) {
+      if (err instanceof ResponseError) return err.response
       if (err instanceof HttpError) return problem(err.status, err.title, err.detail)
-      console.error('unhandled', err instanceof Error ? err.message : 'unknown')
+      // never the body, IP, nickname or token; the player only as its mask (AC-PRIV-07)
+      const player = req.headers.get('X-Player-Id')
+      console.error('unhandled', player ? maskId(player) : '-', err instanceof Error ? err.message : 'unknown')
       return problem(500, 'Lỗi máy chủ')
     }
   }
@@ -86,5 +95,10 @@ export default {
     // Images (AC-ART-05, phase 2: R2) — reserved so the SPA never answers for them.
     if (rest.startsWith('/img/')) return problem(404, 'Không tìm thấy')
     return asset(req, env, url)
+  },
+
+  // Daily retention job (wrangler.jsonc triggers.crons, AC-PRIV-06).
+  async scheduled(controller, env): Promise<void> {
+    await cleanup(env.DB, controller.scheduledTime)
   },
 } satisfies ExportedHandler<Env>

@@ -23,6 +23,8 @@
   "d1_databases": [
     { "binding": "DB", "database_name": "lau-meme-prod", "database_id": "00000000-0000-0000-0000-000000000000", "migrations_dir": "migrations" }
   ],
+  // Daily retention job 03:00 GMT+7 (ADR 0004, AC-PRIV-06). Not inherited by env.staging: declared there too.
+  "triggers": { "crons": ["0 20 * * *"] },
   "vars": { "APP_ENV": "production", "POLICY_VERSION": "1", "BASE_PATH": "/lau-meme" },
   "env": {
     "staging": {
@@ -31,6 +33,7 @@
       "d1_databases": [
         { "binding": "DB", "database_name": "lau-meme-staging", "database_id": "00000000-0000-0000-0000-000000000000", "migrations_dir": "migrations" }
       ],
+      "triggers": { "crons": ["0 20 * * *"] },
       "vars": { "APP_ENV": "staging", "POLICY_VERSION": "1", "BASE_PATH": "/lau-meme" }
     }
   }
