@@ -138,7 +138,12 @@ def test_ac_daily_02_khong_co_ung_vien_nao_thi_bao_loi_ro_rang():
     cases = [
         [],
         [cand("d3", depth=3), cand("d9", depth=9)],
-        [cand("held", held=True), cand("inactive", active=False), cand("far", reachable=False), cand("hint", hint_ok=False)],
+        [
+            cand("held", held=True),
+            cand("inactive", active=False),
+            cand("far", reachable=False),
+            cand("hint", hint_ok=False),
+        ],
     ]
     for candidates in cases:
         with pytest.raises(NoDailyCandidate) as info:
