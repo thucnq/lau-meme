@@ -14,13 +14,12 @@ export function App() {
   }, [])
 
   return (
-    <main>
-      <h1>lau-meme</h1>
+    <footer className="health">
       {error ? (
         <p role="alert">Không kết nối được máy chủ.</p>
       ) : (
         <p>{health ? `Máy chủ: ${health.status} (${health.env})` : 'Đang kiểm tra…'}</p>
       )}
-    </main>
+    </footer>
   )
 }
