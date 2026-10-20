@@ -1,6 +1,6 @@
 # Gantt — ƯỚC LƯỢNG - LẨU MEME
 
-Tiến độ 0% · nghiệm thu KH 2027-11-23 · dự báo 2027-11-23. Bản tương tác: `gantt.html`.
+Tiến độ 0% · nghiệm thu KH 2027-11-23 · dự báo 2027-12-07. Bản tương tác: `gantt.html`.
 
 ```mermaid
 gantt
@@ -32,14 +32,17 @@ gantt
     METRIC Đo chỉ số thành công (0%) :METRIC, 2027-05-28, 10d
     section Kiểm thử
     INV Bất biến nội dung và trò chơi (0%) :INV, 2027-06-11, 14d
-    UAT Kiểm thử nghiệm thu & sửa lỗi (giai đoạn 1) (0%) :UAT, 2027-07-01, 25d
-    section Nội dung
-    MOD Kiểm duyệt nội dung tự động (giai đoạn 2) (0%) :MOD, 2027-08-05, 20d
-    PIPE2 Pipeline Mẻ nhúng — crawl và tự động đăng (giai đoạn 2) (0%) :PIPE2, 2027-09-03, 31d
-    ART Ảnh minh họa tự tạo (giai đoạn 2) (0%) :ART, 2027-10-18, 16d
+    section Nền tảng
+    SUBPATH Chạy dưới đường dẫn con dinoduct.fun/lau-meme (0%) :SUBPATH, 2027-07-01, 9d
     section Kiểm thử
-    UAT2 Kiểm thử nghiệm thu & sửa lỗi (giai đoạn 2) (0%) :UAT2, 2027-11-09, 10d
+    UAT Kiểm thử nghiệm thu & sửa lỗi (giai đoạn 1) (0%) :crit, UAT, 2027-07-14, 26d
+    section Nội dung
+    MOD Kiểm duyệt nội dung tự động (giai đoạn 2) (0%) :crit, MOD, 2027-08-19, 20d
+    PIPE2 Pipeline Mẻ nhúng — crawl và tự động đăng (giai đoạn 2) (0%) :crit, PIPE2, 2027-09-17, 31d
+    ART Ảnh minh họa tự tạo (giai đoạn 2) (0%) :crit, ART, 2027-11-01, 16d
+    section Kiểm thử
+    UAT2 Kiểm thử nghiệm thu & sửa lỗi (giai đoạn 2) (0%) :crit, UAT2, 2027-11-23, 10d
     section Bàn giao
-    UAT 0 tuần :uat, 2027-11-23, 0d
-    Nghiệm thu :milestone, 2027-11-23, 0d
+    UAT 0 tuần :uat, 2027-12-07, 0d
+    Nghiệm thu :milestone, 2027-12-07, 0d
 ```

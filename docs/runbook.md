@@ -32,12 +32,15 @@ Cấu hình tài khoản lần đầu (DNS, Redirect Rule, SSL, deploy productio
 ## Vận hành
 - Log thời gian thực: `npx wrangler tail --env staging` (production: bỏ `--env`).
 - Xem dữ liệu: `npx wrangler d1 execute DB --env staging --remote --command "select count(*) from app_meta"`.
+- Dọn dữ liệu cá nhân (AC-PRIV-06): Cron Trigger của Worker `0 20 * * *` (03:00 GMT+7), khai báo cả production lẫn `env.staging` trong `worker/wrangler.jsonc`. Mỗi lần chạy ghi 1 dòng log `cleanup {...}` chỉ có số dòng (IP băm > 7 ngày đặt NULL, sự kiện > 90 ngày, bộ đếm hết hạn, audit > 12 tháng, đồng ý của UUID đã xóa > 1 năm).
+- Đổi nội dung chính sách (`web/src/privacy/PolicyPage.tsx`): tăng `POLICY_VERSION` trong `worker/wrangler.jsonc` (cả staging) và `POLICY.version` trên trang ⇒ mọi người chơi được hỏi đồng ý lại (AC-PRIV-09).
 
 ## Sự cố thường gặp
 | Triệu chứng | Nguyên nhân thường gặp | Xử lý |
 |---|---|---|
 | `/lau-meme/api/*` trả 500, log `no such table` | Chưa chạy migration trên môi trường đó | `npx wrangler d1 migrations apply DB --env <env> --remote` |
 | Trang trắng sau deploy | Quên build web trước khi deploy | `npm --prefix web run build` rồi deploy lại |
+| Ghi đồng ý (`/lau-meme/api/consents`) trả 500, log `IP_HASH_KEY is not configured` | Chưa đặt secret băm IP của môi trường đó (cố ý báo lỗi thay vì lưu IP thô) | Đặt secret theo `docs/dev/huong-dan-tai-khoan.md` |
 | Workflow cron chạy trễ | GitHub Actions không bảo đảm đúng giờ | Bình thường; giao diện dựa vào thời điểm trong dữ liệu, không vào giờ lý thuyết |
 | `dinoduct.fun` báo lỗi 52x hoặc không phân giải | Thiếu bản ghi DNS proxied cho host, hoặc Redirect Rule bị tắt | Xem `docs/dev/huong-dan-tai-khoan.md` mục 1–2 |
 | `/lau-meme` vào được nhưng F5 ở màn hình con ra 404 | Bản deploy cũ (trước ADR 0007) hoặc web build sai thư mục | Build lại web (`web/dist/lau-meme/index.html` phải có) rồi deploy |

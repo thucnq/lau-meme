@@ -3,9 +3,10 @@ flowchart LR
   player(["Thực khách<br/>(trình duyệt, UUID ẩn danh)"])
   admin(["Quản trị<br/>(token)"])
 
-  subgraph cf["Cloudflare (gói free)"]
-    worker["Worker lau-meme<br/>TypeScript<br/>web tĩnh + /api/* + Cron dọn dữ liệu"]
-    web["Web React + Vite<br/>static assets (web/dist)<br/>tra + giải mã graph trong bộ nhớ"]
+  subgraph cf["Cloudflare (gói free) — zone dinoduct.fun, chung origin với các game khác (ADR 0007)"]
+    redirect["Redirect Rule (người cấu hình)<br/>dinoduct.fun/ → 302 /lau-meme/"]
+    worker["Worker lau-meme<br/>route dinoduct.fun/lau-meme*<br/>(staging: staging.dinoduct.fun/lau-meme*)<br/>web tĩnh + /lau-meme/api/* + Cron dọn dữ liệu"]
+    web["Web React + Vite<br/>static assets web/dist/lau-meme<br/>tra + giải mã graph trong bộ nhớ"]
     d1[("D1 (SQLite)<br/>nội dung 14 version, chặn,<br/>người chơi, sự kiện, audit")]
     cache[("Cache API<br/>graph, ảnh bất biến")]
     wa["Web Analytics<br/>(không cookie)"]
@@ -22,13 +23,14 @@ flowchart LR
   sources["Nguồn meme công khai<br/>Reddit, KYM, Trends, YouTube, RSS<br/>(giai đoạn 2)"]
   gemini["Gemini API<br/>(giai đoạn 2, chỉ dữ liệu meme)"]
 
-  player -- "HTTPS: trang, manifest, graph, /api" --> worker
-  admin -- "HTTPS /admin, Bearer ADMIN_TOKEN" --> worker
+  player -- "HTTPS dinoduct.fun/" --> redirect
+  player -- "HTTPS /lau-meme/: trang, manifest, graph, api" --> worker
+  admin -- "HTTPS /lau-meme/admin, Bearer ADMIN_TOKEN" --> worker
   worker -- "phục vụ" --> web
   worker -- "prepare().bind()" --> d1
   worker --> cache
   player -. beacon .-> wa
-  actions -- "Bearer PIPELINE_TOKEN: đăng mẻ, rollback, từ cấm, số liệu" --> worker
+  actions -- "Bearer PIPELINE_TOKEN → /lau-meme/api/pipeline/*: đăng mẻ, rollback, từ cấm, số liệu" --> worker
   actions --> issues
   secrets --> actions
   actions -.-> sources
