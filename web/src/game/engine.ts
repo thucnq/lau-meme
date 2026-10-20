@@ -95,19 +95,14 @@ export function loadProgress(storage: Storage): Progress | null {
   } catch {
     return null
   }
-  if (
-    !isObject(data) ||
-    typeof data.graph_version !== 'number' ||
-    !Array.isArray(data.items) ||
-    !data.items.every(isItem) ||
-    !Array.isArray(data.table) ||
-    !data.table.every(isTableItem)
-  )
-    return null
+  if (!isObject(data) || typeof data.graph_version !== 'number' || !Array.isArray(data.items)) return null
+  // One damaged entry must not cost the whole plate: keep every valid one.
+  const items = data.items.filter(isItem)
+  if (items.length === 0) return null
   return {
     graph_version: data.graph_version,
-    items: data.items,
-    table: data.table,
+    items,
+    table: Array.isArray(data.table) ? data.table.filter(isTableItem) : [],
     sort: SORT_MODES.includes(data.sort as SortMode) ? (data.sort as SortMode) : 'newest',
     tutorial_seen: data.tutorial_seen === true,
     miss_streak: typeof data.miss_streak === 'number' ? data.miss_streak : 0,
@@ -162,18 +157,21 @@ export function missLine(lines: string[], a: string, b: string): string {
     h ^= text.charCodeAt(i)
     h = Math.imul(h, 0x01000193) >>> 0
   }
-  return lines[h % lines.length] ?? ''
+  return lines[h % lines.length] ?? 'Nồi trào rồi!'
 }
+
+const HINT_MAX_LOOKUPS = 5000 // bounds the scan on a very full plate so the third miss never freezes the UI
 
 /** First owned element X with a recipe X + Y (Y owned) whose result is not on the plate yet. */
 async function findHint(ctx: Ctx, items: Item[]): Promise<string | null> {
   const owned = new Set(items.map((i) => i.id))
-  for (let i = 0; i < items.length; i++) {
-    for (let j = i; j < items.length; j++) {
-      const x = items[i]!
-      const r = await lookupRecipe(ctx, x.name, items[j]!.name)
-      if (r && !owned.has(r.id)) return `Thử ${x.emoji} ${x.name} xem`
-    }
+  let budget = HINT_MAX_LOOKUPS
+  for (let i = 0; i < items.length && budget > 0; i++) {
+    const x = items[i]!
+    const partners = items.slice(i, i + budget)
+    budget -= partners.length
+    const results = await Promise.all(partners.map((y) => lookupRecipe(ctx, x.name, y.name)))
+    if (results.some((r) => r && !owned.has(r.id))) return `Thử ${x.emoji} ${x.name} xem`
   }
   return null
 }

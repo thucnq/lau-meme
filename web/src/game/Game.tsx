@@ -33,7 +33,14 @@ type Source = { item: Item; uid: string | null }
 type Drag = { source: Source; x: number; y: number }
 type Miss = { line: string; hint: string | null }
 
-const storage = (): Storage => window.localStorage
+/** localStorage, or null when the browser blocks it (private mode, cookies off): the game then runs in memory. */
+function storage(): Storage | null {
+  try {
+    return window.localStorage
+  } catch {
+    return null
+  }
+}
 
 function systemDark(): boolean {
   return typeof window.matchMedia === 'function' && window.matchMedia('(prefers-color-scheme: dark)').matches
@@ -42,7 +49,7 @@ function systemDark(): boolean {
 function readTheme(): 'light' | 'dark' {
   let stored: string | null = null
   try {
-    stored = storage().getItem(THEME_KEY)
+    stored = storage()?.getItem(THEME_KEY) ?? null
   } catch {
     // storage blocked: follow the system
   }
@@ -56,12 +63,17 @@ function slotPosition(n: number): { x: number; y: number } {
   return { x: 24 + (n % 5) * 96, y: 24 + (Math.floor(n / 5) % 5) * 72 }
 }
 
+const CHIP_HALF = { x: 40, y: 16 } // drop point is the chip centre, like the drag ghost
+
 function onTable(item: Item, x: number, y: number): TableItem {
   return { uid: newUid(), id: item.id, name: item.name, emoji: item.emoji, x: Math.round(x), y: Math.round(y) }
 }
 
 export function Game() {
-  const [progress, setProgress] = useState<Progress | null>(() => loadProgress(storage()))
+  const [progress, setProgress] = useState<Progress | null>(() => {
+    const s = storage()
+    return s ? loadProgress(s) : null
+  })
   const progressRef = useRef(progress)
   const [tutorialOpen, setTutorialOpen] = useState(() => !progress?.tutorial_seen)
   const tutorialSeenRef = useRef(progress?.tutorial_seen ?? false)
@@ -78,22 +90,27 @@ export function Game() {
   const [theme, setTheme] = useState(readTheme)
   const [drag, setDrag] = useState<Drag | null>(null)
   const dragRef = useRef<Source | null>(null)
+  const busyRef = useRef(false) // a table stack is being looked up
+  const generation = useRef(0) // bumped by "Chơi lại từ đầu": results of older combines are dropped
   const timers = useRef<number[]>([])
 
   const commit = (next: Progress) => {
     progressRef.current = next
     setProgress(next)
-    saveProgress(storage(), next)
+    const s = storage()
+    if (s) saveProgress(s, next)
+  }
+
+  const clearTimers = () => {
+    timers.current.forEach((t) => window.clearTimeout(t))
+    timers.current = []
   }
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme
   }, [theme])
 
-  useEffect(() => {
-    const pending = timers.current
-    return () => pending.forEach((t) => window.clearTimeout(t))
-  }, [])
+  useEffect(() => () => timers.current.forEach((t) => window.clearTimeout(t)), [])
 
   // Manifest + graph (+ blocklist, best effort). Progress is never touched when loading fails (AC-GAME-16).
   useEffect(() => {
@@ -121,7 +138,11 @@ export function Game() {
   }, [reloadKey])
 
   const later = (fn: () => void, ms: number) => {
-    timers.current.push(window.setTimeout(fn, ms))
+    const id = window.setTimeout(() => {
+      timers.current = timers.current.filter((t) => t !== id)
+      fn()
+    }, ms)
+    timers.current.push(id)
   }
 
   const blocklist = loaded?.blocklist ?? EMPTY_BLOCKLIST
@@ -132,51 +153,68 @@ export function Game() {
   const boil = (a: Item, b: Item) => {
     const p = progressRef.current
     if (!ctx || !p) return
+    const gen = generation.current
     boilingRef.current = true
     setBoiling(true)
     setMiss(null)
     const outcome = combine(ctx, p, a.name, b.name)
+    const [pa, pb] = [slotPosition(p.table.length), slotPosition(p.table.length + 1)]
     later(() => {
-      void outcome.then((out) => {
-        const table = progressRef.current?.table ?? p.table
-        if (out.kind === 'hit') {
-          const item = out.progress.items.find((i) => i.id === out.result.id)!
-          const at = slotPosition(table.length)
-          commit({ ...out.progress, table: [...table, onTable(item, at.x, at.y)] })
-        } else {
-          const [pa, pb] = [slotPosition(table.length), slotPosition(table.length + 1)]
-          commit({ ...out.progress, table: [...table, onTable(a, pa.x, pa.y), onTable(b, pb.x, pb.y)] })
-          setMiss({ line: out.line, hint: out.hint })
-        }
-        setSlots([null, null])
-        boilingRef.current = false
-        setBoiling(false)
-      })
+      outcome
+        .then((out) => {
+          if (gen !== generation.current) return
+          const table = progressRef.current?.table ?? p.table
+          if (out.kind === 'hit') {
+            const item = out.progress.items.find((i) => i.id === out.result.id)!
+            commit({ ...out.progress, table: [...table, onTable(item, pa.x, pa.y)] })
+          } else {
+            commit({ ...out.progress, table: [...table, onTable(a, pa.x, pa.y), onTable(b, pb.x, pb.y)] })
+            setMiss({ line: out.line, hint: out.hint })
+          }
+        })
+        .catch(() => {
+          if (gen === generation.current) setMiss({ line: 'Nồi trục trặc, nhúng lại nhé.', hint: null })
+        })
+        .finally(() => {
+          if (gen !== generation.current) return
+          setSlots([null, null])
+          boilingRef.current = false
+          setBoiling(false)
+        })
     }, BOIL_MS)
   }
 
   const stack = async (source: Source, target: TableItem, x: number, y: number) => {
     const p = progressRef.current
     if (!ctx || !p) return
+    const gen = generation.current
+    busyRef.current = true
     setMiss(null)
-    const out = await combine(ctx, p, source.item.name, target.name)
-    const table = (progressRef.current ?? p).table.filter((t) => t.uid !== source.uid)
-    if (out.kind === 'hit') {
-      const item = out.progress.items.find((i) => i.id === out.result.id)!
-      const rest = table.filter((t) => t.uid !== target.uid)
-      commit({ ...out.progress, table: [...rest, onTable(item, target.x, target.y)] })
-      setSteam({ x: target.x, y: target.y })
-      later(() => setSteam(null), STEAM_MS)
-    } else {
-      commit({ ...out.progress, table: [...table, onTable(source.item, x, y)] })
-      setMiss({ line: out.line, hint: out.hint })
+    try {
+      const out = await combine(ctx, p, source.item.name, target.name)
+      if (gen !== generation.current) return
+      const table = (progressRef.current ?? p).table.filter((t) => t.uid !== source.uid)
+      if (out.kind === 'hit') {
+        const item = out.progress.items.find((i) => i.id === out.result.id)!
+        const rest = table.filter((t) => t.uid !== target.uid)
+        commit({ ...out.progress, table: [...rest, onTable(item, target.x, target.y)] })
+        setSteam({ x: target.x, y: target.y })
+        later(() => setSteam(null), STEAM_MS)
+      } else {
+        commit({ ...out.progress, table: [...table, onTable(source.item, x, y)] })
+        setMiss({ line: out.line, hint: out.hint })
+      }
+    } catch {
+      if (gen === generation.current) setMiss({ line: 'Nồi trục trặc, nhúng lại nhé.', hint: null })
+    } finally {
+      if (gen === generation.current) busyRef.current = false
     }
   }
 
   // ---------------------------------------------------------------- drag and drop
   const drop = (source: Source, el: Element | null, clientX: number, clientY: number) => {
     const p = progressRef.current
-    if (!el || !p || boilingRef.current) return
+    if (!el || !p || boilingRef.current || busyRef.current) return
     const slotEl = el.closest('[data-slot]')
     if (slotEl) {
       if (!ready) return
@@ -195,7 +233,7 @@ export function Game() {
       return
     }
     const rect = tableEl.getBoundingClientRect()
-    const [x, y] = [clientX - rect.left, clientY - rect.top]
+    const [x, y] = [Math.max(0, clientX - rect.left - CHIP_HALF.x), Math.max(0, clientY - rect.top - CHIP_HALF.y)]
     const targetUid = el.closest('[data-uid]')?.getAttribute('data-uid')
     const target = p.table.find((t) => t.uid === targetUid && t.uid !== source.uid)
     if (target && ready) {
@@ -208,7 +246,7 @@ export function Game() {
 
   const dragHandlers = (source: Source) => ({
     onPointerDown: (e: ReactPointerEvent<HTMLElement>) => {
-      if (boilingRef.current || e.button !== 0) return
+      if (boilingRef.current || busyRef.current || e.button !== 0) return
       e.preventDefault()
       if (typeof e.currentTarget.setPointerCapture === 'function') e.currentTarget.setPointerCapture(e.pointerId)
       dragRef.current = source
@@ -229,6 +267,14 @@ export function Game() {
     },
   })
 
+  /** Keyboard path (Enter/Space on a plate item): put it in the next free pot slot. */
+  const toPot = (item: Item) => {
+    if (!ready || boilingRef.current || busyRef.current) return
+    const next: [Item | null, Item | null] = slots[0] ? [slots[0], item] : [item, slots[1]]
+    setSlots(next)
+    if (next[0] && next[1]) boil(next[0], next[1])
+  }
+
   // ---------------------------------------------------------------- toolbar
   const closeTutorial = () => {
     setTutorialOpen(false)
@@ -244,8 +290,19 @@ export function Game() {
 
   const restart = () => {
     setConfirmReset(false)
-    resetProgress(storage())
+    generation.current += 1
+    clearTimers()
+    try {
+      const s = storage()
+      if (s) resetProgress(s)
+    } catch {
+      // storage blocked: in-memory progress is reset below
+    }
     setSlots([null, null])
+    boilingRef.current = false
+    busyRef.current = false
+    setBoiling(false)
+    setSteam(null)
     setMiss(null)
     if (loaded) commit({ ...initialProgress(loaded.manifest, new Date()), tutorial_seen: true })
     else {
@@ -257,7 +314,7 @@ export function Game() {
   const toggleTheme = () => {
     const next = theme === 'dark' ? 'light' : 'dark'
     try {
-      storage().setItem(THEME_KEY, next)
+      storage()?.setItem(THEME_KEY, next)
     } catch {
       // storage blocked: the choice lasts for this session only
     }
@@ -348,12 +405,10 @@ export function Game() {
               )
             })}
           </div>
-          {miss && (
-            <div className="miss" aria-live="polite">
-              <p data-testid="miss-line">{miss.line}</p>
-              {miss.hint && <p data-testid="miss-hint">{miss.hint}</p>}
-            </div>
-          )}
+          <div className="miss" aria-live="polite">
+            {miss && <p data-testid="miss-line">{miss.line}</p>}
+            {miss?.hint && <p data-testid="miss-hint">{miss.hint}</p>}
+          </div>
         </section>
 
         <aside className="plate">
@@ -375,7 +430,20 @@ export function Game() {
           </select>
           <ul aria-label="Đĩa nhúng">
             {plate.map((it) => (
-              <li key={it.id} className="chip" data-testid="plate-item" data-name={it.name} {...dragHandlers({ item: it, uid: null })}>
+              <li
+                key={it.id}
+                className="chip"
+                data-testid="plate-item"
+                data-name={it.name}
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault()
+                    toPot(it)
+                  }
+                }}
+                {...dragHandlers({ item: it, uid: null })}
+              >
                 <span aria-hidden="true">{it.emoji}</span> {it.name}
                 {badge(it)}
               </li>
@@ -391,21 +459,33 @@ export function Game() {
       )}
 
       {tutorialOpen && (
-        <div role="dialog" aria-modal="true" aria-labelledby="tutorial-title" className="modal">
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="tutorial-title"
+          className="modal"
+          onKeyDown={(e) => e.key === 'Escape' && closeTutorial()}
+        >
           <h2 id="tutorial-title">Hướng dẫn</h2>
           <p>Kéo 2 món từ Đĩa nhúng thả vào nồi lẩu để nhúng ra món mới.</p>
           <p>Kéo một món thả chồng lên món khác trên bàn cũng nhúng được.</p>
-          <button type="button" onClick={closeTutorial}>
+          <button type="button" onClick={closeTutorial} autoFocus>
             Đóng
           </button>
         </div>
       )}
 
       {confirmReset && (
-        <div role="alertdialog" aria-modal="true" aria-labelledby="reset-title" className="modal">
+        <div
+          role="alertdialog"
+          aria-modal="true"
+          aria-labelledby="reset-title"
+          className="modal"
+          onKeyDown={(e) => e.key === 'Escape' && setConfirmReset(false)}
+        >
           <h2 id="reset-title">Chơi lại từ đầu?</h2>
           <p>Đĩa nhúng sẽ về 4 món khởi đầu. Nickname và chuỗi Daily vẫn được giữ.</p>
-          <button type="button" onClick={() => setConfirmReset(false)}>
+          <button type="button" onClick={() => setConfirmReset(false)} autoFocus>
             Hủy
           </button>
           <button type="button" onClick={restart}>

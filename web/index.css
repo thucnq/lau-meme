@@ -59,7 +59,8 @@ button:hover { border-color: var(--accent); }
 
 .chip {
   display: inline-flex; gap: 0.3rem; align-items: center; padding: 0.3rem 0.6rem; border-radius: 999px;
-  background: var(--bg); border: 1px solid var(--line); user-select: none; touch-action: none; cursor: grab;
+  background: var(--bg); border: 1px solid var(--line); user-select: none; cursor: grab;
+  touch-action: none; /* AC-GAME-02: touch drag needs it; the plate scrolls from the gaps between chips */
 }
 .on-table { position: absolute; }
 .ghost { position: fixed; pointer-events: none; z-index: 10; opacity: 0.85; transform: translate(-50%, -50%); }
