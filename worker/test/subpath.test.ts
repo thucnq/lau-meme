@@ -21,10 +21,10 @@ const HTML = { Accept: 'text/html', 'Sec-Fetch-Mode': 'navigate' }
 // Minimal JSONC parser: strips line and block comments outside strings, and trailing commas.
 type RouteCfg = { pattern: string; zone_name: string }
 type WranglerCfg = {
-  vars: { BASE_PATH?: string }
+  vars: { BASE_PATH?: string; ADMIN_HOST?: string }
   routes: RouteCfg[]
   workers_dev?: boolean
-  env: { staging: { vars: { BASE_PATH?: string }; routes: RouteCfg[] } }
+  env: { staging: { vars: { BASE_PATH?: string; ADMIN_HOST?: string }; routes: RouteCfg[] } }
 }
 
 function parseJsonc(text: string): WranglerCfg {
@@ -65,15 +65,29 @@ describe('subpath', () => {
     expect((env as unknown as { BASE_PATH?: string }).BASE_PATH).toBe(basePathJson.basePath)
   })
 
-  it('AC-SUBPATH-01: routes đúng một mục cho production và đúng một mục cho staging, workers_dev bật', () => {
+  it('AC-SUBPATH-01: mỗi môi trường đúng một route game và đúng một route host quản trị (ADR 0008), không route nào khác, workers_dev bật', () => {
     const wrangler = parseJsonc(wranglerRaw)
     const base = basePathJson.basePath
-    expect(wrangler.routes).toEqual([{ pattern: `dinoduct.fun${base}*`, zone_name: 'dinoduct.fun' }])
-    expect(wrangler.env.staging.routes).toEqual([{ pattern: `staging.dinoduct.fun${base}*`, zone_name: 'dinoduct.fun' }])
+    const byPattern = (a: RouteCfg, b: RouteCfg) => a.pattern.localeCompare(b.pattern)
+    const prodExpected: RouteCfg[] = [
+      { pattern: `dinoduct.fun${base}*`, zone_name: 'dinoduct.fun' },
+      { pattern: 'laumeme-admin.dinoduct.fun/*', zone_name: 'dinoduct.fun' },
+    ]
+    const stagingExpected: RouteCfg[] = [
+      { pattern: `staging.dinoduct.fun${base}*`, zone_name: 'dinoduct.fun' },
+      { pattern: 'laumeme-admin-staging.dinoduct.fun/*', zone_name: 'dinoduct.fun' },
+    ]
+    expect(wrangler.routes).toHaveLength(2)
+    expect(wrangler.env.staging.routes).toHaveLength(2)
+    expect([...wrangler.routes].sort(byPattern)).toEqual([...prodExpected].sort(byPattern))
+    expect([...wrangler.env.staging.routes].sort(byPattern)).toEqual([...stagingExpected].sort(byPattern))
+    const forbidden = ['dinoduct.fun/*', 'staging.dinoduct.fun/*', 'dinoduct.fun/', 'staging.dinoduct.fun/', 'dinoduct.fun', 'staging.dinoduct.fun']
     for (const r of [...wrangler.routes, ...wrangler.env.staging.routes]) {
-      expect(r.pattern).not.toBe('dinoduct.fun/*')
-      expect(r.pattern).toContain(base)
+      expect(forbidden).not.toContain(r.pattern)
+      expect(r.pattern.includes(base ?? '/lau-meme') || r.pattern.startsWith('laumeme-admin')).toBe(true)
     }
+    expect(wrangler.vars.ADMIN_HOST).toBe('laumeme-admin.dinoduct.fun')
+    expect(wrangler.env.staging.vars.ADMIN_HOST).toBe('laumeme-admin-staging.dinoduct.fun')
     expect(wrangler.workers_dev).toBe(true)
   })
 

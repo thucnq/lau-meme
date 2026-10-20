@@ -21,7 +21,7 @@ tags:
   - name: play
     description: Khám phá, Daily, báo cáo, phiếu, sự kiện
   - name: admin
-    description: Trang quản trị (ADMIN)
+    description: Trang quản trị (ADMIN) — chỉ phục vụ trên host quản trị riêng (ADR 0008)
   - name: pipeline
     description: Mẻ nhúng đăng nội dung, rollback, số liệu (PIPE, GRAPH, METRIC)
 paths:
@@ -434,6 +434,9 @@ paths:
 
   # ---------------------------------------------------------------- admin
   /admin/reports:
+    servers:
+      - url: /api
+        description: Chỉ trên host quản trị riêng (ADR 0008) — production https://laumeme-admin.dinoduct.fun/api, staging https://laumeme-admin-staging.dinoduct.fun/api; trên host game `/lau-meme/api/admin/*` trả 404
     get:
       operationId: adminListReports
       tags: [admin]
@@ -457,6 +460,9 @@ paths:
         '429': { $ref: '#/components/responses/TooManyRequests' }
         default: { $ref: '#/components/responses/Problem' }
   /admin/elements:
+    servers:
+      - url: /api
+        description: Chỉ trên host quản trị riêng (ADR 0008) — production https://laumeme-admin.dinoduct.fun/api, staging https://laumeme-admin-staging.dinoduct.fun/api; trên host game `/lau-meme/api/admin/*` trả 404
     get:
       operationId: adminListElements
       tags: [admin]
@@ -483,6 +489,9 @@ paths:
         '429': { $ref: '#/components/responses/TooManyRequests' }
         default: { $ref: '#/components/responses/Problem' }
   /admin/recipes:
+    servers:
+      - url: /api
+        description: Chỉ trên host quản trị riêng (ADR 0008) — production https://laumeme-admin.dinoduct.fun/api, staging https://laumeme-admin-staging.dinoduct.fun/api; trên host game `/lau-meme/api/admin/*` trả 404
     get:
       operationId: adminListRecipes
       tags: [admin]
@@ -507,6 +516,9 @@ paths:
         '429': { $ref: '#/components/responses/TooManyRequests' }
         default: { $ref: '#/components/responses/Problem' }
   /admin/moderation:
+    servers:
+      - url: /api
+        description: Chỉ trên host quản trị riêng (ADR 0008) — production https://laumeme-admin.dinoduct.fun/api, staging https://laumeme-admin-staging.dinoduct.fun/api; trên host game `/lau-meme/api/admin/*` trả 404
     post:
       operationId: adminModerate
       tags: [admin]
@@ -537,6 +549,9 @@ paths:
         '429': { $ref: '#/components/responses/TooManyRequests' }
         default: { $ref: '#/components/responses/Problem' }
   /admin/batches:
+    servers:
+      - url: /api
+        description: Chỉ trên host quản trị riêng (ADR 0008) — production https://laumeme-admin.dinoduct.fun/api, staging https://laumeme-admin-staging.dinoduct.fun/api; trên host game `/lau-meme/api/admin/*` trả 404
     get:
       operationId: adminListBatches
       tags: [admin]
@@ -557,6 +572,9 @@ paths:
         '429': { $ref: '#/components/responses/TooManyRequests' }
         default: { $ref: '#/components/responses/Problem' }
   /admin/audit:
+    servers:
+      - url: /api
+        description: Chỉ trên host quản trị riêng (ADR 0008) — production https://laumeme-admin.dinoduct.fun/api, staging https://laumeme-admin-staging.dinoduct.fun/api; trên host game `/lau-meme/api/admin/*` trả 404
     get:
       operationId: adminListAudit
       tags: [admin]

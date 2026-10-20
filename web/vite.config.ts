@@ -1,6 +1,7 @@
 /// <reference types="vitest/config" />
 import { existsSync, mkdirSync, readFileSync, renameSync, rmdirSync } from 'node:fs'
 import { dirname, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { defineConfig } from 'vite'
 import type { Plugin } from 'vite'
 import react from '@vitejs/plugin-react'
@@ -45,6 +46,12 @@ export default defineConfig({
   define: { 'import.meta.env.VITE_SITE_URL': JSON.stringify(siteUrl) },
   // Files outside the bundle would be copied to the root of outDir, outside the base path; reference assets from index.html instead.
   publicDir: false,
+  // Two pages: the game, and the admin page served only on its own origin (ADR 0008; the Worker never serves it here).
+  build: {
+    rollupOptions: {
+      input: { main: fileURLToPath(new URL('index.html', import.meta.url)), admin: fileURLToPath(new URL('admin.html', import.meta.url)) },
+    },
+  },
   // `npm run dev` here + `npm --prefix ../worker run dev` (port 8787): same origin for the API in dev.
   server: { port: 5173, proxy: { [`${basePath}/api`]: 'http://localhost:8787' } },
   test: {

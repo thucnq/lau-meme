@@ -1,4 +1,5 @@
 import { hasBearer } from './auth'
+import { adminOnly, listAudit, listBatches, listElements, listRecipes, listReports, moderate } from './features/admin/admin'
 import { getGraph, getManifest } from './features/content/content'
 import { createDiscovery, listDiscoveries, putBannedTerms } from './features/disc/disc'
 import { getDailyLeaderboard, getMyStreak, getStreakLeaderboard, submitDailyResult } from './features/daily/daily'
@@ -51,8 +52,18 @@ const routes: Route[] = [
   { pattern: /^\/api\/pipeline\/state$/, methods: { GET: pipelineOnly(getPipelineState) } },
 ]
 
-/** API under `<BASE_PATH>/api/*`; `rest` is the path below BASE_PATH. */
-async function api(req: Request, env: Env, ctx: ExecutionContext, rest: string): Promise<Response> {
+/** Admin API (ADR 0008): only on the admin host, at `/api/admin/*` (no BASE_PATH there). */
+const adminRoutes: Route[] = [
+  { pattern: /^\/api\/admin\/reports$/, methods: { GET: adminOnly(listReports) } },
+  { pattern: /^\/api\/admin\/elements$/, methods: { GET: adminOnly(listElements) } },
+  { pattern: /^\/api\/admin\/recipes$/, methods: { GET: adminOnly(listRecipes) } },
+  { pattern: /^\/api\/admin\/moderation$/, methods: { POST: adminOnly(moderate) } },
+  { pattern: /^\/api\/admin\/batches$/, methods: { GET: adminOnly(listBatches) } },
+  { pattern: /^\/api\/admin\/audit$/, methods: { GET: adminOnly(listAudit) } },
+]
+
+/** `rest` is the path below BASE_PATH (game host) or the whole path (admin host). */
+async function api(routes: Route[], req: Request, env: Env, ctx: ExecutionContext, rest: string): Promise<Response> {
   for (const route of routes) {
     const match = route.pattern.exec(rest)
     if (!match) continue
@@ -85,9 +96,42 @@ async function asset(req: Request, env: Env, url: URL): Promise<Response> {
   return env.ASSETS.fetch(new Request(new URL(`${env.BASE_PATH}/`, url), { headers: req.headers }))
 }
 
+/** Headers of every admin-host response; the page itself also gets a strict CSP (ADR 0008). */
+const ADMIN_HEADERS = { 'X-Robots-Tag': 'noindex, nofollow', 'Referrer-Policy': 'no-referrer' }
+const ADMIN_PAGE_HEADERS = {
+  ...ADMIN_HEADERS,
+  'Content-Security-Policy': "default-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'",
+  'Cache-Control': 'no-store',
+}
+
+function withHeaders(res: Response, headers: Record<string, string>): Response {
+  const out = new Response(res.body, res)
+  for (const [k, v] of Object.entries(headers)) out.headers.set(k, v)
+  return out
+}
+
+/**
+ * The admin origin (ADR 0008): `/` is the admin page (web/admin.html, built under the base path like every web
+ * file), `/api/admin/*` its API, and the page's hashed build files; everything else is 404.
+ */
+async function adminHost(req: Request, env: Env, ctx: ExecutionContext, url: URL): Promise<Response> {
+  const path = url.pathname
+  if (path === '/api/admin' || path.startsWith('/api/admin/')) return withHeaders(await api(adminRoutes, req, env, ctx, path), ADMIN_HEADERS)
+  if (isRead(req) && path === '/') {
+    const page = await env.ASSETS.fetch(new Request(new URL(`${env.BASE_PATH}/admin`, url), { headers: req.headers }))
+    return withHeaders(page, ADMIN_PAGE_HEADERS)
+  }
+  if (isRead(req) && path.startsWith(`${env.BASE_PATH}/assets/`)) return withHeaders(await env.ASSETS.fetch(req), ADMIN_HEADERS)
+  return withHeaders(problem(404, 'Không tìm thấy'), ADMIN_HEADERS)
+}
+
+/** The admin page's entry under the base path: never served on the game origin, where its token would be readable. */
+const ADMIN_PAGE = /^\/admin(\.html|\/.*)?$/
+
 export default {
   async fetch(req, env, ctx): Promise<Response> {
     const url = new URL(req.url)
+    if (env.ADMIN_HOST && url.hostname === env.ADMIN_HOST) return adminHost(req, env, ctx, url)
     const base = env.BASE_PATH
     if (url.pathname === base) {
       // a 301 would turn a POST into a GET in most clients
@@ -97,7 +141,8 @@ export default {
     // Everything outside the game's path belongs to other games or the hub (only reachable here via workers.dev).
     if (!url.pathname.startsWith(`${base}/`)) return problem(404, 'Không tìm thấy')
     const rest = url.pathname.slice(base.length)
-    if (rest === '/api' || rest.startsWith('/api/')) return api(req, env, ctx, rest)
+    if (rest === '/api' || rest.startsWith('/api/')) return api(routes, req, env, ctx, rest)
+    if (ADMIN_PAGE.test(rest)) return problem(404, 'Không tìm thấy')
     // Images (AC-ART-05, phase 2: R2) — reserved so the SPA never answers for them.
     if (rest.startsWith('/img/')) return problem(404, 'Không tìm thấy')
     return asset(req, env, url)

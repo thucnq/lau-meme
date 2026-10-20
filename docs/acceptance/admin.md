@@ -58,7 +58,7 @@
 - Ưu tiên: Bắt buộc
 
 ### AC-ADMIN-10: Trang quản trị
-- **Cho** mở `/admin`
-- **Khi** nhập token đúng; tải lại tab; đóng tab rồi mở lại
-- **Thì** trang hiện 3 mục Báo cáo / Nội dung / Đợt + Audit; token chỉ lưu trong `sessionStorage` (mất khi đóng tab), không lưu `localStorage`/cookie; token sai hiện thông báo `role="alert"`; trang có `noindex`
+- **Cho** mở `https://laumeme-admin.dinoduct.fun/` (staging `https://laumeme-admin-staging.dinoduct.fun/`) — origin riêng, không chung với game (ADR 0008)
+- **Khi** nhập token đúng; tải lại tab; đóng tab rồi mở lại; và gọi `/lau-meme/api/admin/*` trên host game
+- **Thì** trang hiện 3 mục Báo cáo / Nội dung / Đợt + Audit; token chỉ lưu trong `sessionStorage` của origin quản trị (mất khi đóng tab), không lưu `localStorage`/cookie; token sai hiện thông báo `role="alert"`; trang có `noindex` (thẻ meta + header `X-Robots-Tag`) và CSP `frame-ancestors 'none'`; API quản trị chỉ có trên host quản trị — `/lau-meme/api/admin/*` trên host game trả 404
 - Ưu tiên: Bắt buộc

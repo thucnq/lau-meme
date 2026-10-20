@@ -1,0 +1,102 @@
+{
+ "red": {
+  "ts": "2026-10-20T12:59:20+00:00",
+  "commit": "a8e6245",
+  "results": {
+   "AC-ADMIN-01": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-ADMIN-02": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-ADMIN-03": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-ADMIN-04": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-ADMIN-05": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-ADMIN-06": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-ADMIN-07": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-ADMIN-08": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-ADMIN-09": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-ADMIN-10": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   }
+  }
+ },
+ "green": {
+  "ts": "2026-10-20T13:21:14+00:00",
+  "commit": "a8e6245",
+  "results": {
+   "AC-ADMIN-01": {
+    "status": "PASS",
+    "test": "admin.test.ts#admin > AC-ADMIN-01: thiếu token, token sai, sai sơ đồ "
+   },
+   "AC-ADMIN-02": {
+    "status": "PASS",
+    "test": "admin.test.ts#admin > AC-ADMIN-02: 5 yêu cầu sai token "
+   },
+   "AC-ADMIN-03": {
+    "status": "PASS",
+    "test": "admin.test.ts#admin > AC-ADMIN-03: ẩn P kèm lý do trả 200 và P vào blocklist ngay; hiện P trả 200, P ra khỏi blocklist, báo cáo mới được đánh dấu đã xử lý và bộ đếm tăng chu kỳ; P không tồn tại trả 404"
+   },
+   "AC-ADMIN-04": {
+    "status": "PASS",
+    "test": "admin.test.ts#admin > AC-ADMIN-04: ẩn công thức A+B và ảnh của P rồi hiện lại từng thứ: vào/ra blocklist.recipes / .images; phần tử C và P không bị ẩn theo"
+   },
+   "AC-ADMIN-05": {
+    "status": "PASS",
+    "test": "admin.test.ts#admin > AC-ADMIN-05: chặn P trả 200, P vào blocklist, fold của P vào banned_term "
+   },
+   "AC-ADMIN-06": {
+    "status": "PASS",
+    "test": "admin.test.ts#admin > AC-ADMIN-06: danh sách báo cáo gom theo đích, lọc new/resolved, xếp theo số UUID giảm dần, có tên/emoji/lý do/thời điểm/trạng thái ẩn, phân trang, không lộ UUID người báo cáo"
+   },
+   "AC-ADMIN-07": {
+    "status": "PASS",
+    "test": "admin.test.ts#admin > AC-ADMIN-07: bỏ qua báo cáo của P đang tự ẩn: báo cáo thành resolved_dismissed, P hiện lại, báo cáo mới đếm lại từ 0 "
+   },
+   "AC-ADMIN-08": {
+    "status": "PASS",
+    "test": "admin.test.ts#admin > AC-ADMIN-08: 20 đợt: trả mới nhất trước, mỗi đợt đủ version/batch_at/mode/status/failed_step/rollback_to/stats/issue_url/created_at; phân trang"
+   },
+   "AC-ADMIN-09": {
+    "status": "PASS",
+    "test": "admin.test.ts#admin > AC-ADMIN-09: mỗi lệnh ghi thành công "
+   },
+   "AC-ADMIN-10": {
+    "status": "PASS",
+    "test": "admin.html.test.ts#admin html > AC-ADMIN-10: web/admin.html có thẻ meta robots \"noindex, nofollow\""
+   },
+   "AC-ADMIN-VALIDATION": {
+    "status": "PASS",
+    "test": "admin.test.ts#admin > AC-ADMIN-VALIDATION: lệnh kiểm duyệt với trường lạ, id sai định dạng "
+   },
+   "AC-ADMIN-ABUSE": {
+    "status": "PASS",
+    "test": "admin.test.ts#admin > AC-ADMIN-ABUSE: id giả danh "
+   }
+  }
+ }
+}
