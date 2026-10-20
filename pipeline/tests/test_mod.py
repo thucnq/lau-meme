@@ -35,8 +35,17 @@ def lists(**over):
     return ModLists(**{k: frozenset(v) for k, v in over.items()})
 
 
-def verdict(key, category="safe", confidence=0.95, targets=False, name=None, aliases=(), accusation=False,
-            hot_person=False, flagged_fields=()):
+def verdict(
+    key,
+    category="safe",
+    confidence=0.95,
+    targets=False,
+    name=None,
+    aliases=(),
+    accusation=False,
+    hot_person=False,
+    flagged_fields=(),
+):
     return {
         "key": key,
         "category": category,
@@ -374,9 +383,8 @@ def test_ac_mod_04_ten_ket_qua_cong_thuc_vi_pham_bi_loai():
 
 def test_ac_mod_04_goi_y_daily_vi_pham_phan_tu_di_tiep_nhung_khong_du_dieu_kien_mon_dac_biet():
     """AC-MOD-04: gợi ý Daily bị gắn cờ -> phần tử vẫn đi tiếp nhưng hint_ok=False, không làm Món đặc biệt."""
-    from lau_meme_pipeline.moderation import daily_candidate_flags
-
     from lau_meme_pipeline.daily import select_daily
+    from lau_meme_pipeline.moderation import daily_candidate_flags
 
     llm = FakeLlm(answers={"e": verdict("e", flagged_fields=["daily_hint"])})
     result = run([concept("e", "Phần Tử Lành", daily_hint="nhắc vụ việc nóng")], llm)
@@ -598,9 +606,8 @@ def test_ac_mod_08_bien_d_cong_29_con_hoan_d_cong_30_het_hoan():
 
 def test_ac_mod_08_khong_duoc_chon_mon_dac_biet_truoc_d_cong_30():
     """AC-MOD-08: phần tử hoãn không bao giờ được select_daily chọn trước D+30, sau đó được xét bình thường."""
-    from lau_meme_pipeline.moderation import daily_candidate_flags
-
     from lau_meme_pipeline.daily import select_daily
+    from lau_meme_pipeline.moderation import daily_candidate_flags
 
     p = _hot_passed()
     assert daily_candidate_flags(p, D) == {"held": True, "hint_ok": True}
