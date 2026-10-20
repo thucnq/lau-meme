@@ -673,7 +673,7 @@ def test_ac_mod_09_cao_buoc_bi_loai_du_an_toan_va_confidence_cao():
 
 
 def test_ac_mod_09_cao_buoc_uu_tien_hon_hai_huoc_hot_person():
-    """AC-MOD-09: accusation thắng hot_person — không được chỉ "hoãn" mà phải loại."""
+    """AC-MOD-09: accusation thắng hot_person - không được chỉ "hoãn" mà phải loại."""
     llm = FakeLlm(answers={"acc": verdict("acc", accusation=True, hot_person=True)})
     result = run([concept("acc", "A")], llm)
     assert result.rejected == {"acc": "accusation"}

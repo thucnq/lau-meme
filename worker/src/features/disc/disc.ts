@@ -37,7 +37,7 @@ function name(body: Record<string, unknown>, key: string): string {
   return value
 }
 
-/** POST /api/discoveries — reads + counters in one round trip, then the insert race decides who is first. */
+/** POST /api/discoveries - reads + counters in one round trip, then the insert race decides who is first. */
 export async function createDiscovery(req: Request, env: Env): Promise<Response> {
   const player = playerId(req)
   const body = await readJson(req)
@@ -90,7 +90,7 @@ export async function createDiscovery(req: Request, env: Env): Promise<Response>
   return json({ ...discovery(stored), first: firstTime }, { status: firstTime ? 201 : 200 })
 }
 
-/** GET /api/discoveries?ids=… — never a UUID nor the recipe used (it would give the answer away). */
+/** GET /api/discoveries?ids=… - never a UUID nor the recipe used (it would give the answer away). */
 export async function listDiscoveries(req: Request, env: Env): Promise<Response> {
   const raw = new URL(req.url).searchParams.get('ids') ?? ''
   const ids = raw.split(',')
@@ -110,7 +110,7 @@ export function bannedKey(text: string): string {
   return fold(text).replace(/[^\p{L}\p{N}]/gu, '')
 }
 
-/** PUT /api/pipeline/banned-terms/{source} — replaces one source's whole set (ADR 0005). Never logs the terms. */
+/** PUT /api/pipeline/banned-terms/{source} - replaces one source's whole set (ADR 0005). Never logs the terms. */
 export async function putBannedTerms(req: Request, env: Env, _ctx: ExecutionContext, params: string[]): Promise<Response> {
   const source = oneOf(params[0], 'source', ['wordlist', 'mod'] as const)
   const b = obj(await readJson(req), 'body', ['terms'])

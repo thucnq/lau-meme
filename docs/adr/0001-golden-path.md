@@ -1,4 +1,4 @@
-# 0001 — Golden path py-ts-cloudflare cho dự án tải thấp, chi phí $0
+# 0001 - Golden path py-ts-cloudflare cho dự án tải thấp, chi phí $0
 
 - Trạng thái: Đã chấp nhận
 - Ngày: (ngày khởi tạo dự án)

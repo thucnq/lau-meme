@@ -1,4 +1,4 @@
-# 0003 — Nội dung, graph và manifest lưu trong D1, pipeline đăng qua API của Worker
+# 0003 - Nội dung, graph và manifest lưu trong D1, pipeline đăng qua API của Worker
 
 - Trạng thái: Đề xuất
 - Ngày: 2026-10-20
@@ -15,8 +15,8 @@ Mỗi ngày 2 mẻ đổi Món đặc biệt + manifest (AC-PIPE-01), giữ 14 b
 - Nội dung là dữ liệu tái tạo được từ kho pipeline (`noi-dung-loi.json` + lịch sử Daily lấy từ `GET /api/pipeline/state`); D1 Time Travel là lưới an toàn cuối.
 
 ## Hệ quả
-- D1 giới hạn 2 MB mỗi dòng ⇒ graph một version tối đa ~2 MB ≈ 10 000 công thức (ADR 0002: ~200 byte/mục). Lõi 363 công thức ≈ 75 KB; giai đoạn 2 phải theo dõi kích thước trong báo cáo đợt — chạm ~1 MB thì viết ADR chuyển graph sang R2/static assets.
-- 14 bản × (graph + server_json) ≈ vài MB — nhỏ so với 5 GB của D1 free.
+- D1 giới hạn 2 MB mỗi dòng ⇒ graph một version tối đa ~2 MB ≈ 10 000 công thức (ADR 0002: ~200 byte/mục). Lõi 363 công thức ≈ 75 KB; giai đoạn 2 phải theo dõi kích thước trong báo cáo đợt - chạm ~1 MB thì viết ADR chuyển graph sang R2/static assets.
+- 14 bản × (graph + server_json) ≈ vài MB - nhỏ so với 5 GB của D1 free.
 - Mẻ nhúng không cần quyền deploy Worker; token pipeline chỉ mở được `/api/pipeline/*` và `/api/metrics/summary`, không đọc được bảng người chơi (AC-PIPE-13).
 - Đổi code Worker vẫn qua `/dk:ship` do người duyệt; đổi nội dung không cần.
 

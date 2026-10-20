@@ -64,7 +64,7 @@ def select_daily(candidates: Sequence[Mapping], history: Sequence[Mapping], vers
 
 
 def build_daily_block(element: Mapping, hint: str) -> dict:
-    """`manifest.daily`: hashed id, emoji, hint, depth — never the readable name (AC-DAILY-03)."""
+    """`manifest.daily`: hashed id, emoji, hint, depth - never the readable name (AC-DAILY-03)."""
     name = element["name"]
     if not hint or len(hint) > MAX_HINT_LENGTH:
         raise ValueError(f"Gợi ý phải dài 1–{MAX_HINT_LENGTH} ký tự")

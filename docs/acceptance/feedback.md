@@ -1,4 +1,4 @@
-# Tiêu chí nghiệm thu — Ngon / Nhạt (FEEDBACK)
+# Tiêu chí nghiệm thu - Ngon / Nhạt (FEEDBACK)
 
 > Tùy chọn (không có trong danh sách MVP). Component: web (nút), worker (lưu phiếu, tổng hợp), pipeline (đọc tỉ lệ ở đợt sau).
 
@@ -17,11 +17,11 @@
 ### AC-FEEDBACK-03: Phiếu không hợp lệ
 - **Cho** công thức không có thật / không hoạt động, giá trị ngoài {ngon, nhat}, hoặc thiếu UUID
 - **Khi** gửi phiếu
-- **Thì** công thức không có thật trả 422, giá trị sai 422, thiếu UUID 400 — problem+json; vượt 60 phiếu/phút/UUID trả 429
+- **Thì** công thức không có thật trả 422, giá trị sai 422, thiếu UUID 400 - problem+json; vượt 60 phiếu/phút/UUID trả 429
 - Ưu tiên: Tùy chọn
 
 ### AC-FEEDBACK-04: Pipeline ẩn công thức nhiều "Nhạt"
 - **Cho** tổng hợp ẩn danh (không UUID): công thức X có 12 phiếu, 8 "Nhạt"; công thức Y có 5 phiếu, 5 "Nhạt"
 - **Khi** đợt sau chạy
-- **Thì** X (≥ 10 phiếu và ≥ 60 % "Nhạt" — ngưỡng mặc định, câu hỏi mở) bị ẩn khỏi graph mới, trừ khi là công thức duy nhất giữ phần tử tới được (khi đó chỉ ghi cảnh báo); Y giữ nguyên vì chưa đủ phiếu; báo cáo đợt liệt kê công thức bị ẩn do "Nhạt"
+- **Thì** X (≥ 10 phiếu và ≥ 60 % "Nhạt" - ngưỡng mặc định, câu hỏi mở) bị ẩn khỏi graph mới, trừ khi là công thức duy nhất giữ phần tử tới được (khi đó chỉ ghi cảnh báo); Y giữ nguyên vì chưa đủ phiếu; báo cáo đợt liệt kê công thức bị ẩn do "Nhạt"
 - Ưu tiên: Tùy chọn

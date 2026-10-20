@@ -1,4 +1,4 @@
-# Hướng dẫn tài khoản Cloudflare — dinoduct.fun (người làm)
+# Hướng dẫn tài khoản Cloudflare - dinoduct.fun (người làm)
 
 > Các bước trong file này **chỉ người làm**, trên dashboard Cloudflare hoặc bằng lệnh production. Agent không làm thay được: guard hook chặn `wrangler deploy` không kèm `--env staging`.
 > Bối cảnh: Q15 và ADR 0007. Zone `dinoduct.fun` mua qua Cloudflare Registrar, lúc viết hướng dẫn **chưa có bản ghi DNS nào**.
@@ -65,7 +65,7 @@ Ba secret, **mỗi môi trường một giá trị riêng** (không dùng chung 
 
 | Secret | Dùng để | Thiếu thì |
 |---|---|---|
-| `PIPELINE_TOKEN` | Bearer của pipeline gọi `/lau-meme/api/pipeline/*` (đăng mẻ, rollback, danh mục cấm — ADR 0003) | Mọi lệnh pipeline trả 401 |
+| `PIPELINE_TOKEN` | Bearer của pipeline gọi `/lau-meme/api/pipeline/*` (đăng mẻ, rollback, danh mục cấm - ADR 0003) | Mọi lệnh pipeline trả 401 |
 | `IP_HASH_KEY` | Khóa HMAC-SHA256 băm IP cho giới hạn tần suất, ghi đồng ý và khóa chống dò token quản trị (ADR 0004). IP thô không bao giờ được lưu | Ghi đồng ý, các API có giới hạn tần suất và **toàn bộ API quản trị** trả 500 (cố ý báo lỗi thay vì lưu IP thô) |
 | `ADMIN_TOKEN` | Bearer của trang quản trị ở `https://laumeme-admin[-staging].dinoduct.fun/` (ADR 0008) | Trang quản trị từ chối mọi request (401) |
 

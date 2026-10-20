@@ -1,4 +1,4 @@
-# ERD — D1 (SQLite)
+# ERD - D1 (SQLite)
 
 > Nguồn: `worker/migrations/0001..0004`. Id phần tử/công thức là băm (ADR 0002). Thời gian `INTEGER` epoch ms UTC.
 > Không có khóa ngoại từ dữ liệu người chơi sang `element`/`recipe`: nội dung đổi theo version, bảng người chơi chỉ giữ id.

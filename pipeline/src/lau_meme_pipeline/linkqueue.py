@@ -3,7 +3,7 @@
 from collections.abc import Sequence
 from dataclasses import dataclass, field
 
-MAX_ATTEMPTS = 6  # open question #14 — 6 batches (3 days)
+MAX_ATTEMPTS = 6  # open question #14 - 6 batches (3 days)
 
 
 @dataclass

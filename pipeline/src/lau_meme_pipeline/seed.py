@@ -1,4 +1,4 @@
-"""Load the classic core (`noi-dung-loi.json`) into the content store — all or nothing (AC-SEED).
+"""Load the classic core (`noi-dung-loi.json`) into the content store - all or nothing (AC-SEED).
 
 `load_core` is pure; only `main` touches files.
 """

@@ -1,4 +1,4 @@
-# API — Lẩu Meme
+# API - Lẩu Meme
 
 > Nguồn sự thật: [`openapi.yaml`](openapi.yaml) (OpenAPI 3, `lau-meme API 0.2.0`). File này chỉ là mục lục; khi hai nơi khác nhau thì `openapi.yaml` đúng. Mỗi endpoint mang `x-ac` trỏ về AC trong `docs/acceptance/`.
 
@@ -13,7 +13,7 @@ Trên host game, `/lau-meme/api/admin/*` trả 404; trên host quản trị ch�
 ## Xác thực
 | Scheme | Cách gửi | Dùng cho |
 |---|---|---|
-| — | không cần | đọc công khai (`/health`, `/manifest`, `/graph`, `/blocklist`, bảng xếp hạng…) |
+| - | không cần | đọc công khai (`/health`, `/manifest`, `/graph`, `/blocklist`, bảng xếp hạng…) |
 | `PlayerId` | header `X-Player-Id: <UUID v4>` sinh ở client | định danh ẩn danh người chơi, **không phải** xác thực; sai định dạng → 400 |
 | `PipelineToken` | `Authorization: Bearer <PIPELINE_TOKEN>` | `/pipeline/*`, `/metrics/summary` |
 | `AdminToken` | `Authorization: Bearer <ADMIN_TOKEN>` | `/admin/*`, `/metrics/summary`; 5 lần sai/phút/IP băm ⇒ khóa 15 phút (429 + `Retry-After`) |
@@ -29,24 +29,24 @@ Mọi lỗi là RFC 9457 `application/problem+json` (`type`, `title`, `status`, 
 ### Công khai và người chơi
 | Method | Path | Mô tả | Xác thực | AC chính |
 |---|---|---|---|---|
-| GET | `/health` | Trạng thái Worker và schema D1 | — | AC-HEALTH-01 |
-| GET | `/manifest` | Manifest của version hiện hành (503 nếu chưa có mẻ) | — | AC-GRAPH-04, AC-GRAPH-06 |
-| GET | `/graph/{version}` | Graph mã hóa của một version (bất biến) | — | AC-GRAPH-01..04 |
-| GET | `/blocklist` | Danh sách chặn nóng (phần tử, công thức, ảnh) | — | AC-REPORT-04..07, AC-ADMIN-03/04 |
+| GET | `/health` | Trạng thái Worker và schema D1 | - | AC-HEALTH-01 |
+| GET | `/manifest` | Manifest của version hiện hành (503 nếu chưa có mẻ) | - | AC-GRAPH-04, AC-GRAPH-06 |
+| GET | `/graph/{version}` | Graph mã hóa của một version (bất biến) | - | AC-GRAPH-01..04 |
+| GET | `/blocklist` | Danh sách chặn nóng (phần tử, công thức, ảnh) | - | AC-REPORT-04..07, AC-ADMIN-03/04 |
 | POST | `/consents` | Ghi / rút đồng ý (append-only) | PlayerId | AC-PRIV-02..04, AC-PRIV-09 |
 | GET | `/me` | Xem / xuất dữ liệu của tôi | PlayerId | AC-PRIV-08 |
 | DELETE | `/me` | Xóa dữ liệu của tôi (idempotent) | PlayerId | AC-PRIV-05 |
 | PUT | `/me/nickname` | Đặt / đổi nickname | PlayerId | AC-DISC-02..04, AC-DISC-12 |
 | GET | `/me/streak` | Streak của tôi | PlayerId | AC-DAILY-10 |
-| GET | `/discoveries` | Công thức gia truyền của các phần tử | — | AC-DISC-09 |
+| GET | `/discoveries` | Công thức gia truyền của các phần tử | - | AC-DISC-09 |
 | POST | `/discoveries` | Gửi khám phá (ghi người đầu tiên) | PlayerId | AC-DISC-05..08, AC-DISC-10..12 |
 | POST | `/daily/{version}/results` | Nộp kết quả Món đặc biệt | PlayerId | AC-DAILY-06..08, AC-DAILY-13 |
-| GET | `/daily/{version}/leaderboard` | Bảng xếp hạng đợt (top 20) | — hoặc PlayerId | AC-DAILY-09 |
-| GET | `/streaks/leaderboard` | Bảng xếp hạng streak (top 20) | — | AC-DAILY-11 |
+| GET | `/daily/{version}/leaderboard` | Bảng xếp hạng đợt (top 20) | - hoặc PlayerId | AC-DAILY-09 |
+| GET | `/streaks/leaderboard` | Bảng xếp hạng streak (top 20) | - | AC-DAILY-11 |
 | POST | `/reports` | Báo cáo phần tử hoặc ảnh | PlayerId | AC-REPORT-01..05, AC-REPORT-08 |
 | PUT | `/votes` | Bỏ phiếu Ngon / Nhạt cho công thức | PlayerId | AC-FEEDBACK-01..03 |
 | POST | `/events` | Gửi lô sự kiện ẩn danh | PlayerId | AC-METRIC-02..04, AC-SHARE-06 |
-| GET | `/img/{key}` | Ảnh minh họa từ R2 (giai đoạn 2; ngoài `/api`: `/lau-meme/img/{key}`) | — | AC-ART-05 |
+| GET | `/img/{key}` | Ảnh minh họa từ R2 (giai đoạn 2; ngoài `/api`: `/lau-meme/img/{key}`) | - | AC-ART-05 |
 
 ### Pipeline
 | Method | Path | Mô tả | Xác thực | AC chính |

@@ -1,4 +1,4 @@
-# Gantt — ƯỚC LƯỢNG - LẨU MEME
+# Gantt - ƯỚC LƯỢNG - LẨU MEME
 
 Tiến độ 0% · nghiệm thu KH 2027-11-23 · dự báo 2027-12-07. Bản tương tác: `gantt.html`.
 
@@ -16,7 +16,7 @@ gantt
     section Trò chơi
     GAME Chơi ghép (Nhúng lẩu) (0%) :GAME, 2026-11-27, 27d
     section Nội dung
-    PIPE Pipeline Mẻ nhúng — chế độ lõi (giai đoạn 1) (0%) :PIPE, 2027-01-06, 11d
+    PIPE Pipeline Mẻ nhúng - chế độ lõi (giai đoạn 1) (0%) :PIPE, 2027-01-06, 11d
     section Vận hành
     PRIV Chính sách quyền riêng tư (0%) :PRIV, 2027-01-21, 14d
     section Cộng đồng
@@ -38,7 +38,7 @@ gantt
     UAT Kiểm thử nghiệm thu & sửa lỗi (giai đoạn 1) (0%) :crit, UAT, 2027-07-14, 26d
     section Nội dung
     MOD Kiểm duyệt nội dung tự động (giai đoạn 2) (0%) :crit, MOD, 2027-08-19, 20d
-    PIPE2 Pipeline Mẻ nhúng — crawl và tự động đăng (giai đoạn 2) (0%) :crit, PIPE2, 2027-09-17, 31d
+    PIPE2 Pipeline Mẻ nhúng - crawl và tự động đăng (giai đoạn 2) (0%) :crit, PIPE2, 2027-09-17, 31d
     ART Ảnh minh họa tự tạo (giai đoạn 2) (0%) :crit, ART, 2027-11-01, 16d
     section Kiểm thử
     UAT2 Kiểm thử nghiệm thu & sửa lỗi (giai đoạn 2) (0%) :crit, UAT2, 2027-11-23, 10d

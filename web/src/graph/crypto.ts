@@ -1,5 +1,5 @@
 /**
- * Graph lookup and decryption in the browser (ADR 0002) — WebCrypto only, no network.
+ * Graph lookup and decryption in the browser (ADR 0002) - WebCrypto only, no network.
  * Must stay byte-compatible with pipeline/src/lau_meme_pipeline/{text,ids,graph}.py.
  */
 

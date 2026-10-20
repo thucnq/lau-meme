@@ -1,4 +1,4 @@
-# Tiêu chí nghiệm thu — Trang quản trị tối giản (ADMIN)
+# Tiêu chí nghiệm thu - Trang quản trị tối giản (ADMIN)
 
 > Giai đoạn 1. Component: worker (`/api/admin/*`), web (trang `/admin`). Xác thực bằng 1 token lưu trong Cloudflare secret, gửi qua `Authorization: Bearer`.
 > "Ẩn" = tạm, gỡ được; "Chặn" = vĩnh viễn, pipeline không được tạo lại tên đó (AC-MOD-10).
@@ -30,7 +30,7 @@
 ### AC-ADMIN-05: Chặn vĩnh viễn
 - **Cho** token đúng; phần tử P
 - **Khi** gửi lệnh chặn P
-- **Thì** P vào danh sách chặn và tên `fold` của P vào danh sách chặn bí danh (áp cho pipeline — AC-MOD-10 — và nickname — AC-DISC-03); lệnh hiện không áp dụng cho phần tử đã chặn (trả 409) — muốn gỡ phải gỡ chặn tường minh
+- **Thì** P vào danh sách chặn và tên `fold` của P vào danh sách chặn bí danh (áp cho pipeline - AC-MOD-10 - và nickname - AC-DISC-03); lệnh hiện không áp dụng cho phần tử đã chặn (trả 409) - muốn gỡ phải gỡ chặn tường minh
 - Ưu tiên: Bắt buộc
 
 ### AC-ADMIN-06: Xem báo cáo
@@ -42,7 +42,7 @@
 ### AC-ADMIN-07: Bỏ qua báo cáo
 - **Cho** báo cáo về P mà quản trị thấy không vi phạm
 - **Khi** gửi lệnh "bỏ qua" cho P
-- **Thì** các báo cáo hiện có của P chuyển "đã xử lý — bỏ qua"; nếu P đang tự ẩn thì hiện lại; báo cáo mới sau đó đếm lại từ 0
+- **Thì** các báo cáo hiện có của P chuyển "đã xử lý - bỏ qua"; nếu P đang tự ẩn thì hiện lại; báo cáo mới sau đó đếm lại từ 0
 - Ưu tiên: Bắt buộc
 
 ### AC-ADMIN-08: Nhật ký các đợt
@@ -58,7 +58,7 @@
 - Ưu tiên: Bắt buộc
 
 ### AC-ADMIN-10: Trang quản trị
-- **Cho** mở `https://laumeme-admin.dinoduct.fun/` (staging `https://laumeme-admin-staging.dinoduct.fun/`) — origin riêng, không chung với game (ADR 0008)
+- **Cho** mở `https://laumeme-admin.dinoduct.fun/` (staging `https://laumeme-admin-staging.dinoduct.fun/`) - origin riêng, không chung với game (ADR 0008)
 - **Khi** nhập token đúng; tải lại tab; đóng tab rồi mở lại; và gọi `/lau-meme/api/admin/*` trên host game
-- **Thì** trang hiện 3 mục Báo cáo / Nội dung / Đợt + Audit; token chỉ lưu trong `sessionStorage` của origin quản trị (mất khi đóng tab), không lưu `localStorage`/cookie; token sai hiện thông báo `role="alert"`; trang có `noindex` (thẻ meta + header `X-Robots-Tag`) và CSP `frame-ancestors 'none'`; API quản trị chỉ có trên host quản trị — `/lau-meme/api/admin/*` trên host game trả 404
+- **Thì** trang hiện 3 mục Báo cáo / Nội dung / Đợt + Audit; token chỉ lưu trong `sessionStorage` của origin quản trị (mất khi đóng tab), không lưu `localStorage`/cookie; token sai hiện thông báo `role="alert"`; trang có `noindex` (thẻ meta + header `X-Robots-Tag`) và CSP `frame-ancestors 'none'`; API quản trị chỉ có trên host quản trị - `/lau-meme/api/admin/*` trên host game trả 404
 - Ưu tiên: Bắt buộc

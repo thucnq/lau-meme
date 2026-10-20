@@ -1,4 +1,4 @@
-# Tiêu chí nghiệm thu — Công thức gia truyền (DISC)
+# Tiêu chí nghiệm thu - Công thức gia truyền (DISC)
 
 > Giai đoạn 1. Component: web (UUID, nickname, gửi khám phá), worker (kiểm công thức, ghi người đầu tiên, giới hạn tần suất).
 > UUID gửi qua header ở mọi yêu cầu của thực khách; chỉ gửi khi đã đồng ý (AC-PRIV-02). IP chỉ dùng dạng băm (AC-PRIV-06).
@@ -16,15 +16,15 @@
 - Ưu tiên: Bắt buộc
 
 ### AC-DISC-03: Nickname bị từ chối
-- **Cho** nickname rỗng, 1 ký tự, dài hơn 20 ký tự, có ký tự ngoài tập cho phép, chứa từ cấm hoặc bí danh bị chặn (so trên dạng `fold`, bỏ dấu câu/khoảng trắng — AC-MOD-06)
+- **Cho** nickname rỗng, 1 ký tự, dài hơn 20 ký tự, có ký tự ngoài tập cho phép, chứa từ cấm hoặc bí danh bị chặn (so trên dạng `fold`, bỏ dấu câu/khoảng trắng - AC-MOD-06)
 - **Khi** gửi `PUT` nickname
-- **Thì** trả 422 problem+json với thông báo tiếng Việt chung ("Nickname không hợp lệ") — không nói từ nào bị chặn; nickname cũ giữ nguyên
+- **Thì** trả 422 problem+json với thông báo tiếng Việt chung ("Nickname không hợp lệ") - không nói từ nào bị chặn; nickname cũ giữ nguyên
 - Ưu tiên: Bắt buộc
 
 ### AC-DISC-04: Nickname trùng
 - **Cho** nickname "Bếp Trưởng" đã thuộc UUID khác (so trên dạng `fold`)
 - **Khi** gửi `PUT` nickname "bep truong"
-- **Thì** trả 409 problem+json "Nickname đã có người dùng" (mặc định duy nhất — câu hỏi mở)
+- **Thì** trả 409 problem+json "Nickname đã có người dùng" (mặc định duy nhất - câu hỏi mở)
 - Ưu tiên: Bắt buộc
 
 ### AC-DISC-05: Ghi nhận người khám phá đầu tiên

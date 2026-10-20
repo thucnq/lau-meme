@@ -1,6 +1,6 @@
-# Tiến độ — ƯỚC LƯỢNG - LẨU MEME
+# Tiến độ - ƯỚC LƯỢNG - LẨU MEME
 
-> Sinh bởi `/dk:plan` (gen-plan.py) từ `docs/estimate/items.json`. **Người sửa trực tiếp file này**: dấu `[x]` (hạng mục hoặc AC), `tiến độ: N%`, `người`, `bắt đầu`, `xong` (YYYY-MM-DD), `ghi chú` — giữ nguyên dấu ` · ` giữa các trường. Chạy lại `/dk:plan` để tính dự báo và vẽ lại `gantt.html`. `KH` là kế hoạch gốc, chỉ đổi bằng `/dk:plan rebaseline`.
+> Sinh bởi `/dk:plan` (gen-plan.py) từ `docs/estimate/items.json`. **Người sửa trực tiếp file này**: dấu `[x]` (hạng mục hoặc AC), `tiến độ: N%`, `người`, `bắt đầu`, `xong` (YYYY-MM-DD), `ghi chú` - giữ nguyên dấu ` · ` giữa các trường. Chạy lại `/dk:plan` để tính dự báo và vẽ lại `gantt.html`. `KH` là kế hoạch gốc, chỉ đổi bằng `/dk:plan rebaseline`.
 > Bắt đầu dự án: 2026-10-20 · Kỹ sư: 1 (Thuc) · Giờ/tuần: 20 · Nghiệm thu KH: 2027-11-23 · Dự báo: 2027-12-07 · Cập nhật: 2026-10-20
 
 
@@ -33,10 +33,10 @@
 ## Trò chơi
 - [ ] **GAME** Chơi ghép (Nhúng lẩu) · 12đ · rủi ro: MEDIUM · KH: 2026-11-27 → 2027-01-05 · tiến độ: 0% · người: Thuc · bắt đầu:  · xong:  · ghi chú: 
   - [ ] AC-GAME-01 Bàn chơi lần đầu
-  - [ ] AC-GAME-02 Nhúng lẩu qua nồi — ghép thành công
+  - [ ] AC-GAME-02 Nhúng lẩu qua nồi - ghép thành công
   - [ ] AC-GAME-03 Thả chồng trên mặt bàn
   - [ ] AC-GAME-04 Ghép ra phần tử đã có
-  - [ ] AC-GAME-05 Nồi trào — câu cố định theo cặp
+  - [ ] AC-GAME-05 Nồi trào - câu cố định theo cặp
   - [ ] AC-GAME-06 Gợi ý khi trượt
   - [ ] AC-GAME-07 Tìm trong Đĩa nhúng không dấu
   - [ ] AC-GAME-08 Sắp xếp Đĩa nhúng
@@ -51,7 +51,7 @@
   - [ ] AC-GAME-17 Đổi version graph giữ tiến độ
 
 ## Nội dung
-- [ ] **PIPE** Pipeline Mẻ nhúng — chế độ lõi (giai đoạn 1) · 5đ · rủi ro: MEDIUM · KH: 2027-01-06 → 2027-01-20 · tiến độ: 0% · người: Thuc · bắt đầu:  · xong:  · ghi chú: 
+- [ ] **PIPE** Pipeline Mẻ nhúng - chế độ lõi (giai đoạn 1) · 5đ · rủi ro: MEDIUM · KH: 2027-01-06 → 2027-01-20 · tiến độ: 0% · người: Thuc · bắt đầu:  · xong:  · ghi chú: 
   - [ ] AC-PIPE-01 Chế độ lõi (giai đoạn 1)
   - [ ] AC-PIPE-02 Lịch chạy và chạy tay
   - [ ] AC-PIPE-11 Lỗi giữa chừng không đăng gì
@@ -178,17 +178,17 @@
 
 ## Nội dung
 - [ ] **MOD** Kiểm duyệt nội dung tự động (giai đoạn 2) · 9đ · rủi ro: HIGH · KH: 2027-08-05 → 2027-09-01 · tiến độ: 0% · người: Thuc · bắt đầu:  · xong:  · ghi chú: 
-  - [ ] AC-MOD-01 Lớp 1 — danh sách từ cấm
-  - [ ] AC-MOD-02 Lớp 2 — LLM phân loại theo danh mục
+  - [ ] AC-MOD-01 Lớp 1 - danh sách từ cấm
+  - [ ] AC-MOD-02 Lớp 2 - LLM phân loại theo danh mục
   - [ ] AC-MOD-03 Không chắc thì loại
   - [ ] AC-MOD-04 Kiểm cả tên kết quả công thức và văn bản phụ
   - [ ] AC-MOD-05 Luật người thật dựa trên ngữ cảnh nguồn
   - [ ] AC-MOD-06 Danh sách chặn bí danh áp cho mọi đầu vào sau
   - [ ] AC-MOD-07 Tiếng lóng chung và hiện tượng chung được phép
   - [ ] AC-MOD-08 Hoãn nội dung nóng vì một người
-  - [ ] AC-MOD-09 Không bao giờ — cáo buộc và quấy rối
+  - [ ] AC-MOD-09 Không bao giờ - cáo buộc và quấy rối
   - [ ] AC-MOD-10 Tên bị quản trị chặn không quay lại
-- [ ] **PIPE2** Pipeline Mẻ nhúng — crawl và tự động đăng (giai đoạn 2) · 14đ · rủi ro: HIGH · KH: 2027-09-03 → 2027-10-15 · tiến độ: 0% (theo AC) · người: Thuc · bắt đầu:  · xong:  · ghi chú: 
+- [ ] **PIPE2** Pipeline Mẻ nhúng - crawl và tự động đăng (giai đoạn 2) · 14đ · rủi ro: HIGH · KH: 2027-09-03 → 2027-10-15 · tiến độ: 0% (theo AC) · người: Thuc · bắt đầu:  · xong:  · ghi chú: 
   - [ ] AC-PIPE-03 Một nguồn lỗi không làm hỏng cả đợt
   - [ ] AC-PIPE-04 Adapter chỉ thu khái niệm, tôn trọng robots.txt
   - [ ] AC-PIPE-05 Khử trùng

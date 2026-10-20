@@ -17,7 +17,7 @@ import {
 
 /**
  * Trang quản trị (AC-ADMIN-10, ADR 0008). Runs on its own origin; the token lives only in this tab's
- * sessionStorage (gone when the tab closes) — never localStorage or a cookie.
+ * sessionStorage (gone when the tab closes) - never localStorage or a cookie.
  */
 export const TOKEN_KEY = 'laumeme-admin.token'
 
@@ -81,7 +81,7 @@ function Login({ onSignIn, notice }: { onSignIn: (token: string) => void; notice
 
   return (
     <main className="admin admin-login">
-      <h1>Lẩu Meme — Quản trị</h1>
+      <h1>Lẩu Meme - Quản trị</h1>
       <form onSubmit={submit}>
         <label>
           Token quản trị
@@ -106,7 +106,7 @@ function Console({ token, onAuthError, onSignOut }: Ctx & { onSignOut: () => voi
   return (
     <main className="admin">
       <header className="admin-bar">
-        <h1>Lẩu Meme — Quản trị</h1>
+        <h1>Lẩu Meme - Quản trị</h1>
         <button type="button" onClick={onSignOut}>
           Đăng xuất
         </button>
@@ -409,7 +409,7 @@ function LogsTab(ctx: Ctx) {
         <tbody>
           {batches.data?.items.map((b) => (
             <tr key={b.id}>
-              <td>{b.version ?? '—'}</td>
+              <td>{b.version ?? '-'}</td>
               <td>{when(b.batch_at)}</td>
               <td>{b.mode}</td>
               <td>

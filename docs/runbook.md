@@ -1,4 +1,4 @@
-# Runbook vận hành — lau-meme
+# Runbook vận hành - lau-meme
 
 ## Bí mật
 Không bí mật nào nằm trong repo (repo có thể public).
@@ -6,7 +6,7 @@ Không bí mật nào nằm trong repo (repo có thể public).
 | Bí mật | Nơi lưu | Đặt bằng |
 |---|---|---|
 | `ADMIN_TOKEN` | Cloudflare secret của Worker (mỗi môi trường một giá trị) + trình quản lý mật khẩu của người quản trị | `docs/dev/huong-dan-tai-khoan.md` mục 4.2 |
-| `PIPELINE_TOKEN` | Cloudflare secret của Worker **và** GitHub Environment secret (`staging`, `production`, `production-no-approval`) — hai nơi phải cùng giá trị | `docs/dev/huong-dan-tai-khoan.md` mục 4.2 |
+| `PIPELINE_TOKEN` | Cloudflare secret của Worker **và** GitHub Environment secret (`staging`, `production`, `production-no-approval`) - hai nơi phải cùng giá trị | `docs/dev/huong-dan-tai-khoan.md` mục 4.2 |
 | `IP_HASH_KEY` | Cloudflare secret của Worker (mỗi môi trường một giá trị) | `docs/dev/huong-dan-tai-khoan.md` mục 4.2 |
 | `API_BASE_URL`, `BANNED_WORDS` | GitHub Environment secret | `docs/dev/huong-dan-tai-khoan.md` mục 4.3 |
 | `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID` | GitHub Secrets | Settings → Secrets and variables → Actions |
@@ -34,13 +34,13 @@ Cấu hình tài khoản lần đầu (DNS, Redirect Rule, SSL, deploy productio
 ## Triển khai và quay lại
 - Staging: `/dk:ship staging` (build web, migrate D1, deploy, kiểm tra `/lau-meme/api/health`, tự rollback khi lỗi).
 - Quay lại bản trước (chỉ code): `bash <plugin>/scripts/deploy-cf.sh staging --rollback [version-id]`; production: `npx wrangler rollback [version-id]`.
-- Rollback **không** quay lại dữ liệu D1. Khôi phục dữ liệu bằng D1 Time Travel — việc của người, kiểm tra cú pháp hiện hành của `wrangler d1 time-travel` trước khi chạy.
+- Rollback **không** quay lại dữ liệu D1. Khôi phục dữ liệu bằng D1 Time Travel - việc của người, kiểm tra cú pháp hiện hành của `wrangler d1 time-travel` trước khi chạy.
 
 ## Vận hành
 - Log thời gian thực: `npx wrangler tail --env staging` (production: bỏ `--env`).
 - Xem dữ liệu: `npx wrangler d1 execute DB --env staging --remote --command "select count(*) from app_meta"`.
 - Dọn dữ liệu cá nhân (AC-PRIV-06): Cron Trigger của Worker `0 20 * * *` (03:00 GMT+7), khai báo cả production lẫn `env.staging` trong `worker/wrangler.jsonc`. Mỗi lần chạy ghi 1 dòng log `cleanup {...}` chỉ có số dòng (IP băm > 7 ngày đặt NULL, sự kiện > 90 ngày, bộ đếm hết hạn, audit > 12 tháng, đồng ý của UUID đã xóa > 1 năm).
-- Từ cấm cho nickname (ADR 0005, AC-DISC-03): mỗi mẻ, pipeline đọc GitHub Secret `BANNED_WORDS` (mỗi dòng một từ) và thay toàn bộ nguồn `wordlist` trong D1; secret rỗng thì giữ nguyên danh sách cũ. Workflow `batch.yml` phải truyền `BANNED_WORDS: ${{ secrets.BANNED_WORDS }}` vào bước "Mẻ nhúng" (người sửa — workflow được guard bảo vệ). Log và báo cáo đợt không bao giờ in từ cấm.
+- Từ cấm cho nickname (ADR 0005, AC-DISC-03): mỗi mẻ, pipeline đọc GitHub Secret `BANNED_WORDS` (mỗi dòng một từ) và thay toàn bộ nguồn `wordlist` trong D1; secret rỗng thì giữ nguyên danh sách cũ. Workflow `batch.yml` phải truyền `BANNED_WORDS: ${{ secrets.BANNED_WORDS }}` vào bước "Mẻ nhúng" (người sửa - workflow được guard bảo vệ). Log và báo cáo đợt không bao giờ in từ cấm.
 - Đổi nội dung chính sách (`web/src/privacy/PolicyPage.tsx`): tăng `POLICY_VERSION` trong `worker/wrangler.jsonc` (cả staging) và `POLICY.version` trên trang ⇒ mọi người chơi được hỏi đồng ý lại (AC-PRIV-09).
 
 ## Sự cố thường gặp

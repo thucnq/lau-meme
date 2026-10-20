@@ -1,12 +1,12 @@
-# Tiêu chí nghiệm thu — Món đặc biệt hôm nay (DAILY)
+# Tiêu chí nghiệm thu - Món đặc biệt hôm nay (DAILY)
 
-> Giai đoạn 1. Component: pipeline (chọn món — logic thuần), worker (nhận kết quả, bảng xếp hạng, streak), web (thử thách, đếm bước, đồng hồ).
+> Giai đoạn 1. Component: pipeline (chọn món - logic thuần), worker (nhận kết quả, bảng xếp hạng, streak), web (thử thách, đếm bước, đồng hồ).
 > Thực khách gửi kèm UUID của mình (header) ở mọi yêu cầu ghi; chỉ người đã đồng ý gửi dữ liệu (AC-PRIV-02) mới nộp được kết quả.
 
 ### AC-DAILY-01: Chọn Món đặc biệt
 - **Cho** kho có phần tử trend mới (giai đoạn 2) và phần tử classic, cùng danh sách món đã từng chọn
 - **Khi** pipeline chọn món cho mẻ mới
-- **Thì** món được chọn có depth trong [4, 8], tới được từ khởi đầu, đang hoạt động, chưa từng được chọn, không bị hoãn nóng (AC-MOD-08), có gợi ý đạt kiểm duyệt; ưu tiên phần tử trend mới nhất, không có thì phần tử classic (thứ tự tất định theo seed = version mẻ). Hết ứng viên chưa dùng thì chọn món đã dùng **lâu nhất** thỏa các điều kiện còn lại (mặc định — câu hỏi mở)
+- **Thì** món được chọn có depth trong [4, 8], tới được từ khởi đầu, đang hoạt động, chưa từng được chọn, không bị hoãn nóng (AC-MOD-08), có gợi ý đạt kiểm duyệt; ưu tiên phần tử trend mới nhất, không có thì phần tử classic (thứ tự tất định theo seed = version mẻ). Hết ứng viên chưa dùng thì chọn món đã dùng **lâu nhất** thỏa các điều kiện còn lại (mặc định - câu hỏi mở)
 - Ưu tiên: Bắt buộc
 
 ### AC-DAILY-02: Không có ứng viên nào
@@ -24,7 +24,7 @@
 ### AC-DAILY-04: Bàn thử thách và đếm bước
 - **Cho** thực khách chưa chơi Daily của mẻ hiện tại
 - **Khi** bấm "Thử thách", ghép 7 lượt trong đó 2 lượt trượt, và lượt thứ 7 ra món đích
-- **Thì** bàn thử thách bắt đầu từ 4 phần tử khởi đầu, tách khỏi Đĩa chính (mặc định — câu hỏi mở); bộ đếm hiện 7 bước; tên món lộ ra khi ghép được (so khóa băm); phần tử khám phá trên bàn thử thách cũng được thêm vào Đĩa chính
+- **Thì** bàn thử thách bắt đầu từ 4 phần tử khởi đầu, tách khỏi Đĩa chính (mặc định - câu hỏi mở); bộ đếm hiện 7 bước; tên món lộ ra khi ghép được (so khóa băm); phần tử khám phá trên bàn thử thách cũng được thêm vào Đĩa chính
 - Ưu tiên: Bắt buộc
 
 ### AC-DAILY-05: Tiếp tục thử thách sau khi tải lại
@@ -60,7 +60,7 @@
 ### AC-DAILY-10: Streak
 - **Cho** thực khách hoàn thành ít nhất 1 Món đặc biệt vào các ngày 20, 21, 22/10 (ngày theo GMT+7 của `batch_at`), bỏ ngày 23, rồi hoàn thành ngày 24
 - **Khi** nộp kết quả mỗi ngày
-- **Thì** streak sau ngày 22 là 3; sau ngày 24 là 1; streak dài nhất lưu là 3; hoàn thành 2 món trong cùng một ngày chỉ tính 1 ngày (định nghĩa theo ngày — câu hỏi mở). `GET` streak của mình trả streak hiện tại (về 0 nếu ngày gần nhất hoàn thành cách hôm nay quá 1 ngày) và streak dài nhất
+- **Thì** streak sau ngày 22 là 3; sau ngày 24 là 1; streak dài nhất lưu là 3; hoàn thành 2 món trong cùng một ngày chỉ tính 1 ngày (định nghĩa theo ngày - câu hỏi mở). `GET` streak của mình trả streak hiện tại (về 0 nếu ngày gần nhất hoàn thành cách hôm nay quá 1 ngày) và streak dài nhất
 - Ưu tiên: Bắt buộc
 
 ### AC-DAILY-11: Bảng xếp hạng streak

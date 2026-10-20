@@ -1,6 +1,6 @@
-# Tiêu chí nghiệm thu — Pipeline Mẻ nhúng mới (PIPE)
+# Tiêu chí nghiệm thu - Pipeline Mẻ nhúng mới (PIPE)
 
-> Component: pipeline (Python, GitHub Actions). Logic thuần: không mạng/đồng hồ/ngẫu nhiên — giờ mẻ, kết quả crawl và phản hồi LLM truyền vào như dữ liệu; adapter mạng tách riêng và được mock trong test.
+> Component: pipeline (Python, GitHub Actions). Logic thuần: không mạng/đồng hồ/ngẫu nhiên - giờ mẻ, kết quả crawl và phản hồi LLM truyền vào như dữ liệu; adapter mạng tách riêng và được mock trong test.
 > **Giai đoạn 1**: chỉ AC-PIPE-01, 02, 11, 13, 14 (chế độ lõi). **Giai đoạn 2**: phần còn lại (chạy tay trước, bật cron tự động đăng sau).
 > Kiểm duyệt nằm ở MOD, vẽ ảnh ở ART, chọn Món đặc biệt ở DAILY.
 
@@ -43,7 +43,7 @@
 ### AC-PIPE-07: Hàng chờ meme chưa nối được
 - **Cho** meme M không có cặp hợp lệ nào sau liên kết ngược
 - **Khi** đợt kết thúc; rồi đợt sau chạy
-- **Thì** M không vào graph, được đưa vào hàng chờ với số lần thử = 1; đợt sau M được thử lại trước meme mới; sau 6 lần thử không nối được thì bỏ khỏi hàng chờ và ghi vào báo cáo đợt (ngưỡng mặc định — câu hỏi mở)
+- **Thì** M không vào graph, được đưa vào hàng chờ với số lần thử = 1; đợt sau M được thử lại trước meme mới; sau 6 lần thử không nối được thì bỏ khỏi hàng chờ và ghi vào báo cáo đợt (ngưỡng mặc định - câu hỏi mở)
 - Ưu tiên: Bắt buộc
 
 ### AC-PIPE-08: Công thức bổ sung

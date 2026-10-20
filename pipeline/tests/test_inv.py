@@ -278,7 +278,7 @@ def adr_encrypt(version: int, with_pair: tuple[str, str], aad_pair: tuple[str, s
 def test_golden_files_khop_generator_va_expected():
     """Golden: file trên đĩa == đầu ra của generator seed cố định; expected.json khớp lõi (đếm, depth BFS độc lập)."""
     for name, text in load_generator().build_all().items():
-        assert (GOLDEN / name).read_text(encoding="utf-8") == text, f"{name} lệch generator — chạy lại generate.py"
+        assert (GOLDEN / name).read_text(encoding="utf-8") == text, f"{name} lệch generator - chạy lại generate.py"
     for case in DATASETS:
         core, exp = core_of(case), expected_of(case)
         assert exp["elements"] == len(core["elements"])
@@ -360,7 +360,7 @@ def test_ac_inv_02_phat_hien_cap_co_hai_cong_thuc(swap):
 
 
 def test_ac_inv_02_cong_thuc_khong_hoat_dong_khong_tinh():
-    """AC-INV-02: chỉ xét công thức đang hoạt động — bản trùng đã ẩn không gây vi phạm."""
+    """AC-INV-02: chỉ xét công thức đang hoạt động - bản trùng đã ẩn không gây vi phạm."""
     from lau_meme_pipeline.invariants import check_unique_pairs
 
     core = core_of("synthetic-11")
@@ -1033,7 +1033,7 @@ def test_ac_inv_07_ten_quan_tri_chan_den_qua_banned_aliases_cua_worker(fast_sim)
 
 
 def test_ac_inv_07_trang_thai_thieu_banned_aliases_thi_dot_that_bai(fast_sim):
-    """AC-INV-07: trạng thái không có banned_aliases thì không được kiểm "rỗng" cho qua — đợt thất bại, không đăng."""
+    """AC-INV-07: trạng thái không có banned_aliases thì không được kiểm "rỗng" cho qua - đợt thất bại, không đăng."""
     state = make_state()
     del state["banned_aliases"]
     client = FakeClient(state)
@@ -1045,7 +1045,7 @@ def test_ac_inv_07_trang_thai_thieu_banned_aliases_thi_dot_that_bai(fast_sim):
 @pytest.mark.parametrize("seed", [1, 2, 3, 4])
 def test_ac_inv_02_hai_meme_cung_cap_khong_mat_meme(seed, fast_sim):
     """AC-INV-02: hai meme cùng đợt được đề xuất cùng một cặp ⇒ chỉ một công thức cho cặp đó; meme còn lại không bị
-    đánh dấu đã nối mà mất công thức — mọi phần tử trend đều có công thức sinh ra nó."""
+    đánh dấu đã nối mà mất công thức - mọi phần tử trend đều có công thức sinh ra nó."""
     from lau_meme_pipeline.full import run_full
 
     crawl_result = synthetic_crawl(seed)
@@ -1058,7 +1058,7 @@ def test_ac_inv_02_hai_meme_cung_cap_khong_mat_meme(seed, fast_sim):
 
 
 def test_ac_inv_12_mo_phong_loi_khong_lam_hong_dot(monkeypatch):
-    """AC-INV-12: mô phỏng chỉ cảnh báo — nó ném lỗi thì run_batch vẫn đăng success và run_full vẫn trả kết quả."""
+    """AC-INV-12: mô phỏng chỉ cảnh báo - nó ném lỗi thì run_batch vẫn đăng success và run_full vẫn trả kết quả."""
     from lau_meme_pipeline.full import run_full
 
     patch_everywhere(monkeypatch, "simulate_miss_rate", boom_for("mô phỏng"))

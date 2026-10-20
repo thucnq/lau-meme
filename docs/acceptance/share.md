@@ -1,4 +1,4 @@
-# Tiêu chí nghiệm thu — Thẻ chia sẻ (SHARE)
+# Tiêu chí nghiệm thu - Thẻ chia sẻ (SHARE)
 
 > Giai đoạn 1. Component: web (tạo thẻ chữ và ảnh PNG ở client, không gọi server để vẽ). Không lộ đáp án.
 
@@ -30,7 +30,7 @@
 ### AC-SHARE-04: Thẻ Công thức gia truyền
 - **Cho** thực khách vừa được ghi là người đầu tiên khám phá phần tử 🧅 "Ăn Hành" (AC-DISC-05)
 - **Khi** mở thẻ chia sẻ
-- **Thì** có chữ "Mình là người đầu tiên nấu ra 🧅 Ăn Hành trên Lẩu Meme — Công thức gia truyền của <nickname>" + link `?ref=disc` và ảnh PNG 1080×1080 tương ứng; không chứa 2 phần tử đầu vào của công thức
+- **Thì** có chữ "Mình là người đầu tiên nấu ra 🧅 Ăn Hành trên Lẩu Meme - Công thức gia truyền của <nickname>" + link `?ref=disc` và ảnh PNG 1080×1080 tương ứng; không chứa 2 phần tử đầu vào của công thức
 - Ưu tiên: Bắt buộc
 
 ### AC-SHARE-05: Sao chép và chia sẻ hệ thống

@@ -3,7 +3,7 @@
 /**
  * Acceptance tests cho logic thuần của chơi ghép (docs/acceptance/game.md).
  *
- * BỀ MẶT CÔNG KHAI MÀ TEST NÀY YÊU CẦU — web/src/game/engine.ts phải export:
+ * BỀ MẶT CÔNG KHAI MÀ TEST NÀY YÊU CẦU - web/src/game/engine.ts phải export:
  *
  *   types:  SortMode = 'newest' | 'name' | 'depth'
  *           Item = GraphResult-like { id, name, emoji, depth, added_version, image_key: string|null,

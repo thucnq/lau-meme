@@ -143,7 +143,7 @@ export default {
     const rest = url.pathname.slice(base.length)
     if (rest === '/api' || rest.startsWith('/api/')) return api(routes, req, env, ctx, rest)
     if (ADMIN_PAGE.test(rest)) return problem(404, 'Không tìm thấy')
-    // Images (AC-ART-05, phase 2: R2) — reserved so the SPA never answers for them.
+    // Images (AC-ART-05, phase 2: R2) - reserved so the SPA never answers for them.
     if (rest.startsWith('/img/')) return problem(404, 'Không tìm thấy')
     return asset(req, env, url)
   },

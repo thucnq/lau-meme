@@ -1,6 +1,6 @@
-# Tiêu chí nghiệm thu — Ảnh minh họa tự tạo (ART)
+# Tiêu chí nghiệm thu - Ảnh minh họa tự tạo (ART)
 
-> Giai đoạn 2 (giai đoạn 1 chỉ emoji — trả lời câu hỏi phạm vi 2). Component: pipeline (vẽ + kiểm duyệt ảnh, adapter Workers AI / Gemini mock), worker (phục vụ `/img/*`), web (hiện ảnh).
+> Giai đoạn 2 (giai đoạn 1 chỉ emoji - trả lời câu hỏi phạm vi 2). Component: pipeline (vẽ + kiểm duyệt ảnh, adapter Workers AI / Gemini mock), worker (phục vụ `/img/*`), web (hiện ảnh).
 > Cần kiểm tra trước khi làm: hạn mức Workers AI gói free; R2 có đòi thẻ thanh toán không (dự phòng: kho ảnh đóng gói làm static assets).
 
 ### AC-ART-01: Prompt vẽ khái niệm, không người thật
@@ -30,7 +30,7 @@
 ### AC-ART-05: Phục vụ ảnh qua Worker với cache bất biến
 - **Cho** ảnh `img/abc123def456.webp` tồn tại
 - **Khi** gọi `GET /img/abc123def456.webp`; và gọi một khóa không tồn tại hoặc sai định dạng
-- **Thì** lần đầu trả 200 `image/webp` với `Cache-Control: public, max-age=31536000, immutable` và đưa vào Cache API; khóa không tồn tại trả 404, sai định dạng (không khớp `^[0-9a-f]{12}\.webp$`) trả 400 — cả hai dạng problem+json
+- **Thì** lần đầu trả 200 `image/webp` với `Cache-Control: public, max-age=31536000, immutable` và đưa vào Cache API; khóa không tồn tại trả 404, sai định dạng (không khớp `^[0-9a-f]{12}\.webp$`) trả 400 - cả hai dạng problem+json
 - Ưu tiên: Bắt buộc
 
 ### AC-ART-06: Client hiện emoji trước, ảnh sau

@@ -73,7 +73,7 @@
     {
       "id": "PIPE",
       "module": "Nội dung",
-      "name": "Pipeline Mẻ nhúng — chế độ lõi (giai đoạn 1)",
+      "name": "Pipeline Mẻ nhúng - chế độ lõi (giai đoạn 1)",
       "desc": "PIPE · AC-PIPE-01, 02, 11, 13, 14 · cron 17:00/05:00 UTC + chạy tay, đổi Món đặc biệt + manifest, lỗi giữa chừng không đăng, báo cáo đợt qua GitHub Issue",
       "points": 5,
       "deps": [
@@ -89,7 +89,7 @@
       "risk": "MEDIUM",
       "owner": "Thuc",
       "open": true,
-      "question": "Giai đoạn 1 có chạy cron chế độ lõi 2 lần/ngày (chỉ đổi Món đặc biệt + manifest) không? (open-questions #1 — mặc định: có)"
+      "question": "Giai đoạn 1 có chạy cron chế độ lõi 2 lần/ngày (chỉ đổi Món đặc biệt + manifest) không? (open-questions #1 - mặc định: có)"
     },
     {
       "id": "PRIV",
@@ -106,7 +106,7 @@
       "risk": "HIGH",
       "owner": "Thuc",
       "open": true,
-      "question": "Người dưới 16 tuổi: ghi chính sách 'từ 16 tuổi' + câu xác nhận trong hộp đồng ý, hay thiết kế luồng không cần đồng ý của cha mẹ? (open-questions #6 — mặc định: từ 16 tuổi)"
+      "question": "Người dưới 16 tuổi: ghi chính sách 'từ 16 tuổi' + câu xác nhận trong hộp đồng ý, hay thiết kế luồng không cần đồng ý của cha mẹ? (open-questions #6 - mặc định: từ 16 tuổi)"
     },
     {
       "id": "DISC",
@@ -139,7 +139,7 @@
       "risk": "MEDIUM",
       "owner": "Thuc",
       "open": true,
-      "question": "Thử thách Daily chơi trên bàn riêng từ 4 phần tử khởi đầu, hay dùng Đĩa hiện có? (open-questions #3 — mặc định: bàn riêng)"
+      "question": "Thử thách Daily chơi trên bàn riêng từ 4 phần tử khởi đầu, hay dùng Đĩa hiện có? (open-questions #3 - mặc định: bàn riêng)"
     },
     {
       "id": "SHARE",
@@ -171,7 +171,7 @@
       "risk": "MEDIUM",
       "owner": "Thuc",
       "open": true,
-      "question": "Phần tử bị ẩn: công thức đi ra từ nó ẩn theo, hay giữ nhưng không gợi ý? (open-questions #5 — mặc định: mọi công thức có phần tử đó đều không hoạt động)"
+      "question": "Phần tử bị ẩn: công thức đi ra từ nó ẩn theo, hay giữ nhưng không gợi ý? (open-questions #5 - mặc định: mọi công thức có phần tử đó đều không hoạt động)"
     },
     {
       "id": "ADMIN",
@@ -283,7 +283,7 @@
     {
       "id": "PIPE2",
       "module": "Nội dung",
-      "name": "Pipeline Mẻ nhúng — crawl và tự động đăng (giai đoạn 2)",
+      "name": "Pipeline Mẻ nhúng - crawl và tự động đăng (giai đoạn 2)",
       "desc": "PIPE · AC-PIPE-03..10, 12 · 5 adapter crawl, khử trùng, liên kết ngược + BFS, hàng chờ, công thức bổ sung, giám khảo hài, idempotent, gom lô Gemini + backoff",
       "points": 14,
       "deps": [
@@ -318,7 +318,7 @@
       "risk": "HIGH",
       "owner": "Thuc",
       "open": true,
-      "question": "R2 có đòi khai báo thẻ thanh toán không; hạn mức Workers AI gói free hiện hành? (open-questions #13 — mặc định: R2, nếu bị đòi thẻ thì đóng gói ảnh làm static assets)"
+      "question": "R2 có đòi khai báo thẻ thanh toán không; hạn mức Workers AI gói free hiện hành? (open-questions #13 - mặc định: R2, nếu bị đòi thẻ thì đóng gói ảnh làm static assets)"
     },
     {
       "id": "UAT2",

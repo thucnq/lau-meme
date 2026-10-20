@@ -1,6 +1,6 @@
 """Crawl step of the full batch (AC-PIPE-03/04): one adapter per source, concepts only.
 
-An adapter returns names, quotes and source passages — never images or videos — and goes through `Http`, which
+An adapter returns names, quotes and source passages - never images or videos - and goes through `Http`, which
 reads robots.txt before any page and refuses media. One failing source never fails the batch. There is no
 Facebook or TikTok adapter (BRD 6).
 """

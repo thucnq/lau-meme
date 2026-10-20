@@ -1,7 +1,7 @@
 # lau-meme
 
-Project built on the dk golden path `py-ts-cloudflare`. Docs and UI text in Vietnamese; code and identifiers in English.
-Stack profile: `.dk/stack.toml` (components pipeline / web / worker — dk reads it for checks, test filters and agent scope).
+Project built on the dk golden path `py-ts-cloudflare`. Docs and UI text in Vietnamese; code and identifiers in English. Never use the em dash `—` in any text (docs, UI, commits, PRs); write a plain hyphen `-` instead.
+Stack profile: `.dk/stack.toml` (components pipeline / web / worker - dk reads it for checks, test filters and agent scope).
 
 ## Workflow (dk plugin ≥ 0.7.0)
 /dk:spec (đề xuất phạm vi) → chốt docs/scope.md → /dk:spec → /dk:approve spec → /dk:estimate --no-quote → /dk:plan → /dk:design → /dk:approve contract → /dk:build <feature> → /dk:review → human merges → /dk:ship staging
@@ -29,6 +29,6 @@ Gates are enforced by hooks; state lives in `.dk/state.md` (edit only via dk-sta
 - Migrations are expand-only; numbers strictly increase (`tools/check-migrations.sh --kind wrangler-seq`).
 - Pipeline code is pure where it can be (no network/clock/randomness in logic) so tests and re-runs are deterministic; network adapters are isolated and mocked in tests.
 - Never send user data to an LLM. Never guess business rules: add the question to `docs/open-questions.md` and stop that part.
-- Fix the code, never the gate: lint/test/coverage configs (`[tool.ruff|pytest|coverage]` in pyproject, eslint, tsconfig, vitest config, CI workflows, `.dk/stack.toml`) and suppressions (`# noqa`, `# type: ignore`, `pytest.mark.skip`, `@ts-ignore`, `eslint-disable`, `.skip`) are blocked by the guard hook — stop and ask the human.
+- Fix the code, never the gate: lint/test/coverage configs (`[tool.ruff|pytest|coverage]` in pyproject, eslint, tsconfig, vitest config, CI workflows, `.dk/stack.toml`) and suppressions (`# noqa`, `# type: ignore`, `pytest.mark.skip`, `@ts-ignore`, `eslint-disable`, `.skip`) are blocked by the guard hook - stop and ask the human.
 - Git hooks live in `.githooks/` (`git config core.hooksPath .githooks`); never bypass them.
 - Build evidence: RED before implementing, GREEN after (`dk-evidence.py`, `.dk/evidence/<feature>.json` is committed).

@@ -1,5 +1,5 @@
 /**
- * Element ids and recipe lookup keys (ADR 0002) — the server-side twin of web/src/graph/crypto.ts.
+ * Element ids and recipe lookup keys (ADR 0002) - the server-side twin of web/src/graph/crypto.ts.
  * Must stay byte-compatible with pipeline/src/lau_meme_pipeline/{text,ids}.py.
  */
 const enc = new TextEncoder()

@@ -1,4 +1,4 @@
-# Tiêu chí nghiệm thu — Báo cáo + chặn nóng (REPORT)
+# Tiêu chí nghiệm thu - Báo cáo + chặn nóng (REPORT)
 
 > Giai đoạn 1. Component: worker (nhận báo cáo, tự ẩn, danh sách chặn), web (nút báo cáo, áp danh sách chặn).
 > Lý do báo cáo: người thật · chính trị/tôn giáo · tình dục · phân biệt/body shaming · bạo lực/ma túy/tự hại · ảnh không phù hợp · khác.
@@ -12,7 +12,7 @@
 ### AC-REPORT-02: Báo cáo không hợp lệ
 - **Cho** lý do không nằm trong danh sách; hoặc đích không tồn tại; hoặc thiếu/sai UUID; hoặc lý do "khác" kèm ghi chú dài hơn 200 ký tự
 - **Khi** gửi báo cáo
-- **Thì** lý do sai / ghi chú quá dài trả 422; đích không tồn tại trả 404; thiếu/sai UUID trả 400 — đều problem+json; không ghi gì
+- **Thì** lý do sai / ghi chú quá dài trả 422; đích không tồn tại trả 404; thiếu/sai UUID trả 400 - đều problem+json; không ghi gì
 - Ưu tiên: Bắt buộc
 
 ### AC-REPORT-03: Một UUID chỉ tính một lần
@@ -36,7 +36,7 @@
 ### AC-REPORT-06: Danh sách chặn nóng
 - **Cho** danh sách chặn có phần tử, công thức và ảnh
 - **Khi** gọi `GET` danh sách chặn
-- **Thì** trả 200 với 3 mảng định danh (phần tử, công thức, ảnh) dạng mã/băm — không có tên phần tử dạng đọc được; `Cache-Control` tối đa 60 s; danh sách rỗng trả các mảng rỗng
+- **Thì** trả 200 với 3 mảng định danh (phần tử, công thức, ảnh) dạng mã/băm - không có tên phần tử dạng đọc được; `Cache-Control` tối đa 60 s; danh sách rỗng trả các mảng rỗng
 - Ưu tiên: Bắt buộc
 
 ### AC-REPORT-07: Client áp danh sách chặn khi khởi động
@@ -54,5 +54,5 @@
 ### AC-REPORT-09: Phần tử bị ẩn và các công thức liên quan
 - **Cho** P bị ẩn (tự ẩn hoặc admin); công thức X + P = Q và công thức A + B = P
 - **Khi** client và server xử lý ghép/khám phá
-- **Thì** công thức có P là đầu vào hoặc kết quả đều không hoạt động; Q vẫn hoạt động nếu còn công thức khác ra Q (mặc định — câu hỏi mở); pipeline đợt sau nối lại phần tử mất đường tới (AC-INV-03)
+- **Thì** công thức có P là đầu vào hoặc kết quả đều không hoạt động; Q vẫn hoạt động nếu còn công thức khác ra Q (mặc định - câu hỏi mở); pipeline đợt sau nối lại phần tử mất đường tới (AC-INV-03)
 - Ưu tiên: Bắt buộc

@@ -135,7 +135,7 @@ function dailyResult(
 }
 
 /**
- * POST /api/daily/{version}/results — two D1 round trips: counters + every read in one batch, then the
+ * POST /api/daily/{version}/results - two D1 round trips: counters + every read in one batch, then the
  * result row, the streak and the new rank in one transactional batch.
  */
 export async function submitDailyResult(
@@ -239,7 +239,7 @@ export async function submitDailyResult(
 
 type BoardRow = { steps: number; nickname: string | null }
 
-/** GET /api/daily/{version}/leaderboard — top 20, never a UUID; `me` even outside the top 20. */
+/** GET /api/daily/{version}/leaderboard - top 20, never a UUID; `me` even outside the top 20. */
 export async function getDailyLeaderboard(
   req: Request,
   env: Env,
@@ -284,7 +284,7 @@ export async function getDailyLeaderboard(
   return json({ version, rows, me })
 }
 
-/** GET /api/streaks/leaderboard — live streaks only (last day today or yesterday, GMT+7). */
+/** GET /api/streaks/leaderboard - live streaks only (last day today or yesterday, GMT+7). */
 export async function getStreakLeaderboard(_req: Request, env: Env): Promise<Response> {
   const yesterday = addDays(dayGmt7(Date.now()), -1)
   const top = await env.DB.prepare(

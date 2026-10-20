@@ -3,7 +3,7 @@ import json, random, sys, unicodedata
 from collections import deque
 from pathlib import Path
 
-# tên: (emoji, nguồn V=Việt / Q=quốc tế, gợi ý ảnh minh họa — vẽ khái niệm, không chép ảnh gốc, không người thật)
+# tên: (emoji, nguồn V=Việt / Q=quốc tế, gợi ý ảnh minh họa - vẽ khái niệm, không chép ảnh gốc, không người thật)
 E = {
  "Cay": ("🌶️", "V", "quả ớt đỏ bốc khói, mặt cau có"),
  "Cười": ("😂", "Q", "mặt cười chảy nước mắt"),
@@ -696,7 +696,7 @@ def miss_rate(rec, trials=2000, steps=100, seed=7):
 
 
 def shortest_path(rec, target):
-    """Số lượt nhúng tối thiểu (đếm cả phần tử trung gian cần tạo) — tìm theo cây phụ thuộc với độ sâu nhỏ nhất."""
+    """Số lượt nhúng tối thiểu (đếm cả phần tử trung gian cần tạo) - tìm theo cây phụ thuộc với độ sâu nhỏ nhất."""
     best = {s: (0, []) for s in STARTERS}
     changed = True
     while changed:
@@ -735,8 +735,8 @@ def main():
 
 def write_md(path, d, mr, mr20):
     els = sorted(d["elements"], key=lambda x: (x["depth"], x["name"]))
-    L = ["# Nội dung lõi — Lẩu Meme", "",
-         "> Trạng thái: **bản lõi chờ duyệt** (giọng mặn, tỉ lệ Việt/quốc tế ~7/3). Sinh bởi `tools/noi_dung.py` — sửa dữ liệu ở đó rồi chạy lại,",
+    L = ["# Nội dung lõi - Lẩu Meme", "",
+         "> Trạng thái: **bản lõi chờ duyệt** (giọng mặn, tỉ lệ Việt/quốc tế ~7/3). Sinh bởi `tools/noi_dung.py` - sửa dữ liệu ở đó rồi chạy lại,",
          "> không sửa tay file này. Bản máy đọc: `noi-dung-loi.json` (pipeline nạp làm lõi classic).", "",
          f"Tổng: **{len(els)} phần tử**, **{len(d['recipes'])} công thức**, {len(d['miss_lines'])} câu \"Nồi trào\", "
          f"{len(d['daily_examples'])} ví dụ Món đặc biệt. Tự kiểm (script): mọi phần tử tới được từ 4 phần tử khởi đầu, "
@@ -752,13 +752,13 @@ def write_md(path, d, mr, mr20):
     for i, r in enumerate(d["recipes"], 1):
         L.append(f"| {i} | {emo[r['a']]} {r['a']} | {emo[r['b']]} {r['b']} | {emo[r['result']]} {r['result']}{' ⭐' if r['best'] else ''} |")
     L += ["", "## 4. Câu \"Nồi trào / Khét rồi\"", ""] + [f"{i}. {s}" for i, s in enumerate(d["miss_lines"], 1)]
-    L += ["", "Cùng một cặp luôn ra cùng một câu (chọn theo băm của cặp).", "", "## 5. Món đặc biệt hôm nay — 3 ví dụ", ""]
+    L += ["", "Cùng một cặp luôn ra cùng một câu (chọn theo băm của cặp).", "", "## 5. Món đặc biệt hôm nay - 3 ví dụ", ""]
     for x in d["daily_examples"]:
-        L += [f"### {emo[x['target']]} {x['target']} — gợi ý: \"{x['hint']}\"", ""]
+        L += [f"### {emo[x['target']]} {x['target']} - gợi ý: \"{x['hint']}\"", ""]
         L += [f"{i}. {emo[a]} {a} + {emo[b]} {b} → {emo[r]} {r}" for i, (a, b, r) in enumerate(x["path"], 1)]
         L += [""]
     L += ["## 6. Chỉ số", "",
-          f"- Ghép trượt khi chơi ngẫu nhiên 100 lượt (mô phỏng 2.000 ván): **≈ {mr:.0%}** (20 lượt đầu ≈ {mr20:.0%}). NFR đã chốt (Q13): 20 lượt đầu ≤ 45%, cả ván ≤ 70% — **đạt**.",
+          f"- Ghép trượt khi chơi ngẫu nhiên 100 lượt (mô phỏng 2.000 ván): **≈ {mr:.0%}** (20 lượt đầu ≈ {mr20:.0%}). NFR đã chốt (Q13): 20 lượt đầu ≤ 45%, cả ván ≤ 70% - **đạt**.",
           "- Người chơi thật không ghép ngẫu nhiên (họ thử theo nghĩa), nên tỉ lệ thực tế thấp hơn; mô phỏng này là cận trên để so sánh giữa các bản.", "",
           "## 7. Vì sao không dùng mốc ≤ 40% (đã chốt Q13)", "",
           "Tập đóng viết tay không thể dày bằng Infinite Craft (ở đó LLM trả lời mọi cặp). Với ~140 phần tử có ~10.000 cặp; "
@@ -766,7 +766,7 @@ def write_md(path, d, mr, mr20):
           "1. **Đổi cách đo** NFR thành \"20 lượt đầu ≤ 45%\" (trải nghiệm lúc mới vào, quyết định người chơi có ở lại không) và \"cả ván ≤ 70%\".",
           "2. **Bước \"công thức bổ sung\" của pipeline** sinh thêm hàng loạt cặp giữa các phần tử đã có (LLM + giám khảo), mỗi đợt tăng mật độ; "
           "theo dõi chỉ số này trong báo cáo đợt.",
-          "3. **\"Nồi trào có gợi ý\"**: khi trượt, thỉnh thoảng gợi ý một phần tử nên thử cùng (lấy từ công thức có thật) — giảm cảm giác bế tắc mà không lộ đáp án.",
+          "3. **\"Nồi trào có gợi ý\"**: khi trượt, thỉnh thoảng gợi ý một phần tử nên thử cùng (lấy từ công thức có thật) - giảm cảm giác bế tắc mà không lộ đáp án.",
           "Đã chốt 19/10: làm cả 3 hướng.", ""]
     path.write_text("\n".join(L), encoding="utf-8")
 

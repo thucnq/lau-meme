@@ -4,7 +4,7 @@ import unicodedata
 
 
 def fold(text: str) -> str:
-    """Lowercase, strip Vietnamese diacritics and collapse spaces — the key used for search and de-duplication.
+    """Lowercase, strip Vietnamese diacritics and collapse spaces - the key used for search and de-duplication.
 
     'Đơn Nghỉ  Việc' -> 'don nghi viec'
     """

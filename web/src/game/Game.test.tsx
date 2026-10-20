@@ -291,7 +291,7 @@ describe('Game', () => {
   })
 
   // ============================================================== AC-GAME-02
-  it('AC-GAME-02: thả A và B vào nồi — nồi sôi tối đa 1,2 s, bỏ qua thao tác lúc sôi, C lên bàn và vào Đĩa', async () => {
+  it('AC-GAME-02: thả A và B vào nồi - nồi sôi tối đa 1,2 s, bỏ qua thao tác lúc sôi, C lên bàn và vào Đĩa', async () => {
     await installNet({ specs: [{ a: 'Cay', b: 'Cười', name: 'Tới Công Chuyện', emoji: '🔥' }] })
     seed()
     await mountReady()
@@ -646,7 +646,7 @@ describe('Game', () => {
   })
 
   // ============================================================== AC-GAME-17
-  it('AC-GAME-17: tiến độ của V1 khi manifest là V2 — giữ mọi phần tử, tra theo graph V2, không hỏi gì', async () => {
+  it('AC-GAME-17: tiến độ của V1 khi manifest là V2 - giữ mọi phần tử, tra theo graph V2, không hỏi gì', async () => {
     await installNet({
       version: 2,
       specs: [{ a: 'Cay', b: 'Cười', name: 'Món Mới', emoji: '🆕', added_version: 2 }],

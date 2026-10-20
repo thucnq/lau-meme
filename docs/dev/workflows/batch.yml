@@ -1,4 +1,4 @@
-# Mẻ nhúng (AC-PIPE-01/02/11/14, ADR 0003/0006). Đề xuất — người chép vào .github/workflows/batch.yml
+# Mẻ nhúng (AC-PIPE-01/02/11/14, ADR 0003/0006). Đề xuất - người chép vào .github/workflows/batch.yml
 # (guard chặn agent sửa workflow). 00:00 và 12:00 GMT+7 = 17:00 và 05:00 UTC.
 # Đăng dữ liệu qua API của Worker, không deploy code; lỗi ở bất kỳ bước nào ⇒ bản hiện hành giữ nguyên, job đỏ.
 name: batch

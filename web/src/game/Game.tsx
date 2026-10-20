@@ -1,7 +1,7 @@
 /**
  * Game screen (docs/acceptance/game.md): the plate ("Đĩa nhúng"), the table and the hot pot with two drop slots.
  * Drag and drop uses Pointer Events; the drop target is found with document.elementFromPoint.
- * Progress lives only in localStorage — this screen never sends a write request.
+ * Progress lives only in localStorage - this screen never sends a write request.
  */
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { PointerEvent as ReactPointerEvent } from 'react'

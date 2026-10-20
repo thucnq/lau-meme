@@ -1,15 +1,15 @@
-# Tiêu chí nghiệm thu — Kiểm duyệt nội dung tự động (MOD)
+# Tiêu chí nghiệm thu - Kiểm duyệt nội dung tự động (MOD)
 
 > Giai đoạn 2. Component: pipeline (logic thuần; phản hồi LLM truyền vào/mock). Danh mục cấm theo `ghi-chu-hop.md` mục 7 và luật người thật 7.1.
 > Danh mục cấm: người thật bị chế giễu · chính trị · tôn giáo · tình dục · phân biệt vùng miền/sắc tộc/giới tính · body shaming · bạo lực · ma túy · tự hại · quấy rối/xâm hại.
 
-### AC-MOD-01: Lớp 1 — danh sách từ cấm
-- **Cho** danh sách từ cấm (lưu ngoài repo nếu nhạy cảm — `/dk:design` chốt) và khái niệm chứa một từ cấm, kể cả viết không dấu, hoa thường, chèn dấu chấm/khoảng trắng giữa các chữ
+### AC-MOD-01: Lớp 1 - danh sách từ cấm
+- **Cho** danh sách từ cấm (lưu ngoài repo nếu nhạy cảm - `/dk:design` chốt) và khái niệm chứa một từ cấm, kể cả viết không dấu, hoa thường, chèn dấu chấm/khoảng trắng giữa các chữ
 - **Khi** kiểm duyệt chạy
 - **Thì** khái niệm bị loại ở lớp 1, không gửi LLM; báo cáo đợt đếm vào "từ cấm"
 - Ưu tiên: Bắt buộc
 
-### AC-MOD-02: Lớp 2 — LLM phân loại theo danh mục
+### AC-MOD-02: Lớp 2 - LLM phân loại theo danh mục
 - **Cho** khái niệm qua lớp 1 và phản hồi LLM gắn danh mục "chính trị"
 - **Khi** kiểm duyệt chạy
 - **Thì** khái niệm bị loại; báo cáo đợt đếm theo danh mục; khái niệm LLM trả "an toàn" thì đi tiếp
@@ -18,7 +18,7 @@
 ### AC-MOD-03: Không chắc thì loại
 - **Cho** phản hồi LLM là "không chắc", điểm tin cậy dưới ngưỡng, không đúng schema, hoặc lời gọi lỗi sau hết retry
 - **Khi** kiểm duyệt chạy
-- **Thì** khái niệm bị loại (hoặc vào hàng chờ nếu do hết quota — AC-PIPE-12), không bao giờ được coi là an toàn
+- **Thì** khái niệm bị loại (hoặc vào hàng chờ nếu do hết quota - AC-PIPE-12), không bao giờ được coi là an toàn
 - Ưu tiên: Bắt buộc
 
 ### AC-MOD-04: Kiểm cả tên kết quả công thức và văn bản phụ
@@ -51,7 +51,7 @@
 - **Thì** phần tử có cờ hoãn đến D + 30 ngày: không được chọn làm Món đặc biệt và không có nhãn "MỚI" trước ngày đó (ngày so với `batch_at`, không dùng đồng hồ hệ thống); sau ngày đó được xét bình thường
 - Ưu tiên: Bắt buộc
 
-### AC-MOD-09: Không bao giờ — cáo buộc và quấy rối
+### AC-MOD-09: Không bao giờ - cáo buộc và quấy rối
 - **Cho** khái niệm nhận ra được người thật gắn với cáo buộc (ứng xử, quấy rối, tình dục, pháp lý, nợ nần, đời tư), hoặc đùa về quấy rối/xâm hại dạng chung chung
 - **Khi** kiểm duyệt chạy
 - **Thì** khái niệm bị loại, kể cả khi LLM chấm hài cao; tên/bí danh liên quan vào danh sách chặn bí danh

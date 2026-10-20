@@ -1,9 +1,9 @@
-%% C4 container — Lẩu Meme (giai đoạn 1; nét đứt = giai đoạn 2)
+%% C4 container - Lẩu Meme (giai đoạn 1; nét đứt = giai đoạn 2)
 flowchart LR
   player(["Thực khách<br/>(trình duyệt, UUID ẩn danh)"])
   admin(["Quản trị<br/>(token)"])
 
-  subgraph cf["Cloudflare (gói free) — zone dinoduct.fun, chung origin với các game khác (ADR 0007)"]
+  subgraph cf["Cloudflare (gói free) - zone dinoduct.fun, chung origin với các game khác (ADR 0007)"]
     redirect["Redirect Rule (người cấu hình)<br/>dinoduct.fun/ → 302 /lau-meme/"]
     worker["Worker lau-meme<br/>route dinoduct.fun/lau-meme*<br/>(staging: staging.dinoduct.fun/lau-meme*)<br/>web tĩnh + /lau-meme/api/* + Cron dọn dữ liệu<br/>route laumeme-admin.dinoduct.fun/* (ADMIN_HOST, ADR 0008)<br/>trang quản trị + /api/admin/*"]
     web["Web React + Vite<br/>static assets web/dist/lau-meme<br/>tra + giải mã graph trong bộ nhớ"]

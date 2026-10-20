@@ -4,7 +4,7 @@
  * Acceptance tests cho docs/acceptance/disc.md, phần web: Game.onDiscover và Root (AC-DISC-01, 05, 06, 09).
  *
  * BỀ MẶT CÔNG KHAI MÀ TEST NÀY YÊU CẦU
- *   Game: prop tùy chọn onDiscover?: (d: {a, b, result, id}) => void — a/b/result là TÊN, id là ElementId của result;
+ *   Game: prop tùy chọn onDiscover?: (d: {a, b, result, id}) => void - a/b/result là TÊN, id là ElementId của result;
  *         gọi đúng một lần khi ghép ra phần tử mới đối với người chơi (không khi đã có sẵn, không khi trượt).
  *   Root: khi đã đồng ý, khám phá mới POST /lau-meme/api/discoveries và hiện dòng
  *         "Công thức gia truyền của <nickname>" (kèm "Bạn là người đầu tiên!" khi first:true).

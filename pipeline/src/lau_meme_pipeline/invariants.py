@@ -137,7 +137,7 @@ def check_opaque(graph: Mapping, store: ContentStore) -> list[str]:
 
 
 def check_moderation(store: ContentStore, lists: ModLists) -> list[str]:
-    """AC-INV-07: layer 1 again (banned words, blocked aliases, admin-blocked names) on every active element — its
+    """AC-INV-07: layer 1 again (banned words, blocked aliases, admin-blocked names) on every active element - its
     name, emoji and image hint; a recipe is published only with an active result, so its result covers it."""
     violations = []
     for eid in sorted(store.elements):
@@ -199,7 +199,7 @@ class _Rng:
 def simulate_miss_rate(
     graph: Mapping, starters: Sequence[Mapping], *, games: int = 1000, turns: int = 100, seed: int = 0
 ) -> tuple[float, float]:
-    """AC-INV-12: random play — each turn picks 2 elements of the plate (the same one may come twice) and drops
+    """AC-INV-12: random play - each turn picks 2 elements of the plate (the same one may come twice) and drops
     them in the pot; a miss is a pair with no recipe. Returns (miss rate of the first 20 turns, of the whole game)."""
     rng = _Rng(seed)
     looked_up: dict[tuple[str, str], str | None] = {}
@@ -235,5 +235,5 @@ def miss_rate_warning(first20: float, overall: float) -> str | None:
         return None
     return (
         f"⚠️ Tỉ lệ ghép trượt khi chơi ngẫu nhiên cao: 20 lượt đầu {first20:.0%} (ngưỡng {MAX_FIRST20_MISS:.0%}), "
-        f"cả ván {overall:.0%} (ngưỡng {MAX_OVERALL_MISS:.0%}) — nên bổ sung công thức"
+        f"cả ván {overall:.0%} (ngưỡng {MAX_OVERALL_MISS:.0%}) - nên bổ sung công thức"
     )

@@ -121,7 +121,7 @@ def layer1(concept: Concept, lists: ModLists) -> str | None:
     if any(fold(concept.name) == fold(t) for t in lists.admin_blocked):
         return "admin_blocked"
     # Daily/image hints are checked too and reject the whole concept: stricter than layer 2 (which only drops the
-    # hint), on purpose — a listed word anywhere means the concept was about it.
+    # hint), on purpose - a listed word anywhere means the concept was about it.
     texts = [_key(getattr(concept, f)) for f in TEXT_FIELDS]
     tokens = set().union(*(_tokens(getattr(concept, f)) for f in TEXT_FIELDS))
 

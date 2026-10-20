@@ -1,4 +1,4 @@
-/** RFC 9457 problem details — every API error has the same shape (same rule as the Java golden path). */
+/** RFC 9457 problem details - every API error has the same shape (same rule as the Java golden path). */
 export function problem(
   status: number,
   title: string,

@@ -182,13 +182,13 @@ export function DailyPanel({ manifest, lookup, onDiscover, storage }: Props) {
         <ol aria-label="Bảng xếp hạng">
           {board.rows.map((r) => (
             <li key={r.rank}>
-              #{r.rank} {r.nickname} — {r.value} bước
+              #{r.rank} {r.nickname} - {r.value} bước
             </li>
           ))}
           {/* my own rank even outside the top 20 (AC-DAILY-09) */}
           {board.me && !board.rows.some((r) => r.rank === board.me?.rank) && (
             <li>
-              Bạn: #{board.me.rank} — {board.me.value} bước
+              Bạn: #{board.me.rank} - {board.me.value} bước
             </li>
           )}
         </ol>

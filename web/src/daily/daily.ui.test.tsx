@@ -419,15 +419,15 @@ describe('daily ui: bảng xếp hạng', () => {
     { rank: 2, nickname: 'Thực khách ẩn danh', value: 6 },
   ]
 
-  it('AC-DAILY-09: nút "Bảng xếp hạng" tải GET /daily/{version}/leaderboard và liệt kê "#1 Bếp Trưởng — 5 bước"', async () => {
+  it('AC-DAILY-09: nút "Bảng xếp hạng" tải GET /daily/{version}/leaderboard và liệt kê "#1 Bếp Trưởng - 5 bước"', async () => {
     leaderboardReply = () => json({ version: VERSION, rows: ROWS, me: null })
     render(panel())
     fireEvent.click(screen.getByRole('button', { name: 'Bảng xếp hạng' }))
     const list = await screen.findByRole('list', { name: 'Bảng xếp hạng' })
     const items = within(list).getAllByRole('listitem')
     expect(items).toHaveLength(2)
-    expect(items[0]!.textContent).toBe('#1 Bếp Trưởng — 5 bước')
-    expect(items[1]!.textContent).toBe('#2 Thực khách ẩn danh — 6 bước')
+    expect(items[0]!.textContent).toBe('#1 Bếp Trưởng - 5 bước')
+    expect(items[1]!.textContent).toBe('#2 Thực khách ẩn danh - 6 bước')
     expect(leaderboardGets()[0]!.url).toContain(`/lau-meme/api/daily/${VERSION}/leaderboard`)
   })
 
@@ -513,12 +513,12 @@ describe('daily ui: gửi lại, tự gửi, hạng của tôi, lỗi', () => {
     expect(resultPosts().length).toBeLessThanOrEqual(3)
   })
 
-  it('AC-DAILY-09: me ngoài top hiện thêm dòng "Bạn: #25 — 9 bước"', async () => {
+  it('AC-DAILY-09: me ngoài top hiện thêm dòng "Bạn: #25 - 9 bước"', async () => {
     leaderboardReply = () => json({ version: VERSION, rows: [{ rank: 1, nickname: 'A', value: 4 }], me: { rank: 25, nickname: 'Bếp Trưởng', value: 9 } })
     render(panel())
     fireEvent.click(screen.getByRole('button', { name: 'Bảng xếp hạng' }))
     await screen.findByRole('list', { name: 'Bảng xếp hạng' })
-    expect(await screen.findByText('Bạn: #25 — 9 bước')).toBeTruthy()
+    expect(await screen.findByText('Bạn: #25 - 9 bước')).toBeTruthy()
   })
 
   it('AC-DAILY-09: me null hoặc hạng đã nằm trong rows thì không có dòng "Bạn:"', async () => {
