@@ -182,8 +182,13 @@ async function newPlayer(consent = true): Promise<string> {
   return id
 }
 
-async function count(table: 'daily_result' | 'streak'): Promise<number> {
-  const row = await env.DB.prepare(`SELECT COUNT(*) AS n FROM ${table}`).first<{ n: number }>()
+const COUNT_SQL = {
+  daily_result: 'SELECT COUNT(*) AS n FROM daily_result',
+  streak: 'SELECT COUNT(*) AS n FROM streak',
+} as const
+
+async function count(table: keyof typeof COUNT_SQL): Promise<number> {
+  const row = await env.DB.prepare(COUNT_SQL[table]).first<{ n: number }>()
   return row?.n ?? 0
 }
 

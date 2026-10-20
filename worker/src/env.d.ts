@@ -7,6 +7,7 @@ declare namespace Cloudflare {
     ADMIN_TOKEN?: string
     PIPELINE_TOKEN?: string
     POLICY_VERSION?: string
+    IP_HASH_KEY?: string
   }
 }
 type Env = Cloudflare.Env

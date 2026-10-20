@@ -28,10 +28,15 @@ export function policyVersion(env: Env): number {
   return Number.isInteger(v) && v >= 1 ? v : 1
 }
 
+/** Path parameter `{version}`: positive integer, otherwise 400. */
+export function versionParam(raw: string | undefined): number {
+  if (!/^[1-9]\d{0,9}$/.test(raw ?? '')) throw new HttpError(400, 'Version không hợp lệ')
+  return Number(raw)
+}
+
 /** GET /api/graph/{version} — immutable, put into the Cache API so D1 is read once per location. */
 export async function getGraph(req: Request, env: Env, ctx: ExecutionContext, params: string[]): Promise<Response> {
-  const raw = params[0] ?? ''
-  if (!/^[1-9]\d{0,9}$/.test(raw)) throw new HttpError(400, 'Version không hợp lệ')
+  const version = versionParam(params[0])
   // Key = origin + path only: a query string must not create a new cache entry (and a D1 read) per request.
   const url = new URL(req.url)
   const cacheKey = new Request(url.origin + url.pathname, { method: 'GET' })
@@ -39,7 +44,7 @@ export async function getGraph(req: Request, env: Env, ctx: ExecutionContext, pa
   const hit = await cache.match(cacheKey)
   if (hit) return hit
   const row = await env.DB.prepare('SELECT graph_json FROM batch_content WHERE version = ?')
-    .bind(Number(raw))
+    .bind(version)
     .first<{ graph_json: string }>()
   if (!row) return problem(404, 'Không còn lưu graph của version này')
   const res = new Response(row.graph_json, {

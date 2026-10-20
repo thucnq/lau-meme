@@ -1,5 +1,6 @@
 import { hasBearer } from './auth'
 import { getGraph, getManifest } from './features/content/content'
+import { getDailyLeaderboard, getMyStreak, getStreakLeaderboard, submitDailyResult } from './features/daily/daily'
 import { publishBatch, rollbackBatch } from './features/pipeline/batches'
 import { HttpError, json, problem } from './http'
 
@@ -26,6 +27,10 @@ const routes: Route[] = [
   },
   { pattern: /^\/api\/manifest$/, methods: { GET: getManifest } },
   { pattern: /^\/api\/graph\/([^/]+)$/, methods: { GET: getGraph } },
+  { pattern: /^\/api\/daily\/([^/]+)\/results$/, methods: { POST: submitDailyResult } },
+  { pattern: /^\/api\/daily\/([^/]+)\/leaderboard$/, methods: { GET: getDailyLeaderboard } },
+  { pattern: /^\/api\/streaks\/leaderboard$/, methods: { GET: getStreakLeaderboard } },
+  { pattern: /^\/api\/me\/streak$/, methods: { GET: getMyStreak } },
   { pattern: /^\/api\/pipeline\/batches$/, methods: { POST: pipelineOnly(publishBatch) } },
   { pattern: /^\/api\/pipeline\/rollback$/, methods: { POST: pipelineOnly(rollbackBatch) } },
 ]

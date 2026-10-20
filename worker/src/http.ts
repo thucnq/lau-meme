@@ -1,8 +1,14 @@
 /** RFC 9457 problem details — every API error has the same shape (same rule as the Java golden path). */
-export function problem(status: number, title: string, detail?: string): Response {
+export function problem(
+  status: number,
+  title: string,
+  detail?: string,
+  extra: Record<string, unknown> = {},
+  headers: Record<string, string> = {},
+): Response {
   return Response.json(
-    { type: 'about:blank', title, status, ...(detail ? { detail } : {}) },
-    { status, headers: { 'content-type': 'application/problem+json' } },
+    { type: 'about:blank', title, status, ...(detail ? { detail } : {}), ...extra },
+    { status, headers: { 'content-type': 'application/problem+json', ...headers } },
   )
 }
 
