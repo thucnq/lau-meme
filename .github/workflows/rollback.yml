@@ -1,4 +1,4 @@
-# Rollback graph về bản trước (hoặc version chỉ định) — chạy tay, ≤ 5 phút (AC-GRAPH-06/07, ADR 0003).
+# Rollback graph về bản trước (hoặc version chỉ định) - chạy tay, ≤ 5 phút (AC-GRAPH-06/07, ADR 0003).
 # Worker kiểm và chuyển `current_version`; không có bản trước / version không còn lưu ⇒ job thất bại, bản hiện hành giữ nguyên.
 name: rollback
 

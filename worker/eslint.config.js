@@ -10,10 +10,10 @@ export default tseslint.config(
     languageOptions: { ecmaVersion: 2022, globals: globals.serviceworker },
     rules: {
       'no-console': ['error', { allow: ['warn', 'error'] }],
-      // D1: always prepare().bind() — never build SQL from strings
+      // D1: always prepare().bind() - never build SQL from strings
       'no-restricted-syntax': ['error', {
         selector: "CallExpression[callee.property.name=/^(prepare|exec)$/] > TemplateLiteral[expressions.length>0]",
-        message: 'Không ghép chuỗi vào SQL — dùng prepare(...).bind(...)',
+        message: 'Không ghép chuỗi vào SQL - dùng prepare(...).bind(...)',
       }],
     },
   },

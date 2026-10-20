@@ -1,6 +1,6 @@
 name: deploy
 # Manual deploys. staging: anyone with write access. production: GitHub environment `production` with
-# required reviewers (Settings → Environments) — the human gate. Never on push.
+# required reviewers (Settings → Environments) - the human gate. Never on push.
 on:
   workflow_dispatch:
     inputs:
