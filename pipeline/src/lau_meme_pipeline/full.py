@@ -14,6 +14,7 @@ from lau_meme_pipeline.daily import build_daily_block, select_daily
 from lau_meme_pipeline.dedupe import dedupe, dedupe_key
 from lau_meme_pipeline.graph import build_manifest, export_graph
 from lau_meme_pipeline.ids import element_id, recipe_id
+from lau_meme_pipeline.invariants import check_all, miss_rate_warning, simulate_miss_rate
 from lau_meme_pipeline.judge import judge
 from lau_meme_pipeline.linking import Graph, bfs_depths, needs_supplement, validate_links
 from lau_meme_pipeline.linkqueue import next_queue
@@ -274,6 +275,9 @@ def run_full(
 
     graph_out = export_graph(content, version)
     manifest = build_manifest(content, version=version, batch_at=batch_at, daily=daily, previous_version=None)
+    check_all(graph_out, manifest, content, lists)  # raises InvariantError: nothing of this batch is published
+    report["miss_rate"] = list(simulate_miss_rate(graph_out, manifest["starters"]))
+    report["miss_rate_warning"] = miss_rate_warning(*report["miss_rate"])  # warns only (AC-INV-12)
     out_store["queue"] = q.queue
     out_store["llm_cache"] = {k: used[k] for k in sorted(used)}
     return FullOutcome(graph=graph_out, manifest=manifest, store=out_store, report=report)

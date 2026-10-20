@@ -1,0 +1,392 @@
+{
+ "starters": [
+  "Gạo Nếp",
+  "Muối Tiêu",
+  "Lửa Than",
+  "Nước Mắm"
+ ],
+ "elements": [
+  {
+   "name": "Gạo Nếp",
+   "emoji": "🍚",
+   "origin": "V",
+   "depth": 0,
+   "image_hint": "hình minh họa số 0"
+  },
+  {
+   "name": "Muối Tiêu",
+   "emoji": "🧂",
+   "origin": "Q",
+   "depth": 0,
+   "image_hint": "hình minh họa số 1"
+  },
+  {
+   "name": "Lửa Than",
+   "emoji": "🔥",
+   "origin": "V",
+   "depth": 0,
+   "image_hint": "hình minh họa số 2"
+  },
+  {
+   "name": "Nước Mắm",
+   "emoji": "🍶",
+   "origin": "Q",
+   "depth": 0,
+   "image_hint": "hình minh họa số 3"
+  },
+  {
+   "name": "Giòn Bánh",
+   "emoji": "🐀",
+   "origin": "V",
+   "depth": 1,
+   "image_hint": "hình minh họa số 4"
+  },
+  {
+   "name": "Ngọt Bánh",
+   "emoji": "🐁",
+   "origin": "Q",
+   "depth": 2,
+   "image_hint": "hình minh họa số 5"
+  },
+  {
+   "name": "Béo Bánh",
+   "emoji": "🐂",
+   "origin": "V",
+   "depth": 3,
+   "image_hint": "hình minh họa số 6"
+  },
+  {
+   "name": "Chua Bánh",
+   "emoji": "🐃",
+   "origin": "Q",
+   "depth": 4,
+   "image_hint": "hình minh họa số 7"
+  },
+  {
+   "name": "Mặn Bánh",
+   "emoji": "🐄",
+   "origin": "V",
+   "depth": 5,
+   "image_hint": "hình minh họa số 8"
+  },
+  {
+   "name": "Thơm Bánh",
+   "emoji": "🐅",
+   "origin": "Q",
+   "depth": 6,
+   "image_hint": "hình minh họa số 9"
+  },
+  {
+   "name": "Nóng Bánh",
+   "emoji": "🐆",
+   "origin": "V",
+   "depth": 7,
+   "image_hint": "hình minh họa số 10"
+  },
+  {
+   "name": "Lạnh Bánh",
+   "emoji": "🐇",
+   "origin": "Q",
+   "depth": 8,
+   "image_hint": "hình minh họa số 11"
+  },
+  {
+   "name": "Dai Bánh",
+   "emoji": "🐈",
+   "origin": "V",
+   "depth": 4,
+   "image_hint": "hình minh họa số 12"
+  },
+  {
+   "name": "Mềm Bánh",
+   "emoji": "🐉",
+   "origin": "Q",
+   "depth": 7,
+   "image_hint": "hình minh họa số 13"
+  },
+  {
+   "name": "Đậm Bánh",
+   "emoji": "🐊",
+   "origin": "V",
+   "depth": 6,
+   "image_hint": "hình minh họa số 14"
+  },
+  {
+   "name": "Nhạt Bánh",
+   "emoji": "🐋",
+   "origin": "Q",
+   "depth": 2,
+   "image_hint": "hình minh họa số 15"
+  },
+  {
+   "name": "Giòn Chè",
+   "emoji": "🐌",
+   "origin": "V",
+   "depth": 6,
+   "image_hint": "hình minh họa số 16"
+  },
+  {
+   "name": "Ngọt Chè",
+   "emoji": "🐍",
+   "origin": "Q",
+   "depth": 7,
+   "image_hint": "hình minh họa số 17"
+  }
+ ],
+ "recipes": [
+  {
+   "a": "Gạo Nếp",
+   "b": "Muối Tiêu",
+   "result": "Giòn Bánh",
+   "best": false
+  },
+  {
+   "a": "Giòn Bánh",
+   "b": "Nước Mắm",
+   "result": "Ngọt Bánh",
+   "best": false
+  },
+  {
+   "a": "Ngọt Bánh",
+   "b": "Gạo Nếp",
+   "result": "Béo Bánh",
+   "best": false
+  },
+  {
+   "a": "Béo Bánh",
+   "b": "Lửa Than",
+   "result": "Chua Bánh",
+   "best": false
+  },
+  {
+   "a": "Chua Bánh",
+   "b": "Nước Mắm",
+   "result": "Mặn Bánh",
+   "best": false
+  },
+  {
+   "a": "Mặn Bánh",
+   "b": "Lửa Than",
+   "result": "Thơm Bánh",
+   "best": false
+  },
+  {
+   "a": "Thơm Bánh",
+   "b": "Muối Tiêu",
+   "result": "Nóng Bánh",
+   "best": false
+  },
+  {
+   "a": "Nóng Bánh",
+   "b": "Lửa Than",
+   "result": "Lạnh Bánh",
+   "best": false
+  },
+  {
+   "a": "Béo Bánh",
+   "b": "Ngọt Bánh",
+   "result": "Dai Bánh",
+   "best": false
+  },
+  {
+   "a": "Thơm Bánh",
+   "b": "Dai Bánh",
+   "result": "Mềm Bánh",
+   "best": false
+  },
+  {
+   "a": "Mặn Bánh",
+   "b": "Béo Bánh",
+   "result": "Đậm Bánh",
+   "best": false
+  },
+  {
+   "a": "Giòn Bánh",
+   "b": "Gạo Nếp",
+   "result": "Nhạt Bánh",
+   "best": false
+  },
+  {
+   "a": "Mặn Bánh",
+   "b": "Nhạt Bánh",
+   "result": "Giòn Chè",
+   "best": false
+  },
+  {
+   "a": "Nóng Bánh",
+   "b": "Giòn Chè",
+   "result": "Ngọt Chè",
+   "best": false
+  },
+  {
+   "a": "Chua Bánh",
+   "b": "Lạnh Bánh",
+   "result": "Giòn Chè",
+   "best": false
+  },
+  {
+   "a": "Muối Tiêu",
+   "b": "Đậm Bánh",
+   "result": "Ngọt Chè",
+   "best": false
+  },
+  {
+   "a": "Lạnh Bánh",
+   "b": "Giòn Bánh",
+   "result": "Nhạt Bánh",
+   "best": false
+  }
+ ],
+ "miss_lines": [
+  "Nồi trào số 0, hai món này không ăn chung được.",
+  "Nồi trào số 1, hai món này không ăn chung được.",
+  "Nồi trào số 2, hai món này không ăn chung được.",
+  "Nồi trào số 3, hai món này không ăn chung được.",
+  "Nồi trào số 4, hai món này không ăn chung được.",
+  "Nồi trào số 5, hai món này không ăn chung được.",
+  "Nồi trào số 6, hai món này không ăn chung được.",
+  "Nồi trào số 7, hai món này không ăn chung được.",
+  "Nồi trào số 8, hai món này không ăn chung được.",
+  "Nồi trào số 9, hai món này không ăn chung được.",
+  "Nồi trào số 10, hai món này không ăn chung được.",
+  "Nồi trào số 11, hai món này không ăn chung được.",
+  "Nồi trào số 12, hai món này không ăn chung được.",
+  "Nồi trào số 13, hai món này không ăn chung được.",
+  "Nồi trào số 14, hai món này không ăn chung được.",
+  "Nồi trào số 15, hai món này không ăn chung được.",
+  "Nồi trào số 16, hai món này không ăn chung được.",
+  "Nồi trào số 17, hai món này không ăn chung được.",
+  "Nồi trào số 18, hai món này không ăn chung được.",
+  "Nồi trào số 19, hai món này không ăn chung được.",
+  "Nồi trào số 20, hai món này không ăn chung được.",
+  "Nồi trào số 21, hai món này không ăn chung được.",
+  "Nồi trào số 22, hai món này không ăn chung được.",
+  "Nồi trào số 23, hai món này không ăn chung được.",
+  "Nồi trào số 24, hai món này không ăn chung được.",
+  "Nồi trào số 25, hai món này không ăn chung được.",
+  "Nồi trào số 26, hai món này không ăn chung được.",
+  "Nồi trào số 27, hai món này không ăn chung được.",
+  "Nồi trào số 28, hai món này không ăn chung được.",
+  "Nồi trào số 29, hai món này không ăn chung được.",
+  "Nồi trào số 30, hai món này không ăn chung được.",
+  "Nồi trào số 31, hai món này không ăn chung được.",
+  "Nồi trào số 32, hai món này không ăn chung được.",
+  "Nồi trào số 33, hai món này không ăn chung được.",
+  "Nồi trào số 34, hai món này không ăn chung được.",
+  "Nồi trào số 35, hai món này không ăn chung được.",
+  "Nồi trào số 36, hai món này không ăn chung được.",
+  "Nồi trào số 37, hai món này không ăn chung được.",
+  "Nồi trào số 38, hai món này không ăn chung được.",
+  "Nồi trào số 39, hai món này không ăn chung được."
+ ],
+ "daily_examples": [
+  {
+   "target": "Chua Bánh",
+   "hint": "Món bí ẩn số 1 của bộ vàng",
+   "path": [
+    [
+     "Gạo Nếp",
+     "Muối Tiêu",
+     "Giòn Bánh"
+    ],
+    [
+     "Giòn Bánh",
+     "Nước Mắm",
+     "Ngọt Bánh"
+    ],
+    [
+     "Ngọt Bánh",
+     "Gạo Nếp",
+     "Béo Bánh"
+    ],
+    [
+     "Béo Bánh",
+     "Lửa Than",
+     "Chua Bánh"
+    ]
+   ]
+  },
+  {
+   "target": "Thơm Bánh",
+   "hint": "Món bí ẩn số 2 của bộ vàng",
+   "path": [
+    [
+     "Gạo Nếp",
+     "Muối Tiêu",
+     "Giòn Bánh"
+    ],
+    [
+     "Giòn Bánh",
+     "Nước Mắm",
+     "Ngọt Bánh"
+    ],
+    [
+     "Ngọt Bánh",
+     "Gạo Nếp",
+     "Béo Bánh"
+    ],
+    [
+     "Béo Bánh",
+     "Lửa Than",
+     "Chua Bánh"
+    ],
+    [
+     "Chua Bánh",
+     "Nước Mắm",
+     "Mặn Bánh"
+    ],
+    [
+     "Mặn Bánh",
+     "Lửa Than",
+     "Thơm Bánh"
+    ]
+   ]
+  },
+  {
+   "target": "Lạnh Bánh",
+   "hint": "Món bí ẩn số 3 của bộ vàng",
+   "path": [
+    [
+     "Gạo Nếp",
+     "Muối Tiêu",
+     "Giòn Bánh"
+    ],
+    [
+     "Giòn Bánh",
+     "Nước Mắm",
+     "Ngọt Bánh"
+    ],
+    [
+     "Ngọt Bánh",
+     "Gạo Nếp",
+     "Béo Bánh"
+    ],
+    [
+     "Béo Bánh",
+     "Lửa Than",
+     "Chua Bánh"
+    ],
+    [
+     "Chua Bánh",
+     "Nước Mắm",
+     "Mặn Bánh"
+    ],
+    [
+     "Mặn Bánh",
+     "Lửa Than",
+     "Thơm Bánh"
+    ],
+    [
+     "Thơm Bánh",
+     "Muối Tiêu",
+     "Nóng Bánh"
+    ],
+    [
+     "Nóng Bánh",
+     "Lửa Than",
+     "Lạnh Bánh"
+    ]
+   ]
+  }
+ ]
+}

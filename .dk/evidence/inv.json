@@ -1,0 +1,110 @@
+{
+ "red": {
+  "ts": "2026-10-20T10:22:44+00:00",
+  "commit": "40dd230",
+  "results": {
+   "AC-INV-01": {
+    "status": "FAIL",
+    "test": "test_inv#test_ac_inv_01_phat_hien_cap_khong_doi_xung"
+   },
+   "AC-INV-02": {
+    "status": "FAIL",
+    "test": "test_inv#test_ac_inv_02_cong_thuc_khong_hoat_dong_khong_tinh"
+   },
+   "AC-INV-03": {
+    "status": "FAIL",
+    "test": "test_inv#test_ac_inv_03_phan_tu_mat_duong_do_an_thi_danh_dau_khong_hoat_dong_la_hop_le[synthetic-33]"
+   },
+   "AC-INV-04": {
+    "status": "FAIL",
+    "test": "test_inv#test_ac_inv_04_phat_hien_muc_giai_ma_duoc_bang_cap_thieu"
+   },
+   "AC-INV-05": {
+    "status": "PASS",
+    "test": "test_inv#test_ac_inv_05_run_batch_hai_lan_giong_het_byte[classic]"
+   },
+   "AC-INV-06": {
+    "status": "FAIL",
+    "test": "test_inv#test_ac_inv_06_check_all_gom_moi_vi_pham_cua_inv_02_03_07_10"
+   },
+   "AC-INV-07": {
+    "status": "FAIL",
+    "test": "test_inv#test_ac_inv_07_phan_tu_khong_hoat_dong_khong_bi_xet"
+   },
+   "AC-INV-08": {
+    "status": "PASS",
+    "test": "disc.test.ts#disc > AC-INV-08: ~200 bộ ba "
+   },
+   "AC-INV-09": {
+    "status": "PASS",
+    "test": "report.test.ts#report > AC-INV-09: chuỗi báo cáo ngẫu nhiên cố định hạt giống "
+   },
+   "AC-INV-10": {
+    "status": "FAIL",
+    "test": "test_inv#test_ac_inv_10_depth_bien_4_va_8_hop_le"
+   },
+   "AC-INV-11": {
+    "status": "PASS",
+    "test": "inv.test.ts#inv > AC-INV-11: mọi kết quả Daily đã lưu đều có đường ghép hợp lệ với graph của version đó và số bước lưu ≥ số bước của đường"
+   },
+   "AC-INV-12": {
+    "status": "FAIL",
+    "test": "test_inv#test_ac_inv_12_vuot_nguong_van_dang_nhung_bao_cao_canh_bao"
+   }
+  }
+ },
+ "green": {
+  "ts": "2026-10-20T11:18:53+00:00",
+  "commit": "40dd230",
+  "results": {
+   "AC-INV-01": {
+    "status": "PASS",
+    "test": "test_inv#test_ac_inv_01_doi_xung_tren_bo_vang[classic]"
+   },
+   "AC-INV-02": {
+    "status": "PASS",
+    "test": "test_inv#test_ac_inv_02_moi_cap_toi_da_mot_cong_thuc[classic]"
+   },
+   "AC-INV-03": {
+    "status": "PASS",
+    "test": "test_inv#test_ac_inv_03_moi_phan_tu_toi_duoc_va_depth_bang_bfs[classic]"
+   },
+   "AC-INV-04": {
+    "status": "PASS",
+    "test": "test_inv#test_ac_inv_04_graph_bo_vang_khong_lo_va_khong_giai_ma_duoc_khi_thieu_dau_vao[classic]"
+   },
+   "AC-INV-05": {
+    "status": "PASS",
+    "test": "test_inv#test_ac_inv_05_run_batch_hai_lan_giong_het_byte[classic]"
+   },
+   "AC-INV-06": {
+    "status": "PASS",
+    "test": "test_inv#test_ac_inv_06_loi_o_tung_buoc_khong_doi_ban_dang_chay[state]"
+   },
+   "AC-INV-07": {
+    "status": "PASS",
+    "test": "test_inv#test_ac_inv_07_khong_phan_tu_hoat_dong_nao_khop_danh_muc_cam[classic]"
+   },
+   "AC-INV-08": {
+    "status": "PASS",
+    "test": "disc.test.ts#disc > AC-INV-08: ~200 bộ ba "
+   },
+   "AC-INV-09": {
+    "status": "PASS",
+    "test": "report.test.ts#report > AC-INV-09: chuỗi báo cáo ngẫu nhiên cố định hạt giống "
+   },
+   "AC-INV-10": {
+    "status": "PASS",
+    "test": "test_inv#test_ac_inv_10_mon_dac_biet_hop_le_tren_manifest_da_xuat[classic]"
+   },
+   "AC-INV-11": {
+    "status": "PASS",
+    "test": "inv.test.ts#inv > AC-INV-11: mọi kết quả Daily đã lưu đều có đường ghép hợp lệ với graph của version đó và số bước lưu ≥ số bước của đường"
+   },
+   "AC-INV-12": {
+    "status": "PASS",
+    "test": "test_inv#test_ac_inv_12_choi_ngau_nhien_loi_trong_nguong"
+   }
+  }
+ }
+}

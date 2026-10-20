@@ -1,0 +1,1332 @@
+{
+ "starters": [
+  "Gạo Nếp",
+  "Muối Tiêu",
+  "Lửa Than",
+  "Nước Mắm"
+ ],
+ "elements": [
+  {
+   "name": "Gạo Nếp",
+   "emoji": "🍚",
+   "origin": "V",
+   "depth": 0,
+   "image_hint": "hình minh họa số 0"
+  },
+  {
+   "name": "Muối Tiêu",
+   "emoji": "🧂",
+   "origin": "Q",
+   "depth": 0,
+   "image_hint": "hình minh họa số 1"
+  },
+  {
+   "name": "Lửa Than",
+   "emoji": "🔥",
+   "origin": "V",
+   "depth": 0,
+   "image_hint": "hình minh họa số 2"
+  },
+  {
+   "name": "Nước Mắm",
+   "emoji": "🍶",
+   "origin": "Q",
+   "depth": 0,
+   "image_hint": "hình minh họa số 3"
+  },
+  {
+   "name": "Giòn Bánh",
+   "emoji": "🐀",
+   "origin": "V",
+   "depth": 1,
+   "image_hint": "hình minh họa số 4"
+  },
+  {
+   "name": "Ngọt Bánh",
+   "emoji": "🐁",
+   "origin": "Q",
+   "depth": 2,
+   "image_hint": "hình minh họa số 5"
+  },
+  {
+   "name": "Béo Bánh",
+   "emoji": "🐂",
+   "origin": "V",
+   "depth": 3,
+   "image_hint": "hình minh họa số 6"
+  },
+  {
+   "name": "Chua Bánh",
+   "emoji": "🐃",
+   "origin": "Q",
+   "depth": 4,
+   "image_hint": "hình minh họa số 7"
+  },
+  {
+   "name": "Mặn Bánh",
+   "emoji": "🐄",
+   "origin": "V",
+   "depth": 5,
+   "image_hint": "hình minh họa số 8"
+  },
+  {
+   "name": "Thơm Bánh",
+   "emoji": "🐅",
+   "origin": "Q",
+   "depth": 6,
+   "image_hint": "hình minh họa số 9"
+  },
+  {
+   "name": "Nóng Bánh",
+   "emoji": "🐆",
+   "origin": "V",
+   "depth": 7,
+   "image_hint": "hình minh họa số 10"
+  },
+  {
+   "name": "Lạnh Bánh",
+   "emoji": "🐇",
+   "origin": "Q",
+   "depth": 8,
+   "image_hint": "hình minh họa số 11"
+  },
+  {
+   "name": "Dai Bánh",
+   "emoji": "🐈",
+   "origin": "V",
+   "depth": 2,
+   "image_hint": "hình minh họa số 12"
+  },
+  {
+   "name": "Mềm Bánh",
+   "emoji": "🐉",
+   "origin": "Q",
+   "depth": 1,
+   "image_hint": "hình minh họa số 13"
+  },
+  {
+   "name": "Đậm Bánh",
+   "emoji": "🐊",
+   "origin": "V",
+   "depth": 3,
+   "image_hint": "hình minh họa số 14"
+  },
+  {
+   "name": "Nhạt Bánh",
+   "emoji": "🐋",
+   "origin": "Q",
+   "depth": 4,
+   "image_hint": "hình minh họa số 15"
+  },
+  {
+   "name": "Giòn Chè",
+   "emoji": "🐌",
+   "origin": "V",
+   "depth": 7,
+   "image_hint": "hình minh họa số 16"
+  },
+  {
+   "name": "Ngọt Chè",
+   "emoji": "🐍",
+   "origin": "Q",
+   "depth": 3,
+   "image_hint": "hình minh họa số 17"
+  },
+  {
+   "name": "Béo Chè",
+   "emoji": "🐎",
+   "origin": "V",
+   "depth": 2,
+   "image_hint": "hình minh họa số 18"
+  },
+  {
+   "name": "Chua Chè",
+   "emoji": "🐏",
+   "origin": "Q",
+   "depth": 6,
+   "image_hint": "hình minh họa số 19"
+  },
+  {
+   "name": "Mặn Chè",
+   "emoji": "🐐",
+   "origin": "V",
+   "depth": 5,
+   "image_hint": "hình minh họa số 20"
+  },
+  {
+   "name": "Thơm Chè",
+   "emoji": "🐑",
+   "origin": "Q",
+   "depth": 5,
+   "image_hint": "hình minh họa số 21"
+  },
+  {
+   "name": "Nóng Chè",
+   "emoji": "🐒",
+   "origin": "V",
+   "depth": 4,
+   "image_hint": "hình minh họa số 22"
+  },
+  {
+   "name": "Lạnh Chè",
+   "emoji": "🐓",
+   "origin": "Q",
+   "depth": 4,
+   "image_hint": "hình minh họa số 23"
+  },
+  {
+   "name": "Dai Chè",
+   "emoji": "🐔",
+   "origin": "V",
+   "depth": 8,
+   "image_hint": "hình minh họa số 24"
+  },
+  {
+   "name": "Mềm Chè",
+   "emoji": "🐕",
+   "origin": "Q",
+   "depth": 4,
+   "image_hint": "hình minh họa số 25"
+  },
+  {
+   "name": "Đậm Chè",
+   "emoji": "🐖",
+   "origin": "V",
+   "depth": 3,
+   "image_hint": "hình minh họa số 26"
+  },
+  {
+   "name": "Nhạt Chè",
+   "emoji": "🐗",
+   "origin": "Q",
+   "depth": 8,
+   "image_hint": "hình minh họa số 27"
+  },
+  {
+   "name": "Giòn Phở",
+   "emoji": "🐘",
+   "origin": "V",
+   "depth": 8,
+   "image_hint": "hình minh họa số 28"
+  },
+  {
+   "name": "Ngọt Phở",
+   "emoji": "🐙",
+   "origin": "Q",
+   "depth": 5,
+   "image_hint": "hình minh họa số 29"
+  },
+  {
+   "name": "Béo Phở",
+   "emoji": "🐚",
+   "origin": "V",
+   "depth": 9,
+   "image_hint": "hình minh họa số 30"
+  },
+  {
+   "name": "Chua Phở",
+   "emoji": "🐛",
+   "origin": "Q",
+   "depth": 6,
+   "image_hint": "hình minh họa số 31"
+  },
+  {
+   "name": "Mặn Phở",
+   "emoji": "🐜",
+   "origin": "V",
+   "depth": 8,
+   "image_hint": "hình minh họa số 32"
+  },
+  {
+   "name": "Thơm Phở",
+   "emoji": "🐝",
+   "origin": "Q",
+   "depth": 3,
+   "image_hint": "hình minh họa số 33"
+  },
+  {
+   "name": "Nóng Phở",
+   "emoji": "🐞",
+   "origin": "V",
+   "depth": 4,
+   "image_hint": "hình minh họa số 34"
+  },
+  {
+   "name": "Lạnh Phở",
+   "emoji": "🐟",
+   "origin": "Q",
+   "depth": 6,
+   "image_hint": "hình minh họa số 35"
+  },
+  {
+   "name": "Dai Phở",
+   "emoji": "🐠",
+   "origin": "V",
+   "depth": 6,
+   "image_hint": "hình minh họa số 36"
+  },
+  {
+   "name": "Mềm Phở",
+   "emoji": "🐡",
+   "origin": "Q",
+   "depth": 5,
+   "image_hint": "hình minh họa số 37"
+  },
+  {
+   "name": "Đậm Phở",
+   "emoji": "🐢",
+   "origin": "V",
+   "depth": 7,
+   "image_hint": "hình minh họa số 38"
+  },
+  {
+   "name": "Nhạt Phở",
+   "emoji": "🐣",
+   "origin": "Q",
+   "depth": 7,
+   "image_hint": "hình minh họa số 39"
+  },
+  {
+   "name": "Giòn Bún",
+   "emoji": "🐤",
+   "origin": "V",
+   "depth": 7,
+   "image_hint": "hình minh họa số 40"
+  },
+  {
+   "name": "Ngọt Bún",
+   "emoji": "🐥",
+   "origin": "Q",
+   "depth": 6,
+   "image_hint": "hình minh họa số 41"
+  },
+  {
+   "name": "Béo Bún",
+   "emoji": "🐦",
+   "origin": "V",
+   "depth": 5,
+   "image_hint": "hình minh họa số 42"
+  },
+  {
+   "name": "Chua Bún",
+   "emoji": "🐧",
+   "origin": "Q",
+   "depth": 4,
+   "image_hint": "hình minh họa số 43"
+  },
+  {
+   "name": "Mặn Bún",
+   "emoji": "🐨",
+   "origin": "V",
+   "depth": 6,
+   "image_hint": "hình minh họa số 44"
+  },
+  {
+   "name": "Thơm Bún",
+   "emoji": "🐩",
+   "origin": "Q",
+   "depth": 5,
+   "image_hint": "hình minh họa số 45"
+  },
+  {
+   "name": "Nóng Bún",
+   "emoji": "🐪",
+   "origin": "V",
+   "depth": 4,
+   "image_hint": "hình minh họa số 46"
+  },
+  {
+   "name": "Lạnh Bún",
+   "emoji": "🐫",
+   "origin": "Q",
+   "depth": 6,
+   "image_hint": "hình minh họa số 47"
+  },
+  {
+   "name": "Dai Bún",
+   "emoji": "🐬",
+   "origin": "V",
+   "depth": 6,
+   "image_hint": "hình minh họa số 48"
+  },
+  {
+   "name": "Mềm Bún",
+   "emoji": "🐭",
+   "origin": "Q",
+   "depth": 6,
+   "image_hint": "hình minh họa số 49"
+  },
+  {
+   "name": "Đậm Bún",
+   "emoji": "🐮",
+   "origin": "V",
+   "depth": 6,
+   "image_hint": "hình minh họa số 50"
+  },
+  {
+   "name": "Nhạt Bún",
+   "emoji": "🐯",
+   "origin": "Q",
+   "depth": 5,
+   "image_hint": "hình minh họa số 51"
+  },
+  {
+   "name": "Giòn Xôi",
+   "emoji": "🐰",
+   "origin": "V",
+   "depth": 7,
+   "image_hint": "hình minh họa số 52"
+  },
+  {
+   "name": "Ngọt Xôi",
+   "emoji": "🐱",
+   "origin": "Q",
+   "depth": 8,
+   "image_hint": "hình minh họa số 53"
+  },
+  {
+   "name": "Béo Xôi",
+   "emoji": "🐲",
+   "origin": "V",
+   "depth": 6,
+   "image_hint": "hình minh họa số 54"
+  },
+  {
+   "name": "Chua Xôi",
+   "emoji": "🐳",
+   "origin": "Q",
+   "depth": 6,
+   "image_hint": "hình minh họa số 55"
+  },
+  {
+   "name": "Mặn Xôi",
+   "emoji": "🐴",
+   "origin": "V",
+   "depth": 7,
+   "image_hint": "hình minh họa số 56"
+  },
+  {
+   "name": "Thơm Xôi",
+   "emoji": "🐵",
+   "origin": "Q",
+   "depth": 2,
+   "image_hint": "hình minh họa số 57"
+  },
+  {
+   "name": "Nóng Xôi",
+   "emoji": "🐶",
+   "origin": "V",
+   "depth": 6,
+   "image_hint": "hình minh họa số 58"
+  },
+  {
+   "name": "Lạnh Xôi",
+   "emoji": "🐷",
+   "origin": "Q",
+   "depth": 7,
+   "image_hint": "hình minh họa số 59"
+  },
+  {
+   "name": "Dai Xôi",
+   "emoji": "🐸",
+   "origin": "V",
+   "depth": 7,
+   "image_hint": "hình minh họa số 60"
+  },
+  {
+   "name": "Mềm Xôi",
+   "emoji": "🐹",
+   "origin": "Q",
+   "depth": 8,
+   "image_hint": "hình minh họa số 61"
+  },
+  {
+   "name": "Đậm Xôi",
+   "emoji": "🐺",
+   "origin": "V",
+   "depth": 8,
+   "image_hint": "hình minh họa số 62"
+  },
+  {
+   "name": "Nhạt Xôi",
+   "emoji": "🐻",
+   "origin": "Q",
+   "depth": 7,
+   "image_hint": "hình minh họa số 63"
+  }
+ ],
+ "recipes": [
+  {
+   "a": "Gạo Nếp",
+   "b": "Muối Tiêu",
+   "result": "Giòn Bánh",
+   "best": false
+  },
+  {
+   "a": "Giòn Bánh",
+   "b": "Nước Mắm",
+   "result": "Ngọt Bánh",
+   "best": false
+  },
+  {
+   "a": "Ngọt Bánh",
+   "b": "Lửa Than",
+   "result": "Béo Bánh",
+   "best": false
+  },
+  {
+   "a": "Béo Bánh",
+   "b": "Muối Tiêu",
+   "result": "Chua Bánh",
+   "best": false
+  },
+  {
+   "a": "Chua Bánh",
+   "b": "Lửa Than",
+   "result": "Mặn Bánh",
+   "best": false
+  },
+  {
+   "a": "Mặn Bánh",
+   "b": "Lửa Than",
+   "result": "Thơm Bánh",
+   "best": false
+  },
+  {
+   "a": "Thơm Bánh",
+   "b": "Nước Mắm",
+   "result": "Nóng Bánh",
+   "best": false
+  },
+  {
+   "a": "Nóng Bánh",
+   "b": "Gạo Nếp",
+   "result": "Lạnh Bánh",
+   "best": false
+  },
+  {
+   "a": "Béo Bánh",
+   "b": "Chua Bánh",
+   "result": "Dai Bánh",
+   "best": false
+  },
+  {
+   "a": "Nước Mắm",
+   "b": "Lửa Than",
+   "result": "Mềm Bánh",
+   "best": false
+  },
+  {
+   "a": "Dai Bánh",
+   "b": "Ngọt Bánh",
+   "result": "Đậm Bánh",
+   "best": false
+  },
+  {
+   "a": "Béo Bánh",
+   "b": "Béo Bánh",
+   "result": "Nhạt Bánh",
+   "best": false
+  },
+  {
+   "a": "Lạnh Bánh",
+   "b": "Đậm Bánh",
+   "result": "Giòn Chè",
+   "best": false
+  },
+  {
+   "a": "Nước Mắm",
+   "b": "Dai Bánh",
+   "result": "Ngọt Chè",
+   "best": false
+  },
+  {
+   "a": "Gạo Nếp",
+   "b": "Chua Bánh",
+   "result": "Béo Chè",
+   "best": false
+  },
+  {
+   "a": "Ngọt Chè",
+   "b": "Mặn Bánh",
+   "result": "Chua Chè",
+   "best": false
+  },
+  {
+   "a": "Gạo Nếp",
+   "b": "Chua Chè",
+   "result": "Mặn Chè",
+   "best": false
+  },
+  {
+   "a": "Chua Chè",
+   "b": "Muối Tiêu",
+   "result": "Thơm Chè",
+   "best": false
+  },
+  {
+   "a": "Gạo Nếp",
+   "b": "Béo Bánh",
+   "result": "Nóng Chè",
+   "best": false
+  },
+  {
+   "a": "Béo Bánh",
+   "b": "Đậm Bánh",
+   "result": "Lạnh Chè",
+   "best": false
+  },
+  {
+   "a": "Thơm Bánh",
+   "b": "Giòn Chè",
+   "result": "Dai Chè",
+   "best": false
+  },
+  {
+   "a": "Giòn Bánh",
+   "b": "Ngọt Chè",
+   "result": "Mềm Chè",
+   "best": false
+  },
+  {
+   "a": "Gạo Nếp",
+   "b": "Ngọt Bánh",
+   "result": "Đậm Chè",
+   "best": false
+  },
+  {
+   "a": "Thơm Chè",
+   "b": "Dai Chè",
+   "result": "Nhạt Chè",
+   "best": false
+  },
+  {
+   "a": "Dai Bánh",
+   "b": "Nóng Bánh",
+   "result": "Giòn Phở",
+   "best": false
+  },
+  {
+   "a": "Giòn Phở",
+   "b": "Gạo Nếp",
+   "result": "Ngọt Phở",
+   "best": false
+  },
+  {
+   "a": "Ngọt Bánh",
+   "b": "Dai Chè",
+   "result": "Béo Phở",
+   "best": false
+  },
+  {
+   "a": "Ngọt Phở",
+   "b": "Lửa Than",
+   "result": "Chua Phở",
+   "best": false
+  },
+  {
+   "a": "Muối Tiêu",
+   "b": "Béo Phở",
+   "result": "Mặn Phở",
+   "best": false
+  },
+  {
+   "a": "Béo Chè",
+   "b": "Muối Tiêu",
+   "result": "Thơm Phở",
+   "best": false
+  },
+  {
+   "a": "Thơm Phở",
+   "b": "Muối Tiêu",
+   "result": "Nóng Phở",
+   "best": false
+  },
+  {
+   "a": "Thơm Chè",
+   "b": "Mềm Bánh",
+   "result": "Lạnh Phở",
+   "best": false
+  },
+  {
+   "a": "Mặn Chè",
+   "b": "Đậm Bánh",
+   "result": "Dai Phở",
+   "best": false
+  },
+  {
+   "a": "Gạo Nếp",
+   "b": "Mặn Bánh",
+   "result": "Mềm Phở",
+   "best": false
+  },
+  {
+   "a": "Giòn Phở",
+   "b": "Giòn Bánh",
+   "result": "Đậm Phở",
+   "best": false
+  },
+  {
+   "a": "Lạnh Phở",
+   "b": "Mặn Bánh",
+   "result": "Nhạt Phở",
+   "best": false
+  },
+  {
+   "a": "Nước Mắm",
+   "b": "Lạnh Phở",
+   "result": "Giòn Bún",
+   "best": false
+  },
+  {
+   "a": "Mềm Phở",
+   "b": "Đậm Chè",
+   "result": "Ngọt Bún",
+   "best": false
+  },
+  {
+   "a": "Lạnh Bánh",
+   "b": "Béo Chè",
+   "result": "Béo Bún",
+   "best": false
+  },
+  {
+   "a": "Ngọt Chè",
+   "b": "Nước Mắm",
+   "result": "Chua Bún",
+   "best": false
+  },
+  {
+   "a": "Béo Bún",
+   "b": "Nóng Phở",
+   "result": "Mặn Bún",
+   "best": false
+  },
+  {
+   "a": "Gạo Nếp",
+   "b": "Chua Bún",
+   "result": "Thơm Bún",
+   "best": false
+  },
+  {
+   "a": "Mặn Bún",
+   "b": "Đậm Phở",
+   "result": "Nóng Bún",
+   "best": false
+  },
+  {
+   "a": "Ngọt Phở",
+   "b": "Giòn Bánh",
+   "result": "Lạnh Bún",
+   "best": false
+  },
+  {
+   "a": "Muối Tiêu",
+   "b": "Mặn Bánh",
+   "result": "Dai Bún",
+   "best": false
+  },
+  {
+   "a": "Béo Phở",
+   "b": "Nhạt Bánh",
+   "result": "Mềm Bún",
+   "best": false
+  },
+  {
+   "a": "Thơm Phở",
+   "b": "Thơm Chè",
+   "result": "Đậm Bún",
+   "best": false
+  },
+  {
+   "a": "Nhạt Bánh",
+   "b": "Giòn Bánh",
+   "result": "Nhạt Bún",
+   "best": false
+  },
+  {
+   "a": "Nước Mắm",
+   "b": "Đậm Phở",
+   "result": "Giòn Xôi",
+   "best": false
+  },
+  {
+   "a": "Thơm Chè",
+   "b": "Giòn Chè",
+   "result": "Ngọt Xôi",
+   "best": false
+  },
+  {
+   "a": "Thơm Bún",
+   "b": "Thơm Bún",
+   "result": "Béo Xôi",
+   "best": false
+  },
+  {
+   "a": "Nhạt Bún",
+   "b": "Thơm Bún",
+   "result": "Chua Xôi",
+   "best": false
+  },
+  {
+   "a": "Lửa Than",
+   "b": "Đậm Bún",
+   "result": "Mặn Xôi",
+   "best": false
+  },
+  {
+   "a": "Đậm Chè",
+   "b": "Nóng Phở",
+   "result": "Thơm Xôi",
+   "best": false
+  },
+  {
+   "a": "Giòn Xôi",
+   "b": "Thơm Phở",
+   "result": "Nóng Xôi",
+   "best": false
+  },
+  {
+   "a": "Nóng Xôi",
+   "b": "Thơm Phở",
+   "result": "Lạnh Xôi",
+   "best": false
+  },
+  {
+   "a": "Ngọt Bún",
+   "b": "Ngọt Phở",
+   "result": "Dai Xôi",
+   "best": false
+  },
+  {
+   "a": "Béo Phở",
+   "b": "Chua Chè",
+   "result": "Mềm Xôi",
+   "best": false
+  },
+  {
+   "a": "Lạnh Xôi",
+   "b": "Dai Xôi",
+   "result": "Đậm Xôi",
+   "best": false
+  },
+  {
+   "a": "Lạnh Phở",
+   "b": "Chua Bánh",
+   "result": "Nhạt Xôi",
+   "best": false
+  },
+  {
+   "a": "Đậm Phở",
+   "b": "Mềm Chè",
+   "result": "Mặn Phở",
+   "best": false
+  },
+  {
+   "a": "Mềm Xôi",
+   "b": "Mềm Phở",
+   "result": "Ngọt Chè",
+   "best": false
+  },
+  {
+   "a": "Ngọt Bánh",
+   "b": "Mặn Bánh",
+   "result": "Lạnh Bún",
+   "best": false
+  },
+  {
+   "a": "Mặn Bánh",
+   "b": "Giòn Xôi",
+   "result": "Lạnh Bún",
+   "best": false
+  },
+  {
+   "a": "Béo Phở",
+   "b": "Giòn Bún",
+   "result": "Chua Chè",
+   "best": false
+  },
+  {
+   "a": "Mặn Bánh",
+   "b": "Lạnh Xôi",
+   "result": "Giòn Chè",
+   "best": false
+  },
+  {
+   "a": "Thơm Xôi",
+   "b": "Thơm Phở",
+   "result": "Đậm Chè",
+   "best": false
+  },
+  {
+   "a": "Thơm Bánh",
+   "b": "Chua Phở",
+   "result": "Ngọt Phở",
+   "best": false
+  },
+  {
+   "a": "Giòn Bánh",
+   "b": "Gạo Nếp",
+   "result": "Thơm Xôi",
+   "best": false
+  },
+  {
+   "a": "Béo Bánh",
+   "b": "Mềm Xôi",
+   "result": "Đậm Phở",
+   "best": false
+  },
+  {
+   "a": "Đậm Bánh",
+   "b": "Thơm Bún",
+   "result": "Lạnh Bún",
+   "best": false
+  },
+  {
+   "a": "Dai Bún",
+   "b": "Lạnh Bánh",
+   "result": "Nhạt Bánh",
+   "best": false
+  },
+  {
+   "a": "Chua Bún",
+   "b": "Chua Chè",
+   "result": "Giòn Chè",
+   "best": false
+  },
+  {
+   "a": "Béo Xôi",
+   "b": "Chua Bánh",
+   "result": "Đậm Bún",
+   "best": false
+  },
+  {
+   "a": "Dai Xôi",
+   "b": "Nóng Bánh",
+   "result": "Mềm Chè",
+   "best": false
+  },
+  {
+   "a": "Ngọt Phở",
+   "b": "Ngọt Xôi",
+   "result": "Lạnh Xôi",
+   "best": false
+  },
+  {
+   "a": "Gạo Nếp",
+   "b": "Béo Bún",
+   "result": "Nóng Phở",
+   "best": false
+  },
+  {
+   "a": "Muối Tiêu",
+   "b": "Ngọt Phở",
+   "result": "Mềm Bún",
+   "best": false
+  },
+  {
+   "a": "Giòn Bánh",
+   "b": "Dai Bún",
+   "result": "Béo Xôi",
+   "best": false
+  },
+  {
+   "a": "Nhạt Phở",
+   "b": "Thơm Phở",
+   "result": "Chua Xôi",
+   "best": false
+  },
+  {
+   "a": "Nhạt Chè",
+   "b": "Béo Chè",
+   "result": "Nóng Bún",
+   "best": false
+  },
+  {
+   "a": "Mềm Bún",
+   "b": "Thơm Phở",
+   "result": "Giòn Xôi",
+   "best": false
+  },
+  {
+   "a": "Ngọt Chè",
+   "b": "Béo Bánh",
+   "result": "Béo Chè",
+   "best": false
+  },
+  {
+   "a": "Đậm Phở",
+   "b": "Thơm Bún",
+   "result": "Nhạt Chè",
+   "best": false
+  },
+  {
+   "a": "Nhạt Xôi",
+   "b": "Thơm Chè",
+   "result": "Chua Bún",
+   "best": false
+  },
+  {
+   "a": "Dai Phở",
+   "b": "Mềm Phở",
+   "result": "Mềm Bánh",
+   "best": false
+  },
+  {
+   "a": "Giòn Xôi",
+   "b": "Ngọt Bún",
+   "result": "Nhạt Xôi",
+   "best": false
+  },
+  {
+   "a": "Thơm Xôi",
+   "b": "Chua Bánh",
+   "result": "Ngọt Phở",
+   "best": false
+  },
+  {
+   "a": "Gạo Nếp",
+   "b": "Mềm Bánh",
+   "result": "Béo Chè",
+   "best": false
+  },
+  {
+   "a": "Dai Bún",
+   "b": "Nước Mắm",
+   "result": "Giòn Bún",
+   "best": false
+  },
+  {
+   "a": "Đậm Bún",
+   "b": "Thơm Chè",
+   "result": "Lạnh Xôi",
+   "best": false
+  },
+  {
+   "a": "Nhạt Phở",
+   "b": "Chua Phở",
+   "result": "Thơm Bún",
+   "best": false
+  },
+  {
+   "a": "Thơm Xôi",
+   "b": "Đậm Xôi",
+   "result": "Mềm Chè",
+   "best": false
+  },
+  {
+   "a": "Dai Xôi",
+   "b": "Chua Bún",
+   "result": "Béo Xôi",
+   "best": false
+  },
+  {
+   "a": "Nóng Bánh",
+   "b": "Nóng Bún",
+   "result": "Mềm Xôi",
+   "best": false
+  },
+  {
+   "a": "Dai Xôi",
+   "b": "Giòn Bún",
+   "result": "Thơm Xôi",
+   "best": false
+  },
+  {
+   "a": "Nhạt Phở",
+   "b": "Mềm Bún",
+   "result": "Béo Xôi",
+   "best": false
+  },
+  {
+   "a": "Nhạt Xôi",
+   "b": "Gạo Nếp",
+   "result": "Giòn Phở",
+   "best": false
+  },
+  {
+   "a": "Mềm Bánh",
+   "b": "Muối Tiêu",
+   "result": "Dai Bánh",
+   "best": false
+  },
+  {
+   "a": "Ngọt Chè",
+   "b": "Dai Bánh",
+   "result": "Nóng Bún",
+   "best": false
+  },
+  {
+   "a": "Giòn Bánh",
+   "b": "Lạnh Chè",
+   "result": "Béo Bún",
+   "best": false
+  },
+  {
+   "a": "Chua Bún",
+   "b": "Muối Tiêu",
+   "result": "Mềm Phở",
+   "best": false
+  },
+  {
+   "a": "Mềm Bún",
+   "b": "Chua Bún",
+   "result": "Mặn Xôi",
+   "best": false
+  },
+  {
+   "a": "Lạnh Bún",
+   "b": "Mặn Bánh",
+   "result": "Đậm Bánh",
+   "best": false
+  },
+  {
+   "a": "Béo Bún",
+   "b": "Lửa Than",
+   "result": "Nóng Xôi",
+   "best": false
+  },
+  {
+   "a": "Ngọt Phở",
+   "b": "Nóng Xôi",
+   "result": "Mặn Chè",
+   "best": false
+  },
+  {
+   "a": "Đậm Bánh",
+   "b": "Mặn Phở",
+   "result": "Mềm Phở",
+   "best": false
+  },
+  {
+   "a": "Muối Tiêu",
+   "b": "Chua Xôi",
+   "result": "Giòn Chè",
+   "best": false
+  },
+  {
+   "a": "Mềm Chè",
+   "b": "Muối Tiêu",
+   "result": "Nhạt Bánh",
+   "best": false
+  },
+  {
+   "a": "Béo Phở",
+   "b": "Thơm Bánh",
+   "result": "Nóng Bún",
+   "best": false
+  },
+  {
+   "a": "Lạnh Bánh",
+   "b": "Đậm Xôi",
+   "result": "Lạnh Phở",
+   "best": false
+  },
+  {
+   "a": "Nhạt Phở",
+   "b": "Mềm Chè",
+   "result": "Dai Chè",
+   "best": false
+  },
+  {
+   "a": "Giòn Bánh",
+   "b": "Ngọt Bún",
+   "result": "Dai Xôi",
+   "best": false
+  },
+  {
+   "a": "Ngọt Bánh",
+   "b": "Lạnh Chè",
+   "result": "Thơm Chè",
+   "best": false
+  },
+  {
+   "a": "Ngọt Phở",
+   "b": "Dai Bún",
+   "result": "Đậm Phở",
+   "best": false
+  },
+  {
+   "a": "Mềm Xôi",
+   "b": "Nóng Chè",
+   "result": "Nhạt Phở",
+   "best": false
+  },
+  {
+   "a": "Béo Xôi",
+   "b": "Dai Phở",
+   "result": "Chua Phở",
+   "best": false
+  },
+  {
+   "a": "Nhạt Bánh",
+   "b": "Nước Mắm",
+   "result": "Mặn Chè",
+   "best": false
+  },
+  {
+   "a": "Đậm Bánh",
+   "b": "Thơm Chè",
+   "result": "Béo Bún",
+   "best": false
+  },
+  {
+   "a": "Dai Bún",
+   "b": "Ngọt Xôi",
+   "result": "Nhạt Phở",
+   "best": false
+  }
+ ],
+ "miss_lines": [
+  "Nồi trào số 0, hai món này không ăn chung được.",
+  "Nồi trào số 1, hai món này không ăn chung được.",
+  "Nồi trào số 2, hai món này không ăn chung được.",
+  "Nồi trào số 3, hai món này không ăn chung được.",
+  "Nồi trào số 4, hai món này không ăn chung được.",
+  "Nồi trào số 5, hai món này không ăn chung được.",
+  "Nồi trào số 6, hai món này không ăn chung được.",
+  "Nồi trào số 7, hai món này không ăn chung được.",
+  "Nồi trào số 8, hai món này không ăn chung được.",
+  "Nồi trào số 9, hai món này không ăn chung được.",
+  "Nồi trào số 10, hai món này không ăn chung được.",
+  "Nồi trào số 11, hai món này không ăn chung được.",
+  "Nồi trào số 12, hai món này không ăn chung được.",
+  "Nồi trào số 13, hai món này không ăn chung được.",
+  "Nồi trào số 14, hai món này không ăn chung được.",
+  "Nồi trào số 15, hai món này không ăn chung được.",
+  "Nồi trào số 16, hai món này không ăn chung được.",
+  "Nồi trào số 17, hai món này không ăn chung được.",
+  "Nồi trào số 18, hai món này không ăn chung được.",
+  "Nồi trào số 19, hai món này không ăn chung được.",
+  "Nồi trào số 20, hai món này không ăn chung được.",
+  "Nồi trào số 21, hai món này không ăn chung được.",
+  "Nồi trào số 22, hai món này không ăn chung được.",
+  "Nồi trào số 23, hai món này không ăn chung được.",
+  "Nồi trào số 24, hai món này không ăn chung được.",
+  "Nồi trào số 25, hai món này không ăn chung được.",
+  "Nồi trào số 26, hai món này không ăn chung được.",
+  "Nồi trào số 27, hai món này không ăn chung được.",
+  "Nồi trào số 28, hai món này không ăn chung được.",
+  "Nồi trào số 29, hai món này không ăn chung được.",
+  "Nồi trào số 30, hai món này không ăn chung được.",
+  "Nồi trào số 31, hai món này không ăn chung được.",
+  "Nồi trào số 32, hai món này không ăn chung được.",
+  "Nồi trào số 33, hai món này không ăn chung được.",
+  "Nồi trào số 34, hai món này không ăn chung được.",
+  "Nồi trào số 35, hai món này không ăn chung được.",
+  "Nồi trào số 36, hai món này không ăn chung được.",
+  "Nồi trào số 37, hai món này không ăn chung được.",
+  "Nồi trào số 38, hai món này không ăn chung được.",
+  "Nồi trào số 39, hai món này không ăn chung được."
+ ],
+ "daily_examples": [
+  {
+   "target": "Chua Bánh",
+   "hint": "Món bí ẩn số 1 của bộ vàng",
+   "path": [
+    [
+     "Gạo Nếp",
+     "Muối Tiêu",
+     "Giòn Bánh"
+    ],
+    [
+     "Giòn Bánh",
+     "Nước Mắm",
+     "Ngọt Bánh"
+    ],
+    [
+     "Ngọt Bánh",
+     "Lửa Than",
+     "Béo Bánh"
+    ],
+    [
+     "Béo Bánh",
+     "Muối Tiêu",
+     "Chua Bánh"
+    ]
+   ]
+  },
+  {
+   "target": "Thơm Bánh",
+   "hint": "Món bí ẩn số 2 của bộ vàng",
+   "path": [
+    [
+     "Gạo Nếp",
+     "Muối Tiêu",
+     "Giòn Bánh"
+    ],
+    [
+     "Giòn Bánh",
+     "Nước Mắm",
+     "Ngọt Bánh"
+    ],
+    [
+     "Ngọt Bánh",
+     "Lửa Than",
+     "Béo Bánh"
+    ],
+    [
+     "Béo Bánh",
+     "Muối Tiêu",
+     "Chua Bánh"
+    ],
+    [
+     "Chua Bánh",
+     "Lửa Than",
+     "Mặn Bánh"
+    ],
+    [
+     "Mặn Bánh",
+     "Lửa Than",
+     "Thơm Bánh"
+    ]
+   ]
+  },
+  {
+   "target": "Lạnh Bánh",
+   "hint": "Món bí ẩn số 3 của bộ vàng",
+   "path": [
+    [
+     "Gạo Nếp",
+     "Muối Tiêu",
+     "Giòn Bánh"
+    ],
+    [
+     "Giòn Bánh",
+     "Nước Mắm",
+     "Ngọt Bánh"
+    ],
+    [
+     "Ngọt Bánh",
+     "Lửa Than",
+     "Béo Bánh"
+    ],
+    [
+     "Béo Bánh",
+     "Muối Tiêu",
+     "Chua Bánh"
+    ],
+    [
+     "Chua Bánh",
+     "Lửa Than",
+     "Mặn Bánh"
+    ],
+    [
+     "Mặn Bánh",
+     "Lửa Than",
+     "Thơm Bánh"
+    ],
+    [
+     "Thơm Bánh",
+     "Nước Mắm",
+     "Nóng Bánh"
+    ],
+    [
+     "Nóng Bánh",
+     "Gạo Nếp",
+     "Lạnh Bánh"
+    ]
+   ]
+  }
+ ]
+}

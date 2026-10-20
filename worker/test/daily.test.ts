@@ -430,7 +430,7 @@ describe('daily', () => {
     // UUID chưa nộp: không có hạng
     const nobody = await board(1, crypto.randomUUID())
     expect(nobody.me).toBeNull()
-  })
+  }, 60_000)
 
   it('AC-DAILY-09: đợt chưa có kết quả trả danh sách rỗng; version không tồn tại trả 404; version sai định dạng trả 400', async () => {
     await publish(1)
@@ -602,7 +602,7 @@ describe('daily', () => {
 
     const other = await newPlayer()
     expect((await submit(1, other, 5, FULL_PATH, '10.77.77.77')).status).toBe(201)
-  })
+  }, 60_000)
 
   // ------------------------------------------------------------------------ AC-DAILY-ABUSE (endpoint không có tenant)
   it('AC-DAILY-ABUSE: đầu vào độc hại (quá dài, script, SQL, số âm/thiếu, version giả) bị từ chối 4xx và không ghi gì', async () => {

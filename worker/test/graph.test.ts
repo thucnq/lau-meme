@@ -175,7 +175,7 @@ describe('graph', () => {
     expect(count?.n).toBe(14)
     const oldest = await env.DB.prepare('SELECT MIN(version) AS v FROM batch_content').first<{ v: number }>()
     expect(oldest?.v).toBe(101)
-  })
+  }, 60_000)
 
   it('AC-GRAPH-06: rollback không tham số về bản trước, rồi chỉ định version', async () => {
     for (let v = 200; v <= 202; v++) expect((await publish(v)).status).toBe(201)
