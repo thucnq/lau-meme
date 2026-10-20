@@ -458,3 +458,107 @@ describe('daily ui: bảng xếp hạng', () => {
     expect(leaderboardGets().every((g) => g.player === null)).toBe(true)
   })
 })
+
+// ================================================================ bổ sung: gửi lại, tự gửi sau tải lại, hạng của tôi, lỗi
+describe('daily ui: gửi lại, tự gửi, hạng của tôi, lỗi', () => {
+  it('AC-DAILY-06: giải xong khi chưa đồng ý thì không gửi; có nút "Gửi lại kết quả"; đồng ý rồi bấm thì POST và hiện hạng', async () => {
+    saveConsent(localStorage, 1, 'declined')
+    render(panel())
+    await openBoard()
+    await solve()
+    expect(await screen.findByText(/Cần đồng ý chính sách dữ liệu để gửi/)).toBeTruthy()
+    expect(resultPosts()).toEqual([])
+    const retry = await screen.findByRole('button', { name: 'Gửi lại kết quả' })
+    saveConsent(localStorage, 1, 'granted')
+    fireEvent.click(retry)
+    expect(await screen.findByText('Hạng #1 · Streak 1 ngày')).toBeTruthy()
+    expect(resultPosts()).toHaveLength(1)
+  })
+
+  it('AC-DAILY-06: POST lần đầu trả 500 thì hiện "Gửi lại kết quả"; bấm sẽ POST lại', async () => {
+    saveConsent(localStorage, 1, 'granted')
+    resultsReply = () => json({ type: 'about:blank', title: 'Lỗi', status: 500 }, 500)
+    render(panel())
+    await openBoard()
+    await solve()
+    const retry = await screen.findByRole('button', { name: 'Gửi lại kết quả' })
+    expect(resultPosts()).toHaveLength(1)
+    resultsReply = () => json({ ...STORED, rank: 2, streak: { current: 3, longest: 3 } }, 201)
+    fireEvent.click(retry)
+    expect(await screen.findByText('Hạng #2 · Streak 3 ngày')).toBeTruthy()
+    expect(resultPosts()).toHaveLength(2)
+  })
+
+  it('AC-DAILY-05: bàn đã giải nhưng chưa có kết quả; tải lại khi đã đồng ý thì tự POST đúng một lần, 409 hiện hạng đã lưu', async () => {
+    saveConsent(localStorage, 1, 'granted')
+    resultsReply = () => json({ type: 'about:blank', title: 'Lỗi', status: 500 }, 500)
+    const first = render(panel())
+    await openBoard()
+    await solve()
+    await screen.findByRole('button', { name: 'Gửi lại kết quả' })
+    expect(resultPosts()).toHaveLength(1)
+    first.unmount()
+
+    resultsReply = () => json({ type: 'about:blank', title: 'Đã nộp', status: 409, result: STORED }, 409)
+    const second = render(panel())
+    expect(await screen.findByText('Hạng #3 · Streak 2 ngày')).toBeTruthy()
+    expect(resultPosts()).toHaveLength(2)
+    await vi.advanceTimersByTimeAsync(2000)
+    expect(resultPosts()).toHaveLength(2)
+
+    second.unmount()
+    render(panel())
+    await screen.findByRole('region', { name: 'Bàn thử thách' })
+    await vi.advanceTimersByTimeAsync(2000)
+    expect(resultPosts().length).toBeLessThanOrEqual(3)
+  })
+
+  it('AC-DAILY-09: me ngoài top hiện thêm dòng "Bạn: #25 — 9 bước"', async () => {
+    leaderboardReply = () => json({ version: VERSION, rows: [{ rank: 1, nickname: 'A', value: 4 }], me: { rank: 25, nickname: 'Bếp Trưởng', value: 9 } })
+    render(panel())
+    fireEvent.click(screen.getByRole('button', { name: 'Bảng xếp hạng' }))
+    await screen.findByRole('list', { name: 'Bảng xếp hạng' })
+    expect(await screen.findByText('Bạn: #25 — 9 bước')).toBeTruthy()
+  })
+
+  it('AC-DAILY-09: me null hoặc hạng đã nằm trong rows thì không có dòng "Bạn:"', async () => {
+    leaderboardReply = () => json({ version: VERSION, rows: [{ rank: 1, nickname: 'A', value: 4 }], me: null })
+    const a = render(panel())
+    fireEvent.click(screen.getByRole('button', { name: 'Bảng xếp hạng' }))
+    await screen.findByRole('list', { name: 'Bảng xếp hạng' })
+    expect(screen.queryByText(/Bạn:/)).toBeNull()
+    a.unmount()
+
+    leaderboardReply = () =>
+      json({ version: VERSION, rows: [{ rank: 1, nickname: 'A', value: 4 }], me: { rank: 1, nickname: 'A', value: 4 } })
+    render(panel())
+    fireEvent.click(screen.getByRole('button', { name: 'Bảng xếp hạng' }))
+    await screen.findByRole('list', { name: 'Bảng xếp hạng' })
+    expect(screen.queryByText(/Bạn:/)).toBeNull()
+  })
+
+  it('AC-DAILY-09: GET bảng xếp hạng trả 500 thì hiện "Không tải được bảng xếp hạng"', async () => {
+    leaderboardReply = () => json({ type: 'about:blank', title: 'Lỗi', status: 500 }, 500)
+    render(panel())
+    fireEvent.click(screen.getByRole('button', { name: 'Bảng xếp hạng' }))
+    expect(await screen.findByText('Không tải được bảng xếp hạng')).toBeTruthy()
+  })
+
+  it('AC-DAILY-04: lookup bị từ chối thì hiện "Nồi trục trặc, thử lại nhé.", bộ đếm giữ nguyên và bàn vẫn dùng được', async () => {
+    let broken = true
+    const flaky = async (a: string, b: string): Promise<GraphResult | null> => {
+      if (broken) throw new Error('giải mã lỗi')
+      return lookup(a, b)
+    }
+    render(<DailyPanel manifest={manifestOf()} lookup={flaky} onDiscover={() => {}} storage={localStorage} />)
+    await openBoard()
+    fireEvent.click(el(NAMES.Cay!))
+    fireEvent.click(el(NAMES['Cười']!))
+    expect(await screen.findByText('Nồi trục trặc, thử lại nhé.')).toBeTruthy()
+    counter(0)
+    broken = false
+    stepsDone = 0
+    await mix('Cay', 'Cười')
+    expect(el(NAMES['Tới Công Chuyện']!)).toBeTruthy()
+  })
+})
