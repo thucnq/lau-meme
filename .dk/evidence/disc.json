@@ -1,0 +1,56 @@
+{
+ "red": {
+  "ts": "2026-10-20T05:11:43+00:00",
+  "commit": "3b2f509",
+  "results": {
+   "AC-DISC-01": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-DISC-02": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-DISC-03": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-DISC-04": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-DISC-05": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-DISC-06": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-DISC-07": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-DISC-08": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-DISC-09": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-DISC-10": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-DISC-11": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-DISC-12": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   }
+  }
+ }
+}
