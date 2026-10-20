@@ -57,9 +57,9 @@ async function api(req: Request, env: Env, ctx: ExecutionContext, rest: string):
     } catch (err) {
       if (err instanceof ResponseError) return err.response
       if (err instanceof HttpError) return problem(err.status, err.title, err.detail)
-      // never the body, IP, nickname or token; the player only as its mask (AC-PRIV-07)
+      // never the body, IP, nickname, token or a driver message (may quote SQL values); the player as its mask (AC-PRIV-07)
       const player = req.headers.get('X-Player-Id')
-      console.error('unhandled', player ? maskId(player) : '-', err instanceof Error ? err.message : 'unknown')
+      console.error('unhandled', player ? maskId(player) : '-', err instanceof Error ? err.name : 'unknown')
       return problem(500, 'Lỗi máy chủ')
     }
   }

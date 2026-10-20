@@ -31,3 +31,12 @@ export function canSend(storage: Storage | null, policyVersion: number): boolean
   const c = readConsent(storage)
   return c !== null && c.choice === 'granted' && c.version === policyVersion
 }
+
+/** After erasure the new player id starts without consent (AC-PRIV-05). */
+export function clearConsent(storage: Storage | null): void {
+  try {
+    storage?.removeItem(CONSENT_KEY)
+  } catch {
+    // storage blocked: nothing was stored either
+  }
+}

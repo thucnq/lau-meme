@@ -20,7 +20,8 @@ export function PolicyPage() {
       <ul>
         <li>
           <strong>UUID</strong> — mã ngẫu nhiên do trình duyệt của bạn tạo, chỉ gửi khi bạn bấm “Đồng ý”: để ghi khám
-          phá, kết quả Món đặc biệt, streak, báo cáo, phiếu Ngon/Nhạt và đo chỉ số. Không bao giờ hiện công khai.
+          phá, kết quả Món đặc biệt, streak, báo cáo, phiếu Ngon/Nhạt và đo chỉ số. Không bao giờ hiện công khai. Mã
+          này là chìa khóa dữ liệu của bạn: ai có nó thì xem và xóa được dữ liệu gắn với nó, nên đừng chia sẻ.
         </li>
         <li>
           <strong>Nickname</strong> (nếu bạn đặt và đồng ý riêng): hiện trên bảng xếp hạng và Công thức gia truyền.

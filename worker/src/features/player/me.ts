@@ -16,8 +16,11 @@ const NICKNAME = /^[\p{L}\p{M}\p{N} _-]+$/u
 const iso = (ms: number) => new Date(ms).toISOString()
 const rows = <T>(r: D1Result | undefined) => (r?.results ?? []) as T[]
 
-/** Runs the request's rate counters with `statements` in one D1 round trip; throws the 429 when over a limit. */
-async function limited(req: Request, env: Env, player: string, statements: D1PreparedStatement[]): Promise<D1Result[]> {
+/**
+ * Runs the request's rate counters with the read-only `statements` in one D1 round trip; throws the 429 when over
+ * a limit. Writes go in a later batch, so an over-limit request writes nothing but its counter (ADR 0004).
+ */
+async function limited(req: Request, env: Env, player: string, statements: D1PreparedStatement[] = []): Promise<D1Result[]> {
   const limit = await rateCounters(req, env, PLAYER_LIMIT, player)
   const results = await env.DB.batch([...limit.statements, ...statements])
   const over = limit.verdict(results)
@@ -33,13 +36,20 @@ export async function createConsent(req: Request, env: Env): Promise<Response> {
   const action = oneOf(b.action, 'action', ['grant', 'withdraw'] as const)
   const version = int(b.policy_version, 'policy_version', 1)
   if (version !== policyVersion(env)) fail('policy_version: không phải version chính sách hiện hành')
+  await limited(req, env, player)
   const now = Date.now()
-  await limited(req, env, player, [
+  const writes = [
     env.DB.prepare(
       `INSERT INTO consent (id, player_id, purpose, action, policy_version, ip_hash, channel, created_at)
        VALUES (?, ?, ?, ?, ?, ?, 'web', ?)`,
     ).bind(uuidv7(now), player, purpose, action, version, await ipHash(req, env), now),
-  ])
+  ]
+  // Withdrawing the display consent takes the nickname off every public list at once.
+  if (purpose === 'nickname' && action === 'withdraw')
+    writes.push(
+      env.DB.prepare('UPDATE player SET nickname = NULL, nickname_fold = NULL, updated_at = ? WHERE id = ?').bind(now, player),
+    )
+  await env.DB.batch(writes)
   return json({ purpose, action, policy_version: version, created_at: iso(now) }, { status: 201 })
 }
 
@@ -141,8 +151,9 @@ export async function getMyData(req: Request, env: Env): Promise<Response> {
 export async function deleteMyData(req: Request, env: Env): Promise<Response> {
   const player = playerId(req)
   const db = env.DB
+  await limited(req, env, player)
   const now = Date.now()
-  await limited(req, env, player, [
+  await db.batch([
     db.prepare('DELETE FROM player WHERE id = ?').bind(player),
     db.prepare('DELETE FROM daily_result WHERE player_id = ?').bind(player),
     db.prepare('DELETE FROM streak WHERE player_id = ?').bind(player),

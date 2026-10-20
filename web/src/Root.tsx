@@ -18,6 +18,7 @@ function Home() {
   const [storage] = useState(localStore)
   const [policyVersion, setPolicyVersion] = useState<number | null>(null)
   const [myDataOpen, setMyDataOpen] = useState(false)
+  const [bannerKey, setBannerKey] = useState(0) // remount = ask again (after erasure the new id has no consent)
 
   // The current policy version comes from the manifest; until it is known nothing can be sent (AC-PRIV-09).
   useEffect(() => {
@@ -32,8 +33,10 @@ function Home() {
   return (
     <>
       <Game />
-      {policyVersion !== null && <ConsentBanner policyVersion={policyVersion} storage={storage} />}
-      {myDataOpen && policyVersion !== null && <MyDataPanel policyVersion={policyVersion} storage={storage} />}
+      {policyVersion !== null && <ConsentBanner key={bannerKey} policyVersion={policyVersion} storage={storage} />}
+      {myDataOpen && policyVersion !== null && (
+        <MyDataPanel policyVersion={policyVersion} storage={storage} onErased={() => setBannerKey((k) => k + 1)} />
+      )}
       <nav className="site-links">
         <a href={withBase('chinh-sach')}>Chính sách quyền riêng tư</a>
         <button type="button" onClick={() => setMyDataOpen((open) => !open)} aria-expanded={myDataOpen}>

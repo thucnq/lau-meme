@@ -2,11 +2,11 @@ import { useEffect, useState } from 'react'
 import { deleteMyData, getMyData, grantConsent, withdrawConsent, type MyData } from './client'
 import { canSend } from './consent'
 
-type Props = { policyVersion: number; storage: Storage | null }
+type Props = { policyVersion: number; storage: Storage | null; onErased?: () => void }
 type Step = 'idle' | 'ask-erase' | 'confirm-erase' | 'erased'
 
 /** "Dữ liệu của tôi" (AC-PRIV-04/05/08): view, download, withdraw consent, erase. */
-export function MyDataPanel({ policyVersion, storage }: Props) {
+export function MyDataPanel({ policyVersion, storage, onErased }: Props) {
   const [data, setData] = useState<MyData | null>(null)
   const [granted, setGranted] = useState(() => canSend(storage, policyVersion))
   const [step, setStep] = useState<Step>('idle')
@@ -17,7 +17,11 @@ export function MyDataPanel({ policyVersion, storage }: Props) {
   useEffect(() => {
     let live = true
     getMyData(storage).then(
-      (d) => live && setData(d),
+      (d) => {
+        if (!live) return
+        setData(d)
+        setError(false)
+      },
       () => live && setError(true),
     )
     return () => {
@@ -113,7 +117,9 @@ export function MyDataPanel({ policyVersion, storage }: Props) {
             onClick={() =>
               run(deleteMyData(storage), () => {
                 setData(null)
+                setGranted(false)
                 setStep('erased')
+                onErased?.()
                 setReload((n) => n + 1)
               })
             }

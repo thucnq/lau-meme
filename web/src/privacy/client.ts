@@ -1,5 +1,5 @@
 import { withBase } from '../base'
-import { canSend, saveConsent } from './consent'
+import { canSend, clearConsent, saveConsent } from './consent'
 import { getPlayerId, resetPlayerId } from './player'
 
 /**
@@ -50,10 +50,11 @@ export async function getMyData(storage: Storage | null): Promise<MyData> {
   return (await res.json()) as MyData
 }
 
-/** AC-PRIV-05: erase on the server, then a new local id. */
+/** AC-PRIV-05: erase on the server, then a new local id that has not consented to anything. */
 export async function deleteMyData(storage: Storage | null): Promise<void> {
   const res = await send('api/me', { method: 'DELETE' }, storage)
   if (!res.ok) throw new Error(`HTTP ${res.status}`)
+  clearConsent(storage)
   resetPlayerId(storage)
 }
 
