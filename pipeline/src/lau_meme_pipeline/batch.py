@@ -153,6 +153,7 @@ def _render_report(
     failed_step: str | None,
     stats: Mapping,
     emoji: str | None,
+    banned_count: int | None = None,
 ) -> tuple[str, str]:
     """Title shows the dish's emoji only, never its name (AC-PIPE-14)."""
     status = "error" if failed_step else "success"
@@ -177,6 +178,13 @@ def _render_report(
         "- Lỗi nguồn: " + (", ".join(f"{e.get('source')}: lỗi {e.get('error')}" for e in errors) or "không có"),
         f"- quota: {stats.get('quota_used', 0)} lượt gọi Gemini",
         f"- Món đặc biệt: {emoji or '—'}",
+    ]
+    # Only the count: the words themselves are secret (ADR 0005).
+    if banned_count == 0:
+        lines.append("- ⚠️ BANNED_WORDS trống — bộ lọc nickname chưa có từ cấm (đặt GitHub Secret, xem runbook)")
+    elif banned_count is not None:
+        lines.append(f"- Từ cấm nickname: {banned_count} từ đã đồng bộ")
+    lines += [
         "- METRIC: chưa có số liệu (tính năng METRIC chưa làm)",
     ]
     return title, "\n".join(lines) + "\n"
@@ -201,6 +209,7 @@ def run_batch(
     emoji: str | None = None
     run_id: str | None = None
     failed_step: str | None = None
+    banned_count: int | None = None
     step = "state"
     try:
         if mode != "core":
@@ -222,6 +231,7 @@ def run_batch(
         terms = banned_terms(banned_words)
         if terms:  # an empty secret never wipes the list already in D1
             client.put_banned_terms("wordlist", terms)
+        banned_count = len(terms)
         step = "publish"
         body = {
             "status": "success",
@@ -236,7 +246,7 @@ def run_batch(
         run_id = client.post_batch(body).get("id")
     except Exception as exc:  # every failure ends the same way: current version kept (AC-PIPE-11)
         if step == "publish" and version is not None and _published(client, version, log):
-            return _finish(reporter, client, None, version, batch_at, mode, None, stats, emoji, log)
+            return _finish(reporter, client, None, version, batch_at, mode, None, stats, emoji, log, banned_count)
         failed_step, version = step, None
         # Network errors may carry the API host: the public workflow log only gets their type.
         # The banned words are secret (ADR 0005): that step's errors are logged by type only too.
@@ -249,7 +259,7 @@ def run_batch(
         except Exception as post_exc:
             log(f"Không ghi được nhật ký đợt lỗi: {type(post_exc).__name__}")
 
-    return _finish(reporter, client, run_id, version, batch_at, mode, failed_step, stats, emoji, log)
+    return _finish(reporter, client, run_id, version, batch_at, mode, failed_step, stats, emoji, log, banned_count)
 
 
 def _published(client: BatchClient, version: int, log: Callable[[str], None]) -> bool:
@@ -275,9 +285,16 @@ def _finish(
     stats: Mapping,
     emoji: str | None,
     log: Callable[[str], None],
+    banned_count: int | None = None,
 ) -> BatchOutcome:
     title, report = _render_report(
-        version=version, batch_at=batch_at, mode=mode, failed_step=failed_step, stats=stats, emoji=emoji
+        version=version,
+        batch_at=batch_at,
+        mode=mode,
+        failed_step=failed_step,
+        stats=stats,
+        emoji=emoji,
+        banned_count=banned_count,
     )
     return BatchOutcome(
         ok=failed_step is None,

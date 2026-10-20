@@ -64,9 +64,15 @@ function onTable(item: Item, x: number, y: number): TableItem {
 /** A combine that gave the player an element they did not have (AC-DISC-05): names as typed, id of the result. */
 export type NewDiscovery = { a: string; b: string; result: string; id: string }
 
-type Props = { onDiscover?: (d: NewDiscovery) => void }
+type Props = {
+  onDiscover?: (d: NewDiscovery) => void
+  /** Ids on the plate, so the page can look up who first found them (AC-DISC-09). */
+  onItems?: (ids: string[]) => void
+  /** Element id → "Công thức gia truyền của …" line. */
+  heirlooms?: Record<string, string>
+}
 
-export function Game({ onDiscover }: Props = {}) {
+export function Game({ onDiscover, onItems, heirlooms = {} }: Props = {}) {
   const onDiscoverRef = useRef(onDiscover)
   useEffect(() => {
     onDiscoverRef.current = onDiscover
@@ -340,6 +346,10 @@ export function Game({ onDiscover }: Props = {}) {
   // ---------------------------------------------------------------- render
   const version = loaded?.manifest.version ?? progress?.graph_version ?? 0
   const items = progress ? visibleItems(progress, blocklist) : []
+  const itemIds = items.map((i) => i.id).join(',')
+  useEffect(() => {
+    if (itemIds) onItems?.(itemIds.split(','))
+  }, [itemIds, onItems])
   const byId = new Map(items.map((i) => [i.id, i]))
   const plate = sortItems(filterItems(items, query), progress?.sort ?? 'newest')
   const table = progress ? visibleTable(progress, blocklist) : []
@@ -441,6 +451,7 @@ export function Game({ onDiscover }: Props = {}) {
                 className="chip"
                 data-testid="plate-item"
                 data-name={it.name}
+                title={heirlooms[it.id]}
                 tabIndex={0}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' || e.key === ' ') {

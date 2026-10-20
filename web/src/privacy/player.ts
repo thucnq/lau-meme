@@ -4,10 +4,15 @@ import { storageKey } from '../storage'
 export const PLAYER_KEY = storageKey('player-id')
 
 let memoryId: string | null = null
+const UUID_V4 = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
 
 export function getPlayerId(storage: Storage | null): string {
   try {
-    if (storage) return storage.getItem(PLAYER_KEY) ?? save(storage, crypto.randomUUID())
+    if (storage) {
+      // a damaged value would make every request a 400: replace it
+      const stored = storage.getItem(PLAYER_KEY)
+      return stored !== null && UUID_V4.test(stored) ? stored : save(storage, crypto.randomUUID())
+    }
   } catch {
     // storage blocked: fall back to memory
   }

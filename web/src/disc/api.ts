@@ -10,9 +10,17 @@ const MAX_IDS = 50
 
 export const heirloomLine = (nickname: string): string => `Công thức gia truyền của ${nickname}`
 
+/** A send the server refused; `status` lets the page tell "too fast" (429) from other failures. */
+export class SendError extends Error {
+  constructor(readonly status: number) {
+    super(`HTTP ${status}`)
+    this.name = 'SendError'
+  }
+}
+
 export async function submitDiscovery(combo: Combination, opts: PlayerOpts): Promise<DiscoveryResult> {
   const res = await playerFetch('api/discoveries', { method: 'POST', body: JSON.stringify(combo) }, opts)
-  if (!res.ok) throw new Error(`HTTP ${res.status}`)
+  if (!res.ok) throw new SendError(res.status)
   return (await res.json()) as DiscoveryResult
 }
 

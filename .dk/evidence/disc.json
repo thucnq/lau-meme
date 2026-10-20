@@ -54,8 +54,8 @@
   }
  },
  "green": {
-  "ts": "2026-10-20T05:15:01+00:00",
-  "commit": "5c8590a",
+  "ts": "2026-10-20T05:23:07+00:00",
+  "commit": "57f5942",
   "results": {
    "AC-DISC-01": {
     "status": "PASS",
@@ -91,7 +91,7 @@
    },
    "AC-DISC-09": {
     "status": "PASS",
-    "test": "disc.ui.test.tsx#disc: api > AC-DISC-09: listDiscoveries rỗng trả [] mà không gọi fetch"
+    "test": "disc.game.test.tsx#disc: Root, Công thức gia truyền trên Đĩa và lỗi gửi > AC-DISC-09: Đĩa đọc công khai GET /discoveries "
    },
    "AC-DISC-10": {
     "status": "PASS",
