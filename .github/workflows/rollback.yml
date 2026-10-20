@@ -35,7 +35,7 @@ jobs:
       - run: uv sync --frozen --no-dev
       - name: Rollback
         env:
-          API_BASE_URL: ${{ secrets.API_BASE_URL }}
+          API_BASE_URL: ${{ vars.API_BASE_URL }}
           PIPELINE_TOKEN: ${{ secrets.PIPELINE_TOKEN }}
           VERSION: ${{ inputs.version }}
         run: uv run python -m lau_meme_pipeline.rollback ${VERSION:+--version "$VERSION"}
