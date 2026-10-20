@@ -9,14 +9,17 @@ Thứ tự nên làm: 1 → 3 → deploy staging (`/dk:ship staging`) → 2 → 
 ## 1. Bản ghi DNS cho host chỉ có Worker
 Route Worker chỉ chạy khi host phân giải **qua proxy Cloudflare** (đám mây cam). Game không có máy chủ gốc, nên dùng bản ghi "không origin": AAAA trỏ `100::`, dải IPv6 dùng để loại bỏ (RFC 6666), không bao giờ có máy chủ nào trả lời ở địa chỉ này.
 
-DNS → Records → Add record, thêm hai bản ghi:
+DNS → Records → Add record, thêm bốn bản ghi:
 
 | Type | Name | IPv6 address | Proxy status | TTL |
 |---|---|---|---|---|
 | AAAA | `@` (tức `dinoduct.fun`) | `100::` | Proxied | Auto |
 | AAAA | `staging` | `100::` | Proxied | Auto |
+| AAAA | `laumeme-admin` | `100::` | Proxied | Auto |
+| AAAA | `laumeme-admin-staging` | `100::` | Proxied | Auto |
 
 Ghi chú:
+- Hai bản ghi `laumeme-admin*` là host của trang quản trị (ADR 0008), cùng Worker với game nhưng khác origin. Route `laumeme-admin*.dinoduct.fun/*` bắt mọi đường dẫn của host nên Worker tự trả 404 cho đường dẫn lạ, không ra lỗi 52x.
 - Tài liệu Workers hiện hành có cảnh báo về bản ghi `100::` và khuyên dùng Custom Domain khi Worker là origin. Ở đây **không dùng được Custom Domain**: nó chiếm mọi đường dẫn của host (ADR 0007). Bản ghi `100::` proxied vẫn là cách Cloudflare dùng cho origin chỉ có Worker (vd tài liệu "Worker as origin" của Cloudflare for SaaS). Hệ quả: mọi đường dẫn **không** có route hay Redirect Rule (vd `dinoduct.fun/abc`) sẽ trả lỗi 52x của Cloudflare. Đây là hành vi **dự kiến**, không phải sự cố. Chấp nhận cho tới khi có hub.
 - Không thêm bản ghi `www` nếu chưa cần. Nếu thêm thì cũng là AAAA `100::` proxied, kèm một Redirect Rule `www` → apex.
 - Kiểm tra: `dig +short AAAA dinoduct.fun` phải ra IPv6 của Cloudflare (không phải `100::`, vì đã proxied).
@@ -47,7 +50,7 @@ curl -sI "https://dinoduct.fun/?ref=test" | grep -iE '^(HTTP|location)'
 - SSL/TLS → Overview: để **Automatic SSL/TLS** (mặc định hiện hành) hoặc **Full (strict)**. Không có origin, mọi request đều do Worker trả lời, nên chế độ này chỉ ảnh hưởng nếu sau này có origin thật. Tuyệt đối không chọn Flexible.
 - SSL/TLS → Edge Certificates:
   - **Always Use HTTPS**: bật.
-  - Universal SSL đã phủ `dinoduct.fun` và `*.dinoduct.fun` (gồm `staging`). Chờ trạng thái Active trước khi thử.
+  - Universal SSL đã phủ `dinoduct.fun` và `*.dinoduct.fun` (gồm `staging` và hai host `laumeme-admin*`). Chờ trạng thái Active trước khi thử.
   - **HSTS**: chưa bật. Nếu bật thì `max-age` ngắn, **không** tick Preload và **không** Include subdomains cho tới khi mọi game và hub đều chạy HTTPS ổn định. Preload rất khó gỡ.
   - Minimum TLS Version: 1.2.
 
@@ -108,7 +111,7 @@ curl -s -o /dev/null -w '%{http_code}\n' https://staging.dinoduct.fun/lau-meme/a
 curl -s -o /dev/null -w '%{http_code}\n' https://laumeme-admin-staging.dinoduct.fun/api/admin/batches            # 401 (không token)
 curl -s -o /dev/null -w '%{http_code}\n' https://staging.dinoduct.fun/lau-meme/api/admin/batches                 # 404 (host game không có API quản trị)
 ```
-Rồi mở `https://laumeme-admin-staging.dinoduct.fun/`, dán `ADMIN_TOKEN`, thấy danh sách đợt là xong. Đừng thử token sai quá 4 lần liền: lần thứ 5 khóa IP của bạn 15 phút.
+Rồi mở `https://laumeme-admin-staging.dinoduct.fun/`, dán `ADMIN_TOKEN`, thấy danh sách đợt là xong. Đừng thử token sai quá 4 lần trong 1 phút: lần sai thứ 5 trong cùng phút đó khóa IP của bạn 15 phút, kể cả khi sau đó dán đúng token.
 
 ### 4.3. GitHub Environments
 GitHub → Settings → Environments:

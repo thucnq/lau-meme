@@ -20,6 +20,10 @@ Game chạy dưới đường dẫn con (ADR 0007). Tiền tố nằm ở `base-
 |---|---|---|---|
 | Production | https://dinoduct.fun/lau-meme/ | `dinoduct.fun/lau-meme*` | `/lau-meme/api/health` |
 | Staging | https://staging.dinoduct.fun/lau-meme/ | `staging.dinoduct.fun/lau-meme*` | `/lau-meme/api/health` |
+| Quản trị (production) | https://laumeme-admin.dinoduct.fun/ | `laumeme-admin.dinoduct.fun/*` | không có; `/api/admin/batches` trả 401 khi không token |
+| Quản trị (staging) | https://laumeme-admin-staging.dinoduct.fun/ | `laumeme-admin-staging.dinoduct.fun/*` | không có; `/api/admin/batches` trả 401 khi không token |
+
+Trang quản trị chạy trên host riêng (ADR 0008), cùng Worker, phân biệt bằng biến `ADMIN_HOST` trong `wrangler.jsonc` (mỗi môi trường một giá trị). Trên host game, `/lau-meme/admin*` và `/lau-meme/api/admin/*` trả 404. Bản ghi DNS của hai host quản trị nằm trong `docs/dev/huong-dan-tai-khoan.md` mục 1.
 
 Gốc `https://dinoduct.fun/` được Redirect Rule (không có trong code) chuyển 302 về `/lau-meme/`. `*.workers.dev` vẫn bật để `deploy-cf.sh` kiểm tra sức khỏe. Ở đó mọi đường dẫn ngoài `/lau-meme/` trả 404.
 Cấu hình tài khoản lần đầu (DNS, Redirect Rule, SSL, deploy production đầu tiên, kiểm tra nhà mạng và xem trước link) xem `docs/dev/huong-dan-tai-khoan.md`.
