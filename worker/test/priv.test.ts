@@ -370,6 +370,23 @@ describe('priv', () => {
     expect(rows.map((r) => toHex(r.ip_hash))).toEqual([await expectedIpHash('203.0.113.1'), await expectedIpHash('203.0.113.2')])
   })
 
+  it('AC-PRIV-06: chỉ bảng consent có cột ip_hash (bảng duy nhất tác vụ dọn xử lý) và không bảng nào có cột ip/ip_address', async () => {
+    const tables = (
+      await env.DB.prepare(
+        "SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%' AND name NOT LIKE '_cf_%' AND name != 'd1_migrations'",
+      ).all<{ name: string }>()
+    ).results.map((r) => r.name)
+    expect(tables).toContain('consent')
+
+    const cols = await env.DB.batch<{ name: string }>(tables.map((t) => env.DB.prepare('SELECT name FROM pragma_table_info(?)').bind(t)))
+    const byTable = new Map(tables.map((t, i) => [t, cols[i]!.results.map((c) => c.name.toLowerCase())]))
+
+    const withHash = [...byTable].filter(([, c]) => c.includes('ip_hash')).map(([t]) => t)
+    expect(withHash).toEqual(['consent'])
+    const withRawIp = [...byTable].filter(([, c]) => c.includes('ip') || c.includes('ip_address')).map(([t]) => t)
+    expect(withRawIp).toEqual([])
+  })
+
   it('AC-PRIV-06: wrangler.jsonc khai báo cron dọn dẹp "0 20 * * *" (03:00 GMT+7)', () => {
     const noComments = wranglerRaw
       .split('\n')
