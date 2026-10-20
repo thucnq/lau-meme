@@ -11,7 +11,7 @@ from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, field
 from datetime import date, timedelta
 
-from lau_meme_pipeline.llm import LlmError, QuotaExhausted
+from lau_meme_pipeline.llm import QuotaExhausted
 from lau_meme_pipeline.text import fold
 
 CATEGORIES = (
@@ -27,6 +27,10 @@ CATEGORIES = (
     "harassment",
 )
 HOLD_DAYS = 30  # "tin nguội" after a hot story about one person (7.1, AC-MOD-08)
+MIN_CONFIDENCE = 0.8  # open question #23
+SHORT_TERM = 4  # shorter terms match whole tokens only, so "ma" does not block "Mama" (open question #24)
+MIN_ALIAS = 3  # shorter names are never auto-blocked: one or two letters would block most text (open question #24)
+MAX_ALIASES = 10  # per concept, so one answer cannot flood the persistent alias list
 TEXT_FIELDS = ("name", "emoji", "description", "daily_hint", "image_hint")
 BLOCKING_FIELDS = frozenset({"name", "emoji", "description"})
 REQUEST_FIELDS = ("key", "kind", "name", "emoji", "description", "daily_hint", "image_hint", "context", "source_name")
@@ -94,18 +98,44 @@ class ModerationResult:
 
 def _key(text: str) -> str:
     """Letters and digits of the folded text: "T.ừ  C-ấm" → "tucam" (same rule as the Worker's nickname filter)."""
-    return re.sub(r"[^\w]|_", "", fold(text))
+    return re.sub(r"[\W_]", "", fold(text))
+
+
+def _tokens(text: str) -> set[str]:
+    """Folded words, plus each run of single letters joined: "N.V.A fan" → {n, v, a, fan, nva} (dotted acronyms)."""
+    words = [t for t in re.split(r"[\W_]+", fold(text)) if t]
+    out = set(words)
+    run: list[str] = []
+    for w in [*words, ""]:
+        if len(w) == 1:
+            run.append(w)
+            continue
+        if len(run) > 1:
+            out.add("".join(run))
+        run = []
+    return out
 
 
 def layer1(concept: Concept, lists: ModLists) -> str | None:
     """Word lists only, no LLM (AC-MOD-01/06/10)."""
     if any(fold(concept.name) == fold(t) for t in lists.admin_blocked):
         return "admin_blocked"
+    # Daily/image hints are checked too and reject the whole concept: stricter than layer 2 (which only drops the
+    # hint), on purpose — a listed word anywhere means the concept was about it.
     texts = [_key(getattr(concept, f)) for f in TEXT_FIELDS]
+    tokens = set().union(*(_tokens(getattr(concept, f)) for f in TEXT_FIELDS))
 
     def hit(terms: frozenset[str]) -> bool:
-        keys = [k for k in (_key(t) for t in terms) if k]
-        return any(k in text for k in keys for text in texts)
+        for term in terms:
+            key = _key(term)
+            if not key:
+                continue
+            if len(key) < SHORT_TERM:
+                if key in tokens:
+                    return True
+            elif any(key in text for text in texts):
+                return True
+        return False
 
     if hit(lists.aliases):
         return "blocked_alias"
@@ -136,13 +166,16 @@ def _valid(item: object) -> bool:
         and isinstance(item.get("accusation"), bool)
         and isinstance(item.get("hot_person"), bool)
         and isinstance(item.get("flagged_fields", []), list)
+        and all(isinstance(f, str) for f in item.get("flagged_fields", []))
     )
 
 
 def _person_names(item: Mapping) -> set[str]:
+    """Name then aliases, folded; too-short ones dropped and at most MAX_ALIASES kept (the answer is untrusted)."""
     person = item["person"]
     names = [person.get("name") or "", *person.get("aliases", [])]
-    return {fold(n) for n in names if fold(n)}
+    kept = [fold(n) for n in names if len(_key(n)) >= MIN_ALIAS]
+    return set(list(dict.fromkeys(kept))[:MAX_ALIASES])
 
 
 def is_held(held_until: date | None, batch_date: date) -> bool:
@@ -166,8 +199,9 @@ def moderate(
     batch_date: date,
     *,
     batch_size: int = 10,
-    min_confidence: float = 0.8,  # open question #23
+    min_confidence: float = MIN_CONFIDENCE,
 ) -> ModerationResult:
+    """`batch_date` is the GMT+7 date of the batch's `batch_at`, never today's date (AC-MOD-08)."""
     result = ModerationResult()
     reasons: Counter[str] = Counter()
     aliases: set[str] = set()
@@ -191,11 +225,21 @@ def moderate(
         except QuotaExhausted:
             result.queued = pending[start:]  # stop calling; the rest waits for the next batch (AC-PIPE-12)
             break
-        except LlmError:
+        except Exception:  # LlmError, or anything the adapter did not wrap: never "safe" (AC-MOD-03)
             for c in batch:
                 reject(c, "llm_error")
             continue
-        by_key = {a.get("key"): a for a in answers if isinstance(a, Mapping)} if isinstance(answers, list) else {}
+        by_key: dict[str, Mapping] = {}
+        seen: set[str] = set()
+        for a in answers if isinstance(answers, list) else []:
+            key = a.get("key") if isinstance(a, Mapping) else None
+            if not isinstance(key, str):
+                continue
+            if key in seen:
+                by_key.pop(key, None)  # two answers for one concept: trust neither
+            else:
+                seen.add(key)
+                by_key[key] = a
         for c in batch:
             item = by_key.get(c.key)
             if not _valid(item):
