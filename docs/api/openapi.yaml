@@ -1130,7 +1130,7 @@ components:
         target: { type: string, enum: [element, image] }
         id: { $ref: '#/components/schemas/ElementId' }
         reason: { $ref: '#/components/schemas/ReportReason' }
-        note: { type: string, maxLength: 1000, description: Chỉ với `other`; dài hơn 200 ký tự → 422 }
+        note: { type: string, maxLength: 1000, description: 'Chỉ với `other` (lý do khác kèm note → 422); 201–1000 ký tự → 422, dài hơn 1000 → 400' }
     Report:
       type: object
       additionalProperties: false
