@@ -1,7 +1,7 @@
 # Tiến độ — ƯỚC LƯỢNG - LẨU MEME
 
-> Sinh bởi `/dk:plan` (gen-plan.py) từ `docs\estimate\items.json`. **Người sửa trực tiếp file này**: dấu `[x]` (hạng mục hoặc AC), `tiến độ: N%`, `người`, `bắt đầu`, `xong` (YYYY-MM-DD), `ghi chú` — giữ nguyên dấu ` · ` giữa các trường. Chạy lại `/dk:plan` để tính dự báo và vẽ lại `gantt.html`. `KH` là kế hoạch gốc, chỉ đổi bằng `/dk:plan rebaseline`.
-> Bắt đầu dự án: 2026-10-20 · Kỹ sư: 1 (Thuc) · Giờ/tuần: 20 · Nghiệm thu KH: 2027-11-23 · Dự báo: 2027-11-23 · Cập nhật: 2026-10-19
+> Sinh bởi `/dk:plan` (gen-plan.py) từ `docs/estimate/items.json`. **Người sửa trực tiếp file này**: dấu `[x]` (hạng mục hoặc AC), `tiến độ: N%`, `người`, `bắt đầu`, `xong` (YYYY-MM-DD), `ghi chú` — giữ nguyên dấu ` · ` giữa các trường. Chạy lại `/dk:plan` để tính dự báo và vẽ lại `gantt.html`. `KH` là kế hoạch gốc, chỉ đổi bằng `/dk:plan rebaseline`.
+> Bắt đầu dự án: 2026-10-20 · Kỹ sư: 1 (Thuc) · Giờ/tuần: 20 · Nghiệm thu KH: 2027-11-23 · Dự báo: 2027-12-07 · Cập nhật: 2026-10-20
 
 
 ## Nền tảng
@@ -157,7 +157,24 @@
   - [ ] AC-INV-10 Món đặc biệt luôn hợp lệ
   - [ ] AC-INV-11 Bảng xếp hạng chỉ có đường ghép hợp lệ
   - [ ] AC-INV-12 Tỉ lệ ghép trượt khi chơi ngẫu nhiên
-- [ ] **UAT** Kiểm thử nghiệm thu & sửa lỗi (giai đoạn 1) · 11đ · rủi ro: MEDIUM · KH: 2027-07-01 → 2027-08-04 · tiến độ: 0% · người: Thuc · bắt đầu:  · xong:  · ghi chú: 
+
+## Nền tảng
+- [ ] **SUBPATH** Chạy dưới đường dẫn con dinoduct.fun/lau-meme · 4đ · rủi ro: MEDIUM · KH: 2027-07-01 → 2027-07-13 · tiến độ: 0% (theo AC) · người: Thuc · bắt đầu:  · xong:  · ghi chú: 
+  - [ ] AC-SUBPATH-01 Một nguồn tiền tố, route đúng
+  - [ ] AC-SUBPATH-02 API dưới tiền tố
+  - [ ] AC-SUBPATH-03 Thiếu dấu gạch chéo cuối
+  - [ ] AC-SUBPATH-04 Ngoài tiền tố là 404
+  - [ ] AC-SUBPATH-05 Vào game và F5 ở mọi màn hình
+  - [ ] AC-SUBPATH-06 Giữ chỗ đường dẫn ảnh
+  - [ ] AC-SUBPATH-07 Web không gọi ra ngoài tiền tố
+  - [ ] AC-SUBPATH-08 Mọi khóa localStorage có tiền tố `laumeme:`
+  - [ ] AC-SUBPATH-09 Chuyển khóa cũ một lần
+  - [ ] AC-SUBPATH-10 Link chia sẻ tuyệt đối
+  - [ ] AC-SUBPATH-11 Thẻ xem trước link và favicon
+  - [ ] AC-SUBPATH-12 Pipeline gọi API dưới tiền tố
+
+## Kiểm thử
+- [ ] **UAT** Kiểm thử nghiệm thu & sửa lỗi (giai đoạn 1) · 11.5đ · rủi ro: MEDIUM · KH: 2027-07-01 → 2027-08-04 · tiến độ: 0% · người: Thuc · bắt đầu:  · xong:  · ghi chú: 
 
 ## Nội dung
 - [ ] **MOD** Kiểm duyệt nội dung tự động (giai đoạn 2) · 9đ · rủi ro: HIGH · KH: 2027-08-05 → 2027-09-01 · tiến độ: 0% · người: Thuc · bắt đầu:  · xong:  · ghi chú: 
