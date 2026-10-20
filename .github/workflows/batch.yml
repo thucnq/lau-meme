@@ -45,7 +45,7 @@ jobs:
       - run: uv sync --frozen --no-dev
       - name: Mẻ nhúng
         env:
-          API_BASE_URL: ${{ secrets.API_BASE_URL }}
+          API_BASE_URL: ${{ vars.API_BASE_URL }}
           PIPELINE_TOKEN: ${{ secrets.PIPELINE_TOKEN }}
           GITHUB_TOKEN: ${{ github.token }}
           GITHUB_REPOSITORY: ${{ github.repository }}
