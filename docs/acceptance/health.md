@@ -6,8 +6,8 @@
 
 ### AC-HEALTH-01: API sức khỏe
 - **Cho** Worker đã chạy migration
-- **Khi** gọi `GET /api/health`
-- **Thì** nhận 200 `{status: "ok", env, schema}`; đường `/api/*` không tồn tại trả 404 `application/problem+json`
+- **Khi** gọi `GET /lau-meme/api/health` (tiền tố đường dẫn con, AC-SUBPATH-02)
+- **Thì** nhận 200 `{status: "ok", env, schema}`; đường `/lau-meme/api/*` không tồn tại trả 404 `application/problem+json`
 - Ưu tiên: Bắt buộc
 
 ### AC-HEALTH-02: Trang chủ hiện trạng thái máy chủ

@@ -128,7 +128,7 @@ async function raw(path: string, init: RequestInit, headers: Record<string, stri
 
 async function publish(version: number, batchAt = BATCH_AT): Promise<void> {
   const res = await raw(
-    '/api/pipeline/batches',
+    '/lau-meme/api/pipeline/batches',
     { method: 'POST', body: JSON.stringify(await batchBody(version, batchAt)) },
     { Authorization: `Bearer ${TOKEN}` },
   )
@@ -153,19 +153,19 @@ function as(player: string | null, ip?: string): Record<string, string> {
 }
 
 const submitRaw = (version: number | string, player: string | null, body: string, ip?: string) =>
-  raw(`/api/daily/${version}/results`, { method: 'POST', body }, as(player, ip))
+  raw(`/lau-meme/api/daily/${version}/results`, { method: 'POST', body }, as(player, ip))
 
 const submit = (version: number, player: string, steps: number, path: Step[] = FULL_PATH, ip?: string) =>
   submitRaw(version, player, JSON.stringify({ steps, path }), ip)
 
 const board = async (version: number | string, player: string | null = null): Promise<Board> => {
-  const res = await raw(`/api/daily/${version}/leaderboard`, {}, player ? as(player) : {})
+  const res = await raw(`/lau-meme/api/daily/${version}/leaderboard`, {}, player ? as(player) : {})
   expect(res.status).toBe(200)
   return (await res.json()) as Board
 }
 
 const myStreak = async (player: string): Promise<Streak> => {
-  const res = await raw('/api/me/streak', {}, as(player))
+  const res = await raw('/lau-meme/api/me/streak', {}, as(player))
   expect(res.status).toBe(200)
   return (await res.json()) as Streak
 }
@@ -220,7 +220,7 @@ describe('daily', () => {
   // ------------------------------------------------------------------------ AC-DAILY-03 (worker side)
   it('AC-DAILY-03: manifest công bố emoji, gợi ý, depth, khóa băm của tên đã fold và không lộ tên món', async () => {
     await publish(1)
-    const res = await raw('/api/manifest', {}, {})
+    const res = await raw('/lau-meme/api/manifest', {}, {})
     expect(res.status).toBe(200)
     const text = await res.text()
     const manifest = JSON.parse(text) as { daily: Record<string, unknown> }
@@ -373,7 +373,7 @@ describe('daily', () => {
       isProblem(res)
     }
     expect(await count('daily_result')).toBe(0)
-    const streakRes = await raw('/api/me/streak', {}, {})
+    const streakRes = await raw('/lau-meme/api/me/streak', {}, {})
     expect(streakRes.status).toBe(400)
   })
 
@@ -399,7 +399,7 @@ describe('daily', () => {
       .map((p, order) => ({ ...p, order }))
       .sort((x, y) => x.steps - y.steps || x.order - y.order)
 
-    const anon = await raw('/api/daily/1/leaderboard', {}, {})
+    const anon = await raw('/lau-meme/api/daily/1/leaderboard', {}, {})
     expect(anon.status).toBe(200)
     const text = await anon.text()
     expect(UUID_IN_TEXT.test(text)).toBe(false)
@@ -437,13 +437,13 @@ describe('daily', () => {
     expect(await board(1)).toEqual({ version: 1, rows: [], me: null })
     const player = await newPlayer()
     expect(await board(1, player)).toEqual({ version: 1, rows: [], me: null })
-    const missing = await raw('/api/daily/9999/leaderboard', {}, {})
+    const missing = await raw('/lau-meme/api/daily/9999/leaderboard', {}, {})
     expect(missing.status).toBe(404)
     isProblem(missing)
-    const bad = await raw('/api/daily/abc/leaderboard', {}, {})
+    const bad = await raw('/lau-meme/api/daily/abc/leaderboard', {}, {})
     expect(bad.status).toBe(400)
     isProblem(bad)
-    const badId = await raw('/api/daily/1/leaderboard', {}, { 'X-Player-Id': 'not-a-uuid' })
+    const badId = await raw('/lau-meme/api/daily/1/leaderboard', {}, { 'X-Player-Id': 'not-a-uuid' })
     expect(badId.status).toBe(400)
   })
 
@@ -527,7 +527,7 @@ describe('daily', () => {
     }
     const expected = [...seeded].sort((x, y) => y.current - x.current || x.reached - y.reached).slice(0, 20)
 
-    const res = await raw('/api/streaks/leaderboard', {}, {})
+    const res = await raw('/lau-meme/api/streaks/leaderboard', {}, {})
     expect(res.status).toBe(200)
     const text = await res.text()
     for (const p of seeded) expect(text).not.toContain(p.id)
@@ -548,7 +548,7 @@ describe('daily', () => {
     await seedStreak(crypto.randomUUID(), 1, 1, '2026-10-23', now - 2000, 'Song Hom Qua')
     await seedStreak(crypto.randomUUID(), 0, 3, '2026-10-22', now - 1000, 'Streak Khong')
     await seedStreak(crypto.randomUUID(), 5, 5, '2026-10-20', now - 4000, 'Da Dut')
-    const res = await raw('/api/streaks/leaderboard', {}, {})
+    const res = await raw('/lau-meme/api/streaks/leaderboard', {}, {})
     expect(res.status).toBe(200)
     const body = (await res.json()) as { rows: Row[] }
     expect(body.rows).toEqual([
@@ -558,7 +558,7 @@ describe('daily', () => {
   })
 
   it('AC-DAILY-11: chưa ai có streak thì danh sách rỗng', async () => {
-    const res = await raw('/api/streaks/leaderboard', {}, {})
+    const res = await raw('/lau-meme/api/streaks/leaderboard', {}, {})
     expect(res.status).toBe(200)
     expect(await res.json()).toEqual({ rows: [] })
   })
@@ -636,7 +636,7 @@ describe('daily', () => {
       expect(res.status, `version ${version}`).toBeGreaterThanOrEqual(400)
       expect(res.status, `version ${version}`).toBeLessThan(500)
     }
-    expect((await raw('/api/daily/1;DROP/leaderboard', {}, {})).status).toBe(400)
+    expect((await raw('/lau-meme/api/daily/1;DROP/leaderboard', {}, {})).status).toBe(400)
     expect(await count('daily_result')).toBe(0) // bảng còn nguyên (đếm được) và rỗng
     expect(await count('streak')).toBe(0)
   })

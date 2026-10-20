@@ -1,6 +1,7 @@
 """Roll the current graph version back (AC-GRAPH-06/07): `python -m lau_meme_pipeline.rollback [--version N]`.
 
-The Worker decides and does the switch (`POST /api/pipeline/rollback`, ADR 0003); this module only reports.
+The Worker decides and does the switch (`POST <API_BASE_URL>/api/pipeline/rollback`, ADR 0003);
+this module only reports.
 """
 
 import argparse
@@ -32,9 +33,10 @@ class HttpRollbackClient:
     def __init__(self, base_url: str, token: str) -> None:
         parts = urlsplit(base_url)
         if parts.scheme != "https" or not parts.hostname:
-            raise ValueError("API_BASE_URL phải có dạng https://<host>")
+            raise ValueError("API_BASE_URL phải có dạng https://<host>[/<tiền tố>]")
         self.host = parts.hostname
         self.port = parts.port
+        self.prefix = parts.path.rstrip("/")  # e.g. "/lau-meme" (ADR 0007)
         self.token = token
 
     def post_rollback(self, version: int | None) -> tuple[int, dict]:
@@ -43,7 +45,7 @@ class HttpRollbackClient:
         try:
             conn.request(
                 "POST",
-                "/api/pipeline/rollback",
+                self.prefix + "/api/pipeline/rollback",
                 body=body,
                 headers={
                     "Authorization": f"Bearer {self.token}",

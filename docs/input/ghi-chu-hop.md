@@ -37,6 +37,7 @@
 | Q14 | Ảnh lưu ở **R2**, tên file theo băm nội dung (`/img/<sha256-12>.webp`), phục vụ qua Worker với Cache API + `Cache-Control: public, max-age=31536000, immutable`; WebP 256×256 (~10–20 KB). Dự phòng nếu không mở được R2: kho ảnh trong repo riêng, đóng gói làm static assets mỗi lần deploy | Rẻ nhất + nhanh nhất: R2 free 10 GB, 10 triệu lượt đọc/tháng, không phí băng thông; file bất biến nên gần như mọi lượt đọc trúng cache biên. **Cần kiểm tra** R2 có bắt khai báo thẻ thanh toán không. Chốt 19/10 15:23 (ADR ở /dk:design) |
 | Q10 | Phát triển bằng plugin `dk` (cần bản 0.7.0 hỗ trợ Python/TS) | Giữ cổng spec / contract / merge; test viết trước code |
 | Q11 | Chủ đề "lẩu" xuyên suốt UI và từ vựng (mục 4) | Khác biệt rõ với bản gốc, dễ nhận ra trên thẻ chia sẻ |
+| Q15 | Địa chỉ game: **dinoduct.fun/lau-meme** (tên miền mua qua Cloudflare Registrar, chốt 20/10). **Đường dẫn con, không dùng tên miền con**. Production: route Worker `dinoduct.fun/lau-meme*`. Staging: `staging.dinoduct.fun/lau-meme` (cùng đường dẫn con để bắt lỗi thiếu tiền tố). Gốc `dinoduct.fun/` tạm redirect 302 về `/lau-meme/` bằng Redirect Rule của Cloudflare (không cần code); trang hub chỉ làm khi có game thứ 2. Game thứ 2 có thể ở repo khác, gắn route riêng, không sửa repo Lẩu Meme | dinoduct.fun là thương hiệu chứa nhiều game (như neal.fun). Các game chung origin ⇒ khóa localStorage có tiền tố `laumeme:`, không lưu gì nhạy cảm phía client. Chốt 20/10 (ADR 0007) |
 
 ## 3. Phạm vi
 
@@ -164,7 +165,7 @@ Yêu cầu chung: idempotent (chạy lại cùng đợt cho cùng kết quả); 
 - Ảnh AI có thể vô tình giống người thật hoặc nhân vật có bản quyền ⇒ kiểm duyệt ảnh tự động + nút báo cáo áp cho cả ảnh; ảnh bị báo cáo thì về emoji ngay.
 
 ## 11. Câu hỏi mở
-1. Domain: mua domain riêng (vd `laumeme.vn`) hay tạm dùng tên miền miễn phí của Cloudflare (`*.workers.dev`)?
+1. ~~Domain~~ — đã chốt Q15 (dinoduct.fun/lau-meme).
 2. Đo chỉ số: Cloudflare Web Analytics (không cookie) có đủ, hay cần bảng sự kiện riêng trong D1?
 3. Bảng xếp hạng Daily: chỉ đợt hiện tại, hay có thêm bảng "chuỗi ngày liên tiếp" (streak)?
 4. Khi một meme trend bị ẩn do báo cáo, các công thức đi ra từ nó xử lý thế nào: ẩn theo, hay giữ nhưng không gợi ý?

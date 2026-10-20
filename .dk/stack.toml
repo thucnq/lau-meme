@@ -28,4 +28,4 @@ src_dirs = ["worker/src"]
 test_dirs = ["worker/test"]
 read_ok = ["worker/wrangler.jsonc", "worker/package.json"]
 migration = { kind = "wrangler-seq", dir = "worker/migrations" }
-deploy = { kind = "cloudflare", config = "worker/wrangler.jsonc", health = "/api/health", nonprod_envs = ["staging"], d1_binding = "DB", build = "npm --prefix web run -s build" }
+deploy = { kind = "cloudflare", config = "worker/wrangler.jsonc", health = "/lau-meme/api/health", nonprod_envs = ["staging"], d1_binding = "DB", build = "npm --prefix web run -s build" }

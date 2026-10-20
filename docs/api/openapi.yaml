@@ -10,7 +10,8 @@ info:
     hiện hành (AC-PRIV-02/09) — thiếu thì 403; và bị giới hạn tần suất theo UUID và IP băm — vượt thì 429
     kèm `Retry-After`. Định danh phần tử/công thức là băm (ADR 0002), không bao giờ là tên đọc được.
 servers:
-  - url: /api
+  - url: /lau-meme/api
+    description: Tiền tố đường dẫn con (`base-path.json`, ADR 0007) — production https://dinoduct.fun/lau-meme/api, staging https://staging.dinoduct.fun/lau-meme/api
 security: []
 tags:
   - name: content
@@ -740,7 +741,7 @@ paths:
   # ---------------------------------------------------------------- images (phase 2)
   /img/{key}:
     servers:
-      - url: /
+      - url: /lau-meme
     get:
       operationId: getImage
       tags: [content]
@@ -908,7 +909,10 @@ components:
       properties:
         version: { type: integer, minimum: 1 }
         batch_at: { $ref: '#/components/schemas/Instant' }
-        graph_url: { type: string, example: /api/graph/12 }
+        graph_url:
+          type: string
+          description: Đường dẫn tương đối với tiền tố của game (ADR 0007) — client gọi `<tiền tố><graph_url>`, vd `/lau-meme/api/graph/12`
+          example: /api/graph/12
         starters:
           type: array
           minItems: 4

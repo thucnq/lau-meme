@@ -76,7 +76,7 @@ async function batchBody(version: number) {
 
 async function publish(version: number) {
   const { body, target } = await batchBody(version)
-  const res = await call('/api/pipeline/batches', { method: 'POST', body: JSON.stringify(body) })
+  const res = await call('/lau-meme/api/pipeline/batches', { method: 'POST', body: JSON.stringify(body) })
   expect(res.status).toBe(201)
   return { run: (await res.json()) as { id: string; issue_url: string | null }, target }
 }
@@ -101,9 +101,9 @@ beforeEach(async () => {
 })
 
 describe('pipeline state', () => {
-  it('AC-PIPE-13: GET /api/pipeline/state không token hoặc sai token thì 401 problem+json', async () => {
+  it('AC-PIPE-13: GET /lau-meme/api/pipeline/state không token hoặc sai token thì 401 problem+json', async () => {
     for (const token of [null, 'wrong-token']) {
-      const res = await call('/api/pipeline/state', {}, token)
+      const res = await call('/lau-meme/api/pipeline/state', {}, token)
       expect(res.status).toBe(401)
       expect(res.headers.get('content-type')).toContain('application/problem+json')
     }
@@ -117,7 +117,7 @@ describe('pipeline state', () => {
       .bind('blocked-element-id', Date.now())
       .run()
 
-    const res = await call('/api/pipeline/state')
+    const res = await call('/lau-meme/api/pipeline/state')
     expect(res.status).toBe(200)
     const state = (await res.json()) as Record<string, unknown>
     expect(Object.keys(state).sort()).toEqual(
@@ -140,7 +140,7 @@ describe('pipeline state', () => {
   })
 
   it('AC-PIPE-13: token pipeline không mở được dữ liệu người chơi', async () => {
-    for (const path of ['/api/me/streak', '/api/me/nickname']) {
+    for (const path of ['/lau-meme/api/me/streak', '/lau-meme/api/me/nickname']) {
       const res = await call(path)
       expect(res.status, path).not.toBe(200)
       expect(res.status, path).toBeGreaterThanOrEqual(400)
@@ -153,7 +153,7 @@ describe('pipeline batch report', () => {
     const { run } = await publish(1)
     expect(run.issue_url ?? null).toBeNull()
     const patch = (id: string, body: unknown, token: string | null = TOKEN) =>
-      call(`/api/pipeline/batches/${id}`, { method: 'PATCH', body: JSON.stringify(body) }, token)
+      call(`/lau-meme/api/pipeline/batches/${id}`, { method: 'PATCH', body: JSON.stringify(body) }, token)
 
     const ok = await patch(run.id, { issue_url: ISSUE_URL })
     expect(ok.status).toBe(200)

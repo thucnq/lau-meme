@@ -7,6 +7,7 @@ import { useEffect, useRef, useState } from 'react'
 import type { PointerEvent as ReactPointerEvent } from 'react'
 import { getBlocklist, getGraph, getManifest } from '../api'
 import type { Graph } from '../graph/crypto'
+import { localStore as storage, migrateLegacyKeys } from '../storage'
 import {
   EMPTY_BLOCKLIST,
   THEME_KEY,
@@ -32,15 +33,6 @@ type Loaded = { manifest: Manifest; graph: Graph; blocklist: Blocklist }
 type Source = { item: Item; uid: string | null }
 type Drag = { source: Source; x: number; y: number }
 type Miss = { line: string; hint: string | null }
-
-/** localStorage, or null when the browser blocks it (private mode, cookies off): the game then runs in memory. */
-function storage(): Storage | null {
-  try {
-    return window.localStorage
-  } catch {
-    return null
-  }
-}
 
 function systemDark(): boolean {
   return typeof window.matchMedia === 'function' && window.matchMedia('(prefers-color-scheme: dark)').matches
@@ -72,7 +64,9 @@ function onTable(item: Item, x: number, y: number): TableItem {
 export function Game() {
   const [progress, setProgress] = useState<Progress | null>(() => {
     const s = storage()
-    return s ? loadProgress(s) : null
+    if (!s) return null
+    migrateLegacyKeys(s) // before the first read of progress or theme
+    return loadProgress(s)
   })
   const progressRef = useRef(progress)
   const [tutorialOpen, setTutorialOpen] = useState(() => !progress?.tutorial_seen)

@@ -1,0 +1,110 @@
+{
+ "red": {
+  "ts": "2026-10-20T03:12:47+00:00",
+  "commit": "afe74d0",
+  "results": {
+   "AC-SUBPATH-01": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-SUBPATH-02": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-SUBPATH-03": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-SUBPATH-04": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-SUBPATH-05": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-SUBPATH-06": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-SUBPATH-07": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-SUBPATH-08": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-SUBPATH-09": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-SUBPATH-10": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-SUBPATH-11": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-SUBPATH-12": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   }
+  }
+ },
+ "green": {
+  "ts": "2026-10-20T03:19:32+00:00",
+  "commit": "93e8e4b",
+  "results": {
+   "AC-SUBPATH-01": {
+    "status": "PASS",
+    "test": "subpath.test.ts#subpath > AC-SUBPATH-01: BASE_PATH của Worker "
+   },
+   "AC-SUBPATH-02": {
+    "status": "PASS",
+    "test": "subpath.test.ts#subpath > AC-SUBPATH-02: GET /lau-meme/api/health trả 200 {status, env, schema}"
+   },
+   "AC-SUBPATH-03": {
+    "status": "PASS",
+    "test": "subpath.test.ts#subpath > AC-SUBPATH-03: GET /lau-meme "
+   },
+   "AC-SUBPATH-04": {
+    "status": "PASS",
+    "test": "subpath.test.ts#subpath > AC-SUBPATH-04: ngoài tiền tố mọi đường dẫn là 404 "
+   },
+   "AC-SUBPATH-05": {
+    "status": "PASS",
+    "test": "subpath.test.ts#subpath > AC-SUBPATH-05: điều hướng tới /lau-meme/, /lau-meme/bat-ky, /lau-meme/a/b/c?x=1 trả index.html của game"
+   },
+   "AC-SUBPATH-06": {
+    "status": "PASS",
+    "test": "subpath.test.ts#subpath > AC-SUBPATH-06: GET /lau-meme/img/<id>.webp trả 404 problem+json, không trả HTML game"
+   },
+   "AC-SUBPATH-07": {
+    "status": "PASS",
+    "test": "subpath.test.ts#subpath build > AC-SUBPATH-07: index.html nằm ở <outDir>/lau-meme/index.html, asset ở <outDir>/lau-meme/assets/"
+   },
+   "AC-SUBPATH-08": {
+    "status": "PASS",
+    "test": "subpath.ui.test.tsx#subpath: khóa localStorage > AC-SUBPATH-08: PREFIX là \"laumeme:\""
+   },
+   "AC-SUBPATH-09": {
+    "status": "PASS",
+    "test": "subpath.ui.test.tsx#subpath: chuyển khóa cũ > AC-SUBPATH-09: khi game khởi động, khóa cũ được chuyển sang khóa mới, xóa khóa cũ, Đĩa hiện đủ tiến độ cũ"
+   },
+   "AC-SUBPATH-10": {
+    "status": "PASS",
+    "test": "subpath.ui.test.tsx#subpath: link chia sẻ > AC-SUBPATH-10: SITE_URL mặc định là https://dinoduct.fun/lau-meme/"
+   },
+   "AC-SUBPATH-11": {
+    "status": "PASS",
+    "test": "subpath.test.ts#subpath build > AC-SUBPATH-11: <head> có canonical, og:url, og:title, og:image tuyệt đối, twitter:card và <title> Lẩu Meme"
+   },
+   "AC-SUBPATH-12": {
+    "status": "PASS",
+    "test": "test_subpath#test_ac_subpath_12_state_di_qua_tien_to"
+   }
+  }
+ }
+}
