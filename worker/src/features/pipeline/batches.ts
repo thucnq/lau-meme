@@ -1,4 +1,4 @@
-import { json, problem, readJson } from '../../http'
+import { HttpError, json, problem, readJson } from '../../http'
 import { dayGmt7, uuidv7 } from '../../uuid'
 import { arr, fail, id43, instant, int, obj, oneOf, str } from '../../validate'
 import { currentVersion } from '../content/content'
@@ -291,4 +291,62 @@ export async function rollbackBatch(req: Request, env: Env): Promise<Response> {
   }
   await env.DB.batch([setCurrent(env.DB, target, now), insertRun(env.DB, run)])
   return json(toBatchRun(run))
+}
+
+/**
+ * GET /api/pipeline/state — AC-PIPE-13: content and anonymous aggregates only, never a player table.
+ * One D1 round trip.
+ */
+export async function getPipelineState(_req: Request, env: Env): Promise<Response> {
+  const db = env.DB
+  const [current, blocks, aliases, history] = await db.batch([
+    db.prepare('SELECT value FROM app_meta WHERE key = ?').bind('current_version'),
+    db.prepare('SELECT kind, target_id FROM block ORDER BY kind, target_id'),
+    db.prepare("SELECT term_fold FROM banned_term WHERE source IN ('mod', 'admin') ORDER BY term_fold"),
+    db.prepare(
+      `SELECT version, daily_element_id, batch_at FROM batch_run
+       WHERE status = 'success' AND daily_element_id IS NOT NULL ORDER BY version`,
+    ),
+  ])
+  const value = (current?.results[0] as { value: string } | undefined)?.value
+  const blocklist: Record<'elements' | 'recipes' | 'images', string[]> = { elements: [], recipes: [], images: [] }
+  for (const row of (blocks?.results ?? []) as { kind: 'element' | 'recipe' | 'image'; target_id: string }[]) {
+    blocklist[`${row.kind}s`].push(row.target_id)
+  }
+  return json({
+    current_version: value === undefined ? null : Number(value),
+    blocklist,
+    banned_aliases: [...new Set(((aliases?.results ?? []) as { term_fold: string }[]).map((r) => r.term_fold))],
+    daily_history: ((history?.results ?? []) as { version: number; daily_element_id: string; batch_at: number }[]).map(
+      (r) => ({ version: r.version, element_id: r.daily_element_id, batch_at: new Date(r.batch_at).toISOString() }),
+    ),
+    feedback: [], // FEEDBACK (optional feature) is not built yet
+  })
+}
+
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
+
+/** The contract answers every malformed PATCH body with 400 (no 422 for this operation). */
+async function readIssueUrl(req: Request): Promise<string> {
+  try {
+    const body = obj(await readJson(req), 'body', ['issue_url'])
+    const issueUrl = str(body.issue_url, 'issue_url', 300)
+    if (!/^https:\/\/github\.com\/\S+$/.test(issueUrl)) fail('issue_url: phải bắt đầu bằng https://github.com/')
+    return issueUrl
+  } catch (err) {
+    if (err instanceof HttpError && err.status === 422) throw new HttpError(400, err.title, err.detail)
+    throw err
+  }
+}
+
+/** PATCH /api/pipeline/batches/{id} — AC-PIPE-14: link the GitHub Issue of the batch report. */
+export async function patchBatchRun(req: Request, env: Env, _ctx: ExecutionContext, params: string[]): Promise<Response> {
+  const id = params[0] ?? ''
+  if (!UUID.test(id)) throw new HttpError(400, 'Dữ liệu không hợp lệ', 'id: phải là UUID')
+  const issueUrl = await readIssueUrl(req)
+  const row = await env.DB.prepare('UPDATE batch_run SET issue_url = ? WHERE id = ? RETURNING *')
+    .bind(issueUrl, id)
+    .first<BatchRunRow>()
+  if (!row) return problem(404, 'Không có đợt này')
+  return json(toBatchRun(row))
 }

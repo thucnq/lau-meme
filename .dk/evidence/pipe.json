@@ -24,5 +24,31 @@
     "test": "pipeline.test.ts#pipeline batch report > AC-PIPE-14: PATCH gắn link Issue vào đợt; id lạ 404; link sai 400; thiếu hoặc sai token 401"
    }
   }
+ },
+ "green": {
+  "ts": "2026-10-20T02:35:32+00:00",
+  "commit": "a9202b8",
+  "results": {
+   "AC-PIPE-01": {
+    "status": "PASS",
+    "test": "test_batch#test_ac_pipe_01_version_for_doi_gio_sang_gmt7"
+   },
+   "AC-PIPE-02": {
+    "status": "FAIL",
+    "test": "test_batch#test_ac_pipe_02_chay_module_batch_voi_quyen_tao_issue_va_secret"
+   },
+   "AC-PIPE-11": {
+    "status": "PASS",
+    "test": "test_batch#test_ac_pipe_11_loi_o_buoc_state_khong_dang_gi_va_ghi_dot_loi"
+   },
+   "AC-PIPE-13": {
+    "status": "PASS",
+    "test": "test_batch#test_ac_pipe_13_payload_llm_chi_giu_truong_duoc_phep"
+   },
+   "AC-PIPE-14": {
+    "status": "PASS",
+    "test": "test_batch#test_ac_pipe_14_tieu_de_co_version_trang_thai_che_do_emoji_khong_lo_ten"
+   }
+  }
  }
 }

@@ -21,3 +21,4 @@
 | 14 | (Giai đoạn 2) Meme không nối được: giữ trong hàng chờ **bao nhiêu đợt** rồi bỏ? | Hàng chờ phình to, tốn quota | 6 đợt (3 ngày) (AC-PIPE-07) | Không |
 | 15 | (Tùy chọn FEEDBACK) Ngưỡng ẩn công thức "Nhạt"? | Ẩn quá tay sẽ làm tăng tỉ lệ trượt | ≥ 10 phiếu và ≥ 60 % "Nhạt" (AC-FEEDBACK-04) | Không |
 | 16 | Danh sách từ cấm lưu ở đâu — trong repo public hay GitHub Secret/kho riêng? | Danh sách từ cấm tiếng Việt có thể bị dùng để lách | Kho riêng / secret, pipeline và Worker đọc lúc chạy — thiết kế: GitHub Secret `BANNED_WORDS`, pipeline đồng bộ vào D1 mỗi mẻ (ADR 0005) | Không |
+| 17 | Chế độ lõi không gọi LLM: gợi ý Món đặc biệt lấy từ đâu? | Món đặc biệt cần gợi ý đạt kiểm duyệt (AC-DAILY-01) | Chỉ các món có gợi ý viết tay trong `daily_examples` của lõi (người đã duyệt khi viết lõi); dùng hết thì quay vòng món dùng lâu nhất | Không |
