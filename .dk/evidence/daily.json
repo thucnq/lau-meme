@@ -1,0 +1,60 @@
+{
+ "red": {
+  "ts": "2026-10-20T00:11:39+00:00",
+  "commit": "d05ebe2",
+  "results": {
+   "AC-DAILY-01": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-DAILY-02": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-DAILY-03": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-DAILY-04": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-DAILY-05": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-DAILY-06": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-DAILY-07": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-DAILY-08": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-DAILY-09": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-DAILY-10": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-DAILY-11": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-DAILY-12": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-DAILY-13": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   }
+  }
+ }
+}
