@@ -99,7 +99,7 @@ const totalOf = (r: D1Result | undefined) => (r?.results[0] as { n: number } | u
 
 // ------------------------------------------------------------------------------------------------ lists
 
-/** GET /api/admin/reports — reports grouped per target, most distinct reporters first, no reporter ids (AC-ADMIN-06). */
+/** GET /api/admin/reports - reports grouped per target, most distinct reporters first, no reporter ids (AC-ADMIN-06). */
 export async function listReports(req: Request, env: Env): Promise<Response> {
   const params = new URL(req.url).searchParams
   const p = paging(params)
@@ -143,7 +143,7 @@ export async function listReports(req: Request, env: Env): Promise<Response> {
   return page(p, totalOf(total), items)
 }
 
-/** GET /api/admin/elements — catalog, accent-insensitive search on the folded name, state filter. */
+/** GET /api/admin/elements - catalog, accent-insensitive search on the folded name, state filter. */
 export async function listElements(req: Request, env: Env): Promise<Response> {
   const params = new URL(req.url).searchParams
   const p = paging(params)
@@ -186,7 +186,7 @@ export async function listElements(req: Request, env: Env): Promise<Response> {
   return page(p, totalOf(total), items)
 }
 
-/** GET /api/admin/recipes?element_id= — recipes with the element as an input or the result. */
+/** GET /api/admin/recipes?element_id= - recipes with the element as an input or the result. */
 export async function listRecipes(req: Request, env: Env): Promise<Response> {
   const params = new URL(req.url).searchParams
   const p = paging(params)
@@ -219,7 +219,7 @@ export async function listRecipes(req: Request, env: Env): Promise<Response> {
   return page(p, totalOf(total), items)
 }
 
-/** GET /api/admin/batches — batch log, newest first (AC-ADMIN-08). */
+/** GET /api/admin/batches - batch log, newest first (AC-ADMIN-08). */
 export async function listBatches(req: Request, env: Env): Promise<Response> {
   const p = paging(new URL(req.url).searchParams)
   const db = env.DB
@@ -259,7 +259,7 @@ export async function listBatches(req: Request, env: Env): Promise<Response> {
   return page(p, totalOf(total), items)
 }
 
-/** GET /api/admin/audit — newest first (AC-ADMIN-09). */
+/** GET /api/admin/audit - newest first (AC-ADMIN-09). */
 export async function listAudit(req: Request, env: Env): Promise<Response> {
   const p = paging(new URL(req.url).searchParams)
   const db = env.DB
@@ -308,7 +308,7 @@ const conflict = (before: State, action: Action) =>
   new HttpError(409, 'Xung đột trạng thái', `Không thể ${action} khi đích đang ở trạng thái ${before}.`)
 
 /**
- * POST /api/admin/moderation — reads target + block row in one round trip, then the state change and its single
+ * POST /api/admin/moderation - reads target + block row in one round trip, then the state change and its single
  * audit row in one transactional batch; a 4xx never reaches the batch, so it writes no audit (AC-ADMIN-09).
  */
 export async function moderate(req: Request, env: Env): Promise<Response> {

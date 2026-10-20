@@ -19,7 +19,7 @@ export function PolicyPage() {
       <h2>Dữ liệu thu và mục đích</h2>
       <ul>
         <li>
-          <strong>UUID</strong> — mã ngẫu nhiên do trình duyệt của bạn tạo, chỉ gửi khi bạn bấm “Đồng ý”: để ghi khám
+          <strong>UUID</strong> - mã ngẫu nhiên do trình duyệt của bạn tạo, chỉ gửi khi bạn bấm “Đồng ý”: để ghi khám
           phá, kết quả Món đặc biệt, streak, báo cáo, phiếu Ngon/Nhạt và đo chỉ số. Không bao giờ hiện công khai. Mã này
           là chìa khóa dữ liệu của bạn: ai có nó thì xem và xóa được dữ liệu gắn với nó, nên đừng chia sẻ.
         </li>
@@ -27,7 +27,7 @@ export function PolicyPage() {
           <strong>Nickname</strong> (nếu bạn đặt và đồng ý riêng): hiện trên bảng xếp hạng và Công thức gia truyền.
         </li>
         <li>
-          <strong>IP dạng băm</strong> — địa chỉ IP được băm một chiều bằng khóa bí mật, không lưu IP gốc: để giới hạn
+          <strong>IP dạng băm</strong> - địa chỉ IP được băm một chiều bằng khóa bí mật, không lưu IP gốc: để giới hạn
           tần suất và chống gian lận.
         </li>
         <li>
@@ -54,9 +54,9 @@ export function PolicyPage() {
       <p>Mở mục “Dữ liệu của tôi” ở chân trang chủ để:</p>
       <ul>
         <li>xem và tải về (xuất) toàn bộ dữ liệu gắn với UUID của bạn;</li>
-        <li>rút lại đồng ý — trò chơi ngừng gửi dữ liệu ngay;</li>
+        <li>rút lại đồng ý - trò chơi ngừng gửi dữ liệu ngay;</li>
         <li>
-          xóa dữ liệu — nickname, kết quả, streak, phiếu, sự kiện bị xóa; khám phá và báo cáo giữ lại nhưng không còn
+          xóa dữ liệu - nickname, kết quả, streak, phiếu, sự kiện bị xóa; khám phá và báo cáo giữ lại nhưng không còn
           gắn với bạn.
         </li>
       </ul>
@@ -65,7 +65,7 @@ export function PolicyPage() {
       <h2>Liên hệ</h2>
       <p>
         Email: <a href={`mailto:${CONTACT}`}>{CONTACT}</a>. Ghi kèm 8 ký tự đầu của mã trong mục “Dữ liệu của tôi” nếu
-        yêu cầu liên quan tới dữ liệu của bạn — đừng gửi cả mã.
+        yêu cầu liên quan tới dữ liệu của bạn - đừng gửi cả mã.
       </p>
     </main>
   )

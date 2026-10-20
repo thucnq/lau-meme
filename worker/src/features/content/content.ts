@@ -9,7 +9,7 @@ export async function currentVersion(db: D1Database): Promise<number | null> {
 const SHORT_CACHE = 'public, max-age=60'
 const IMMUTABLE = 'public, max-age=31536000, immutable'
 
-/** GET /api/manifest — AC-GRAPH-04/08. The Worker adds `policy_version` (ADR 0004). */
+/** GET /api/manifest - AC-GRAPH-04/08. The Worker adds `policy_version` (ADR 0004). */
 export async function getManifest(_req: Request, env: Env): Promise<Response> {
   const version = await currentVersion(env.DB)
   const row =
@@ -34,7 +34,7 @@ export function versionParam(raw: string | undefined): number {
   return Number(raw)
 }
 
-/** GET /api/graph/{version} — immutable, put into the Cache API so D1 is read once per location. */
+/** GET /api/graph/{version} - immutable, put into the Cache API so D1 is read once per location. */
 export async function getGraph(req: Request, env: Env, ctx: ExecutionContext, params: string[]): Promise<Response> {
   const version = versionParam(params[0])
   // Key = origin + path only: a query string must not create a new cache entry (and a D1 read) per request.

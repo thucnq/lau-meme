@@ -1,4 +1,4 @@
-"""Store shape required by D1 (worker/migrations/0002_content.sql) — not an acceptance test."""
+"""Store shape required by D1 (worker/migrations/0002_content.sql) - not an acceptance test."""
 
 import json
 from pathlib import Path

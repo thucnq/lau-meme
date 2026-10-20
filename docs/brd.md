@@ -1,18 +1,18 @@
-# BRD — Lẩu Meme
+# BRD - Lẩu Meme
 
 > Phiên bản: 0.1 · Ngày: 2026-10-19 · Trạng thái: Nháp
 > Nguồn: `docs/input/ghi-chu-hop.md`, `docs/input/noi-dung-loi.md|json`, `docs/scope.md` (đã chốt, kèm trả lời 5 câu hỏi phạm vi)
 
 ## 1. Bối cảnh và mục tiêu
 - **Vấn đề**: chưa có trò chơi ghép kiểu Infinite Craft bằng meme Việt; người Việt trên mạng xã hội cần một trò ngắn, hài, có lý do quay lại mỗi ngày và có thứ để khoe.
-- **Sản phẩm**: web game "Lẩu Meme" — kéo 2 phần tử thả vào nồi lẩu để ghép ra phần tử mới. Tập phần tử/công thức đóng, sinh sẵn theo lô; không gọi LLM khi người chơi ghép.
+- **Sản phẩm**: web game "Lẩu Meme" - kéo 2 phần tử thả vào nồi lẩu để ghép ra phần tử mới. Tập phần tử/công thức đóng, sinh sẵn theo lô; không gọi LLM khi người chơi ghép.
 - **Mục tiêu đo được** (đo bằng METRIC):
-  - D1 retention và D7 retention theo UUID (mốc mục tiêu: chưa đặt — xem `open-questions.md`).
+  - D1 retention và D7 retention theo UUID (mốc mục tiêu: chưa đặt - xem `open-questions.md`).
   - Số người chơi Món đặc biệt mỗi ngày; số lượt chia sẻ thẻ Daily và thẻ Công thức gia truyền.
   - Sức khỏe nội dung: ghép trượt khi chơi ngẫu nhiên 20 lượt đầu ≤ 45 %, cả ván 100 lượt ≤ 70 %; tỉ lệ "Nhạt"; số báo cáo.
   - Vận hành $0 (không tính domain).
 - **Giai đoạn** (trả lời câu hỏi phạm vi 1–2):
-  - **Giai đoạn 1 — go-live**: GAME, GRAPH, SEED, DAILY (kèm streak), DISC, SHARE, REPORT, ADMIN, METRIC, PRIV; nội dung chỉ là lõi classic; mẻ nhúng chạy **chế độ lõi** (chỉ đổi Món đặc biệt + manifest, không crawl, không LLM) — AC-PIPE-01.
+  - **Giai đoạn 1 - go-live**: GAME, GRAPH, SEED, DAILY (kèm streak), DISC, SHARE, REPORT, ADMIN, METRIC, PRIV; nội dung chỉ là lõi classic; mẻ nhúng chạy **chế độ lõi** (chỉ đổi Món đặc biệt + manifest, không crawl, không LLM) - AC-PIPE-01.
   - **Giai đoạn 2**: PIPE đầy đủ (chạy tay trước, sau đó bật cron tự động đăng), MOD, ART (ảnh minh họa; giai đoạn 1 chỉ dùng emoji).
   - Tùy chọn: FEEDBACK.
 - **Ngoài phạm vi**: quảng cáo/kiếm tiền, đăng nhập tài khoản, ảnh/video meme gốc, app mobile, đa ngôn ngữ, chơi với bạn bè thời gian thực, người chơi tự gửi meme, trang giới thiệu/landing riêng (câu hỏi phạm vi 5), scrape Facebook/TikTok.
@@ -56,7 +56,7 @@
 
 ### 4.2 Món đặc biệt hôm nay (DAILY)
 1. Mỗi mẻ (00:00 và 12:00 GMT+7, theo giờ chạy thật) pipeline chọn 1 món, ghi vào manifest: emoji, gợi ý mờ, khóa băm của tên (không có tên đọc được).
-2. Thực khách bấm "Thử thách": bàn riêng bắt đầu từ 4 phần tử khởi đầu (mặc định — câu hỏi mở), bộ đếm bắt đầu; mọi lượt ghép, kể cả trượt, đều tính 1 bước.
+2. Thực khách bấm "Thử thách": bàn riêng bắt đầu từ 4 phần tử khởi đầu (mặc định - câu hỏi mở), bộ đếm bắt đầu; mọi lượt ghép, kể cả trượt, đều tính 1 bước.
 3. Ghép ra món: tên lộ ra, client gửi đường ghép + số bước lên server.
 4. Server kiểm đường ghép có thật và hợp lệ → ghi kết quả, cập nhật streak, trả hạng.
 5. Thực khách xem bảng xếp hạng đợt, streak, tạo thẻ chia sẻ (SHARE).
@@ -112,7 +112,7 @@ Phân loại theo Luật BVDLCN 2025 + NĐ 356/2025: chỉ có **dữ liệu cá
 | Nickname | Cơ bản | Hiển thị trên bảng xếp hạng và Công thức gia truyền | Đến khi thực khách đổi/xóa | Lọc từ cấm + bí danh; đồng ý trước khi lưu |
 | IP | Cơ bản | Giới hạn tần suất, chống gian lận | Chỉ lưu dạng băm HMAC (khóa trong secret); xóa sau 7 ngày | Không lưu IP thô; không ghi IP vào log |
 | Sự kiện chơi | Cơ bản (gắn UUID) | Đo D1/D7, chia sẻ, ghép trượt | 90 ngày | Không IP, không user agent; xóa theo UUID khi thực khách xóa dữ liệu |
-| Bằng chứng đồng ý | Cơ bản | Chứng minh đồng ý | Theo vòng đời player + 1 năm sau khi xóa (mặc định — câu hỏi mở) | Append-only |
+| Bằng chứng đồng ý | Cơ bản | Chứng minh đồng ý | Theo vòng đời player + 1 năm sau khi xóa (mặc định - câu hỏi mở) | Append-only |
 
 - **Không gửi dữ liệu người chơi cho LLM** hay bất kỳ dịch vụ bên thứ ba nào. Gemini và Workers AI chỉ nhận dữ liệu meme công khai ⇒ không phát sinh chuyển dữ liệu cá nhân ra nước ngoài.
 - Không dùng cookie theo dõi; Cloudflare Web Analytics không cookie.
@@ -160,10 +160,10 @@ Stack là Cloudflare Worker + D1 + Python pipeline (không Docker/Postgres), nê
 - Lõi có 40 phần tử độ sâu 4–8 ⇒ ở nhịp 2 món/ngày, giai đoạn 1 dùng hết món chưa lặp sau ~20 ngày (cách lặp: câu hỏi mở).
 - Cron GitHub Actions có thể trễ ⇒ mọi thứ phụ thuộc giờ mẻ dùng `batch_at` thật trong manifest.
 - Hạn mức Workers AI và việc R2 có đòi thẻ thanh toán **cần kiểm tra** trước giai đoạn 2.
-- Graph mã hóa chống đọc trộm cả cây, **không** chống dò thử từng cặp — chấp nhận.
+- Graph mã hóa chống đọc trộm cả cây, **không** chống dò thử từng cặp - chấp nhận.
 - Không có đăng nhập ⇒ chấp nhận còn chút gian lận ở bảng xếp hạng và Công thức gia truyền.
 
 ## 9. Lịch sử thay đổi
 | Ngày | Phiên bản | Nội dung | Người duyệt |
 |---|---|---|---|
-| 2026-10-19 | 0.1 | Bản đầu từ phạm vi đã chốt (14 tính năng + bất biến); chia giai đoạn 1/2; thêm streak, bảng sự kiện D1 | — |
+| 2026-10-19 | 0.1 | Bản đầu từ phạm vi đã chốt (14 tính năng + bất biến); chia giai đoạn 1/2; thêm streak, bảng sự kiện D1 | - |

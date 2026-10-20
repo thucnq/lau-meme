@@ -1,6 +1,6 @@
-# 0008 — Trang quản trị ở tên miền con riêng
+# 0008 - Trang quản trị ở tên miền con riêng
 
-- Trạng thái: Đã chấp nhận (2026-10-20) — chờ `/dk:approve spec` + `/dk:approve contract` cho thay đổi contract và AC-ADMIN-10
+- Trạng thái: Đã chấp nhận (2026-10-20) - chờ `/dk:approve spec` + `/dk:approve contract` cho thay đổi contract và AC-ADMIN-10
 - Ngày: 2026-10-20
 - Nguồn: câu hỏi mở 19, chốt 2026-10-20: "Trang quản trị ở subdomain"
 

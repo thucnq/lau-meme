@@ -29,7 +29,7 @@ async function limited(req: Request, env: Env, player: string, statements: D1Pre
   return results.slice(limit.statements.length)
 }
 
-/** POST /api/consents — append-only grant/withdraw for the current policy version. */
+/** POST /api/consents - append-only grant/withdraw for the current policy version. */
 export async function createConsent(req: Request, env: Env): Promise<Response> {
   const player = playerId(req)
   const b = obj(await readJson(req), 'body', ['purpose', 'action', 'policy_version'])
@@ -57,7 +57,7 @@ export async function createConsent(req: Request, env: Env): Promise<Response> {
 const INVALID_NICKNAME = 'Nickname không hợp lệ' // never says which word was refused (AC-DISC-03)
 
 /**
- * PUT /api/me/nickname — needs both `play` and `nickname` consent (AC-PRIV-03); 2–20 allowed characters and no
+ * PUT /api/me/nickname - needs both `play` and `nickname` consent (AC-PRIV-03); 2–20 allowed characters and no
  * banned term or blocked alias inside its letters and digits (AC-DISC-02/03, AC-MOD-06).
  */
 export async function putNickname(req: Request, env: Env): Promise<Response> {
@@ -102,7 +102,7 @@ export async function putNickname(req: Request, env: Env): Promise<Response> {
 type DailyRow = { version: number; steps: number; submitted_at: number; rank: number }
 type StreakRow = { current: number; longest: number; last_day: string }
 
-/** GET /api/me — only the data of the UUID sent; an unknown UUID gets the empty structure (AC-PRIV-08). */
+/** GET /api/me - only the data of the UUID sent; an unknown UUID gets the empty structure (AC-PRIV-08). */
 export async function getMyData(req: Request, env: Env): Promise<Response> {
   const player = playerId(req)
   const db = env.DB
@@ -160,7 +160,7 @@ export async function getMyData(req: Request, env: Env): Promise<Response> {
 }
 
 /**
- * DELETE /api/me — idempotent erasure (AC-PRIV-05): personal rows go; discoveries and reports stay without the
+ * DELETE /api/me - idempotent erasure (AC-PRIV-05): personal rows go; discoveries and reports stay without the
  * UUID (reports still count); consent evidence stays and gets an `erase` row (kept 1 year, cleanup.ts).
  */
 export async function deleteMyData(req: Request, env: Env): Promise<Response> {

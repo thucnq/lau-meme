@@ -1,4 +1,4 @@
-# Tiêu chí nghiệm thu — Chính sách quyền riêng tư (PRIV)
+# Tiêu chí nghiệm thu - Chính sách quyền riêng tư (PRIV)
 
 > Giai đoạn 1. Dữ liệu cá nhân **cơ bản** (UUID, nickname, IP băm, sự kiện chơi) theo Luật BVDLCN 2025 + NĐ 356/2025. Không có dữ liệu nhạy cảm.
 > Component: web (trang chính sách, hộp đồng ý, quyền chủ thể), worker (lưu đồng ý, xuất/xóa, băm IP, dọn dữ liệu).
@@ -36,7 +36,7 @@
 ### AC-PRIV-06: IP chỉ lưu dạng băm, xóa sau 7 ngày
 - **Cho** mọi yêu cầu ghi có IP người gửi
 - **Khi** server cần IP để giới hạn tần suất hoặc ghi đồng ý
-- **Thì** chỉ lưu HMAC-SHA256(IP, khóa trong Cloudflare secret) — không có cột hay log nào chứa IP thô; tác vụ dọn hằng ngày xóa/ẩn danh hóa IP băm cũ hơn 7 ngày ở mọi bảng
+- **Thì** chỉ lưu HMAC-SHA256(IP, khóa trong Cloudflare secret) - không có cột hay log nào chứa IP thô; tác vụ dọn hằng ngày xóa/ẩn danh hóa IP băm cũ hơn 7 ngày ở mọi bảng
 - Ưu tiên: Bắt buộc
 
 ### AC-PRIV-07: Log không chứa dữ liệu cá nhân thô

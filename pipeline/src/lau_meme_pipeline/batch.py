@@ -1,6 +1,6 @@
 """One batch ("mẻ nhúng") end to end (AC-PIPE-01/11/13/14, ADR 0003/0006): `python -m lau_meme_pipeline.batch`.
 
-Phase 1 only runs the core mode: no crawl, no LLM — new Món đặc biệt, graph + manifest of a new version, publish
+Phase 1 only runs the core mode: no crawl, no LLM - new Món đặc biệt, graph + manifest of a new version, publish
 through the Worker API, report as a GitHub Issue. `run_batch` takes the batch time and every adapter as arguments;
 only `main` builds the network adapters.
 """
@@ -28,13 +28,13 @@ from lau_meme_pipeline.text import fold
 STEPS = ("state", "seed", "daily", "export", "check", "invariants", "banned", "publish", "report")
 GMT7 = timezone(timedelta(hours=7))
 TIMEOUT_SECONDS = 30
-# AC-PIPE-13: public meme data only — never anything about players.
+# AC-PIPE-13: public meme data only - never anything about players.
 ALLOWED_LLM_FIELDS = frozenset({"name", "quote", "context", "source_name", "element_name", "image_hint"})
 MAX_TERM = 100  # banned_term.term_fold limit in D1
 
 
 def version_for(batch_at: datetime) -> int:
-    """ADR 0006: the batch time in GMT+7 as YYYYMMDDHHmm — same batch, same version; later batch, larger."""
+    """ADR 0006: the batch time in GMT+7 as YYYYMMDDHHmm - same batch, same version; later batch, larger."""
     if batch_at.tzinfo is None:
         raise ValueError("batch_at phải có múi giờ")
     return int(batch_at.astimezone(GMT7).strftime("%Y%m%d%H%M"))
@@ -181,7 +181,7 @@ def _render_report(
 ) -> tuple[str, str]:
     """Title shows the dish's emoji only, never its name (AC-PIPE-14)."""
     status = "error" if failed_step else "success"
-    shown = str(version) if version is not None else "—"
+    shown = str(version) if version is not None else "-"
     title = f"Mẻ nhúng v{shown} · {mode} · {status}"
     if emoji:
         title += f" · Món đặc biệt {emoji}"
@@ -194,18 +194,18 @@ def _render_report(
         f"- Trạng thái: {status}",
     ]
     if failed_step:
-        lines.append(f"- Bước lỗi: {failed_step} — bản hiện hành giữ nguyên")
+        lines.append(f"- Bước lỗi: {failed_step} - bản hiện hành giữ nguyên")
     lines += [
         # Labels are the stats keys of the batch log (BatchStats), so the Issue reads like the admin page.
         f"- crawled: {stats.get('crawled', 0)} · added: {stats.get('added', 0)} · queued: {stats.get('queued', 0)}",
         "- blocked: " + (", ".join(f"{k} {v}" for k, v in sorted(blocked.items())) or "0"),
         "- Lỗi nguồn: " + (", ".join(f"{e.get('source')}: lỗi {e.get('error')}" for e in errors) or "không có"),
         f"- quota: {stats.get('quota_used', 0)} lượt gọi Gemini",
-        f"- Món đặc biệt: {emoji or '—'}",
+        f"- Món đặc biệt: {emoji or '-'}",
     ]
     # Only the count: the words themselves are secret (ADR 0005).
     if banned_count == 0:
-        lines.append("- ⚠️ BANNED_WORDS trống — bộ lọc nickname chưa có từ cấm (đặt GitHub Secret, xem runbook)")
+        lines.append("- ⚠️ BANNED_WORDS trống - bộ lọc nickname chưa có từ cấm (đặt GitHub Secret, xem runbook)")
     elif banned_count is not None:
         lines.append(f"- Từ cấm nickname: {banned_count} từ đã đồng bộ")
     if miss is not None:

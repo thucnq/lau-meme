@@ -1,6 +1,6 @@
-# Nội dung lõi — Lẩu Meme
+# Nội dung lõi - Lẩu Meme
 
-> Trạng thái: **bản lõi chờ duyệt** (giọng mặn, tỉ lệ Việt/quốc tế ~7/3). Sinh bởi `tools/noi_dung.py` — sửa dữ liệu ở đó rồi chạy lại,
+> Trạng thái: **bản lõi chờ duyệt** (giọng mặn, tỉ lệ Việt/quốc tế ~7/3). Sinh bởi `tools/noi_dung.py` - sửa dữ liệu ở đó rồi chạy lại,
 > không sửa tay file này. Bản máy đọc: `noi-dung-loi.json` (pipeline nạp làm lõi classic).
 
 Tổng: **139 phần tử**, **363 công thức**, 40 câu "Nồi trào", 3 ví dụ Món đặc biệt. Tự kiểm (script): mọi phần tử tới được từ 4 phần tử khởi đầu, không trùng cặp, không trùng tên sau khi bỏ dấu, không trùng emoji, tên ≤ 4 từ.
@@ -570,9 +570,9 @@ Cột Ảnh = gợi ý cho bước vẽ minh họa: vẽ **khái niệm**, khôn
 
 Cùng một cặp luôn ra cùng một câu (chọn theo băm của cặp).
 
-## 5. Món đặc biệt hôm nay — 3 ví dụ
+## 5. Món đặc biệt hôm nay - 3 ví dụ
 
-### 📈 Stonks — gợi ý: "Mất sạch mà vẫn thấy ổn"
+### 📈 Stonks - gợi ý: "Mất sạch mà vẫn thấy ổn"
 
 1. 😂 Cười + ⏰ Deadline → 🐌 Để Mai Tính
 2. 🐌 Để Mai Tính + 🌶️ Cay → ⏳ Lương Tháng Sau
@@ -580,7 +580,7 @@ Cùng một cặp luôn ra cùng một câu (chọn theo băm của cặp).
 4. 😂 Cười + 💀 Toang → ☕ This Is Fine
 5. 👖 Còn Cái Nịt + ☕ This Is Fine → 📈 Stonks
 
-### 💍 Bao Giờ Cưới — gợi ý: "Câu hỏi bất hủ mỗi dịp Tết"
+### 💍 Bao Giờ Cưới - gợi ý: "Câu hỏi bất hủ mỗi dịp Tết"
 
 1. ⏰ Deadline + ⏰ Deadline → 🌙 Thức Trắng
 2. 😂 Cười + 🌙 Thức Trắng → 😍 Crush
@@ -588,7 +588,7 @@ Cùng một cặp luôn ra cùng một câu (chọn theo băm của cặp).
 4. 🎣 Thả Thính + 🎣 Thả Thính → 🧸 Có Gấu
 5. ⏰ Deadline + 🧸 Có Gấu → 💍 Bao Giờ Cưới
 
-### 👛 Mẹ Giữ Hộ — gợi ý: "Tiền của bạn, nhưng người khác giữ... vĩnh viễn"
+### 👛 Mẹ Giữ Hộ - gợi ý: "Tiền của bạn, nhưng người khác giữ... vĩnh viễn"
 
 1. 😂 Cười + ⏰ Deadline → 🐌 Để Mai Tính
 2. 🐌 Để Mai Tính + 🌶️ Cay → ⏳ Lương Tháng Sau
@@ -600,7 +600,7 @@ Cùng một cặp luôn ra cùng một câu (chọn theo băm của cặp).
 
 ## 6. Chỉ số
 
-- Ghép trượt khi chơi ngẫu nhiên 100 lượt (mô phỏng 2.000 ván): **≈ 67%** (20 lượt đầu ≈ 41%). NFR đã chốt (Q13): 20 lượt đầu ≤ 45%, cả ván ≤ 70% — **đạt**.
+- Ghép trượt khi chơi ngẫu nhiên 100 lượt (mô phỏng 2.000 ván): **≈ 67%** (20 lượt đầu ≈ 41%). NFR đã chốt (Q13): 20 lượt đầu ≤ 45%, cả ván ≤ 70% - **đạt**.
 - Người chơi thật không ghép ngẫu nhiên (họ thử theo nghĩa), nên tỉ lệ thực tế thấp hơn; mô phỏng này là cận trên để so sánh giữa các bản.
 
 ## 7. Vì sao không dùng mốc ≤ 40% (đã chốt Q13)
@@ -608,5 +608,5 @@ Cùng một cặp luôn ra cùng một câu (chọn theo băm của cặp).
 Tập đóng viết tay không thể dày bằng Infinite Craft (ở đó LLM trả lời mọi cặp). Với ~140 phần tử có ~10.000 cặp; muốn ngẫu nhiên trượt ≤ 40% cần hàng nghìn công thức. Ba hướng:
 1. **Đổi cách đo** NFR thành "20 lượt đầu ≤ 45%" (trải nghiệm lúc mới vào, quyết định người chơi có ở lại không) và "cả ván ≤ 70%".
 2. **Bước "công thức bổ sung" của pipeline** sinh thêm hàng loạt cặp giữa các phần tử đã có (LLM + giám khảo), mỗi đợt tăng mật độ; theo dõi chỉ số này trong báo cáo đợt.
-3. **"Nồi trào có gợi ý"**: khi trượt, thỉnh thoảng gợi ý một phần tử nên thử cùng (lấy từ công thức có thật) — giảm cảm giác bế tắc mà không lộ đáp án.
+3. **"Nồi trào có gợi ý"**: khi trượt, thỉnh thoảng gợi ý một phần tử nên thử cùng (lấy từ công thức có thật) - giảm cảm giác bế tắc mà không lộ đáp án.
 Đã chốt 19/10: làm cả 3 hướng.

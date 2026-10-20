@@ -1,6 +1,6 @@
 /**
  * localStorage on the shared dinoduct.fun origin (ADR 0007): every key carries the `laumeme:` prefix so games never
- * collide. The prefix is not a security boundary — nothing sensitive is stored client-side.
+ * collide. The prefix is not a security boundary - nothing sensitive is stored client-side.
  */
 export const PREFIX = 'laumeme:'
 

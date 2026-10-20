@@ -17,3 +17,4 @@ review-feat-report: approved
 review-feat-daily-ui: approved
 review-feat-mod: approved
 review-feat-inv: approved
+review-feat-admin: approved

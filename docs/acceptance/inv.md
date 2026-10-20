@@ -72,5 +72,5 @@
 ### AC-INV-12: Tỉ lệ ghép trượt khi chơi ngẫu nhiên
 - **Cho** graph sắp deploy và bộ mô phỏng chơi ngẫu nhiên (1 000 ván, seed cố định, mỗi ván 100 lượt chọn ngẫu nhiên 2 phần tử từ Đĩa hiện có)
 - **Khi** chạy mô phỏng
-- **Thì** tỉ lệ trượt trung bình 20 lượt đầu ≤ 45 % và cả ván ≤ 70 %; không đạt thì đợt vẫn đăng nhưng báo cáo đợt cảnh báo (mặc định — lõi hiện tại ≈ 41 % / ≈ 67 %)
+- **Thì** tỉ lệ trượt trung bình 20 lượt đầu ≤ 45 % và cả ván ≤ 70 %; không đạt thì đợt vẫn đăng nhưng báo cáo đợt cảnh báo (mặc định - lõi hiện tại ≈ 41 % / ≈ 67 %)
 - Ưu tiên: Bắt buộc

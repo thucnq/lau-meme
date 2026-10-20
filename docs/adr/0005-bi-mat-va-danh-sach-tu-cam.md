@@ -1,4 +1,4 @@
-# 0005 — Bí mật và danh sách từ cấm không nằm trong repo public
+# 0005 - Bí mật và danh sách từ cấm không nằm trong repo public
 
 - Trạng thái: Đề xuất
 - Ngày: 2026-10-20

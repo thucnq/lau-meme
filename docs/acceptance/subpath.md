@@ -1,4 +1,4 @@
-# Tiêu chí nghiệm thu — Chạy dưới đường dẫn con dinoduct.fun/lau-meme (SUBPATH)
+# Tiêu chí nghiệm thu - Chạy dưới đường dẫn con dinoduct.fun/lau-meme (SUBPATH)
 
 > Component: worker, web, pipeline. Quyết định: Q15 trong `docs/input/ghi-chu-hop.md`, ADR 0007.
 > Production `https://dinoduct.fun/lau-meme`, staging `https://staging.dinoduct.fun/lau-meme`. Gốc `dinoduct.fun/` do Redirect Rule

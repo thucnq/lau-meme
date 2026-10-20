@@ -35,7 +35,7 @@ export type CombineOutcome =
 
 export const PROGRESS_KEY = storageKey('game.progress')
 export const THEME_KEY = storageKey('theme')
-export const HINT_AFTER_MISSES = 3 // open question 9 — default
+export const HINT_AFTER_MISSES = 3 // open question 9 - default
 export const EMPTY_BLOCKLIST: Blocklist = { elements: [], recipes: [], images: [] }
 
 const SORT_MODES: readonly SortMode[] = ['newest', 'name', 'depth']

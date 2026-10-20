@@ -1,6 +1,6 @@
 # Cài đặt máy dev
 
-Chạy trong WSL2 Ubuntu (repo ở `~/code/…`, không ở `/mnt/c`) — `/dk:doctor` kiểm tra tất cả.
+Chạy trong WSL2 Ubuntu (repo ở `~/code/…`, không ở `/mnt/c`) - `/dk:doctor` kiểm tra tất cả.
 
 ```bash
 # Python ≥ 3.11 + uv (hoặc pip)

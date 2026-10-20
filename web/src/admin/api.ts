@@ -1,6 +1,6 @@
 /**
  * Admin API client (ADR 0008): the page is always served at `/` of the admin origin, so the relative `api/admin/*`
- * resolves to `/api/admin/*` there (no game base path; the build never holds a root `/api/` path — AC-SUBPATH-07).
+ * resolves to `/api/admin/*` there (no game base path; the build never holds a root `/api/` path - AC-SUBPATH-07).
  * The token only ever goes into the Authorization header of these requests.
  */
 export type State = 'active' | 'hidden' | 'blocked'
@@ -47,7 +47,7 @@ export type AuditItem = {
   created_at: string
 }
 
-/** 401: the token is wrong (or was rotated) — the page drops it and asks again. */
+/** 401: the token is wrong (or was rotated) - the page drops it and asks again. */
 export class AuthError extends Error {}
 /** 429 after too many wrong tokens from this IP (AC-ADMIN-02). */
 export class LockedError extends Error {

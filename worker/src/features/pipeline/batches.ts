@@ -137,7 +137,7 @@ async function maxPublishedVersion(db: D1Database): Promise<number> {
   return row?.v ?? 0
 }
 
-/** POST /api/pipeline/batches — AC-GRAPH-04/05, AC-PIPE-11. */
+/** POST /api/pipeline/batches - AC-GRAPH-04/05, AC-PIPE-11. */
 export async function publishBatch(req: Request, env: Env): Promise<Response> {
   const body = await readJson(req)
   const now = Date.now()
@@ -256,7 +256,7 @@ function insertRun(db: D1Database, run: BatchRunRow, dailyElementId: string | nu
     .bind(run.id, run.version, run.batch_at, run.mode, run.status, run.failed_step, run.rollback_to, dailyElementId, run.stats_json, run.issue_url, run.created_at)
 }
 
-/** POST /api/pipeline/rollback — AC-GRAPH-06/07. */
+/** POST /api/pipeline/rollback - AC-GRAPH-06/07. */
 export async function rollbackBatch(req: Request, env: Env): Promise<Response> {
   const body = obj(await readJson(req), 'body', ['version'], [])
   const requested = body.version === undefined ? null : int(body.version, 'version', 1)
@@ -297,7 +297,7 @@ export async function rollbackBatch(req: Request, env: Env): Promise<Response> {
 const DAILY_HISTORY_LIMIT = 1000
 
 /**
- * GET /api/pipeline/state — AC-PIPE-13: content and anonymous aggregates only, never a player table.
+ * GET /api/pipeline/state - AC-PIPE-13: content and anonymous aggregates only, never a player table.
  * One D1 round trip.
  */
 export async function getPipelineState(_req: Request, env: Env): Promise<Response> {
@@ -342,7 +342,7 @@ async function readIssueUrl(req: Request): Promise<string> {
   }
 }
 
-/** PATCH /api/pipeline/batches/{id} — AC-PIPE-14: link the GitHub Issue of the batch report. */
+/** PATCH /api/pipeline/batches/{id} - AC-PIPE-14: link the GitHub Issue of the batch report. */
 export async function patchBatchRun(req: Request, env: Env, _ctx: ExecutionContext, params: string[]): Promise<Response> {
   const id = params[0] ?? ''
   if (!UUID.test(id)) throw new HttpError(400, 'Dữ liệu không hợp lệ', 'id: phải là UUID')

@@ -1,16 +1,16 @@
-# Ghi chú họp — Lẩu Meme
+# Ghi chú họp - Lẩu Meme
 
 > Nguồn: các buổi trao đổi ngày 2026-10-19 giữa Thuc (chủ dự án, người duy nhất làm) và Claude.
 > Dùng làm đầu vào cho `/dk:spec docs/input/`. Đây là ghi chú, **không phải** BRD hay AC.
 
 ## 1. Sản phẩm
 
-- **Tên**: Lẩu Meme. (Đã cân nhắc và bỏ: Meme Craft, mememories — khó gõ, không nói cách chơi.)
+- **Tên**: Lẩu Meme. (Đã cân nhắc và bỏ: Meme Craft, mememories - khó gõ, không nói cách chơi.)
 - **Là gì**: web game kiểu Infinite Craft (neal.fun/infinite-craft). Người chơi kéo 2 phần tử thả vào **nồi lẩu** để ghép ra phần tử mới. Nội dung là meme.
 - **Đối tượng**: người Việt dùng mạng xã hội. Nội dung = meme Việt + meme quốc tế mà người Việt biết.
 - **Mục tiêu**: viral công khai. Quảng cáo/kiếm tiền tính sau, **không** làm ở bản đầu.
 - **Nguồn lực**: dự án cá nhân, chỉ Thuc làm, khoảng **20 giờ/tuần**. Không báo giá.
-- **Mốc**: go-live **sớm nhất có thể**, ra mắt công khai luôn — **không làm beta kín**.
+- **Mốc**: go-live **sớm nhất có thể**, ra mắt công khai luôn - **không làm beta kín**.
 
 ### Chỉ số thành công
 - Tỉ lệ người chơi quay lại ngày hôm sau (D1 retention) và sau 7 ngày (D7).
@@ -30,8 +30,8 @@
 | Q5 | LLM chạy lô: **Gemini free tier** | Chi phí $0. Chấp nhận giới hạn quota và chất lượng hài tiếng Việt không đều ⇒ cần bước "giám khảo" |
 | Q6 | **Daily Meme** ("Món đặc biệt hôm nay") **và First Discovery** ("Công thức gia truyền") ngay từ bản đầu | Hai động cơ viral: thẻ chia sẻ kiểu Wordle và cảm giác "người đầu tiên trên thế giới" |
 | Q7 | Pipeline viết bằng **Python** | Thư viện crawl và Gemini SDK sẵn, chạy nhẹ trên GitHub Actions |
-| Q8 | Hạ tầng: Cloudflare (Worker TypeScript phục vụ cả web tĩnh lẫn API, D1), GitHub Actions cron, repo **public** | Chi phí vận hành $0, không tính domain. Repo public để Actions miễn phí — vì vậy **không bí mật nào được nằm trong repo** |
-| Q9 | Mỗi phần tử có **ảnh minh họa tự tạo** (cập nhật 19/10 14:28). **Không dùng ảnh meme gốc**: ảnh gốc có bản quyền và thường có mặt người thật (quyền hình ảnh, Luật BVDLCN 2025). Ảnh do AI vẽ lại **khái niệm**, một phong cách thống nhất (sticker, có nồi lẩu khi hợp), không người thật, không chép bố cục/nhân vật có bản quyền. Emoji luôn hiện trước, ảnh tải sau; ảnh lỗi hoặc bị chặn thì giữ emoji | Người chơi muốn có hình; vẽ lại khái niệm là cách duy nhất vừa có hình vừa không vi phạm. Vẽ bằng Workers AI (FLUX.1 schnell) — gói free có hạn mức neuron/ngày đủ cho vài trăm ảnh nhỏ/ngày (**cần kiểm tra** con số hiện hành); Gemini free không có tạo ảnh |
+| Q8 | Hạ tầng: Cloudflare (Worker TypeScript phục vụ cả web tĩnh lẫn API, D1), GitHub Actions cron, repo **public** | Chi phí vận hành $0, không tính domain. Repo public để Actions miễn phí - vì vậy **không bí mật nào được nằm trong repo** |
+| Q9 | Mỗi phần tử có **ảnh minh họa tự tạo** (cập nhật 19/10 14:28). **Không dùng ảnh meme gốc**: ảnh gốc có bản quyền và thường có mặt người thật (quyền hình ảnh, Luật BVDLCN 2025). Ảnh do AI vẽ lại **khái niệm**, một phong cách thống nhất (sticker, có nồi lẩu khi hợp), không người thật, không chép bố cục/nhân vật có bản quyền. Emoji luôn hiện trước, ảnh tải sau; ảnh lỗi hoặc bị chặn thì giữ emoji | Người chơi muốn có hình; vẽ lại khái niệm là cách duy nhất vừa có hình vừa không vi phạm. Vẽ bằng Workers AI (FLUX.1 schnell) - gói free có hạn mức neuron/ngày đủ cho vài trăm ảnh nhỏ/ngày (**cần kiểm tra** con số hiện hành); Gemini free không có tạo ảnh |
 | Q12 | Giọng hài **càng mặn càng tốt** trong giới hạn danh mục cấm; tỉ lệ meme **Việt / quốc tế = 7 / 3** | Chốt 19/10 14:28 |
 | Q13 | NFR ghép trượt đổi thành **20 lượt đầu ≤ 45%, cả ván ≤ 70%** (chơi ngẫu nhiên, mô phỏng); pipeline sinh công thức bổ sung hàng loạt mỗi đợt; khi trượt thỉnh thoảng **gợi ý một phần tử nên thử** (lấy từ công thức có thật, không lộ kết quả) | Chốt 19/10 15:23. Tập đóng không dày được như Infinite Craft |
 | Q14 | Ảnh lưu ở **R2**, tên file theo băm nội dung (`/img/<sha256-12>.webp`), phục vụ qua Worker với Cache API + `Cache-Control: public, max-age=31536000, immutable`; WebP 256×256 (~10–20 KB). Dự phòng nếu không mở được R2: kho ảnh trong repo riêng, đóng gói làm static assets mỗi lần deploy | Rẻ nhất + nhanh nhất: R2 free 10 GB, 10 triệu lượt đọc/tháng, không phí băng thông; file bất biến nên gần như mọi lượt đọc trúng cache biên. **Cần kiểm tra** R2 có bắt khai báo thẻ thanh toán không. Chốt 19/10 15:23 (ADR ở /dk:design) |
@@ -61,7 +61,7 @@ Quảng cáo, đăng nhập tài khoản, ảnh/video meme, app mobile, đa ngô
 
 ## 5. Yêu cầu chức năng
 
-### 5.1 GAME — chơi ghép
+### 5.1 GAME - chơi ghép
 - Màn hình chính: **nồi lẩu ở giữa** có 2 chỗ thả. Thả đủ 2 phần tử ⇒ nồi sôi, bốc hơi, món mới "trồi lên". Hiệu ứng tối đa ~1,2 giây và **bỏ qua được** (chạm để bỏ qua).
 - Vẫn cho **thả chồng trực tiếp** 2 phần tử lên nhau trên mặt bàn để ghép nhanh (hiệu ứng hơi lẩu nhỏ).
 - Đĩa nhúng: danh sách phần tử đã có, ô tìm kiếm (gõ không dấu vẫn tìm được), sắp xếp theo thời gian khám phá / tên / độ sâu.
@@ -71,7 +71,7 @@ Quảng cáo, đăng nhập tài khoản, ảnh/video meme, app mobile, đa ngô
 - Thao tác chuột và cảm ứng đều mượt; chơi được trên màn hình rộng 375 px.
 - Giao diện tiếng Việt, có chế độ tối. Hướng dẫn 1 màn hình ở lần đầu.
 
-### 5.2 DAILY — Món đặc biệt hôm nay
+### 5.2 DAILY - Món đặc biệt hôm nay
 - Mỗi đợt (0h, 12h) chọn **1 món** làm thử thách: ghép ra nó trong ít bước nhất.
 - Công bố trước: emoji + 1 gợi ý mờ. Tên chỉ lộ ra khi người chơi ghép được.
 - Đếm số bước ghép (mọi lượt ghép kể từ khi bắt đầu thử thách, kể cả trượt).
@@ -79,13 +79,13 @@ Quảng cáo, đăng nhập tài khoản, ảnh/video meme, app mobile, đa ngô
 - Bảng xếp hạng ít bước nhất trong đợt (theo nickname).
 - Đồng hồ đếm ngược tới mẻ nhúng tiếp theo.
 
-### 5.3 DISCOVERY — Công thức gia truyền
+### 5.3 DISCOVERY - Công thức gia truyền
 - Người chơi ẩn danh: UUID sinh và lưu cục bộ + nickname tùy chọn (lọc từ cấm, giới hạn độ dài).
 - Khi ghép ra phần tử **chưa ai báo về**, client gửi lên server; server **kiểm tra công thức có thật** rồi ghi nhận người đầu tiên.
 - Hiển thị "Công thức gia truyền của <nickname>" trên phần tử đó cho mọi người + thẻ chia sẻ.
 - Giới hạn tần suất theo UUID và IP để giảm gian lận. Chấp nhận còn chút gian lận vì không có đăng nhập.
 
-### 5.4 PIPELINE — mẻ nhúng 2 lần/ngày (Python, GitHub Actions cron 17:00 và 05:00 UTC)
+### 5.4 PIPELINE - mẻ nhúng 2 lần/ngày (Python, GitHub Actions cron 17:00 và 05:00 UTC)
 Thứ tự bước:
 1. **Crawl** khái niệm meme (tên, câu nói, ngữ cảnh, link nguồn). **Không tải ảnh.** Nguồn hợp lệ, tôn trọng robots.txt và điều khoản: Reddit API, Know Your Meme, Google Trends VN, YouTube trending, RSS trang giải trí Việt. **Không scrape Facebook/TikTok.** Mỗi nguồn một adapter; một nguồn lỗi không làm hỏng cả đợt.
 2. **Khử trùng**: so khớp chuỗi (bỏ dấu, chữ thường) trước, rồi mới hỏi LLM cho các ca gần giống; bỏ meme đã có.
@@ -100,7 +100,7 @@ Thứ tự bước:
 
 Yêu cầu chung: idempotent (chạy lại cùng đợt cho cùng kết quả); **lỗi giữa chừng không đăng gì, giữ nguyên bản cũ**; có lệnh chạy tay; gom nhiều meme vào một lời gọi Gemini, retry có backoff, hết quota thì dừng êm và để phần còn lại cho đợt sau; chỉ gửi dữ liệu meme công khai cho Gemini.
 
-### 5.5 AN TOÀN — vì tự động đăng
+### 5.5 AN TOÀN - vì tự động đăng
 - Nút "Báo cáo" trên mỗi phần tử (chọn lý do).
 - Đủ **3 báo cáo từ 3 UUID khác nhau** ⇒ phần tử tự ẩn ngay, không chờ người.
 - **Danh sách chặn nóng** trên server: client tải khi khởi động; ẩn/chặn một phần tử có hiệu lực ngay, không cần deploy.
@@ -115,7 +115,7 @@ Yêu cầu chung: idempotent (chạy lại cùng đợt cho cùng kết quả); 
 | Nhóm | Yêu cầu |
 |---|---|
 | Hiệu năng | Ghép phản hồi < 50 ms (tra trong bộ nhớ, không gọi mạng); tải trang đầu < 2 s trên 4G |
-| Nội dung | Ghép trượt khi chơi ngẫu nhiên (mô phỏng): **20 lượt đầu ≤ 45%, cả ván 100 lượt ≤ 70%** (Q13). Lõi hiện tại: ≈ 41% / ≈ 67% — đạt |
+| Nội dung | Ghép trượt khi chơi ngẫu nhiên (mô phỏng): **20 lượt đầu ≤ 45%, cả ván 100 lượt ≤ 70%** (Q13). Lõi hiện tại: ≈ 41% / ≈ 67% - đạt |
 | Pipeline | Một đợt < 15 phút và nằm trong quota Gemini free |
 | Thiết bị | Màn hình 375 px trở lên; Chrome/Safari di động 2 bản gần nhất |
 | Ngôn ngữ | Tiếng Việt; tìm kiếm không dấu |
@@ -125,7 +125,7 @@ Yêu cầu chung: idempotent (chạy lại cùng đợt cho cùng kết quả); 
 | Vận hành | Báo cáo mỗi đợt; khôi phục được trong 5 phút (ẩn nóng hoặc rollback) |
 
 ### 6.1 Chống lộ đáp án
-`graph` công khai không được chứa công thức dạng đọc được: khóa tra cứu là băm của cặp tên đã chuẩn hóa; kết quả mã hóa bằng khóa dẫn xuất từ chính 2 tên đầu vào ⇒ chỉ ai đang có cả 2 phần tử mới mở được. Cơ chế này chống đọc trộm cả cây, **không** chống người dò thử từng cặp — chấp nhận.
+`graph` công khai không được chứa công thức dạng đọc được: khóa tra cứu là băm của cặp tên đã chuẩn hóa; kết quả mã hóa bằng khóa dẫn xuất từ chính 2 tên đầu vào ⇒ chỉ ai đang có cả 2 phần tử mới mở được. Cơ chế này chống đọc trộm cả cây, **không** chống người dò thử từng cặp - chấp nhận.
 
 ## 7. Danh mục nội dung cấm
 - Tên hoặc hình ảnh **người thật** bị chế giễu (kể cả người nổi tiếng).
@@ -134,11 +134,11 @@ Yêu cầu chung: idempotent (chạy lại cùng đợt cho cùng kết quả); 
 - Bạo lực; ma túy; tự hại.
 - Nickname người chơi áp cùng danh mục.
 
-### 7.1 Người thật — luật nhận diện (chốt 19/10 15:23)
-- **Phép thử**: nếu người chơi Việt bình thường đọc phần tử (tên, emoji, ảnh, mô tả, gợi ý Daily) mà **nhận ra một người cụ thể**, thì coi như đã nêu tên — dù chỉ là viết tắt (vd "TG"), biệt danh, tên vai diễn, nghệ danh, câu cửa miệng gắn với họ, hay ảnh "na ná". Viết tắt/biệt danh **không** làm giảm rủi ro pháp lý; nó còn cho thấy cố ý ám chỉ.
+### 7.1 Người thật - luật nhận diện (chốt 19/10 15:23)
+- **Phép thử**: nếu người chơi Việt bình thường đọc phần tử (tên, emoji, ảnh, mô tả, gợi ý Daily) mà **nhận ra một người cụ thể**, thì coi như đã nêu tên - dù chỉ là viết tắt (vd "TG"), biệt danh, tên vai diễn, nghệ danh, câu cửa miệng gắn với họ, hay ảnh "na ná". Viết tắt/biệt danh **không** làm giảm rủi ro pháp lý; nó còn cho thấy cố ý ám chỉ.
 - **Không bao giờ**: phần tử nhận ra được người thật gắn với cáo buộc (ứng xử, quấy rối, tình dục, pháp lý, nợ nần, đời tư), kể cả khi báo chí đang đưa tin; đùa về quấy rối/xâm hại dưới mọi hình thức (cả dạng chung chung).
 - **Được phép**: câu nói đã thành tiếng lóng chung, tách khỏi người gốc và không chế giễu ai ("ét o ét", "còn cái nịt"); **hiện tượng** chung không chỉ vào ai ("Đào Mả Phốt", "Fan Quay Xe", "Tâm Thư Xin Lỗi"). Mô tả, gợi ý Daily và ảnh của các phần tử này **không** nhắc vụ việc hay người đang là tâm điểm.
-- **Thời điểm**: khi một hiện tượng chung đang nóng vì **một** vụ của **một** người (nhất là vụ có yếu tố quấy rối), không chọn phần tử đó làm Món đặc biệt và không gắn nhãn "MỚI" nổi bật cho tới khi tin nguội (đề xuất 30 ngày) — tránh để cả game thành "câu chuyện về người đó".
+- **Thời điểm**: khi một hiện tượng chung đang nóng vì **một** vụ của **một** người (nhất là vụ có yếu tố quấy rối), không chọn phần tử đó làm Món đặc biệt và không gắn nhãn "MỚI" nổi bật cho tới khi tin nguội (đề xuất 30 ngày) - tránh để cả game thành "câu chuyện về người đó".
 - **Pipeline**: kiểm duyệt dựa trên **ngữ cảnh nguồn**, không chỉ tiêu đề: adapter crawl gửi kèm đoạn nguồn; LLM trả lời "khái niệm này có trỏ tới một người cụ thể trong nguồn không, là ai, các tên gọi khác là gì"; mọi tên gọi khác đó vào danh sách chặn bí danh (áp cho cả nickname người chơi). Không chắc thì loại.
 - Ảnh minh họa: thêm cấm mặt người giống người thật, logo/thương hiệu, nhân vật có bản quyền (vd không vẽ lại ảnh Doge gốc, truyện "This is fine" gốc, Pepe), chữ trong ảnh.
 
@@ -165,10 +165,10 @@ Yêu cầu chung: idempotent (chạy lại cùng đợt cho cùng kết quả); 
 - Ảnh AI có thể vô tình giống người thật hoặc nhân vật có bản quyền ⇒ kiểm duyệt ảnh tự động + nút báo cáo áp cho cả ảnh; ảnh bị báo cáo thì về emoji ngay.
 
 ## 11. Câu hỏi mở
-1. ~~Domain~~ — đã chốt Q15 (dinoduct.fun/lau-meme).
+1. ~~Domain~~ - đã chốt Q15 (dinoduct.fun/lau-meme).
 2. Đo chỉ số: Cloudflare Web Analytics (không cookie) có đủ, hay cần bảng sự kiện riêng trong D1?
 3. Bảng xếp hạng Daily: chỉ đợt hiện tại, hay có thêm bảng "chuỗi ngày liên tiếp" (streak)?
 4. Khi một meme trend bị ẩn do báo cáo, các công thức đi ra từ nó xử lý thế nào: ẩn theo, hay giữ nhưng không gợi ý?
-5. Kênh ra mắt: Facebook group, TikTok, hay cả hai — có cần trang giới thiệu riêng không?
-6. ~~NFR ghép trượt~~ — đã chốt Q13.
-7. ~~Lưu ảnh ở đâu~~ — đã chốt Q14 (R2 + cache biên); còn kiểm tra R2 có cần thẻ thanh toán.
+5. Kênh ra mắt: Facebook group, TikTok, hay cả hai - có cần trang giới thiệu riêng không?
+6. ~~NFR ghép trượt~~ - đã chốt Q13.
+7. ~~Lưu ảnh ở đâu~~ - đã chốt Q14 (R2 + cache biên); còn kiểm tra R2 có cần thẻ thanh toán.

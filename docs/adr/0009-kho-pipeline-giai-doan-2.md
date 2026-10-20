@@ -1,6 +1,6 @@
-# 0009 — Kho pipeline giai đoạn 2 lưu trong D1, đăng cùng mẻ
+# 0009 - Kho pipeline giai đoạn 2 lưu trong D1, đăng cùng mẻ
 
-- Trạng thái: Đề xuất (chờ người duyệt — thêm endpoint, trường và migration)
+- Trạng thái: Đề xuất (chờ người duyệt - thêm endpoint, trường và migration)
 - Ngày: 2026-10-20
 - Nguồn: PIPE giai đoạn 2 (AC-PIPE-03..10, 12), MOD (AC-MOD-08/10), INV (AC-INV-03/05/06)
 

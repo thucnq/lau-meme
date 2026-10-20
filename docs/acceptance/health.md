@@ -1,8 +1,8 @@
-# Tiêu chí nghiệm thu — Sức khỏe hệ thống (HEALTH)
+# Tiêu chí nghiệm thu - Sức khỏe hệ thống (HEALTH)
 
 > Tính năng mẫu để minh họa cấu trúc và quy ước AC cho 3 ngôn ngữ. Giữ lại (health check cần cho `/dk:ship`)
 > hoặc sửa theo dự án.
-> Quy ước gắn AC vào test: TypeScript — tiêu đề `it("AC-HEALTH-01: …")`; Python — tên hàm `test_ac_health_03_…`.
+> Quy ước gắn AC vào test: TypeScript - tiêu đề `it("AC-HEALTH-01: …")`; Python - tên hàm `test_ac_health_03_…`.
 
 ### AC-HEALTH-01: API sức khỏe
 - **Cho** Worker đã chạy migration

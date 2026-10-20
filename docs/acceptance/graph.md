@@ -1,6 +1,6 @@
-# Tiêu chí nghiệm thu — Graph mã hóa + manifest + rollback (GRAPH)
+# Tiêu chí nghiệm thu - Graph mã hóa + manifest + rollback (GRAPH)
 
-> Giai đoạn 1. Component: pipeline (xuất graph, manifest, rollback — logic thuần), worker (phục vụ manifest/graph), web (giải mã).
+> Giai đoạn 1. Component: pipeline (xuất graph, manifest, rollback - logic thuần), worker (phục vụ manifest/graph), web (giải mã).
 > Thuật toán cụ thể (hàm băm, KDF, mã hóa) chốt ở `/dk:design` (ADR). AC chỉ ràng buộc tính chất.
 
 ### AC-GRAPH-01: Khóa tra cứu là băm của cặp tên đã chuẩn hóa

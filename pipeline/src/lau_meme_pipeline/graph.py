@@ -91,7 +91,7 @@ def decrypt_entry(graph: Mapping, a: str, b: str) -> dict | None:
 
 
 def open_entry(graph: Mapping, key: str, a_fold: str, b_fold: str) -> bytes | None:
-    """Raw plaintext of the entry stored under `key`, opened with the key of (a_fold, b_fold) — None if it fails."""
+    """Raw plaintext of the entry stored under `key`, opened with the key of (a_fold, b_fold) - None if it fails."""
     value = graph.get("entries", {}).get(key)
     if not isinstance(value, str):
         return None

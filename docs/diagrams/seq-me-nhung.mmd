@@ -1,4 +1,4 @@
-%% Mẻ nhúng chế độ lõi (giai đoạn 1) và rollback — AC-PIPE-01/11/14, AC-GRAPH-04..07, ADR 0003
+%% Mẻ nhúng chế độ lõi (giai đoạn 1) và rollback - AC-PIPE-01/11/14, AC-GRAPH-04..07, ADR 0003
 sequenceDiagram
   autonumber
   participant GA as GitHub Actions (pipeline)
@@ -12,7 +12,7 @@ sequenceDiagram
   GA->>W: GET /pipeline/state
   W->>D1: version hiện hành, chặn, bí danh, lịch sử Daily, tỉ lệ Nhạt
   W-->>GA: trạng thái (không dữ liệu người chơi)
-  Note over GA: logic thuần: nạp lõi (SEED), chọn món (DAILY-01),<br/>xuất graph + manifest version V+1 với batch_at = T,<br/>chạy kiểm INV — lỗi thì không đăng
+  Note over GA: logic thuần: nạp lõi (SEED), chọn món (DAILY-01),<br/>xuất graph + manifest version V+1 với batch_at = T,<br/>chạy kiểm INV - lỗi thì không đăng
   alt mọi bước đạt
     GA->>W: POST /pipeline/batches {status: success, version V+1, …}
     W->>D1: DB.batch: upsert element/recipe (json_each), batch_content,<br/>current_version = V+1, batch_run, xóa version ngoài 14 bản

@@ -1,6 +1,6 @@
 import { HttpError } from './http'
 
-/** Anonymous player (ADR 0004): `X-Player-Id` = browser UUID v4. Not authentication — only an owner key. */
+/** Anonymous player (ADR 0004): `X-Player-Id` = browser UUID v4. Not authentication - only an owner key. */
 const UUID_V4 = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
 
 /** Player id when the header is present, null when absent; a malformed id is a 400. */

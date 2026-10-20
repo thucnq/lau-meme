@@ -1,4 +1,4 @@
-# Tiêu chí nghiệm thu — Chơi ghép / Nhúng lẩu (GAME)
+# Tiêu chí nghiệm thu - Chơi ghép / Nhúng lẩu (GAME)
 
 > Giai đoạn 1. Component: web (React) + logic tra graph thuần trong client. Test chạy ở ranh giới component/module, graph và manifest giả lập.
 > Từ vựng: Nhúng lẩu = ghép; Nồi trào / Khét rồi = ghép trượt; Đĩa nhúng = kho phần tử của người chơi.
@@ -9,7 +9,7 @@
 - **Thì** Đĩa nhúng có đúng 4 phần tử khởi đầu lấy từ manifest (🌶️ Cay, 😂 Cười, 💀 Toang, ⏰ Deadline với lõi hiện tại); nồi lẩu ở giữa có 2 chỗ thả trống
 - Ưu tiên: Bắt buộc
 
-### AC-GAME-02: Nhúng lẩu qua nồi — ghép thành công
+### AC-GAME-02: Nhúng lẩu qua nồi - ghép thành công
 - **Cho** Đĩa có A và B, graph có công thức A + B = C
 - **Khi** thả A vào chỗ thả 1 và B vào chỗ thả 2 (chuột hoặc cảm ứng, qua Pointer Events)
 - **Thì** hiệu ứng nồi sôi chạy tối đa 1,2 s; chạm/nhấp trong lúc hiệu ứng thì bỏ qua ngay; C xuất hiện trên bàn và được thêm vào Đĩa với thời điểm khám phá; 2 chỗ thả trống lại
@@ -27,14 +27,14 @@
 - **Thì** C hiện trên bàn nhưng Đĩa không có bản trùng; thời điểm khám phá cũ giữ nguyên
 - Ưu tiên: Bắt buộc
 
-### AC-GAME-05: Nồi trào — câu cố định theo cặp
+### AC-GAME-05: Nồi trào - câu cố định theo cặp
 - **Cho** cặp (A, B) không có công thức
 - **Khi** ghép A với B, rồi ghép B với A, rồi tải lại trang và ghép lại
 - **Thì** cả 3 lần hiện cùng một câu "Nồi trào / Khét rồi" lấy từ danh sách câu Nồi trào của manifest; câu được chọn bằng hàm tất định của cặp tên đã chuẩn hóa (không dùng số ngẫu nhiên); A và B trở lại bàn
 - Ưu tiên: Bắt buộc
 
 ### AC-GAME-06: Gợi ý khi trượt
-- **Cho** thực khách vừa trượt 3 lần liên tiếp (ngưỡng mặc định — câu hỏi mở)
+- **Cho** thực khách vừa trượt 3 lần liên tiếp (ngưỡng mặc định - câu hỏi mở)
 - **Khi** lần trượt thứ 3 xảy ra
 - **Thì** cùng câu Nồi trào hiện thêm gợi ý "Thử <emoji> <tên phần tử X> xem" trong đó X là phần tử người chơi đang có và tồn tại công thức X + Y với Y cũng đang có, kết quả chưa có trong Đĩa; gợi ý không chứa tên kết quả; bộ đếm trượt về 0. Không còn công thức nào chưa khám phá từ Đĩa hiện tại thì không hiện gợi ý
 - Ưu tiên: Bắt buộc
@@ -102,5 +102,5 @@
 ### AC-GAME-17: Đổi version graph giữ tiến độ
 - **Cho** tiến độ cục bộ tạo ở graph version V1; manifest hiện là V2
 - **Khi** client tải V2
-- **Thì** mọi phần tử đã khám phá vẫn còn trong Đĩa (trừ phần tử bị chặn — AC-GAME-15); tra cứu dùng graph V2; không hỏi người chơi gì
+- **Thì** mọi phần tử đã khám phá vẫn còn trong Đĩa (trừ phần tử bị chặn - AC-GAME-15); tra cứu dùng graph V2; không hỏi người chơi gì
 - Ưu tiên: Bắt buộc

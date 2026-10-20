@@ -1,4 +1,4 @@
-# ERD — D1 (SQLite)
+# ERD - D1 (SQLite)
 
 > Nguồn: `worker/migrations/0001..0004`. Id phần tử/công thức là băm (ADR 0002). Thời gian `INTEGER` epoch ms UTC.
 > Không có khóa ngoại từ dữ liệu người chơi sang `element`/`recipe`: nội dung đổi theo version, bảng người chơi chỉ giữ id.
@@ -21,6 +21,7 @@ erDiagram
     TEXT image_key
     INTEGER first_version
     INTEGER last_version
+    INTEGER updated_at
   }
   recipe {
     TEXT id PK "khóa tra cứu cặp"
@@ -30,6 +31,7 @@ erDiagram
     INTEGER score
     INTEGER first_version
     INTEGER last_version
+    INTEGER updated_at
   }
   batch_run {
     TEXT id PK
@@ -42,6 +44,7 @@ erDiagram
     TEXT daily_element_id
     TEXT stats_json
     TEXT issue_url
+    INTEGER created_at
   }
   batch_content {
     INTEGER version PK
@@ -50,6 +53,7 @@ erDiagram
     TEXT manifest_json
     TEXT graph_json
     TEXT server_json
+    INTEGER created_at
   }
   block {
     TEXT kind PK
@@ -69,6 +73,7 @@ erDiagram
     TEXT nickname
     TEXT nickname_fold UK
     INTEGER created_at
+    INTEGER updated_at
   }
   consent {
     TEXT id PK
@@ -102,6 +107,7 @@ erDiagram
     INTEGER longest
     TEXT last_day
     INTEGER reached_at
+    INTEGER updated_at
   }
   report_target {
     TEXT kind PK
@@ -118,6 +124,7 @@ erDiagram
     TEXT note
     TEXT status
     INTEGER created_at
+    INTEGER resolved_at
   }
   vote {
     TEXT recipe_id PK

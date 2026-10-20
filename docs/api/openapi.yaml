@@ -7,11 +7,11 @@ info:
     sinh trên trình duyệt), quản trị (`Authorization: Bearer <ADMIN_TOKEN>`), pipeline
     (`Authorization: Bearer <PIPELINE_TOKEN>`). Mọi lỗi là `application/problem+json` (RFC 9457), `title`
     tiếng Việt. Mọi endpoint ghi của thực khách cần bản ghi đồng ý mục đích `play` cho version chính sách
-    hiện hành (AC-PRIV-02/09) — thiếu thì 403; và bị giới hạn tần suất theo UUID và IP băm — vượt thì 429
+    hiện hành (AC-PRIV-02/09) - thiếu thì 403; và bị giới hạn tần suất theo UUID và IP băm - vượt thì 429
     kèm `Retry-After`. Định danh phần tử/công thức là băm (ADR 0002), không bao giờ là tên đọc được.
 servers:
   - url: /lau-meme/api
-    description: Tiền tố đường dẫn con (`base-path.json`, ADR 0007) — production https://dinoduct.fun/lau-meme/api, staging https://staging.dinoduct.fun/lau-meme/api
+    description: Tiền tố đường dẫn con (`base-path.json`, ADR 0007) - production https://dinoduct.fun/lau-meme/api, staging https://staging.dinoduct.fun/lau-meme/api
 security: []
 tags:
   - name: content
@@ -21,7 +21,7 @@ tags:
   - name: play
     description: Khám phá, Daily, báo cáo, phiếu, sự kiện
   - name: admin
-    description: Trang quản trị (ADMIN) — chỉ phục vụ trên host quản trị riêng (ADR 0008)
+    description: Trang quản trị (ADMIN) - chỉ phục vụ trên host quản trị riêng (ADR 0008)
   - name: pipeline
     description: Mẻ nhúng đăng nội dung, rollback, số liệu (PIPE, GRAPH, METRIC)
 paths:
@@ -307,7 +307,7 @@ paths:
         '400': { $ref: '#/components/responses/BadRequest' }
         '403': { $ref: '#/components/responses/Forbidden' }
         '409':
-          description: Đã nộp cho version này — kèm kết quả đã lưu, không ghi đè
+          description: Đã nộp cho version này - kèm kết quả đã lưu, không ghi đè
           content:
             application/problem+json:
               schema:
@@ -326,7 +326,7 @@ paths:
       operationId: getDailyLeaderboard
       tags: [play]
       summary: Bảng xếp hạng đợt (top 20 cố định theo AC, không phân trang)
-      description: '`X-Player-Id` tùy chọn — có thì kèm hạng của mình kể cả ngoài top 20.'
+      description: '`X-Player-Id` tùy chọn - có thì kèm hạng của mình kể cả ngoài top 20.'
       security: [{}, { PlayerId: [] }]
       x-ac: [AC-DAILY-09]
       parameters:
@@ -371,7 +371,7 @@ paths:
             schema: { $ref: '#/components/schemas/ReportRequest' }
       responses:
         '200':
-          description: UUID này đã báo cáo đích này — trả báo cáo đã có
+          description: UUID này đã báo cáo đích này - trả báo cáo đã có
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Report' }
@@ -390,7 +390,7 @@ paths:
     put:
       operationId: putVote
       tags: [play]
-      summary: Bỏ phiếu Ngon / Nhạt cho công thức (tùy chọn — FEEDBACK)
+      summary: Bỏ phiếu Ngon / Nhạt cho công thức (tùy chọn - FEEDBACK)
       security: [{ PlayerId: [] }]
       x-ac: [AC-FEEDBACK-01, AC-FEEDBACK-02, AC-FEEDBACK-03, AC-PRIV-02]
       requestBody:
@@ -436,7 +436,7 @@ paths:
   /admin/reports:
     servers:
       - url: /api
-        description: Chỉ trên host quản trị riêng (ADR 0008) — production https://laumeme-admin.dinoduct.fun/api, staging https://laumeme-admin-staging.dinoduct.fun/api; trên host game `/lau-meme/api/admin/*` trả 404
+        description: Chỉ trên host quản trị riêng (ADR 0008) - production https://laumeme-admin.dinoduct.fun/api, staging https://laumeme-admin-staging.dinoduct.fun/api; trên host game `/lau-meme/api/admin/*` trả 404
     get:
       operationId: adminListReports
       tags: [admin]
@@ -462,7 +462,7 @@ paths:
   /admin/elements:
     servers:
       - url: /api
-        description: Chỉ trên host quản trị riêng (ADR 0008) — production https://laumeme-admin.dinoduct.fun/api, staging https://laumeme-admin-staging.dinoduct.fun/api; trên host game `/lau-meme/api/admin/*` trả 404
+        description: Chỉ trên host quản trị riêng (ADR 0008) - production https://laumeme-admin.dinoduct.fun/api, staging https://laumeme-admin-staging.dinoduct.fun/api; trên host game `/lau-meme/api/admin/*` trả 404
     get:
       operationId: adminListElements
       tags: [admin]
@@ -491,7 +491,7 @@ paths:
   /admin/recipes:
     servers:
       - url: /api
-        description: Chỉ trên host quản trị riêng (ADR 0008) — production https://laumeme-admin.dinoduct.fun/api, staging https://laumeme-admin-staging.dinoduct.fun/api; trên host game `/lau-meme/api/admin/*` trả 404
+        description: Chỉ trên host quản trị riêng (ADR 0008) - production https://laumeme-admin.dinoduct.fun/api, staging https://laumeme-admin-staging.dinoduct.fun/api; trên host game `/lau-meme/api/admin/*` trả 404
     get:
       operationId: adminListRecipes
       tags: [admin]
@@ -518,7 +518,7 @@ paths:
   /admin/moderation:
     servers:
       - url: /api
-        description: Chỉ trên host quản trị riêng (ADR 0008) — production https://laumeme-admin.dinoduct.fun/api, staging https://laumeme-admin-staging.dinoduct.fun/api; trên host game `/lau-meme/api/admin/*` trả 404
+        description: Chỉ trên host quản trị riêng (ADR 0008) - production https://laumeme-admin.dinoduct.fun/api, staging https://laumeme-admin-staging.dinoduct.fun/api; trên host game `/lau-meme/api/admin/*` trả 404
     post:
       operationId: adminModerate
       tags: [admin]
@@ -551,7 +551,7 @@ paths:
   /admin/batches:
     servers:
       - url: /api
-        description: Chỉ trên host quản trị riêng (ADR 0008) — production https://laumeme-admin.dinoduct.fun/api, staging https://laumeme-admin-staging.dinoduct.fun/api; trên host game `/lau-meme/api/admin/*` trả 404
+        description: Chỉ trên host quản trị riêng (ADR 0008) - production https://laumeme-admin.dinoduct.fun/api, staging https://laumeme-admin-staging.dinoduct.fun/api; trên host game `/lau-meme/api/admin/*` trả 404
     get:
       operationId: adminListBatches
       tags: [admin]
@@ -574,7 +574,7 @@ paths:
   /admin/audit:
     servers:
       - url: /api
-        description: Chỉ trên host quản trị riêng (ADR 0008) — production https://laumeme-admin.dinoduct.fun/api, staging https://laumeme-admin-staging.dinoduct.fun/api; trên host game `/lau-meme/api/admin/*` trả 404
+        description: Chỉ trên host quản trị riêng (ADR 0008) - production https://laumeme-admin.dinoduct.fun/api, staging https://laumeme-admin-staging.dinoduct.fun/api; trên host game `/lau-meme/api/admin/*` trả 404
     get:
       operationId: adminListAudit
       tags: [admin]
@@ -673,7 +673,7 @@ paths:
       summary: Đăng một version mới (nguyên tử) hoặc ghi một đợt lỗi
       description: |
         `status = success`: ghi danh mục phần tử/công thức, nội dung version, chuyển `current_version` và xóa
-        version ngoài 14 bản mới nhất — tất cả trong một `DB.batch` (lỗi ⇒ không đổi gì, AC-PIPE-11).
+        version ngoài 14 bản mới nhất - tất cả trong một `DB.batch` (lỗi ⇒ không đổi gì, AC-PIPE-11).
         `version` phải lớn hơn mọi version đã đăng (409). `status = error`: chỉ ghi nhật ký đợt, không đổi bản
         đang chạy.
       security: [{ PipelineToken: [] }]
@@ -894,11 +894,11 @@ components:
 
     ElementId:
       type: string
-      description: base64url(SHA-256("lm1|e|" + fold(tên))) — ADR 0002
+      description: base64url(SHA-256("lm1|e|" + fold(tên))) - ADR 0002
       pattern: '^[A-Za-z0-9_-]{43}$'
     RecipeId:
       type: string
-      description: Khóa tra cứu của cặp không thứ tự — ADR 0002
+      description: Khóa tra cứu của cặp không thứ tự - ADR 0002
       pattern: '^[A-Za-z0-9_-]{43}$'
     Name:
       type: string
@@ -929,7 +929,7 @@ components:
         batch_at: { $ref: '#/components/schemas/Instant' }
         graph_url:
           type: string
-          description: Đường dẫn tương đối với tiền tố của game (ADR 0007) — client gọi `<tiền tố><graph_url>`, vd `/lau-meme/api/graph/12`
+          description: Đường dẫn tương đối với tiền tố của game (ADR 0007) - client gọi `<tiền tố><graph_url>`, vd `/lau-meme/api/graph/12`
           example: /api/graph/12
         starters:
           type: array
@@ -1421,7 +1421,7 @@ components:
         blocklist: { $ref: '#/components/schemas/Blocklist' }
         banned_aliases:
           type: array
-          description: '`fold` do MOD sinh hoặc quản trị chặn (không gồm wordlist — pipeline đã có từ secret)'
+          description: '`fold` do MOD sinh hoặc quản trị chặn (không gồm wordlist - pipeline đã có từ secret)'
           items: { type: string }
         daily_history:
           type: array

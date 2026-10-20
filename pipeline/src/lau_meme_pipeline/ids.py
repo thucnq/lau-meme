@@ -17,6 +17,6 @@ def element_id(name: str) -> str:
 
 
 def recipe_id(a: str, b: str) -> str:
-    """Graph lookup key of the unordered pair (a, b) — the same for (a, b) and (b, a)."""
+    """Graph lookup key of the unordered pair (a, b) - the same for (a, b) and (b, a)."""
     x, y = sorted((fold(a), fold(b)), key=lambda s: s.encode("utf-8"))
     return _b64u_sha256("lm1|k|" + x + "\0" + y)

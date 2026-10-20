@@ -1,4 +1,4 @@
-# Tiêu chí nghiệm thu — Đo chỉ số thành công (METRIC)
+# Tiêu chí nghiệm thu - Đo chỉ số thành công (METRIC)
 
 > Giai đoạn 1. Component: web (beacon + gom sự kiện), worker (nhận sự kiện, tổng hợp, dọn dữ liệu), pipeline (đưa số liệu vào báo cáo đợt).
 > Cần bảng sự kiện D1 (trả lời câu hỏi phạm vi 3). Chỉ gửi sự kiện khi thực khách đã đồng ý (AC-PRIV-02).
@@ -18,7 +18,7 @@
 ### AC-METRIC-03: Sự kiện không hợp lệ
 - **Cho** lô có loại sự kiện lạ, thuộc tính ngoài schema, lô hơn 50 sự kiện, hoặc thiếu UUID
 - **Khi** gửi lô
-- **Thì** loại/thuộc tính sai hoặc lô quá lớn trả 422, thiếu UUID trả 400 — problem+json; cả lô không được ghi; vượt 20 lô/phút/UUID trả 429
+- **Thì** loại/thuộc tính sai hoặc lô quá lớn trả 422, thiếu UUID trả 400 - problem+json; cả lô không được ghi; vượt 20 lô/phút/UUID trả 429
 - Ưu tiên: Bắt buộc
 
 ### AC-METRIC-04: Client gom sự kiện ghép
@@ -36,7 +36,7 @@
 ### AC-METRIC-06: Đưa số liệu vào báo cáo đợt
 - **Cho** pipeline có token pipeline
 - **Khi** bước báo cáo đợt chạy
-- **Thì** pipeline gọi endpoint tổng hợp (chỉ token pipeline hoặc admin gọi được, thiếu token trả 401) và nhận số liệu đã tổng hợp — không có UUID hay sự kiện thô; số liệu được ghi vào GitHub Issue (AC-PIPE-14)
+- **Thì** pipeline gọi endpoint tổng hợp (chỉ token pipeline hoặc admin gọi được, thiếu token trả 401) và nhận số liệu đã tổng hợp - không có UUID hay sự kiện thô; số liệu được ghi vào GitHub Issue (AC-PIPE-14)
 - Ưu tiên: Bắt buộc
 
 ### AC-METRIC-07: Dọn sự kiện quá hạn

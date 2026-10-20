@@ -1,4 +1,4 @@
-# 0007 — Đường dẫn con trên dinoduct.fun
+# 0007 - Đường dẫn con trên dinoduct.fun
 
 - Trạng thái: Đã chấp nhận (2026-10-20)
 - Ngày: 2026-10-20
@@ -22,7 +22,7 @@ dinoduct.fun (mua qua Cloudflare Registrar) là thương hiệu chứa nhiều g
 - `manifest.graph_url` giữ dạng `/api/graph/<v>` và được hiểu là đường dẫn **tương đối với tiền tố**. Client tự nối tiền tố. Nhờ vậy dữ liệu trong D1 và pipeline không bị trói vào `/lau-meme`. Pipeline lấy tiền tố từ secret `API_BASE_URL` (`https://dinoduct.fun/lau-meme`).
 - Thẻ OG/Twitter, canonical và link chia sẻ dùng URL tuyệt đối lấy từ biến build `VITE_SITE_URL` (mặc định `https://dinoduct.fun/lau-meme/`).
 
-## Hệ quả — chung origin
+## Hệ quả - chung origin
 Mọi game trên dinoduct.fun có chung origin `https://dinoduct.fun`, nên chung localStorage, sessionStorage, IndexedDB, cookie không giới hạn Path, Cache Storage và quyền của trình duyệt. Script của game này đọc và ghi được dữ liệu của game kia.
 - Mọi khóa storage có tiền tố `laumeme:` và chỉ đi qua `web/src/storage.ts`, có try/catch khi storage bị chặn. Khóa cũ (`lm.*`, `lau-meme:*`) được chuyển một lần khi khởi động.
 - Tiền tố chỉ tránh **đụng khóa**, không phải ranh giới bảo mật. Vì vậy phía client không lưu token, bí mật hay dữ liệu cá nhân nào ngoài UUID ẩn danh (ADR 0004). Trang quản trị dự kiến giữ token trong `sessionStorage`, đây là rủi ro trên origin chung (câu hỏi mở 19).

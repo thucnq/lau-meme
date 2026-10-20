@@ -1,4 +1,4 @@
-# Tiêu chí nghiệm thu — Nạp lõi nội dung classic (SEED)
+# Tiêu chí nghiệm thu - Nạp lõi nội dung classic (SEED)
 
 > Giai đoạn 1. Component: pipeline (hàm thuần kiểm + nạp), đầu vào `noi-dung-loi.json` (khóa `starters`, `elements`, `recipes`, `miss_lines`, `daily_examples`).
 > Lỗi kiểm tra ⇒ không nạp gì (toàn bộ hoặc không gì cả).

@@ -46,7 +46,7 @@ function parse(body: Record<string, unknown>) {
 }
 
 /**
- * POST /api/reports — counters and reads in one round trip, then the report row and (for the 3rd distinct UUID
+ * POST /api/reports - counters and reads in one round trip, then the report row and (for the 3rd distinct UUID
  * on an element, or any image report) the block row in one transactional batch (AC-REPORT-04/05).
  */
 export async function createReport(req: Request, env: Env): Promise<Response> {
@@ -115,7 +115,7 @@ export async function createReport(req: Request, env: Env): Promise<Response> {
   return json(report(again))
 }
 
-/** GET /api/blocklist — ids only; `?fresh=1` skips caches right after a report (AC-REPORT-04/06). */
+/** GET /api/blocklist - ids only; `?fresh=1` skips caches right after a report (AC-REPORT-04/06). */
 export async function getBlocklist(req: Request, env: Env): Promise<Response> {
   const rows = await env.DB.prepare('SELECT kind, target_id FROM block ORDER BY kind, target_id').all<{
     kind: 'element' | 'recipe' | 'image'

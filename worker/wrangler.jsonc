@@ -1,9 +1,9 @@
 // Cloudflare Worker: serves the web app (static assets from ../web/dist) and the JSON API under /lau-meme/api/*.
 // The game lives under a sub-path of dinoduct.fun (ADR 0007): BASE_PATH must equal base-path.json and the route
-// patterns below use it too (AC-SUBPATH-01 checks both). Only this game's path and its admin host are declared — never
+// patterns below use it too (AC-SUBPATH-01 checks both). Only this game's path and its admin host are declared - never
 // dinoduct.fun/*.
 // Top level = PRODUCTION (`wrangler deploy` without --env). Agents may only use --env staging; the dk guard
-// blocks the rest. database_id values are not secrets — fill them from `npx wrangler d1 create <name>`.
+// blocks the rest. database_id values are not secrets - fill them from `npx wrangler d1 create <name>`.
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "lau-meme",
@@ -17,7 +17,7 @@
     { "pattern": "dinoduct.fun/lau-meme*", "zone_name": "dinoduct.fun" },
     { "pattern": "laumeme-admin.dinoduct.fun/*", "zone_name": "dinoduct.fun" }
   ],
-  // The Worker answers first (prefix check, redirect, API, SPA fallback under the sub-path — the assets'
+  // The Worker answers first (prefix check, redirect, API, SPA fallback under the sub-path - the assets'
   // single-page-application mode only falls back to the root /index.html). Hashed build files skip it.
   "assets": {
     "directory": "../web/dist",
@@ -26,7 +26,7 @@
     "run_worker_first": ["/*", "!/lau-meme/assets/*"]
   },
   "d1_databases": [
-    { "binding": "DB", "database_name": "lau-meme-prod", "database_id": "00000000-0000-0000-0000-000000000000", "migrations_dir": "migrations" }
+    { "binding": "DB", "database_name": "lau-meme-prod", "database_id": "2a7d5380-5568-4981-9de2-8c39c551cd57", "migrations_dir": "migrations" }
   ],
   // Daily retention job 03:00 GMT+7 (ADR 0004, AC-PRIV-06). Not inherited by env.staging: declared there too.
   "triggers": { "crons": ["0 20 * * *"] },
@@ -39,7 +39,7 @@
         { "pattern": "laumeme-admin-staging.dinoduct.fun/*", "zone_name": "dinoduct.fun" }
       ],
       "d1_databases": [
-        { "binding": "DB", "database_name": "lau-meme-staging", "database_id": "00000000-0000-0000-0000-000000000000", "migrations_dir": "migrations" }
+        { "binding": "DB", "database_name": "lau-meme-staging", "database_id": "03517712-b21e-427d-8881-53e34bf6c44b", "migrations_dir": "migrations" }
       ],
       "triggers": { "crons": ["0 20 * * *"] },
       "vars": { "APP_ENV": "staging", "POLICY_VERSION": "1", "BASE_PATH": "/lau-meme", "ADMIN_HOST": "laumeme-admin-staging.dinoduct.fun" }
