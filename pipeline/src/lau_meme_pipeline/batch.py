@@ -21,12 +21,14 @@ from lau_meme_pipeline.daily import build_daily_block, select_daily
 from lau_meme_pipeline.graph import build_manifest, decrypt_entry, export_graph
 from lau_meme_pipeline.ids import element_id
 from lau_meme_pipeline.seed import ACTIVE, ContentStore, load_core
+from lau_meme_pipeline.text import fold
 
-STEPS = ("state", "seed", "daily", "export", "check", "publish", "report")
+STEPS = ("state", "seed", "daily", "export", "check", "banned", "publish", "report")
 GMT7 = timezone(timedelta(hours=7))
 TIMEOUT_SECONDS = 30
 # AC-PIPE-13: public meme data only — never anything about players.
 ALLOWED_LLM_FIELDS = frozenset({"name", "quote", "context", "source_name", "element_name", "image_hint"})
+MAX_TERM = 100  # banned_term.term_fold limit in D1
 
 
 def version_for(batch_at: datetime) -> int:
@@ -51,6 +53,7 @@ class BatchClient(Protocol):
     def get_state(self) -> dict: ...
     def post_batch(self, body: dict) -> dict: ...
     def patch_batch(self, run_id: str, issue_url: str) -> dict: ...
+    def put_banned_terms(self, source: str, terms: list[str]) -> None: ...
 
 
 class IssueReporter(Protocol):
@@ -67,6 +70,11 @@ class BatchOutcome:
     issue_url: str | None
     report_title: str
     report_body: str
+
+
+def banned_terms(words: Sequence[str]) -> list[str]:
+    """Folded, deduplicated, sorted terms for the Worker's nickname filter (ADR 0005); over-long lines are dropped."""
+    return sorted({t for t in (fold(w).strip() for w in words) if t and len(t) <= MAX_TERM})
 
 
 def _iso(at: datetime) -> str:
@@ -184,6 +192,7 @@ def run_batch(
     adapters: Sequence = (),
     llm: object | None = None,
     log: Callable[[str], None] = print,
+    banned_words: Sequence[str] = (),
 ) -> BatchOutcome:
     """Run one batch. Never raises: a failure posts an error run, keeps the current version and is reported."""
     del adapters, llm  # phase 2 (crawl + LLM); the core mode never touches them (AC-PIPE-01)
@@ -209,6 +218,10 @@ def run_batch(
         content = _content(store, daily["element_id"])
         step = "check"
         _check(store, graph, content)
+        step = "banned"
+        terms = banned_terms(banned_words)
+        if terms:  # an empty secret never wipes the list already in D1
+            client.put_banned_terms("wordlist", terms)
         step = "publish"
         body = {
             "status": "success",
@@ -226,7 +239,9 @@ def run_batch(
             return _finish(reporter, client, None, version, batch_at, mode, None, stats, emoji, log)
         failed_step, version = step, None
         # Network errors may carry the API host: the public workflow log only gets their type.
-        detail = type(exc).__name__ if isinstance(exc, OSError) else f"{type(exc).__name__}: {exc}"
+        # The banned words are secret (ADR 0005): that step's errors are logged by type only too.
+        quiet = isinstance(exc, OSError) or step == "banned"
+        detail = type(exc).__name__ if quiet else f"{type(exc).__name__}: {exc}"
         log(f"Mẻ thất bại ở bước {step}: {detail}")
         error_body = {"status": "error", "batch_at": _iso(batch_at), "mode": mode, "failed_step": step, "stats": stats}
         try:
@@ -330,6 +345,9 @@ class HttpBatchClient:
     def patch_batch(self, run_id: str, issue_url: str) -> dict:
         return self.http.request("PATCH", f"/api/pipeline/batches/{run_id}", {"issue_url": issue_url})
 
+    def put_banned_terms(self, source: str, terms: list[str]) -> None:
+        self.http.request("PUT", f"/api/pipeline/banned-terms/{source}", {"terms": terms})
+
 
 class GitHubIssues:
     """Network adapter: GitHub REST "create an issue" with the workflow's GITHUB_TOKEN (issues: write)."""
@@ -357,7 +375,10 @@ def main(argv: list[str], *, client=None, reporter=None, now: Callable[[], datet
     if reporter is None:
         reporter = GitHubIssues(os.environ["GITHUB_REPOSITORY"], os.environ["GITHUB_TOKEN"])
     batch_at = (now or (lambda: datetime.now(UTC)))().replace(microsecond=0)
-    outcome = run_batch(mode=args.mode, batch_at=batch_at, core=core, client=client, reporter=reporter)
+    banned_words = os.environ.get("BANNED_WORDS", "").splitlines()  # GitHub Secret, one word per line
+    outcome = run_batch(
+        mode=args.mode, batch_at=batch_at, core=core, client=client, reporter=reporter, banned_words=banned_words
+    )
     print(outcome.report_title)
     print(outcome.report_body, end="")
     return 0 if outcome.ok else 1

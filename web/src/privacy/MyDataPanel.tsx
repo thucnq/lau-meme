@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { NicknameForm } from '../disc/NicknameForm'
 import { deleteMyData, getMyData, grantConsent, withdrawConsent, type MyData } from './client'
 import { canSend } from './consent'
 
@@ -68,6 +69,8 @@ export function MyDataPanel({ policyVersion, storage, onErased }: Props) {
       ) : (
         !error && <p>Đang tải…</p>
       )}
+
+      {step !== 'erased' && <NicknameForm policyVersion={policyVersion} storage={storage} />}
 
       {step === 'idle' && (
         <div className="my-data-actions">

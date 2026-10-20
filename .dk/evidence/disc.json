@@ -52,5 +52,67 @@
     "test": "(không biên dịch)"
    }
   }
+ },
+ "green": {
+  "ts": "2026-10-20T05:15:01+00:00",
+  "commit": "5c8590a",
+  "results": {
+   "AC-DISC-01": {
+    "status": "PASS",
+    "test": "disc.game.test.tsx#disc: UUID cục bộ > AC-DISC-01: getPlayerId sinh UUID v4 bằng crypto.randomUUID đúng một lần, lưu ở laumeme:player-id và giữ nguyên khi gọi lại"
+   },
+   "AC-DISC-02": {
+    "status": "PASS",
+    "test": "disc.ui.test.tsx#disc: api > AC-DISC-02: putNickname PUT /lau-meme/api/me/nickname và trả nickname đã cắt khoảng trắng của máy chủ"
+   },
+   "AC-DISC-03": {
+    "status": "PASS",
+    "test": "test_disc#test_ac_disc_03_dong_bo_wordlist_da_fold_sap_xep_bo_trung_truoc_khi_dang_mau"
+   },
+   "AC-DISC-04": {
+    "status": "PASS",
+    "test": "disc.ui.test.tsx#disc: NicknameForm > AC-DISC-04: máy chủ trả 409 thì hiện \"Nickname đã có người dùng\""
+   },
+   "AC-DISC-05": {
+    "status": "PASS",
+    "test": "disc.game.test.tsx#disc: Game.onDiscover > AC-DISC-05: ghép ra phần tử mới gọi onDiscover đúng một lần với tên a/b/result và id của kết quả"
+   },
+   "AC-DISC-06": {
+    "status": "PASS",
+    "test": "disc.game.test.tsx#disc: Game.onDiscover > AC-DISC-06: ghép ra phần tử người chơi đã có thì KHÔNG gọi onDiscover"
+   },
+   "AC-DISC-07": {
+    "status": "PASS",
+    "test": "disc.game.test.tsx#disc: Game.onDiscover > AC-DISC-07: ghép trượt "
+   },
+   "AC-DISC-08": {
+    "status": "PASS",
+    "test": "disc.test.ts#disc > AC-DISC-08: hai UUID gửi cùng lúc cùng một phần tử: đúng một 201 first:true, một 200 first:false với người đầu tiên, chỉ một bản ghi"
+   },
+   "AC-DISC-09": {
+    "status": "PASS",
+    "test": "disc.ui.test.tsx#disc: api > AC-DISC-09: listDiscoveries rỗng trả [] mà không gọi fetch"
+   },
+   "AC-DISC-10": {
+    "status": "PASS",
+    "test": "disc.test.ts#disc > AC-DISC-10: gửi khám phá với result là phần tử khởi đầu "
+   },
+   "AC-DISC-11": {
+    "status": "PASS",
+    "test": "disc.game.test.tsx#disc: Root > AC-DISC-11: máy chủ trả 429 hoặc lỗi thì trò chơi vẫn chạy "
+   },
+   "AC-DISC-12": {
+    "status": "PASS",
+    "test": "disc.test.ts#disc > AC-DISC-12: thiếu X-Player-Id hoặc UUID không đúng v4 trả 400 problem+json và không ghi gì"
+   },
+   "AC-DISC-VALIDATION": {
+    "status": "PASS",
+    "test": "disc.test.ts#disc > AC-DISC-VALIDATION: chưa có version hiện hành thì POST khám phá trả 503 problem+json và không ghi gì"
+   },
+   "AC-DISC-ABUSE": {
+    "status": "PASS",
+    "test": "disc.test.ts#disc > AC-DISC-ABUSE: tên quá dài, script, SQL, trường lạ giả danh UUID khác bị từ chối 4xx "
+   }
+  }
  }
 }

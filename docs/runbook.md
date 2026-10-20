@@ -33,6 +33,7 @@ Cấu hình tài khoản lần đầu (DNS, Redirect Rule, SSL, deploy productio
 - Log thời gian thực: `npx wrangler tail --env staging` (production: bỏ `--env`).
 - Xem dữ liệu: `npx wrangler d1 execute DB --env staging --remote --command "select count(*) from app_meta"`.
 - Dọn dữ liệu cá nhân (AC-PRIV-06): Cron Trigger của Worker `0 20 * * *` (03:00 GMT+7), khai báo cả production lẫn `env.staging` trong `worker/wrangler.jsonc`. Mỗi lần chạy ghi 1 dòng log `cleanup {...}` chỉ có số dòng (IP băm > 7 ngày đặt NULL, sự kiện > 90 ngày, bộ đếm hết hạn, audit > 12 tháng, đồng ý của UUID đã xóa > 1 năm).
+- Từ cấm cho nickname (ADR 0005, AC-DISC-03): mỗi mẻ, pipeline đọc GitHub Secret `BANNED_WORDS` (mỗi dòng một từ) và thay toàn bộ nguồn `wordlist` trong D1; secret rỗng thì giữ nguyên danh sách cũ. Workflow `batch.yml` phải truyền `BANNED_WORDS: ${{ secrets.BANNED_WORDS }}` vào bước "Mẻ nhúng" (người sửa — workflow được guard bảo vệ). Log và báo cáo đợt không bao giờ in từ cấm.
 - Đổi nội dung chính sách (`web/src/privacy/PolicyPage.tsx`): tăng `POLICY_VERSION` trong `worker/wrangler.jsonc` (cả staging) và `POLICY.version` trên trang ⇒ mọi người chơi được hỏi đồng ý lại (AC-PRIV-09).
 
 ## Sự cố thường gặp

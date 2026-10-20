@@ -18,8 +18,8 @@ ROOT = Path(__file__).resolve().parents[2]
 CORE_PATH = ROOT / "docs" / "input" / "noi-dung-loi.json"
 T = datetime(2026, 10, 20, 17, 0, 0, tzinfo=UTC)
 
-SECRET = "Từ Cấm Siêu Bí Mật"
-SECRET_FOLD = "tu cam sieu bi mat"
+WORD = "Từ Cấm Siêu Bí Mật"
+WORD_FOLD = "tu cam sieu bi mat"
 
 
 def real_core() -> dict:
@@ -127,25 +127,26 @@ def test_ac_disc_03_tu_cam_khong_xuat_hien_trong_log_hay_bao_cao():
     """AC-DISC-03: từ cấm (bản gốc và bản fold) không bao giờ có trong log, tiêu đề hay nội dung báo cáo."""
     client, reporter = FakeClient(), FakeReporter()
     logs: list[str] = []
-    outcome = run(client, reporter, log=logs.append, banned_words=[SECRET, "Zed"])
+    outcome = run(client, reporter, log=logs.append, banned_words=[WORD, "Zed"])
     assert client.puts == [("wordlist", ["tu cam sieu bi mat", "zed"])]
-    haystack = "\n".join([*logs, outcome.report_title, outcome.report_body, *(t + b for t, b in reporter.issues)]).lower()
-    assert SECRET.lower() not in haystack
-    assert SECRET_FOLD not in haystack
+    issues = [t + b for t, b in reporter.issues]
+    haystack = "\n".join([*logs, outcome.report_title, outcome.report_body, *issues]).lower()
+    assert WORD.lower() not in haystack
+    assert WORD_FOLD not in haystack
     assert "sieu bi mat" not in haystack
 
 
 def test_ac_disc_03_put_loi_thi_khong_dang_mau_success():
-    """AC-DISC-03: put_banned_terms ném lỗi thì không đăng bản success nào (như AC-PIPE-11) và từ cấm không lộ ra log."""
+    """AC-DISC-03: put_banned_terms ném lỗi thì không đăng bản success nào (như AC-PIPE-11), từ cấm không lộ ra log."""
     client, reporter = FakeClient(fail_put=True), FakeReporter()
     logs: list[str] = []
-    outcome = run(client, reporter, log=logs.append, banned_words=[SECRET])
+    outcome = run(client, reporter, log=logs.append, banned_words=[WORD])
     assert outcome.ok is False
     assert outcome.status == "error"
     assert client.success_posts == []
     haystack = "\n".join([*logs, outcome.report_title, outcome.report_body]).lower()
-    assert SECRET.lower() not in haystack
-    assert SECRET_FOLD not in haystack
+    assert WORD.lower() not in haystack
+    assert WORD_FOLD not in haystack
 
 
 def test_ac_disc_03_main_doc_bien_moi_truong_banned_words(monkeypatch):

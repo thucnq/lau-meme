@@ -2,7 +2,10 @@ import { useEffect, useState } from 'react'
 import { getManifest } from './api'
 import { App } from './App'
 import { withBase } from './base'
-import { Game } from './game/Game'
+import { heirloomLine, submitDiscovery } from './disc/api'
+import { Game, type NewDiscovery } from './game/Game'
+import { ConsentPrompt } from './privacy/ConsentPrompt'
+import { canSend } from './privacy/consent'
 import { ConsentBanner } from './privacy/ConsentBanner'
 import { MyDataPanel } from './privacy/MyDataPanel'
 import { PolicyPage } from './privacy/PolicyPage'
@@ -19,6 +22,18 @@ function Home() {
   const [policyVersion, setPolicyVersion] = useState<number | null>(null)
   const [myDataOpen, setMyDataOpen] = useState(false)
   const [bannerKey, setBannerKey] = useState(0) // remount = ask again (after erasure the new id has no consent)
+  const [heirloom, setHeirloom] = useState<{ line: string; first: boolean } | 'consent' | null>(null)
+
+  // Công thức gia truyền (AC-DISC-05/06): only with consent; a failed or limited send just shows nothing.
+  const discover = (d: NewDiscovery) => {
+    setHeirloom(null)
+    if (policyVersion === null) return
+    if (!canSend(storage, policyVersion)) return setHeirloom('consent')
+    submitDiscovery({ a: d.a, b: d.b, result: d.result }, { storage, policyVersion }).then(
+      (r) => setHeirloom({ line: heirloomLine(r.nickname), first: r.first }),
+      () => undefined,
+    )
+  }
 
   // The current policy version comes from the manifest; until it is known nothing can be sent (AC-PRIV-09).
   useEffect(() => {
@@ -32,7 +47,14 @@ function Home() {
 
   return (
     <>
-      <Game />
+      <Game onDiscover={discover} />
+      {heirloom === 'consent' && <ConsentPrompt />}
+      {heirloom !== null && heirloom !== 'consent' && (
+        <p className="heirloom" role="status">
+          {heirloom.first && 'Bạn là người đầu tiên! '}
+          {heirloom.line}
+        </p>
+      )}
       {policyVersion !== null && <ConsentBanner key={bannerKey} policyVersion={policyVersion} storage={storage} />}
       {myDataOpen && policyVersion !== null && (
         <MyDataPanel policyVersion={policyVersion} storage={storage} onErased={() => setBannerKey((k) => k + 1)} />

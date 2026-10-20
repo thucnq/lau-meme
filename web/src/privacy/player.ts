@@ -7,12 +7,11 @@ let memoryId: string | null = null
 
 export function getPlayerId(storage: Storage | null): string {
   try {
-    const stored = storage?.getItem(PLAYER_KEY)
-    if (stored) return stored
+    if (storage) return storage.getItem(PLAYER_KEY) ?? save(storage, crypto.randomUUID())
   } catch {
     // storage blocked: fall back to memory
   }
-  return save(storage, memoryId ?? crypto.randomUUID())
+  return (memoryId ??= crypto.randomUUID())
 }
 
 /** A fresh id after erasure (AC-PRIV-05): the old one never comes back. */

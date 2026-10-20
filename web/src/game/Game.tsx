@@ -61,7 +61,16 @@ function onTable(item: Item, x: number, y: number): TableItem {
   return { uid: newUid(), id: item.id, name: item.name, emoji: item.emoji, x: Math.round(x), y: Math.round(y) }
 }
 
-export function Game() {
+/** A combine that gave the player an element they did not have (AC-DISC-05): names as typed, id of the result. */
+export type NewDiscovery = { a: string; b: string; result: string; id: string }
+
+type Props = { onDiscover?: (d: NewDiscovery) => void }
+
+export function Game({ onDiscover }: Props = {}) {
+  const onDiscoverRef = useRef(onDiscover)
+  useEffect(() => {
+    onDiscoverRef.current = onDiscover
+  }, [onDiscover])
   const [progress, setProgress] = useState<Progress | null>(() => {
     const s = storage()
     if (!s) return null
@@ -161,6 +170,7 @@ export function Game() {
           if (out.kind === 'hit') {
             const item = out.progress.items.find((i) => i.id === out.result.id)!
             commit({ ...out.progress, table: [...table, onTable(item, pa.x, pa.y)] })
+            if (out.isNew) onDiscoverRef.current?.({ a: a.name, b: b.name, result: item.name, id: item.id })
           } else {
             commit({ ...out.progress, table: [...table, onTable(a, pa.x, pa.y), onTable(b, pb.x, pb.y)] })
             setMiss({ line: out.line, hint: out.hint })
@@ -192,6 +202,8 @@ export function Game() {
         const item = out.progress.items.find((i) => i.id === out.result.id)!
         const rest = table.filter((t) => t.uid !== target.uid)
         commit({ ...out.progress, table: [...rest, onTable(item, target.x, target.y)] })
+        if (out.isNew)
+          onDiscoverRef.current?.({ a: source.item.name, b: target.name, result: item.name, id: item.id })
         setSteam({ x: target.x, y: target.y })
         later(() => setSteam(null), STEAM_MS)
       } else {
