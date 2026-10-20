@@ -46,10 +46,10 @@
 - **Thì** M không vào graph, được đưa vào hàng chờ với số lần thử = 1; đợt sau M được thử lại trước meme mới; sau 6 lần thử không nối được thì bỏ khỏi hàng chờ và ghi vào báo cáo đợt (ngưỡng mặc định - câu hỏi mở)
 - Ưu tiên: Bắt buộc
 
-### AC-PIPE-08: Công thức bổ sung
-- **Cho** phần tử đang hoạt động P có ít hơn 3 công thức mà P là đầu vào
+### AC-PIPE-08: Công thức bổ sung (cập nhật 2026-10-20)
+- **Cho** phần tử đang hoạt động P có ít hơn 3 công thức mà P là đầu vào; và graph sau bước liên kết ngược
 - **Khi** bước công thức bổ sung chạy
-- **Thì** pipeline xin LLM thêm công thức cho P với kết quả là phần tử đã có hoặc phần tử mới đã qua kiểm duyệt; mọi công thức bổ sung đều qua cùng luật hợp lệ như AC-PIPE-06 và qua giám khảo (AC-PIPE-09); báo cáo đợt ghi số phần tử còn dưới 3 công thức đi ra
+- **Thì** (1) pipeline xin LLM thêm công thức cho P tới khi đủ 3 công thức đi ra; (2) thêm tối đa 150 cặp mỗi đợt (hạn mức mặc định - câu hỏi mở 30) chọn trong các cặp **chưa có kết quả** theo mức "hay cùng nằm trên Đĩa": chạy mô phỏng AC-INV-12 (seed cố định) trên graph hiện tại, đếm số lượt mỗi phần tử có mặt trên Đĩa, xếp cặp theo tích hai số đếm giảm dần (bằng nhau thì theo thứ tự tên đã `fold`), bỏ cặp đã nằm trong danh sách "đã hỏi, bị loại"; với cả (1) và (2) kết quả là phần tử đã có hoặc phần tử mới đã qua kiểm duyệt, qua cùng luật hợp lệ như AC-PIPE-06 và qua giám khảo (AC-PIPE-09); cặp LLM trả "không hợp" hoặc bị giám khảo loại được ghi vào danh sách "đã hỏi, bị loại" để các đợt sau không hỏi lại; báo cáo đợt ghi số phần tử còn dưới 3 công thức đi ra, số cặp đã hỏi / được thêm, và tỉ lệ trượt AC-INV-12 trước và sau bước này
 - Ưu tiên: Bắt buộc
 
 ### AC-PIPE-09: Giám khảo hài
