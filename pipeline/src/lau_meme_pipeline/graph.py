@@ -8,6 +8,7 @@ import binascii
 import json
 from collections.abc import Mapping
 from datetime import UTC, datetime
+from functools import lru_cache
 
 from cryptography.exceptions import InvalidTag
 from cryptography.hazmat.primitives import hashes
@@ -33,6 +34,7 @@ def _canonical(data: object) -> bytes:
     return json.dumps(data, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
 
 
+@lru_cache(maxsize=1 << 16)  # the INV-04/12 checks open the same pairs many times; pure, so caching is safe
 def _cipher(a_fold: str, b_fold: str, version: int) -> tuple[AESGCM, bytes]:
     x, y = sorted((a_fold, b_fold), key=lambda s: s.encode("utf-8"))
     okm = HKDF(
@@ -79,12 +81,23 @@ def graph_to_bytes(graph: Mapping) -> bytes:
 def decrypt_entry(graph: Mapping, a: str, b: str) -> dict | None:
     """Plaintext of the entry for (a, b), or None when there is none or the names do not open it."""
     key = recipe_id(a, b)
+    raw = open_entry(graph, key, fold(a), fold(b))
+    if raw is None:
+        return None
+    try:
+        return json.loads(raw.decode("utf-8"))
+    except ValueError:
+        return None
+
+
+def open_entry(graph: Mapping, key: str, a_fold: str, b_fold: str) -> bytes | None:
+    """Raw plaintext of the entry stored under `key`, opened with the key of (a_fold, b_fold) — None if it fails."""
     value = graph.get("entries", {}).get(key)
     if not isinstance(value, str):
         return None
-    aes, iv = _cipher(fold(a), fold(b), int(graph["version"]))
+    aes, iv = _cipher(a_fold, b_fold, int(graph["version"]))
     try:
-        return json.loads(aes.decrypt(iv, _unb64u(value), key.encode("ascii")).decode("utf-8"))
+        return aes.decrypt(iv, _unb64u(value), key.encode("ascii"))
     except (InvalidTag, binascii.Error, ValueError):
         return None
 

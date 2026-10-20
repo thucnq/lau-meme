@@ -20,10 +20,12 @@ from urllib.parse import urlsplit
 from lau_meme_pipeline.daily import build_daily_block, select_daily
 from lau_meme_pipeline.graph import build_manifest, decrypt_entry, export_graph
 from lau_meme_pipeline.ids import element_id
+from lau_meme_pipeline.invariants import InvariantError, check_all, miss_rate_warning, simulate_miss_rate
+from lau_meme_pipeline.moderation import ModLists
 from lau_meme_pipeline.seed import ACTIVE, ContentStore, load_core
 from lau_meme_pipeline.text import fold
 
-STEPS = ("state", "seed", "daily", "export", "check", "banned", "publish", "report")
+STEPS = ("state", "seed", "daily", "export", "check", "invariants", "banned", "publish", "report")
 GMT7 = timezone(timedelta(hours=7))
 TIMEOUT_SECONDS = 30
 # AC-PIPE-13: public meme data only — never anything about players.
@@ -145,6 +147,27 @@ def _check(store: ContentStore, graph: Mapping, content: Mapping) -> None:
             raise ValueError(f"graph không mở được công thức {r['id']}")
 
 
+def _mod_lists(state: Mapping, banned_words: Sequence[str]) -> ModLists:
+    """Layer-1 lists for AC-INV-07. `banned_aliases` is required: it carries the MOD aliases and the names the admin
+    blocked (sources `mod` + `admin`), so a state without it must fail rather than check nothing. A term that is
+    exactly the name of an element already in the blocklist is skipped: in core mode that element is still published
+    and the Worker hides it at serve time (ADR 0003, open question 27)."""
+    blocked = set(state["blocklist"]["elements"])
+    return ModLists(
+        banned_words=frozenset(w for w in banned_words if w.strip()),
+        aliases=frozenset(t for t in state["banned_aliases"] if element_id(t) not in blocked),
+    )
+
+
+def _miss_rate(graph: Mapping, starters: Sequence[Mapping], log: Callable[[str], None]) -> tuple[float, float] | None:
+    """AC-INV-12 only warns: a failing simulation is logged and never fails the batch."""
+    try:
+        return simulate_miss_rate(graph, starters)
+    except Exception as exc:
+        log(f"Không chạy được mô phỏng chơi ngẫu nhiên: {type(exc).__name__}")
+        return None
+
+
 def _render_report(
     *,
     version: int | None,
@@ -154,6 +177,7 @@ def _render_report(
     stats: Mapping,
     emoji: str | None,
     banned_count: int | None = None,
+    miss: tuple[float, float] | None = None,
 ) -> tuple[str, str]:
     """Title shows the dish's emoji only, never its name (AC-PIPE-14)."""
     status = "error" if failed_step else "success"
@@ -184,6 +208,11 @@ def _render_report(
         lines.append("- ⚠️ BANNED_WORDS trống — bộ lọc nickname chưa có từ cấm (đặt GitHub Secret, xem runbook)")
     elif banned_count is not None:
         lines.append(f"- Từ cấm nickname: {banned_count} từ đã đồng bộ")
+    if miss is not None:
+        lines.append(f"- Chơi ngẫu nhiên: trượt {miss[0]:.0%} ở 20 lượt đầu, {miss[1]:.0%} cả ván")
+        warning = miss_rate_warning(*miss)
+        if warning:
+            lines.append(f"- {warning}")
     lines += [
         "- METRIC: chưa có số liệu (tính năng METRIC chưa làm)",
     ]
@@ -210,6 +239,7 @@ def run_batch(
     run_id: str | None = None
     failed_step: str | None = None
     banned_count: int | None = None
+    miss: tuple[float, float] | None = None
     step = "state"
     try:
         if mode != "core":
@@ -227,6 +257,9 @@ def run_batch(
         content = _content(store, daily["element_id"])
         step = "check"
         _check(store, graph, content)
+        step = "invariants"
+        check_all(graph, manifest, store, _mod_lists(state, banned_words))
+        miss = _miss_rate(graph, manifest["starters"], log)
         step = "banned"
         terms = banned_terms(banned_words)
         if terms:  # an empty secret never wipes the list already in D1
@@ -246,12 +279,17 @@ def run_batch(
         run_id = client.post_batch(body).get("id")
     except Exception as exc:  # every failure ends the same way: current version kept (AC-PIPE-11)
         if step == "publish" and version is not None and _published(client, version, log):
-            return _finish(reporter, client, None, version, batch_at, mode, None, stats, emoji, log, banned_count)
+            return _finish(reporter, client, None, version, batch_at, mode, None, stats, emoji, log, banned_count, miss)
         failed_step, version = step, None
         # Network errors may carry the API host: the public workflow log only gets their type.
         # The banned words are secret (ADR 0005): that step's errors are logged by type only too.
         quiet = isinstance(exc, OSError) or step == "banned"
         detail = type(exc).__name__ if quiet else f"{type(exc).__name__}: {exc}"
+        if isinstance(exc, InvariantError):
+            # Which name matched a banned word would hint at the secret list: INV-07 is only counted.
+            shown = [v for v in exc.violations if not v.startswith("INV-07")]
+            hidden = len(exc.violations) - len(shown)
+            detail = "; ".join(shown + ([f"INV-07: {hidden} phần tử khớp danh mục cấm"] if hidden else []))
         log(f"Mẻ thất bại ở bước {step}: {detail}")
         error_body = {"status": "error", "batch_at": _iso(batch_at), "mode": mode, "failed_step": step, "stats": stats}
         try:
@@ -259,7 +297,9 @@ def run_batch(
         except Exception as post_exc:
             log(f"Không ghi được nhật ký đợt lỗi: {type(post_exc).__name__}")
 
-    return _finish(reporter, client, run_id, version, batch_at, mode, failed_step, stats, emoji, log, banned_count)
+    return _finish(
+        reporter, client, run_id, version, batch_at, mode, failed_step, stats, emoji, log, banned_count, miss
+    )
 
 
 def _published(client: BatchClient, version: int, log: Callable[[str], None]) -> bool:
@@ -286,6 +326,7 @@ def _finish(
     emoji: str | None,
     log: Callable[[str], None],
     banned_count: int | None = None,
+    miss: tuple[float, float] | None = None,
 ) -> BatchOutcome:
     title, report = _render_report(
         version=version,
@@ -295,6 +336,7 @@ def _finish(
         stats=stats,
         emoji=emoji,
         banned_count=banned_count,
+        miss=miss,
     )
     return BatchOutcome(
         ok=failed_step is None,
