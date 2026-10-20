@@ -3,7 +3,8 @@ import { fold } from '../../ids'
 import { playerId } from '../../player'
 import { ipHash, rateCounters, type Limit } from '../../ratelimit'
 import { uuidv7 } from '../../uuid'
-import { fail, int, obj, oneOf, str } from '../../validate'
+import { fail, int, obj, oneOf } from '../../validate'
+import { bannedKey } from '../disc/disc'
 import { policyVersion } from '../content/content'
 import {
   type ConsentRow,
@@ -53,20 +54,34 @@ export async function createConsent(req: Request, env: Env): Promise<Response> {
   return json({ purpose, action, policy_version: version, created_at: iso(now) }, { status: 201 })
 }
 
-/** PUT /api/me/nickname — needs both `play` and `nickname` consent (AC-PRIV-03); word filters come with DISC. */
+const INVALID_NICKNAME = 'Nickname không hợp lệ' // never says which word was refused (AC-DISC-03)
+
+/**
+ * PUT /api/me/nickname — needs both `play` and `nickname` consent (AC-PRIV-03); 2–20 allowed characters and no
+ * banned term or blocked alias inside its letters and digits (AC-DISC-02/03, AC-MOD-06).
+ */
 export async function putNickname(req: Request, env: Env): Promise<Response> {
   const player = playerId(req)
-  const b = obj(await readJson(req), 'body', ['nickname'])
-  const nickname = str(b.nickname, 'nickname', 100).trim()
-  if ([...nickname].length < 2 || [...nickname].length > 20 || !NICKNAME.test(nickname))
-    fail('nickname: 2–20 ký tự, chỉ chữ, số, khoảng trắng, _ và -')
+  const b = await readJson(req)
+  const raw = b.nickname
+  if (Object.keys(b).some((k) => k !== 'nickname') || typeof raw !== 'string' || raw.length > 100)
+    throw new HttpError(400, 'Dữ liệu không hợp lệ', 'nickname: chuỗi tối đa 100 ký tự')
+  const nickname = raw.trim()
+  const length = [...nickname].length
+  if (length < 2 || length > 20 || !NICKNAME.test(nickname)) throw new HttpError(422, INVALID_NICKNAME)
   const db = env.DB
-  const [play, nick] = await limited(req, env, player, [
+  const [play, nick, banned] = await limited(req, env, player, [
     playConsentStatement(db, player),
     nicknameConsentStatement(db, player),
+    db.prepare('SELECT DISTINCT term_fold FROM banned_term'),
   ])
   requirePlayConsent(env, play?.results[0] as ConsentRow | undefined)
   requireNicknameConsent(env, nick?.results[0] as ConsentRow | undefined)
+  const key = bannedKey(nickname)
+  for (const { term_fold } of rows<{ term_fold: string }>(banned)) {
+    const term = bannedKey(term_fold)
+    if (term !== '' && key.includes(term)) throw new HttpError(422, INVALID_NICKNAME)
+  }
   const now = Date.now()
   try {
     await db
