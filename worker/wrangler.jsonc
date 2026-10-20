@@ -1,4 +1,6 @@
-// Cloudflare Worker: serves the web app (static assets from ../web/dist) and the JSON API under /api/*.
+// Cloudflare Worker: serves the web app (static assets from ../web/dist) and the JSON API under /lau-meme/api/*.
+// The game lives under a sub-path of dinoduct.fun (ADR 0007): BASE_PATH must equal base-path.json and the route
+// patterns below use it too (AC-SUBPATH-01 checks both). Only this game's path is declared — never dinoduct.fun/*.
 // Top level = PRODUCTION (`wrangler deploy` without --env). Agents may only use --env staging; the dk guard
 // blocks the rest. database_id values are not secrets — fill them from `npx wrangler d1 create <name>`.
 {
@@ -7,23 +9,29 @@
   "main": "src/index.ts",
   "compatibility_date": "2026-10-01",
   "observability": { "enabled": true },
+  // workers.dev stays on: deploy-cf.sh health-checks the workers.dev URL.
+  "workers_dev": true,
+  "routes": [{ "pattern": "dinoduct.fun/lau-meme*", "zone_name": "dinoduct.fun" }],
+  // The Worker answers first (prefix check, redirect, API, SPA fallback under the sub-path — the assets'
+  // single-page-application mode only falls back to the root /index.html). Hashed build files skip it.
   "assets": {
     "directory": "../web/dist",
     "binding": "ASSETS",
-    "not_found_handling": "single-page-application",
-    "run_worker_first": ["/api/*"]
+    "not_found_handling": "none",
+    "run_worker_first": ["/*", "!/lau-meme/assets/*"]
   },
   "d1_databases": [
     { "binding": "DB", "database_name": "lau-meme-prod", "database_id": "00000000-0000-0000-0000-000000000000", "migrations_dir": "migrations" }
   ],
-  "vars": { "APP_ENV": "production", "POLICY_VERSION": "1" },
+  "vars": { "APP_ENV": "production", "POLICY_VERSION": "1", "BASE_PATH": "/lau-meme" },
   "env": {
     "staging": {
       "name": "lau-meme-staging",
+      "routes": [{ "pattern": "staging.dinoduct.fun/lau-meme*", "zone_name": "dinoduct.fun" }],
       "d1_databases": [
         { "binding": "DB", "database_name": "lau-meme-staging", "database_id": "00000000-0000-0000-0000-000000000000", "migrations_dir": "migrations" }
       ],
-      "vars": { "APP_ENV": "staging", "POLICY_VERSION": "1" }
+      "vars": { "APP_ENV": "staging", "POLICY_VERSION": "1", "BASE_PATH": "/lau-meme" }
     }
   }
 }

@@ -19,7 +19,15 @@ const HTML = { Accept: 'text/html', 'Sec-Fetch-Mode': 'navigate' }
 
 // ---------------------------------------------------------------- helpers
 // Minimal JSONC parser: strips line and block comments outside strings, and trailing commas.
-function parseJsonc(text: string): any {
+type RouteCfg = { pattern: string; zone_name: string }
+type WranglerCfg = {
+  vars: { BASE_PATH?: string }
+  routes: RouteCfg[]
+  workers_dev?: boolean
+  env: { staging: { vars: { BASE_PATH?: string }; routes: RouteCfg[] } }
+}
+
+function parseJsonc(text: string): WranglerCfg {
   let out = ''
   let i = 0
   while (i < text.length) {

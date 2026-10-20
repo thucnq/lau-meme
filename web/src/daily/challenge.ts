@@ -1,4 +1,5 @@
 import type { GraphResult } from '../graph/crypto'
+import { localStore, storageKey } from '../storage'
 
 /**
  * Daily challenge board (AC-DAILY-04/05): separate from the main Đĩa, starts from the 4 starters, counts every
@@ -23,7 +24,7 @@ export type Challenge = {
   submission(): { steps: number; path: PathStep[] }
 }
 
-const STORAGE_KEY = 'lau-meme:daily-challenge'
+const STORAGE_KEY = storageKey('daily-challenge')
 export const HIDDEN_NAME = '???'
 
 type Saved = { version: number; board: ElementRef[]; steps: number; solvedName: string | null; path: PathStep[] }
@@ -48,14 +49,6 @@ function save(storage: Storage | undefined, state: Saved): void {
   }
 }
 
-function defaultStorage(): Storage | undefined {
-  try {
-    return localStorage
-  } catch {
-    return undefined
-  }
-}
-
 /** Opens the challenge of `version`: restores it when saved for the same batch, otherwise starts a new board. */
 export function openChallenge(deps: {
   version: number
@@ -65,7 +58,7 @@ export function openChallenge(deps: {
   onDiscover: (el: ElementRef) => void
   storage?: Storage
 }): Challenge {
-  const storage = deps.storage ?? defaultStorage()
+  const storage = deps.storage ?? localStore() ?? undefined
   const state: Saved = load(storage, deps.version) ?? {
     version: deps.version,
     board: deps.starters.map(({ id, name, emoji }) => ({ id, name, emoji })),

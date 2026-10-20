@@ -4,6 +4,8 @@ declare namespace Cloudflare {
     DB: D1Database
     ASSETS: Fetcher
     APP_ENV: string
+    /** Sub-path the game lives under, no trailing slash (base-path.json, ADR 0007). */
+    BASE_PATH: string
     ADMIN_TOKEN?: string
     PIPELINE_TOKEN?: string
     POLICY_VERSION?: string

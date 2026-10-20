@@ -19,7 +19,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 CORE_PATH = ROOT / "docs" / "input" / "noi-dung-loi.json"
 BASE_URL = "https://dinoduct.fun/lau-meme"
-TOKEN = "test-token-not-a-secret"
+FAKE_BEARER = "test-token-not-a-secret"
 RUN_ID = "00000000-0000-4000-8000-000000000001"
 
 STATE = {
@@ -105,7 +105,7 @@ def test_ac_subpath_12_state_di_qua_tien_to(monkeypatch):
     from lau_meme_pipeline.batch import HttpBatchClient
 
     seen = install_fake_https(monkeypatch)
-    HttpBatchClient(BASE_URL, TOKEN).get_state()
+    HttpBatchClient(BASE_URL, FAKE_BEARER).get_state()
     assert [(r["method"], r["path"]) for r in seen] == [("GET", "/lau-meme/api/pipeline/state")]
     assert seen[0]["host"].startswith("dinoduct.fun")
 
@@ -115,7 +115,7 @@ def test_ac_subpath_12_dang_me_di_qua_tien_to(monkeypatch):
     from lau_meme_pipeline.batch import HttpBatchClient
 
     seen = install_fake_https(monkeypatch)
-    HttpBatchClient(BASE_URL, TOKEN).post_batch(error_batch_body())
+    HttpBatchClient(BASE_URL, FAKE_BEARER).post_batch(error_batch_body())
     assert [(r["method"], r["path"]) for r in seen] == [("POST", "/lau-meme/api/pipeline/batches")]
 
 
@@ -124,7 +124,7 @@ def test_ac_subpath_12_gan_issue_di_qua_tien_to(monkeypatch):
     from lau_meme_pipeline.batch import HttpBatchClient
 
     seen = install_fake_https(monkeypatch)
-    HttpBatchClient(BASE_URL, TOKEN).patch_batch(RUN_ID, "https://github.com/o/r/issues/1")
+    HttpBatchClient(BASE_URL, FAKE_BEARER).patch_batch(RUN_ID, "https://github.com/o/r/issues/1")
     assert [(r["method"], r["path"]) for r in seen] == [("PATCH", f"/lau-meme/api/pipeline/batches/{RUN_ID}")]
 
 
@@ -133,7 +133,7 @@ def test_ac_subpath_12_rollback_di_qua_tien_to(monkeypatch):
     from lau_meme_pipeline.rollback import HttpRollbackClient
 
     seen = install_fake_https(monkeypatch)
-    HttpRollbackClient(BASE_URL, TOKEN).post_rollback(None)
+    HttpRollbackClient(BASE_URL, FAKE_BEARER).post_rollback(None)
     assert [(r["method"], r["path"]) for r in seen] == [("POST", "/lau-meme/api/pipeline/rollback")]
 
 
@@ -142,7 +142,7 @@ def test_ac_subpath_12_base_url_co_dau_gach_cheo_cuoi_van_dung(monkeypatch):
     from lau_meme_pipeline.batch import HttpBatchClient
 
     seen = install_fake_https(monkeypatch)
-    HttpBatchClient(BASE_URL + "/", TOKEN).get_state()
+    HttpBatchClient(BASE_URL + "/", FAKE_BEARER).get_state()
     assert seen[0]["path"] == "/lau-meme/api/pipeline/state"
 
 

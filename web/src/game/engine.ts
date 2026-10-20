@@ -4,6 +4,7 @@
  */
 import { decryptEntry, elementId, fold, lookupKey } from '../graph/crypto'
 import type { Graph, GraphResult } from '../graph/crypto'
+import { storageKey } from '../storage'
 
 export type SortMode = 'newest' | 'name' | 'depth'
 export type Item = GraphResult & { discovered_at: string }
@@ -32,8 +33,8 @@ export type CombineOutcome =
   | { kind: 'hit'; result: GraphResult; isNew: boolean; progress: Progress }
   | { kind: 'miss'; line: string; hint: string | null; progress: Progress }
 
-export const PROGRESS_KEY = 'lm.game.progress'
-export const THEME_KEY = 'lm.theme'
+export const PROGRESS_KEY = storageKey('game.progress')
+export const THEME_KEY = storageKey('theme')
 export const HINT_AFTER_MISSES = 3 // open question 9 — default
 export const EMPTY_BLOCKLIST: Blocklist = { elements: [], recipes: [], images: [] }
 
