@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { SendError } from '../disc/api'
 import type { Manifest } from '../game/engine'
 import type { GraphResult } from '../graph/crypto'
@@ -68,6 +68,8 @@ export function DailyPanel({ manifest, lookup, onDiscover, storage }: Props) {
   const [busy, setBusy] = useState(false)
   const [sent, setSent] = useState<Sent | null>(null)
   const [board, setBoard] = useState<DailyLeaderboard | null>(null)
+  const [boardError, setBoardError] = useState(false)
+  const [broken, setBroken] = useState(false)
   const [now, setNow] = useState(() => new Date())
 
   useEffect(() => {
@@ -76,24 +78,34 @@ export function DailyPanel({ manifest, lookup, onDiscover, storage }: Props) {
   }, [])
 
   const open = () => {
+    if (challengeRef.current) return
     const challenge = startChallenge(manifest, storage, lookup, onDiscover)
     challengeRef.current = challenge
     setState(challenge.getState())
   }
 
-  const submit = (challenge: Challenge) => {
-    submitDailyResult(version, challenge.submission(), { storage, policyVersion }).then(
-      ({ result }) => setSent({ kind: 'result', result }),
-      (err: unknown) => {
-        if (err instanceof ConsentRequiredError) return setSent({ kind: 'consent' })
-        const text =
-          err instanceof SendError && err.status === 429
-            ? 'Gửi quá nhanh, thử lại sau.'
-            : 'Không gửi được kết quả, thử lại sau.'
-        setSent({ kind: 'error', text })
-      },
-    )
-  }
+  // Safe to repeat: a result already stored comes back as 409 with that result (AC-DAILY-08).
+  const submit = useCallback(
+    (challenge: Challenge) => {
+      submitDailyResult(version, challenge.submission(), { storage, policyVersion }).then(
+        ({ result }) => setSent({ kind: 'result', result }),
+        (err: unknown) => {
+          if (err instanceof ConsentRequiredError) return setSent({ kind: 'consent' })
+          const text =
+            err instanceof SendError && err.status === 429
+              ? 'Gửi quá nhanh, thử lại sau.'
+              : 'Không gửi được kết quả, thử lại sau.'
+          setSent({ kind: 'error', text })
+        },
+      )
+    },
+    [version, storage, policyVersion],
+  )
+
+  // A board restored already solved (reload after a failed or not-yet-allowed send): send it now (AC-DAILY-05/06).
+  useEffect(() => {
+    if (initial?.getState().solved) submit(initial)
+  }, [initial, submit])
 
   const pick = (el: ElementRef) => {
     const challenge = challengeRef.current
@@ -101,6 +113,7 @@ export function DailyPanel({ manifest, lookup, onDiscover, storage }: Props) {
     if (!picked) return setPicked(el)
     setPicked(null)
     setBusy(true)
+    setBroken(false)
     challenge
       .combine(picked, el)
       .then((out) => {
@@ -108,11 +121,13 @@ export function DailyPanel({ manifest, lookup, onDiscover, storage }: Props) {
         setState(challenge.getState())
         if (out.solved) submit(challenge)
       })
+      .catch(() => setBroken(true)) // the step was not counted (challenge.ts)
       .finally(() => setBusy(false))
   }
 
   const showBoard = () => {
-    getDailyLeaderboard(version, { storage, policyVersion }).then(setBoard, () => undefined)
+    setBoardError(false)
+    getDailyLeaderboard(version, { storage, policyVersion }).then(setBoard, () => setBoardError(true))
   }
 
   return (
@@ -142,6 +157,7 @@ export function DailyPanel({ manifest, lookup, onDiscover, storage }: Props) {
             ))}
           </div>
           {missed && !state.solved && <p role="status">💨 Trượt rồi</p>}
+          {broken && <p role="status">Nồi trục trặc, thử lại nhé.</p>}
           {state.solved && <p>Xong sau {state.steps} bước</p>}
           {sent?.kind === 'result' && (
             <p role="status">
@@ -150,12 +166,18 @@ export function DailyPanel({ manifest, lookup, onDiscover, storage }: Props) {
           )}
           {sent?.kind === 'consent' && <ConsentPrompt />}
           {sent?.kind === 'error' && <p role="status">{sent.text}</p>}
+          {state.solved && sent !== null && sent.kind !== 'result' && (
+            <button type="button" onClick={() => challengeRef.current && submit(challengeRef.current)}>
+              Gửi lại kết quả
+            </button>
+          )}
         </section>
       )}
 
       <button type="button" onClick={showBoard}>
         Bảng xếp hạng
       </button>
+      {boardError && <p role="status">Không tải được bảng xếp hạng</p>}
       {board && (
         <ol aria-label="Bảng xếp hạng">
           {board.rows.map((r) => (
@@ -163,6 +185,12 @@ export function DailyPanel({ manifest, lookup, onDiscover, storage }: Props) {
               #{r.rank} {r.nickname} — {r.value} bước
             </li>
           ))}
+          {/* my own rank even outside the top 20 (AC-DAILY-09) */}
+          {board.me && !board.rows.some((r) => r.rank === board.me?.rank) && (
+            <li>
+              Bạn: #{board.me.rank} — {board.me.value} bước
+            </li>
+          )}
         </ol>
       )}
     </div>
