@@ -11,11 +11,21 @@ Không bí mật nào nằm trong repo (repo có thể public).
 | Biến chạy cục bộ | `worker/.dev.vars` (gitignore) | chép từ `worker/.dev.vars.example` |
 
 ## Môi trường
+Game chạy dưới đường dẫn con (ADR 0007). Tiền tố nằm ở `base-path.json`.
+
+| Môi trường | Địa chỉ | Route Worker | Kiểm tra sức khỏe |
+|---|---|---|---|
+| Production | https://dinoduct.fun/lau-meme/ | `dinoduct.fun/lau-meme*` | `/lau-meme/api/health` |
+| Staging | https://staging.dinoduct.fun/lau-meme/ | `staging.dinoduct.fun/lau-meme*` | `/lau-meme/api/health` |
+
+Gốc `https://dinoduct.fun/` được Redirect Rule (không có trong code) chuyển 302 về `/lau-meme/`. `*.workers.dev` vẫn bật để `deploy-cf.sh` kiểm tra sức khỏe. Ở đó mọi đường dẫn ngoài `/lau-meme/` trả 404.
+Cấu hình tài khoản lần đầu (DNS, Redirect Rule, SSL, deploy production đầu tiên, kiểm tra nhà mạng và xem trước link) xem `docs/dev/huong-dan-tai-khoan.md`.
+
 - `staging`: `wrangler.jsonc` → `env.staging`. Agent được deploy bằng `/dk:ship staging`.
 - Production: cấu hình top-level. **Chỉ người làm**: `npx wrangler d1 migrations apply DB --remote` rồi `npx wrangler deploy` (trong `worker/`, sau khi `npm --prefix web run build`), hoặc workflow `deploy` với environment `production` có người duyệt.
 
 ## Triển khai và quay lại
-- Staging: `/dk:ship staging` (build web, migrate D1, deploy, kiểm tra `/api/health`, tự rollback khi lỗi).
+- Staging: `/dk:ship staging` (build web, migrate D1, deploy, kiểm tra `/lau-meme/api/health`, tự rollback khi lỗi).
 - Quay lại bản trước (chỉ code): `bash <plugin>/scripts/deploy-cf.sh staging --rollback [version-id]`; production: `npx wrangler rollback [version-id]`.
 - Rollback **không** quay lại dữ liệu D1. Khôi phục dữ liệu bằng D1 Time Travel — việc của người, kiểm tra cú pháp hiện hành của `wrangler d1 time-travel` trước khi chạy.
 
@@ -26,6 +36,9 @@ Không bí mật nào nằm trong repo (repo có thể public).
 ## Sự cố thường gặp
 | Triệu chứng | Nguyên nhân thường gặp | Xử lý |
 |---|---|---|
-| `/api/*` trả 500, log `no such table` | Chưa chạy migration trên môi trường đó | `npx wrangler d1 migrations apply DB --env <env> --remote` |
+| `/lau-meme/api/*` trả 500, log `no such table` | Chưa chạy migration trên môi trường đó | `npx wrangler d1 migrations apply DB --env <env> --remote` |
 | Trang trắng sau deploy | Quên build web trước khi deploy | `npm --prefix web run build` rồi deploy lại |
 | Workflow cron chạy trễ | GitHub Actions không bảo đảm đúng giờ | Bình thường; giao diện dựa vào thời điểm trong dữ liệu, không vào giờ lý thuyết |
+| `dinoduct.fun` báo lỗi 52x hoặc không phân giải | Thiếu bản ghi DNS proxied cho host, hoặc Redirect Rule bị tắt | Xem `docs/dev/huong-dan-tai-khoan.md` mục 1–2 |
+| `/lau-meme` vào được nhưng F5 ở màn hình con ra 404 | Bản deploy cũ (trước ADR 0007) hoặc web build sai thư mục | Build lại web (`web/dist/lau-meme/index.html` phải có) rồi deploy |
+| Pipeline báo `HTTP 404` khi đăng mẻ / rollback | Secret `API_BASE_URL` thiếu tiền tố | Đặt `https://dinoduct.fun/lau-meme` (staging: `https://staging.dinoduct.fun/lau-meme`) |
