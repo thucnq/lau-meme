@@ -293,6 +293,9 @@ export async function rollbackBatch(req: Request, env: Env): Promise<Response> {
   return json(toBatchRun(run))
 }
 
+// ~2 batches a day: 1 000 picks cover well over a year, longer than any dish waits for its turn again.
+const DAILY_HISTORY_LIMIT = 1000
+
 /**
  * GET /api/pipeline/state — AC-PIPE-13: content and anonymous aggregates only, never a player table.
  * One D1 round trip.
@@ -305,8 +308,8 @@ export async function getPipelineState(_req: Request, env: Env): Promise<Respons
     db.prepare("SELECT term_fold FROM banned_term WHERE source IN ('mod', 'admin') ORDER BY term_fold"),
     db.prepare(
       `SELECT version, daily_element_id, batch_at FROM batch_run
-       WHERE status = 'success' AND daily_element_id IS NOT NULL ORDER BY version`,
-    ),
+       WHERE status = 'success' AND daily_element_id IS NOT NULL ORDER BY version DESC LIMIT ?`,
+    ).bind(DAILY_HISTORY_LIMIT),
   ])
   const value = (current?.results[0] as { value: string } | undefined)?.value
   const blocklist: Record<'elements' | 'recipes' | 'images', string[]> = { elements: [], recipes: [], images: [] }
@@ -317,7 +320,7 @@ export async function getPipelineState(_req: Request, env: Env): Promise<Respons
     current_version: value === undefined ? null : Number(value),
     blocklist,
     banned_aliases: [...new Set(((aliases?.results ?? []) as { term_fold: string }[]).map((r) => r.term_fold))],
-    daily_history: ((history?.results ?? []) as { version: number; daily_element_id: string; batch_at: number }[]).map(
+    daily_history: ((history?.results ?? []) as { version: number; daily_element_id: string; batch_at: number }[]).reverse().map(
       (r) => ({ version: r.version, element_id: r.daily_element_id, batch_at: new Date(r.batch_at).toISOString() }),
     ),
     feedback: [], // FEEDBACK (optional feature) is not built yet

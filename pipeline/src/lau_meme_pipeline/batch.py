@@ -78,7 +78,11 @@ def _core_stats() -> dict:
 
 
 def _pick_daily(store: ContentStore, core: Mapping, state: Mapping, version: int) -> dict:
-    """Phase 1: only dishes with a hand-written hint in the core's `daily_examples` (open question 17)."""
+    """Phase 1: only dishes with a hand-written hint in the core's `daily_examples` (open question 17).
+
+    The blocklist only steers this choice: blocked elements/recipes are still published, the Worker's `block`
+    table hides them at serve time (ADR 0003). Phase 2 must not assume the pipeline filters them.
+    """
     blocked = set(state.get("blocklist", {}).get("elements", []))
     candidates = []
     for example in core.get("daily_examples", []):
@@ -218,14 +222,45 @@ def run_batch(
         }
         run_id = client.post_batch(body).get("id")
     except Exception as exc:  # every failure ends the same way: current version kept (AC-PIPE-11)
+        if step == "publish" and version is not None and _published(client, version, log):
+            return _finish(reporter, client, None, version, batch_at, mode, None, stats, emoji, log)
         failed_step, version = step, None
-        log(f"Mẻ thất bại ở bước {step}: {type(exc).__name__}: {exc}")
+        # Network errors may carry the API host: the public workflow log only gets their type.
+        detail = type(exc).__name__ if isinstance(exc, OSError) else f"{type(exc).__name__}: {exc}"
+        log(f"Mẻ thất bại ở bước {step}: {detail}")
         error_body = {"status": "error", "batch_at": _iso(batch_at), "mode": mode, "failed_step": step, "stats": stats}
         try:
             run_id = client.post_batch(error_body).get("id")
         except Exception as post_exc:
             log(f"Không ghi được nhật ký đợt lỗi: {type(post_exc).__name__}")
 
+    return _finish(reporter, client, run_id, version, batch_at, mode, failed_step, stats, emoji, log)
+
+
+def _published(client: BatchClient, version: int, log: Callable[[str], None]) -> bool:
+    """The publish may have committed even though its response was lost: ask the Worker which version is live."""
+    try:
+        live = client.get_state().get("current_version") == version
+    except Exception as exc:
+        log(f"Không xác nhận được version hiện hành sau lỗi đăng: {type(exc).__name__}")
+        return False
+    if live:
+        log(f"Mất phản hồi khi đăng nhưng version {version} đã là bản hiện hành.")
+    return live
+
+
+def _finish(
+    reporter: IssueReporter,
+    client: BatchClient,
+    run_id: str | None,
+    version: int | None,
+    batch_at: datetime,
+    mode: str,
+    failed_step: str | None,
+    stats: Mapping,
+    emoji: str | None,
+    log: Callable[[str], None],
+) -> BatchOutcome:
     title, report = _render_report(
         version=version, batch_at=batch_at, mode=mode, failed_step=failed_step, stats=stats, emoji=emoji
     )
