@@ -13,7 +13,7 @@ dinoduct.fun (mua qua Cloudflare Registrar) là thương hiệu chứa nhiều g
 - Mỗi repo chỉ khai báo route của đường dẫn mình. Repo này **không** khai báo `dinoduct.fun/*` hay gốc. Gốc `/` tạm thời do Redirect Rule của Cloudflare (người cấu hình, không nằm trong code) chuyển 302 về `/lau-meme/`. Khi có hub thì gỡ rule này và hub tự gắn route của nó.
 - Tiền tố chỉ có một nguồn: `base-path.json` ở gốc repo. Vite đọc file này để đặt `base` và thư mục build (`dist/lau-meme/`). Worker nhận biến `BASE_PATH`. Pattern route trong `wrangler.jsonc` buộc phải viết chuỗi, nên có test (AC-SUBPATH-01) so khớp các chỗ này với nhau.
 - Worker chạy trước static assets (`run_worker_first`, trừ `/lau-meme/assets/*` là file có hash). Worker tự xử lý:
-  - đường dẫn ngoài `/lau-meme/` (kể cả `/lau-meme-abc`, mà pattern `lau-meme*` vẫn khớp) trả 404;
+  - đường dẫn ngoài `/lau-meme/` (kể cả `/lau-meme-abc`, mà pattern `lau-meme*` vẫn khớp) trả 404. Hệ quả: mọi slug bắt đầu bằng `lau-meme` (vd `/lau-meme2`) coi như **dành riêng** cho game này. Game khác không được đặt slug như vậy; nếu cần thì đổi route thành hai pattern `…/lau-meme` và `…/lau-meme/*`;
   - `/lau-meme` trả 301 về `/lau-meme/`;
   - API nằm dưới `/lau-meme/api/*`, ảnh dưới `/lau-meme/img/*`;
   - request điều hướng không khớp file nào được trả `/lau-meme/index.html`.

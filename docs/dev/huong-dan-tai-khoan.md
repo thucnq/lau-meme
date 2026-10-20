@@ -17,7 +17,7 @@ DNS → Records → Add record, thêm hai bản ghi:
 | AAAA | `staging` | `100::` | Proxied | Auto |
 
 Ghi chú:
-- Tài liệu Workers hiện hành có cảnh báo về bản ghi `100::` và khuyên dùng Custom Domain khi Worker là origin. Ở đây **không dùng được Custom Domain**: nó chiếm mọi đường dẫn của host (ADR 0007). Bản ghi `100::` proxied vẫn là cách Cloudflare dùng cho origin chỉ có Worker (vd tài liệu "Worker as origin" của Cloudflare for SaaS). Hệ quả: mọi đường dẫn **không** có route hay Redirect Rule (vd `dinoduct.fun/abc`) sẽ trả lỗi 52x của Cloudflare. Chấp nhận cho tới khi có hub.
+- Tài liệu Workers hiện hành có cảnh báo về bản ghi `100::` và khuyên dùng Custom Domain khi Worker là origin. Ở đây **không dùng được Custom Domain**: nó chiếm mọi đường dẫn của host (ADR 0007). Bản ghi `100::` proxied vẫn là cách Cloudflare dùng cho origin chỉ có Worker (vd tài liệu "Worker as origin" của Cloudflare for SaaS). Hệ quả: mọi đường dẫn **không** có route hay Redirect Rule (vd `dinoduct.fun/abc`) sẽ trả lỗi 52x của Cloudflare. Đây là hành vi **dự kiến**, không phải sự cố. Chấp nhận cho tới khi có hub.
 - Không thêm bản ghi `www` nếu chưa cần. Nếu thêm thì cũng là AAAA `100::` proxied, kèm một Redirect Rule `www` → apex.
 - Kiểm tra: `dig +short AAAA dinoduct.fun` phải ra IPv6 của Cloudflare (không phải `100::`, vì đã proxied).
 

@@ -9,7 +9,8 @@ import react from '@vitejs/plugin-react'
 const { basePath } = JSON.parse(readFileSync(new URL('../base-path.json', import.meta.url), 'utf8')) as { basePath: string }
 const base = `${basePath}/`
 const dir = basePath.slice(1)
-const siteUrl = process.env.VITE_SITE_URL ?? `https://dinoduct.fun${base}`
+// always with a trailing slash: share links and og:image are appended to it
+const siteUrl = (process.env.VITE_SITE_URL ?? `https://dinoduct.fun${base}`).replace(/\/?$/, '/')
 
 /**
  * Moves every built file under `<outDir>/lau-meme/` so the Worker's static assets serve them at the URLs `base`

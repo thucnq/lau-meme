@@ -57,8 +57,10 @@ async function api(req: Request, env: Env, ctx: ExecutionContext, rest: string):
   return problem(404, 'Không tìm thấy')
 }
 
+const isRead = (req: Request): boolean => req.method === 'GET' || req.method === 'HEAD'
+
 const isNavigation = (req: Request): boolean =>
-  req.method === 'GET' && (req.headers.get('Sec-Fetch-Mode') === 'navigate' || (req.headers.get('Accept') ?? '').includes('text/html'))
+  isRead(req) && (req.headers.get('Sec-Fetch-Mode') === 'navigate' || (req.headers.get('Accept') ?? '').includes('text/html'))
 
 /** Static file under the base path; a navigation that matches no file gets the SPA's index.html (F5 on any screen). */
 async function asset(req: Request, env: Env, url: URL): Promise<Response> {
@@ -72,11 +74,15 @@ export default {
   async fetch(req, env, ctx): Promise<Response> {
     const url = new URL(req.url)
     const base = env.BASE_PATH
-    if (url.pathname === base) return new Response(null, { status: 301, headers: { Location: `${base}/${url.search}` } })
+    if (url.pathname === base) {
+      // a 301 would turn a POST into a GET in most clients
+      if (!isRead(req)) return problem(405, 'Phương thức không hỗ trợ')
+      return new Response(null, { status: 301, headers: { Location: `${base}/${url.search}` } })
+    }
     // Everything outside the game's path belongs to other games or the hub (only reachable here via workers.dev).
     if (!url.pathname.startsWith(`${base}/`)) return problem(404, 'Không tìm thấy')
     const rest = url.pathname.slice(base.length)
-    if (rest.startsWith('/api/')) return api(req, env, ctx, rest)
+    if (rest === '/api' || rest.startsWith('/api/')) return api(req, env, ctx, rest)
     // Images (AC-ART-05, phase 2: R2) — reserved so the SPA never answers for them.
     if (rest.startsWith('/img/')) return problem(404, 'Không tìm thấy')
     return asset(req, env, url)
