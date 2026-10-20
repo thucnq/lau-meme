@@ -10,7 +10,7 @@
 ### AC-SUBPATH-01: Một nguồn tiền tố, route đúng
 - **Cho** `base-path.json`, `worker/wrangler.jsonc`, `.dk/stack.toml`
 - **Khi** đọc cấu hình
-- **Thì** biến `BASE_PATH` của Worker (production và `env.staging`) bằng `basePath` trong `base-path.json`; top-level có `routes` đúng một mục `{ pattern: "dinoduct.fun/lau-meme*", zone_name: "dinoduct.fun" }`, `env.staging` có đúng một mục `{ pattern: "staging.dinoduct.fun/lau-meme*", zone_name: "dinoduct.fun" }`; không có route nào khác (không `dinoduct.fun/*`, không gốc); `workers_dev` là `true`; `deploy.health` trong `.dk/stack.toml` là `/lau-meme/api/health`
+- **Thì** biến `BASE_PATH` của Worker (production và `env.staging`) bằng `basePath` trong `base-path.json`; top-level có `routes` đúng một mục `{ pattern: "dinoduct.fun/lau-meme*", zone_name: "dinoduct.fun" }`, `env.staging` có đúng một mục `{ pattern: "staging.dinoduct.fun/lau-meme*", zone_name: "dinoduct.fun" }`; ngoài ra mỗi môi trường chỉ được thêm đúng một route cho host quản trị (ADR 0008): top-level `{ pattern: "laumeme-admin.dinoduct.fun/*", zone_name: "dinoduct.fun" }`, `env.staging` `{ pattern: "laumeme-admin-staging.dinoduct.fun/*", zone_name: "dinoduct.fun" }`; không có route nào khác (không `dinoduct.fun/*`, không gốc của `dinoduct.fun` hay `staging.dinoduct.fun`); `workers_dev` là `true`; `deploy.health` trong `.dk/stack.toml` là `/lau-meme/api/health`
 - Ưu tiên: Bắt buộc
 
 ### AC-SUBPATH-02: API dưới tiền tố

@@ -27,6 +27,7 @@ Trang quản trị (ADMIN) giữ `ADMIN_TOKEN` trong `sessionStorage` (AC-ADMIN-
 ## Thay đổi đã làm theo ADR (cần duyệt trước khi build)
 - `docs/api/openapi.yaml`: mỗi path `/admin/*` có `servers` riêng là host quản trị (`/api` trên `https://laumeme-admin.dinoduct.fun`).
 - `docs/acceptance/admin.md` AC-ADMIN-10: mở `https://laumeme-admin.dinoduct.fun/`; `/lau-meme/api/admin/*` trên host game trả 404; header `X-Robots-Tag` + CSP.
+- `docs/acceptance/subpath.md` AC-SUBPATH-01: cho phép đúng thêm một route host quản trị mỗi môi trường (chốt 2026-10-20 khi build ADMIN).
 - `/dk:approve spec` và `/dk:approve contract` sau khi sửa.
 
 ## Hệ quả
