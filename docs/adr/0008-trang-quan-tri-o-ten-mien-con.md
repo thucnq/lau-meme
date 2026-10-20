@@ -1,13 +1,13 @@
 # 0008 — Trang quản trị ở tên miền con riêng
 
-- Trạng thái: Đề xuất (chờ người duyệt — đổi contract và AC-ADMIN-10)
+- Trạng thái: Đã chấp nhận (2026-10-20) — chờ `/dk:approve spec` + `/dk:approve contract` cho thay đổi contract và AC-ADMIN-10
 - Ngày: 2026-10-20
 - Nguồn: câu hỏi mở 19, chốt 2026-10-20: "Trang quản trị ở subdomain"
 
 ## Bối cảnh
 Trang quản trị (ADMIN) giữ `ADMIN_TOKEN` trong `sessionStorage` (AC-ADMIN-10). Theo ADR 0007, game chạy ở `dinoduct.fun/lau-meme` và dùng chung origin `https://dinoduct.fun` với hub và các game sau. Storage thuộc về origin, nên script của bất kỳ trang nào trên `dinoduct.fun` cũng đọc được token. Tiền tố khóa `laumeme:` không ngăn được việc này. Vì vậy trang quản trị phải chạy ở một origin khác.
 
-## Quyết định (đề xuất)
+## Quyết định
 - **Host:** `laumeme-admin.dinoduct.fun` (production) và `laumeme-admin-staging.dinoduct.fun` (staging).
   - Chỉ dùng tên miền con một cấp, vì Universal SSL chỉ phủ `*.dinoduct.fun`; `admin.staging.dinoduct.fun` cần Advanced Certificate.
   - Tên có tiền tố `laumeme-`, để game sau có origin quản trị riêng chứ không dùng chung `admin.dinoduct.fun`.
@@ -24,9 +24,9 @@ Trang quản trị (ADMIN) giữ `ADMIN_TOKEN` trong `sessionStorage` (AC-ADMIN-
 - **Liên kết tới chính sách:** trang quản trị chỉ link tuyệt đối tới `https://dinoduct.fun/lau-meme/chinh-sach` (AC-PRIV-01).
 - **Người làm (DNS/Cloudflare):** thêm bản ghi DNS proxied cho hai host trên (cùng cách với `staging`, xem `docs/dev/huong-dan-tai-khoan.md`). Deploy production vẫn là việc của người.
 
-## Thay đổi cần duyệt trước khi build
-- `docs/api/openapi.yaml`: thêm server quản trị (`https://laumeme-admin.dinoduct.fun/api`), các path `/admin/*` chỉ có ở server này.
-- `docs/acceptance/admin.md` AC-ADMIN-10: đổi "mở `/admin`" thành "mở `https://laumeme-admin.dinoduct.fun/`", và thêm "`/lau-meme/api/admin/*` trên host game trả 404".
+## Thay đổi đã làm theo ADR (cần duyệt trước khi build)
+- `docs/api/openapi.yaml`: mỗi path `/admin/*` có `servers` riêng là host quản trị (`/api` trên `https://laumeme-admin.dinoduct.fun`).
+- `docs/acceptance/admin.md` AC-ADMIN-10: mở `https://laumeme-admin.dinoduct.fun/`; `/lau-meme/api/admin/*` trên host game trả 404; header `X-Robots-Tag` + CSP.
 - `/dk:approve spec` và `/dk:approve contract` sau khi sửa.
 
 ## Hệ quả
