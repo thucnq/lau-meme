@@ -85,8 +85,9 @@ export function openChallenge(deps: {
       path: state.path.map((s) => ({ ...s })),
     }),
     async combine(a, b) {
-      state.steps += 1
+      // Count the step only once the lookup answered, so a thrown lookup leaves state and storage untouched.
       const found = await deps.lookup(a.name, b.name)
+      state.steps += 1
       if (!found) {
         save(storage, state)
         return { ok: false, result: null, solved: false }

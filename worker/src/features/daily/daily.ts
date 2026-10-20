@@ -249,38 +249,38 @@ export async function getDailyLeaderboard(
   const version = versionParam(params[0])
   const player = optionalPlayerId(req)
   const db = env.DB
-  if (!(await publishedStatement(db, version).first())) return problem(404, 'Không có mẻ này')
-  const top = await db
-    .prepare(
-      `SELECT d.steps, p.nickname FROM daily_result d LEFT JOIN player p ON p.id = d.player_id
-       WHERE d.version = ? ORDER BY d.steps, d.submitted_at, d.rowid LIMIT ?`,
+  // One round trip: published check, top 20 and (optionally) my row with its rank.
+  const statements = [
+    publishedStatement(db, version),
+    db
+      .prepare(
+        `SELECT d.steps, p.nickname FROM daily_result d LEFT JOIN player p ON p.id = d.player_id
+         WHERE d.version = ? ORDER BY d.steps, d.submitted_at, d.rowid LIMIT ?`,
+      )
+      .bind(version, TOP),
+  ]
+  if (player !== null)
+    statements.push(
+      db
+        .prepare(
+          `SELECT me.steps, p.nickname,
+             (SELECT COUNT(*) + 1 FROM daily_result d WHERE d.version = me.version
+                AND (d.steps < me.steps OR (d.steps = me.steps AND (d.submitted_at < me.submitted_at
+                     OR (d.submitted_at = me.submitted_at AND d.rowid < me.rowid))))) AS rank
+           FROM daily_result me LEFT JOIN player p ON p.id = me.player_id
+           WHERE me.version = ? AND me.player_id = ?`,
+        )
+        .bind(version, player),
     )
-    .bind(version, TOP)
-    .all<BoardRow>()
-  const rows = top.results.map((r, i) => ({
+  const [published, top, mineResult] = await db.batch(statements)
+  if (!first(published)) return problem(404, 'Không có mẻ này')
+  const rows = ((top?.results ?? []) as BoardRow[]).map((r, i) => ({
     rank: i + 1,
     nickname: r.nickname ?? ANONYMOUS,
     value: r.steps,
   }))
-  let me = null
-  if (player !== null) {
-    const mine = await db
-      .prepare(
-        `SELECT d.steps, p.nickname FROM daily_result d LEFT JOIN player p ON p.id = d.player_id
-         WHERE d.version = ? AND d.player_id = ?`,
-      )
-      .bind(version, player)
-      .first<BoardRow>()
-    const rank = await rankStatement(db, version, player).first<{
-      rank: number
-    }>()
-    if (mine)
-      me = {
-        rank: rank?.rank ?? 1,
-        nickname: mine.nickname ?? ANONYMOUS,
-        value: mine.steps,
-      }
-  }
+  const mine = first<BoardRow & { rank: number }>(mineResult)
+  const me = mine ? { rank: mine.rank, nickname: mine.nickname ?? ANONYMOUS, value: mine.steps } : null
   return json({ version, rows, me })
 }
 
