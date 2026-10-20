@@ -15,7 +15,7 @@
  *   Root: nối onReport -> ReportDialog
  */
 import { createHash, webcrypto } from 'node:crypto'
-import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import { fold } from '../graph/crypto'
 import type { Graph, GraphResult } from '../graph/crypto'
@@ -28,7 +28,7 @@ import { saveConsent } from '../privacy/consent'
 import { getPlayerId } from '../privacy/player'
 import { Root } from '../Root'
 import { REASONS, submitReport } from './api'
-import { loadBlocklist } from './blocklist'
+import { BLOCKLIST_POLL_MS, loadBlocklist } from './blocklist'
 import { ReportDialog } from './ReportDialog'
 
 // ---------------------------------------------------------------- fixtures (ADR 0002)
@@ -451,5 +451,102 @@ describe('report: danh sách chặn phía client', () => {
     await screen.findByRole('list', { name: 'Đĩa nhúng' })
     await waitFor(() => expect(pot().dataset.state).toBe('idle'))
     expect(plateNames()).toContain(C)
+  })
+})
+
+// ================================================================ chặn phát sinh trong phiên
+describe('report: áp danh sách chặn trong phiên', () => {
+  const blocklistCalls = () => calls().filter((c) => c.method === 'GET' && c.url.includes('/lau-meme/api/blocklist'))
+
+  async function reportCFromRoot(): Promise<void> {
+    saveConsent(localStorage, 1, 'granted')
+    await installNet()
+    withC()
+    render(<Root />)
+    await screen.findByRole('list', { name: 'Đĩa nhúng' })
+    await waitFor(() => expect(pot().dataset.state).toBe('idle'))
+    fireEvent.click(within(plateItem(C)).getByRole('button', { name: `Báo cáo ${C}` }))
+    await screen.findByRole('dialog', { name: `Báo cáo ${C}` })
+    chooseReason('Người thật')
+  }
+
+  it('AC-REPORT-05: sau báo cáo 201, client gọi GET /blocklist?fresh=1; trả C trong elements thì C biến khỏi Đĩa', async () => {
+    await reportCFromRoot()
+    const before = blocklistCalls().length
+    blocklistReply = () => json({ elements: [eid(C)], recipes: [], images: [] })
+    fireEvent.click(sendBtn())
+    await screen.findByText(/Cảm ơn, tụi mình sẽ xem lại/)
+    await waitFor(() => expect(blocklistCalls().slice(before).some((c) => c.url.includes('fresh=1'))).toBe(true))
+    await waitFor(() => expect(plateNames()).not.toContain(C))
+    expect(plateNames()).toContain('Cay')
+  })
+
+  it('AC-REPORT-05: danh sách chặn mới chỉ có C trong images thì C vẫn ở trên Đĩa', async () => {
+    await reportCFromRoot()
+    const before = blocklistCalls().length
+    blocklistReply = () => json({ elements: [], recipes: [], images: [eid(C)] })
+    fireEvent.click(sendBtn())
+    await screen.findByText(/Cảm ơn, tụi mình sẽ xem lại/)
+    await waitFor(() => expect(blocklistCalls().slice(before).some((c) => c.url.includes('fresh=1'))).toBe(true))
+    expect(plateNames()).toContain(C)
+  })
+
+  it('AC-REPORT-07: Game tải lại /blocklist mỗi BLOCKLIST_POLL_MS (60 s, không fresh=1) dù manifest không đổi; C thêm sau đó bị ẩn', async () => {
+    expect(BLOCKLIST_POLL_MS).toBe(60_000)
+    vi.useFakeTimers({ shouldAdvanceTime: true })
+    vi.setSystemTime(T0)
+    try {
+      await installNet()
+      withC()
+      render(<Game />)
+      await screen.findByRole('list', { name: 'Đĩa nhúng' })
+      await waitFor(() => expect(pot().dataset.state).toBe('idle'))
+      expect(plateNames()).toContain(C)
+      const before = blocklistCalls().length
+      blocklistReply = () => json({ elements: [eid(C)], recipes: [], images: [] })
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(BLOCKLIST_POLL_MS + 500)
+      })
+      await waitFor(() => expect(plateNames()).not.toContain(C))
+      const polled = blocklistCalls().slice(before)
+      expect(polled.length).toBeGreaterThanOrEqual(1)
+      expect(polled.every((c) => !c.url.includes('fresh=1'))).toBe(true)
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+})
+
+describe('report: loadBlocklist(signal, storage, fresh)', () => {
+  it('AC-REPORT-05: fresh=true yêu cầu /lau-meme/api/blocklist?fresh=1; mặc định không có fresh', async () => {
+    await installNet()
+    await loadBlocklist(undefined, localStorage, true)
+    await loadBlocklist(undefined, localStorage)
+    const gets = calls().filter((c) => c.url.includes('/blocklist'))
+    expect(gets[0]!.url).toBe('/lau-meme/api/blocklist?fresh=1')
+    expect(gets[1]!.url).not.toContain('fresh')
+  })
+
+  it('AC-REPORT-07: phản hồi 200 thiếu một mảng hoặc không phải mảng thì không được lưu; trả bản lưu cũ, chưa có thì ba mảng rỗng', async () => {
+    await installNet()
+    const bad: unknown[] = [
+      { elements: [eid(C)], recipes: [] },
+      { elements: [eid(C)], recipes: [], images: 'x' },
+      { elements: null, recipes: [], images: [] },
+      { elements: { 0: 'a' }, recipes: [], images: [] },
+      [],
+    ]
+    for (const body of bad) {
+      blocklistReply = () => json(body)
+      expect(await loadBlocklist(undefined, localStorage), JSON.stringify(body)).toEqual(EMPTY)
+      expect(localStorage.getItem(BLOCK_KEY)).toBeNull()
+    }
+    const cached = { elements: [eid('Cay')], recipes: [], images: [] }
+    localStorage.setItem(BLOCK_KEY, JSON.stringify(cached))
+    for (const body of bad) {
+      blocklistReply = () => json(body)
+      expect(await loadBlocklist(undefined, localStorage, true), JSON.stringify(body)).toEqual(cached)
+      expect(JSON.parse(localStorage.getItem(BLOCK_KEY)!)).toEqual(cached)
+    }
   })
 })
