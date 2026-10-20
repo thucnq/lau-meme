@@ -32,9 +32,9 @@ jobs:
   batch:
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    # Lưu ý: nếu environment `production` có "required reviewers" (deploy.yml) thì mẻ cron sẽ đứng chờ duyệt.
-    # Khi đó tạo environment riêng không cần duyệt cho dữ liệu mẻ (cùng secret PIPELINE_TOKEN/API_BASE_URL).
-    environment: ${{ inputs.target || 'production' }}
+    # `production` có required reviewers (deploy code); mẻ nhúng chỉ đăng dữ liệu nên dùng environment
+    # `production-no-approval` (cùng secret PIPELINE_TOKEN/API_BASE_URL của production) để cron không đứng chờ duyệt.
+    environment: ${{ inputs.target == 'staging' && 'staging' || 'production-no-approval' }}
     permissions:
       contents: read
       issues: write

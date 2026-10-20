@@ -1,6 +1,6 @@
 # 0006 — Số version của mẻ nhúng lấy từ giờ mẻ (GMT+7)
 
-- Trạng thái: Đề xuất
+- Trạng thái: Đã chấp nhận (2026-10-20)
 - Ngày: 2026-10-20
 
 ## Bối cảnh
