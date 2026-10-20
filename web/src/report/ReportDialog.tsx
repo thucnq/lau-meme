@@ -9,11 +9,13 @@ type Props = {
   policyVersion: number
   storage: Storage | null
   onClose: () => void
+  /** The report was recorded: the page reloads the block list (it may have hidden the element or its image). */
+  onSent?: () => void
 }
 type Status = 'idle' | 'sending' | 'sent' | 'consent' | 'too-fast' | 'error'
 
 /** "Báo cáo" (AC-REPORT-01/05): a reason is required and none is pre-chosen; a note only with "Khác". */
-export function ReportDialog({ item, policyVersion, storage, onClose }: Props) {
+export function ReportDialog({ item, policyVersion, storage, onClose, onSent }: Props) {
   const [reason, setReason] = useState<ReportReason | null>(null)
   const [note, setNote] = useState('')
   const [status, setStatus] = useState<Status>('idle')
@@ -31,7 +33,10 @@ export function ReportDialog({ item, policyVersion, storage, onClose }: Props) {
     } as const
     setStatus('sending')
     submitReport(req, { storage, policyVersion }).then(
-      () => setStatus('sent'),
+      () => {
+        setStatus('sent')
+        onSent?.()
+      },
       (err: unknown) => {
         if (err instanceof ConsentRequiredError) setStatus('consent')
         else setStatus(err instanceof SendError && err.status === 429 ? 'too-fast' : 'error')

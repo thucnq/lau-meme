@@ -29,6 +29,7 @@ function Home() {
   const [bannerKey, setBannerKey] = useState(0) // remount = ask again (after erasure the new id has no consent)
   const [notice, setNotice] = useState<Notice | null>(null)
   const [heirlooms, setHeirlooms] = useState<Record<string, string>>({})
+  const [blocklistRefresh, setBlocklistRefresh] = useState(0)
   const [reporting, setReporting] = useState<{ id: string; name: string; image_key: string | null } | null>(null)
   const asked = useRef(new Set<string>())
 
@@ -81,7 +82,13 @@ function Home() {
 
   return (
     <>
-      <Game onDiscover={discover} onItems={lookUp} heirlooms={heirlooms} onReport={setReporting} />
+      <Game
+        onDiscover={discover}
+        onItems={lookUp}
+        heirlooms={heirlooms}
+        onReport={setReporting}
+        blocklistRefresh={blocklistRefresh}
+      />
       {reporting && policyVersion !== null && (
         <ReportDialog
           key={reporting.id}
@@ -89,6 +96,7 @@ function Home() {
           policyVersion={policyVersion}
           storage={storage}
           onClose={() => setReporting(null)}
+          onSent={() => setBlocklistRefresh((n) => n + 1)}
         />
       )}
       {notice?.kind === 'consent' && <ConsentPrompt />}

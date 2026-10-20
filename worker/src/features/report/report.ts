@@ -53,6 +53,8 @@ export async function createReport(req: Request, env: Env): Promise<Response> {
   const player = playerId(req)
   const { target, id, reason, note } = parse(await readJson(req))
   const db = env.DB
+  // Counters run before the consent/target checks, so refused calls use up the quota too (ADR 0004: "không ghi
+  // gì" never covers the counter itself).
   const limit = await rateCounters(req, env, REPORT_LIMIT, player)
   const reads = await db.batch([
     ...limit.statements,
@@ -72,6 +74,7 @@ export async function createReport(req: Request, env: Env): Promise<Response> {
   requirePlayConsent(env, first<ConsentRow>(consent))
   const el = first<{ image_key: string | null }>(element)
   if (!el || (target === 'image' && el.image_key === null)) return problem(404, 'Không tìm thấy đích báo cáo')
+  // A repeat answers with the stored report even if the target was hidden since (AC-REPORT-03).
   const mine = first<ReportRow>(existing)
   if (mine) return json(report(mine))
 
@@ -103,7 +106,8 @@ export async function createReport(req: Request, env: Env): Promise<Response> {
   const again = await db
     .prepare(
       `SELECT kind, target_id, reason, status, created_at FROM report
-       WHERE kind = ? AND target_id = ? AND player_id = ? ORDER BY created_at DESC LIMIT 1`,
+       WHERE kind = ?1 AND target_id = ?2 AND player_id = ?3
+         AND cycle = COALESCE((SELECT cycle FROM report_target WHERE kind = ?1 AND target_id = ?2), 0)`,
     )
     .bind(target, id, player)
     .first<ReportRow>()

@@ -7,7 +7,7 @@ import { useEffect, useRef, useState } from 'react'
 import type { PointerEvent as ReactPointerEvent } from 'react'
 import { getGraph, getManifest } from '../api'
 import { startManifestWatch } from '../daily/countdown'
-import { loadBlocklist } from '../report/blocklist'
+import { BLOCKLIST_POLL_MS, loadBlocklist } from '../report/blocklist'
 import type { Graph } from '../graph/crypto'
 import { localStore as storage, migrateLegacyKeys } from '../storage'
 import {
@@ -74,9 +74,11 @@ type Props = {
   heirlooms?: Record<string, string>
   /** Shows a "Báo cáo" button on each plate item (AC-REPORT-01). */
   onReport?: (item: { id: string; name: string; image_key: string | null }) => void
+  /** Bumped by the page after a report: reload the block list at once, bypassing caches (AC-REPORT-04/05). */
+  blocklistRefresh?: number
 }
 
-export function Game({ onDiscover, onItems, heirlooms = {}, onReport }: Props = {}) {
+export function Game({ onDiscover, onItems, heirlooms = {}, onReport, blocklistRefresh = 0 }: Props = {}) {
   const onDiscoverRef = useRef(onDiscover)
   useEffect(() => {
     onDiscoverRef.current = onDiscover
@@ -149,6 +151,23 @@ export function Game({ onDiscover, onItems, heirlooms = {}, onReport }: Props = 
     )
     return () => ctrl.abort()
   }, [reloadKey])
+
+  // Block list while playing: every minute, and at once after a report (AC-REPORT-05/07).
+  const hasLoaded = loaded !== null
+  useEffect(() => {
+    if (!hasLoaded) return
+    const ctrl = new AbortController()
+    const refresh = (fresh: boolean) =>
+      loadBlocklist(ctrl.signal, storage(), fresh).then((blocklist) => {
+        if (!ctrl.signal.aborted) setLoaded((prev) => (prev ? { ...prev, blocklist } : prev))
+      })
+    if (blocklistRefresh > 0) void refresh(true)
+    const timer = window.setInterval(() => void refresh(false), BLOCKLIST_POLL_MS)
+    return () => {
+      ctrl.abort()
+      window.clearInterval(timer)
+    }
+  }, [hasLoaded, blocklistRefresh])
 
   // A new batch (or a new block list) without a reload of the page: once the next batch is due, re-read the
   // manifest every 60 s and load everything again when it changed (AC-DAILY-12, AC-REPORT-07).
