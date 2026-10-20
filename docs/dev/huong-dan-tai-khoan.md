@@ -52,12 +52,69 @@ curl -sI "https://dinoduct.fun/?ref=test" | grep -iE '^(HTTP|location)'
   - Minimum TLS Version: 1.2.
 
 ## 4. Deploy production lần đầu
-Chuẩn bị (một lần):
-1. Tạo D1 production: `cd worker && npx wrangler d1 create lau-meme-prod`, rồi chép `database_id` vào `worker/wrangler.jsonc` (top-level) và commit qua PR. `database_id` không phải bí mật.
-2. Đặt secret Worker production: `npx wrangler secret put PIPELINE_TOKEN` và `npx wrangler secret put IP_HASH_KEY` (giá trị lấy từ `openssl rand -base64 32`; không ghi vào file nào).
-3. GitHub → Settings → Environments:
-   - environment `production` và `production-no-approval`: secret `API_BASE_URL` = `https://dinoduct.fun/lau-meme` (**có tiền tố**, không có `/` cuối), `PIPELINE_TOKEN` = giá trị vừa đặt ở bước 2.
-   - environment `staging` (nếu dùng): `https://staging.dinoduct.fun/lau-meme`.
+Chuẩn bị (một lần, làm cho staging trước rồi production).
+
+### 4.1. D1
+Tạo D1: `cd worker && npx wrangler d1 create lau-meme-staging` và `npx wrangler d1 create lau-meme-prod`, rồi chép `database_id` vào `worker/wrangler.jsonc` (`env.staging` và top-level) và commit qua PR. `database_id` không phải bí mật.
+
+### 4.2. Secret của Worker
+Ba secret, **mỗi môi trường một giá trị riêng** (không dùng chung giữa staging và production). Giá trị sinh bằng `openssl rand -base64 32` (32 byte ngẫu nhiên), không ghi vào file, issue, chat hay commit nào. Lệnh dưới là của staging; production bỏ `--env staging` (chỉ người chạy, guard chặn agent) và với `gh` dùng `--env production`.
+
+| Secret | Dùng để | Thiếu thì |
+|---|---|---|
+| `PIPELINE_TOKEN` | Bearer của pipeline gọi `/lau-meme/api/pipeline/*` (đăng mẻ, rollback, danh mục cấm — ADR 0003) | Mọi lệnh pipeline trả 401 |
+| `IP_HASH_KEY` | Khóa HMAC-SHA256 băm IP cho giới hạn tần suất, ghi đồng ý và khóa chống dò token quản trị (ADR 0004). IP thô không bao giờ được lưu | Ghi đồng ý, các API có giới hạn tần suất và **toàn bộ API quản trị** trả 500 (cố ý báo lỗi thay vì lưu IP thô) |
+| `ADMIN_TOKEN` | Bearer của trang quản trị ở `https://laumeme-admin[-staging].dinoduct.fun/` (ADR 0008) | Trang quản trị từ chối mọi request (401) |
+
+`PIPELINE_TOKEN` phải có **cùng giá trị** ở Worker và ở GitHub Environment, nên sinh một lần rồi đẩy vào cả hai nơi, không in ra màn hình:
+```bash
+cd worker
+T=$(openssl rand -base64 32)
+printf %s "$T" | npx wrangler secret put PIPELINE_TOKEN --env staging
+printf %s "$T" | gh secret set PIPELINE_TOKEN --env staging
+unset T
+
+# production (người chạy): sinh T mới, một giá trị cho Worker và cả hai environment production
+T=$(openssl rand -base64 32)
+printf %s "$T" | npx wrangler secret put PIPELINE_TOKEN
+printf %s "$T" | gh secret set PIPELINE_TOKEN --env production
+printf %s "$T" | gh secret set PIPELINE_TOKEN --env production-no-approval
+unset T
+```
+
+`IP_HASH_KEY` không ai cần biết giá trị, đặt thẳng:
+```bash
+openssl rand -base64 32 | tr -d '\n' | npx wrangler secret put IP_HASH_KEY --env staging
+```
+Đổi `IP_HASH_KEY` làm mọi bộ đếm giới hạn tần suất và khóa quản trị đang có bắt đầu lại từ 0; dữ liệu cũ vẫn đúng (chỉ có băm, sẽ được cron dọn sau 7 ngày). Chỉ đổi khi nghi lộ.
+
+`ADMIN_TOKEN` là mật khẩu của người quản trị: sinh, **lưu vào trình quản lý mật khẩu trước**, rồi dán vào lời nhắc của wrangler:
+```bash
+openssl rand -base64 32          # chép vào trình quản lý mật khẩu, mục "Lẩu Meme admin (staging)"
+npx wrangler secret put ADMIN_TOKEN --env staging   # dán giá trị khi được hỏi
+clear                            # xóa giá trị khỏi màn hình
+```
+- Token ngắn hoặc dễ đoán là không được: khóa chống dò chỉ chặn 5 lần sai/phút/IP (AC-ADMIN-02), an toàn dựa vào độ dài token. Luôn dùng 32 byte ngẫu nhiên như trên.
+- Trang quản trị chỉ giữ token trong `sessionStorage` của tab: đóng tab là phải dán lại.
+- Đổi token (định kỳ hoặc khi nghi lộ): chạy lại `secret put` với giá trị mới. Có hiệu lực ngay, phiên đang mở báo 401 và phải dán token mới. Nhật ký audit ghi 8 ký tự dấu vân của token nên phân biệt được thao tác trước và sau khi đổi.
+
+Kiểm tra (chỉ in tên, không in giá trị):
+```bash
+npx wrangler secret list --env staging        # phải có ADMIN_TOKEN, IP_HASH_KEY, PIPELINE_TOKEN
+```
+Sau khi deploy:
+```bash
+curl -s -o /dev/null -w '%{http_code}\n' https://staging.dinoduct.fun/lau-meme/api/pipeline/state                 # 401 (không token)
+curl -s -o /dev/null -w '%{http_code}\n' https://laumeme-admin-staging.dinoduct.fun/api/admin/batches            # 401 (không token)
+curl -s -o /dev/null -w '%{http_code}\n' https://staging.dinoduct.fun/lau-meme/api/admin/batches                 # 404 (host game không có API quản trị)
+```
+Rồi mở `https://laumeme-admin-staging.dinoduct.fun/`, dán `ADMIN_TOKEN`, thấy danh sách đợt là xong. Đừng thử token sai quá 4 lần liền: lần thứ 5 khóa IP của bạn 15 phút.
+
+### 4.3. GitHub Environments
+GitHub → Settings → Environments:
+- `production` (bật Required reviewers) và `production-no-approval` (không duyệt, cho cron mẻ nhúng): secret `API_BASE_URL` = `https://dinoduct.fun/lau-meme` (**có tiền tố**, không có `/` cuối), `PIPELINE_TOKEN` = giá trị production ở mục 4.2, `BANNED_WORDS` = danh sách từ cấm (mỗi dòng một từ).
+- `staging`: `API_BASE_URL` = `https://staging.dinoduct.fun/lau-meme`, `PIPELINE_TOKEN` = giá trị staging, `BANNED_WORDS`.
+- `ADMIN_TOKEN` và `IP_HASH_KEY` **không** đặt ở GitHub: không workflow nào cần.
 
 Deploy (trên `main` đã merge, máy sạch):
 ```bash

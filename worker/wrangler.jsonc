@@ -26,7 +26,7 @@
     "run_worker_first": ["/*", "!/lau-meme/assets/*"]
   },
   "d1_databases": [
-    { "binding": "DB", "database_name": "lau-meme-prod", "database_id": "00000000-0000-0000-0000-000000000000", "migrations_dir": "migrations" }
+    { "binding": "DB", "database_name": "lau-meme-prod", "database_id": "2a7d5380-5568-4981-9de2-8c39c551cd57", "migrations_dir": "migrations" }
   ],
   // Daily retention job 03:00 GMT+7 (ADR 0004, AC-PRIV-06). Not inherited by env.staging: declared there too.
   "triggers": { "crons": ["0 20 * * *"] },
@@ -39,7 +39,7 @@
         { "pattern": "laumeme-admin-staging.dinoduct.fun/*", "zone_name": "dinoduct.fun" }
       ],
       "d1_databases": [
-        { "binding": "DB", "database_name": "lau-meme-staging", "database_id": "00000000-0000-0000-0000-000000000000", "migrations_dir": "migrations" }
+        { "binding": "DB", "database_name": "lau-meme-staging", "database_id": "03517712-b21e-427d-8881-53e34bf6c44b", "migrations_dir": "migrations" }
       ],
       "triggers": { "crons": ["0 20 * * *"] },
       "vars": { "APP_ENV": "staging", "POLICY_VERSION": "1", "BASE_PATH": "/lau-meme", "ADMIN_HOST": "laumeme-admin-staging.dinoduct.fun" }

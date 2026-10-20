@@ -5,7 +5,10 @@ Không bí mật nào nằm trong repo (repo có thể public).
 
 | Bí mật | Nơi lưu | Đặt bằng |
 |---|---|---|
-| `ADMIN_TOKEN` | Cloudflare secret của Worker | `openssl rand -base64 32 \| npx wrangler secret put ADMIN_TOKEN --env staging` (production: người tự chạy, bỏ `--env`) |
+| `ADMIN_TOKEN` | Cloudflare secret của Worker (mỗi môi trường một giá trị) + trình quản lý mật khẩu của người quản trị | `docs/dev/huong-dan-tai-khoan.md` mục 4.2 |
+| `PIPELINE_TOKEN` | Cloudflare secret của Worker **và** GitHub Environment secret (`staging`, `production`, `production-no-approval`) — hai nơi phải cùng giá trị | `docs/dev/huong-dan-tai-khoan.md` mục 4.2 |
+| `IP_HASH_KEY` | Cloudflare secret của Worker (mỗi môi trường một giá trị) | `docs/dev/huong-dan-tai-khoan.md` mục 4.2 |
+| `API_BASE_URL`, `BANNED_WORDS` | GitHub Environment secret | `docs/dev/huong-dan-tai-khoan.md` mục 4.3 |
 | `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID` | GitHub Secrets | Settings → Secrets and variables → Actions |
 | Khóa API của pipeline (LLM, nguồn dữ liệu) | GitHub Secrets | như trên |
 | Biến chạy cục bộ | `worker/.dev.vars` (gitignore) | chép từ `worker/.dev.vars.example` |
@@ -45,4 +48,7 @@ Cấu hình tài khoản lần đầu (DNS, Redirect Rule, SSL, deploy productio
 | Workflow cron chạy trễ | GitHub Actions không bảo đảm đúng giờ | Bình thường; giao diện dựa vào thời điểm trong dữ liệu, không vào giờ lý thuyết |
 | `dinoduct.fun` báo lỗi 52x hoặc không phân giải | Thiếu bản ghi DNS proxied cho host, hoặc Redirect Rule bị tắt | Xem `docs/dev/huong-dan-tai-khoan.md` mục 1–2 |
 | `/lau-meme` vào được nhưng F5 ở màn hình con ra 404 | Bản deploy cũ (trước ADR 0007) hoặc web build sai thư mục | Build lại web (`web/dist/lau-meme/index.html` phải có) rồi deploy |
+| Pipeline báo `HTTP 401` khi đăng mẻ / rollback | `PIPELINE_TOKEN` ở GitHub Environment khác với secret của Worker | Đặt lại cả hai nơi cùng một giá trị (`huong-dan-tai-khoan.md` mục 4.2) |
+| Trang quản trị báo "Thiếu hoặc sai token" dù dán đúng | Chưa đặt `ADMIN_TOKEN` cho môi trường đó, hoặc dán token của môi trường khác | `npx wrangler secret list [--env staging]` phải có `ADMIN_TOKEN`; đặt lại theo mục 4.2 |
+| Trang quản trị trả 429 "Thử sai quá nhiều lần" | 5 lần sai trong 1 phút từ cùng IP ⇒ khóa 15 phút, kể cả token đúng (AC-ADMIN-02) | Chờ hết `Retry-After`. Không có lệnh gỡ khóa; xóa dòng `admin-lock:%` trong `rate_counter` chỉ khi chắc không phải bị dò |
 | Pipeline báo `HTTP 404` khi đăng mẻ / rollback | Secret `API_BASE_URL` thiếu tiền tố | Đặt `https://dinoduct.fun/lau-meme` (staging: `https://staging.dinoduct.fun/lau-meme`) |
