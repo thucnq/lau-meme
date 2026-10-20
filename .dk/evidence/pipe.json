@@ -62,20 +62,56 @@
   }
  },
  "green": {
-  "ts": "2026-10-20T02:40:32+00:00",
-  "commit": "bb1c906",
+  "ts": "2026-10-20T06:55:06+00:00",
+  "commit": "1cd2de5",
   "results": {
    "AC-PIPE-01": {
     "status": "PASS",
     "test": "test_batch#test_ac_pipe_01_version_for_doi_gio_sang_gmt7"
    },
    "AC-PIPE-02": {
-    "status": "FAIL",
-    "test": "test_batch#test_ac_pipe_02_chay_module_batch_voi_quyen_tao_issue_va_secret"
+    "status": "PASS",
+    "test": "test_batch#test_ac_pipe_02_lich_chay_hai_cron_00_va_12_gio_gmt7"
+   },
+   "AC-PIPE-03": {
+    "status": "PASS",
+    "test": "test_pipe2#test_ac_pipe_03_mot_nguon_loi_khong_lam_hong_ca_dot"
+   },
+   "AC-PIPE-04": {
+    "status": "PASS",
+    "test": "test_pipe2#test_ac_pipe_04_khai_niem_chi_gom_nam_truong"
+   },
+   "AC-PIPE-05": {
+    "status": "PASS",
+    "test": "test_pipe2#test_ac_pipe_05_dedupe_key_fold_bo_dau_cau"
+   },
+   "AC-PIPE-06": {
+    "status": "PASS",
+    "test": "test_pipe2#test_ac_pipe_06_chi_cap_hop_le_duoc_them_hai_cap_kia_bi_loai_kem_ly_do"
+   },
+   "AC-PIPE-07": {
+    "status": "PASS",
+    "test": "test_pipe2#test_ac_pipe_07_meme_chua_noi_duoc_vao_hang_cho_voi_so_lan_thu_1"
+   },
+   "AC-PIPE-08": {
+    "status": "PASS",
+    "test": "test_pipe2#test_ac_pipe_08_phan_tu_duoi_3_cong_thuc_can_bo_sung"
+   },
+   "AC-PIPE-09": {
+    "status": "PASS",
+    "test": "test_pipe2#test_ac_pipe_09_chi_giu_diem_tu_3_tro_len_va_luu_diem_kem_cong_thuc"
+   },
+   "AC-PIPE-10": {
+    "status": "PASS",
+    "test": "test_pipe2#test_ac_pipe_10_cached_llm_khoa_la_sha256_va_khong_goi_lai"
    },
    "AC-PIPE-11": {
     "status": "PASS",
     "test": "test_batch#test_ac_pipe_11_loi_o_buoc_state_khong_dang_gi_va_ghi_dot_loi"
+   },
+   "AC-PIPE-12": {
+    "status": "PASS",
+    "test": "test_pipe2#test_ac_pipe_12_vi_du_25_khai_niem_429_hai_lan_roi_het_quota_o_lo_3"
    },
    "AC-PIPE-13": {
     "status": "PASS",

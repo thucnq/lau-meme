@@ -81,8 +81,7 @@ REDDIT_URL = "https://www.reddit.com/r/vietnam/top.json?t=day&limit=25"
 KYM_URL = "https://knowyourmeme.com/memes.rss"
 GT_URL = "https://trends.google.com/trending/rss?geo=VN"
 YT_URL = (
-    "https://www.googleapis.com/youtube/v3/videos?part=snippet&chart=mostPopular"
-    "&regionCode=VN&maxResults=25&key=KEY123"
+    "https://www.googleapis.com/youtube/v3/videos?part=snippet&chart=mostPopular&regionCode=VN&maxResults=25&key=KEY123"
 )
 RSS_URL = "https://blog.example.com/feed.xml"
 ATOM_URL = "https://news.example.com/atom.xml"
@@ -194,7 +193,10 @@ def test_ac_pipe_03_mot_nguon_loi_khong_lam_hong_ca_dot():
     http, _ = make_http()
     reddit = FakeAdapter("Reddit", error=TimeoutError("timed out"))
     kym = FakeAdapter("Know Your Meme", [raw("K1", source="Know Your Meme")])
-    gt = FakeAdapter("Google Trends VN", [raw("G1", source="Google Trends VN"), raw("G2", source="Google Trends VN")])
+    gt = FakeAdapter(
+        "Google Trends VN",
+        [raw("G1", source="Google Trends VN"), raw("G2", source="Google Trends VN")],
+    )
     yt = FakeAdapter("YouTube", [raw("Y1", source="YouTube")])
     rss = FakeAdapter("RSS", [raw("R1", source="RSS")])
 
@@ -296,7 +298,7 @@ def test_ac_pipe_04_reddit_bo_anh_video_va_cat_ngu_canh_500():
     ],
 )
 def test_ac_pipe_04_adapter_rss_json_khong_tai_anh_video(adapter_factory, url, expected_names, source):
-    """AC-PIPE-04: mỗi adapter đọc đúng URL, chỉ thu khái niệm, không yêu cầu URL ảnh/video trong enclosure/thumbnail."""
+    """AC-PIPE-04: mỗi adapter đọc đúng URL, chỉ thu khái niệm, không tải URL ảnh/video trong enclosure."""
     import lau_meme_pipeline.crawl as m
 
     http, get = make_http(ALL_PAGES)
@@ -324,7 +326,7 @@ def test_ac_pipe_04_youtube_ngu_canh_toi_da_500():
 
 
 def test_ac_pipe_04_robots_cam_duong_dan_khong_duoc_truy_cap():
-    """AC-PIPE-04: đường dẫn bị robots.txt cấm ném RobotsDenied và không bao giờ được tải; robots chỉ tải một lần mỗi host."""
+    """AC-PIPE-04: đường dẫn bị robots.txt cấm ném RobotsDenied, không được tải; robots tải một lần mỗi host."""
     from lau_meme_pipeline.crawl import RobotsDenied
 
     http, get = make_http(
@@ -343,7 +345,8 @@ def test_ac_pipe_04_robots_theo_user_agent_cua_pipeline():
     from lau_meme_pipeline.crawl import RobotsDenied
 
     robots = "User-agent: *\nAllow: /\n\nUser-agent: lau-meme-pipeline\nDisallow: /x\n"
-    http, get = make_http({"https://ex.com/x/1": ("text/html", "no"), "https://ex.com/y": ("text/html", "ok")}, {"ex.com": robots})
+    pages = {"https://ex.com/x/1": ("text/html", "no"), "https://ex.com/y": ("text/html", "ok")}
+    http, get = make_http(pages, {"ex.com": robots})
     assert http.text("https://ex.com/y") == "ok"
     with pytest.raises(RobotsDenied):
         http.text("https://ex.com/x/1")
@@ -374,7 +377,14 @@ def test_ac_pipe_04_content_type_khong_phai_van_ban_bi_loai(content_type):
 
 @pytest.mark.parametrize(
     "content_type",
-    ["text/html; charset=utf-8", "text/plain", "application/json", "application/rss+xml", "application/atom+xml", "application/xml"],
+    [
+        "text/html; charset=utf-8",
+        "text/plain",
+        "application/json",
+        "application/rss+xml",
+        "application/atom+xml",
+        "application/xml",
+    ],
 )
 def test_ac_pipe_04_content_type_van_ban_duoc_chap_nhan(content_type):
     """AC-PIPE-04: text/*, json, rss, atom, xml được đọc."""
@@ -421,7 +431,7 @@ def test_ac_pipe_05_dedupe_key_fold_bo_dau_cau():
 
 
 def test_ac_pipe_05_hai_khai_niem_dau_loai_khong_goi_llm_chi_gan_giong_gui_llm():
-    """AC-PIPE-05: ví dụ AC: 2 khái niệm trùng chuỗi fold bị loại không LLM; chỉ "Còn mỗi cái nịt" gửi LLM, nói trùng thì loại."""
+    """AC-PIPE-05: 2 khái niệm trùng chuỗi fold bị loại không LLM; chỉ "Còn mỗi cái nịt" gửi LLM, trùng thì loại."""
     from lau_meme_pipeline.dedupe import dedupe
 
     calls = []
@@ -539,7 +549,7 @@ def test_ac_pipe_06_phan_tu_khong_ton_tai_hoac_dang_an_bi_loai():
 
 
 def test_ac_pipe_06_depth_theo_bfs_lai_toan_graph():
-    """AC-PIPE-06: depth tính bằng BFS lại toàn graph theo vòng (max(A,B)+1 như AC-SEED-06); phần tử không tới được thì vắng."""
+    """AC-PIPE-06: depth tính bằng BFS lại toàn graph theo vòng (max(A,B)+1 như AC-SEED-06)."""
     from lau_meme_pipeline.linking import bfs_depths, validate_links
 
     g = graph()
@@ -582,7 +592,12 @@ def test_ac_pipe_08_phan_tu_an_khong_can_bo_sung():
     from lau_meme_pipeline.linking import Graph, needs_supplement
 
     recipes = {("s", "t"): "u", ("s", "u"): "v", ("s", "v"): "w", ("t", "u"): "w"}
-    g = Graph(starters=("s", "t"), elements={k: k.upper() for k in "stuvw"}, recipes=recipes, inactive=frozenset({"v"}))
+    g = Graph(
+        starters=("s", "t"),
+        elements={k: k.upper() for k in "stuvw"},
+        recipes=recipes,
+        inactive=frozenset({"v"}),
+    )
     assert needs_supplement(g) == ["t", "u", "w"]
 
 
@@ -718,7 +733,7 @@ def test_ac_pipe_07_hang_cho_het_quota_giu_nguyen_khong_bi_phat():
 
 
 class ScriptedCall:
-    """call(chunk) -> answers; `script` is consumed one entry per call: an exception to raise or None for success."""
+    """call(chunk) -> answers; `script` has one entry per call: an exception to raise, or None."""
 
     def __init__(self, script):
         self.script = list(script)
@@ -820,7 +835,7 @@ def test_ac_pipe_12_het_quota_giua_chung_dua_lo_do_va_phan_con_lai_vao_pending()
 
 
 def test_ac_pipe_12_het_quota_o_pipeline_dua_vao_hang_cho_va_bao_cao():
-    """AC-PIPE-12: classify hết quota thì khái niệm vào hàng chờ lý do quota, báo cáo ghi "hết quota", không đăng meme chưa xử lý."""
+    """AC-PIPE-12: classify hết quota thì khái niệm vào hàng chờ (quota), báo cáo ghi "hết quota", không đăng."""
     from lau_meme_pipeline.full import run_full
     from lau_meme_pipeline.llm import QuotaExhausted
 
@@ -839,7 +854,7 @@ def test_ac_pipe_12_het_quota_o_pipeline_dua_vao_hang_cho_va_bao_cao():
 
 
 def test_ac_pipe_10_cached_llm_khoa_la_sha256_va_khong_goi_lai():
-    """AC-PIPE-10: CachedLlm khóa bằng sha256(bước + payload JSON sắp xếp, ensure_ascii=False); khóa đã có không gọi lại."""
+    """AC-PIPE-10: CachedLlm khóa bằng sha256(bước + payload JSON sắp xếp); khóa đã có không gọi lại."""
     from lau_meme_pipeline.llm import CachedLlm
 
     calls = []
@@ -853,7 +868,8 @@ def test_ac_pipe_10_cached_llm_khoa_la_sha256_va_khong_goi_lai():
     llm = CachedLlm(call, cache)
     first = llm.ask("same", payload)
 
-    key = hashlib.sha256(("same" + json.dumps(payload, sort_keys=True, ensure_ascii=False)).encode("utf-8")).hexdigest()
+    body = "same" + json.dumps(payload, sort_keys=True, ensure_ascii=False)
+    key = hashlib.sha256(body.encode("utf-8")).hexdigest()
     assert key in cache
     assert cache[key] == first
 
@@ -894,10 +910,11 @@ def mod_lists():
 def crawl_of(*names):
     from lau_meme_pipeline.crawl import CrawlResult
 
-    return CrawlResult(
-        concepts=[raw(n, quote=f"câu nói {n}", context=f"ngữ cảnh {n}", url=f"https://ex.com/{i}", source="RSS") for i, n in enumerate(names)],
-        errors=[],
-    )
+    concepts = [
+        raw(n, quote=f"câu nói {n}", context=f"ngữ cảnh {n}", url=f"https://ex.com/{i}", source="RSS")
+        for i, n in enumerate(names)
+    ]
+    return CrawlResult(concepts=concepts, errors=[])
 
 
 def _raise(exc):
@@ -950,10 +967,11 @@ def _describe(items):
 
 
 def _link(items):
+    fallback = [["AFK", "Aura"], ["AFK", "Bom Hàng"], ["AFK", "Brainrot"]]
     out = []
     for n, i in enumerate(items):
         cands = i.get("candidates") or []
-        pairs = [[cands[0], cands[1]]] if len(cands) >= 2 else [["AFK", "Aura"], ["AFK", "Bom Hàng"], ["AFK", "Brainrot"]][n % 3 : n % 3 + 1]
+        pairs = [[cands[0], cands[1]]] if len(cands) >= 2 else fallback[n % 3 : n % 3 + 1]
         out.append({"key": i["key"], "pairs": pairs})
     return out
 
@@ -976,7 +994,7 @@ def forbidden(step):
 
 
 def test_ac_pipe_10_chay_lai_cung_dau_vao_cho_byte_giong_nhau_khong_goi_llm_lai():
-    """AC-PIPE-10: cùng kho, crawl, llm_cache và batch_at -> graph/manifest giống từng byte, không trùng, 0 lời gọi LLM lần 2."""
+    """AC-PIPE-10: cùng kho, crawl, llm_cache, batch_at -> graph/manifest giống từng byte, 0 lời gọi LLM lần 2."""
     from lau_meme_pipeline.full import run_full
 
     core = real_core()

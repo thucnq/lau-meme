@@ -5,6 +5,7 @@ description = "Batch pipeline (crawl → process → publish) for lau-meme"
 requires-python = ">=3.11"
 dependencies = [
     "cryptography>=44",
+    "defusedxml>=0.7.1",
 ]
 
 [dependency-groups]
