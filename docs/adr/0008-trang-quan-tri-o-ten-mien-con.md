@@ -13,7 +13,8 @@ Trang quản trị (ADMIN) giữ `ADMIN_TOKEN` trong `sessionStorage` (AC-ADMIN-
   - Tên có tiền tố `laumeme-`, để game sau có origin quản trị riêng chứ không dùng chung `admin.dinoduct.fun`.
 - **Cùng một Worker:** thêm route `laumeme-admin.dinoduct.fun/*` vào top-level `wrangler.jsonc`, và `laumeme-admin-staging.dinoduct.fun/*` vào `env.staging`. Biến mới `ADMIN_HOST` để Worker nhận ra host quản trị.
 - **Định tuyến trong Worker:**
-  - Trên host quản trị: `/` trả trang quản trị (entry Vite riêng `web/admin.html`, build ra `web/dist/admin/`), `/api/admin/*` là API quản trị. Mọi đường dẫn khác trả 404.
+  - Trên host quản trị: `/` trả trang quản trị (entry Vite thứ hai `web/admin.html`, build cùng game ra `web/dist/lau-meme/admin.html`), `/api/admin/*` là API quản trị, `/lau-meme/assets/*` là file build có băm mà trang cần (công khai như của game). Mọi đường dẫn khác trả 404.
+  - Trên host game, `/lau-meme/admin`, `/lau-meme/admin.html`, `/lau-meme/admin/*` trả 404: trang quản trị không bao giờ được phục vụ trên origin game.
   - Trên host game: `/lau-meme/api/admin/*` trả **404**. Token chỉ được gửi tới origin quản trị, và trang game không bao giờ gọi được API quản trị (phòng thủ nhiều lớp).
   - Cùng origin nên không cần CORS. API `/pipeline/*` giữ nguyên trên host game.
 - **Header của trang quản trị:**

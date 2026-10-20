@@ -1,0 +1,472 @@
+import { useCallback, useEffect, useState, type FormEvent, type ReactNode } from 'react'
+import {
+  ApiError,
+  AuthError,
+  LockedError,
+  call,
+  moderate,
+  type Action,
+  type AuditItem,
+  type BatchItem,
+  type ElementItem,
+  type Kind,
+  type Page,
+  type RecipeItem,
+  type ReportItem,
+} from './api'
+
+/**
+ * Trang quản trị (AC-ADMIN-10, ADR 0008). Runs on its own origin; the token lives only in this tab's
+ * sessionStorage (gone when the tab closes) — never localStorage or a cookie.
+ */
+export const TOKEN_KEY = 'laumeme-admin.token'
+
+function session(): Storage | null {
+  try {
+    return window.sessionStorage
+  } catch {
+    return null
+  }
+}
+
+const readToken = () => session()?.getItem(TOKEN_KEY) ?? null
+
+function errorText(err: unknown): string {
+  if (err instanceof AuthError) return 'Token không đúng.'
+  if (err instanceof LockedError) return `Thử sai quá nhiều lần. Thử lại sau ${Math.ceil(err.retryAfter / 60)} phút.`
+  if (err instanceof ApiError) return err.title
+  return 'Không kết nối được máy chủ.'
+}
+
+export function AdminApp() {
+  const [token, setToken] = useState<string | null>(readToken)
+  const [notice, setNotice] = useState<string | null>(null)
+
+  const signIn = (value: string) => {
+    session()?.setItem(TOKEN_KEY, value)
+    setNotice(null)
+    setToken(value)
+  }
+  // stable: the list effects depend on it
+  const signOut = useCallback((message: string | null) => {
+    session()?.removeItem(TOKEN_KEY)
+    setNotice(message)
+    setToken(null)
+  }, [])
+  const onAuthError = useCallback(() => signOut('Token không đúng hoặc đã đổi. Đăng nhập lại.'), [signOut])
+
+  if (token === null) return <Login onSignIn={signIn} notice={notice} />
+  return <Console token={token} onAuthError={onAuthError} onSignOut={() => signOut(null)} />
+}
+
+function Login({ onSignIn, notice }: { onSignIn: (token: string) => void; notice: string | null }) {
+  const [value, setValue] = useState('')
+  const [error, setError] = useState<string | null>(notice)
+  const [busy, setBusy] = useState(false)
+
+  const submit = (e: FormEvent) => {
+    e.preventDefault()
+    const token = value.trim()
+    if (!token) return
+    setBusy(true)
+    setError(null)
+    call<Page<ReportItem>>(token, 'reports?status=new').then(
+      () => onSignIn(token),
+      (err: unknown) => {
+        setBusy(false)
+        setError(errorText(err))
+      },
+    )
+  }
+
+  return (
+    <main className="admin admin-login">
+      <h1>Lẩu Meme — Quản trị</h1>
+      <form onSubmit={submit}>
+        <label>
+          Token quản trị
+          <input type="password" autoComplete="off" value={value} onChange={(e) => setValue(e.target.value)} />
+        </label>
+        <button type="submit" disabled={busy}>
+          Đăng nhập
+        </button>
+      </form>
+      {error && <p role="alert">{error}</p>}
+    </main>
+  )
+}
+
+const TABS = ['Báo cáo', 'Nội dung', 'Đợt + Audit'] as const
+type Tab = (typeof TABS)[number]
+type Ctx = { token: string; onAuthError: () => void }
+
+function Console({ token, onAuthError, onSignOut }: Ctx & { onSignOut: () => void }) {
+  const [tab, setTab] = useState<Tab>('Báo cáo')
+  const ctx = { token, onAuthError }
+  return (
+    <main className="admin">
+      <header className="admin-bar">
+        <h1>Lẩu Meme — Quản trị</h1>
+        <button type="button" onClick={onSignOut}>
+          Đăng xuất
+        </button>
+      </header>
+      <div role="tablist" className="admin-tabs">
+        {TABS.map((t) => (
+          <button key={t} type="button" role="tab" aria-selected={tab === t} onClick={() => setTab(t)}>
+            {t}
+          </button>
+        ))}
+      </div>
+      <section role="tabpanel" aria-label={tab}>
+        {tab === 'Báo cáo' && <ReportsTab {...ctx} />}
+        {tab === 'Nội dung' && <ContentTab {...ctx} />}
+        {tab === 'Đợt + Audit' && <LogsTab {...ctx} />}
+      </section>
+    </main>
+  )
+}
+
+/** GET one admin list; reloads when `path` or `reload` changes; a 401 signs out. */
+function useList<T>({ token, onAuthError }: Ctx, path: string | null, reload: number) {
+  const [data, setData] = useState<Page<T> | null>(null)
+  const [error, setError] = useState<string | null>(null)
+  useEffect(() => {
+    if (path === null) return
+    let live = true
+    call<Page<T>>(token, path).then(
+      (d) => {
+        if (!live) return
+        setData(d)
+        setError(null)
+      },
+      (err: unknown) => {
+        if (!live) return
+        if (err instanceof AuthError) onAuthError()
+        else setError(errorText(err))
+      },
+    )
+    return () => {
+      live = false
+    }
+  }, [token, path, reload, onAuthError])
+  return { data, error }
+}
+
+/** Runs a moderation command, then `done`; the reason box is shared by every button of a tab. */
+function useModerate({ token, onAuthError }: Ctx, done: () => void) {
+  const [reason, setReason] = useState('')
+  const [error, setError] = useState<string | null>(null)
+  const run = (kind: Kind, id: string, action: Action) => {
+    setError(null)
+    moderate(token, kind, id, action, reason).then(
+      () => {
+        setReason('')
+        done()
+      },
+      (err: unknown) => (err instanceof AuthError ? onAuthError() : setError(errorText(err))),
+    )
+  }
+  const reasonBox = (
+    <label className="admin-reason">
+      Lý do (tùy chọn)
+      <input value={reason} maxLength={200} onChange={(e) => setReason(e.target.value)} />
+    </label>
+  )
+  return { run, reasonBox, error }
+}
+
+function Pager({ page, onPage }: { page: Page<unknown> | null; onPage: (n: number) => void }) {
+  if (!page) return null
+  const last = Math.max(1, Math.ceil(page.total / page.size))
+  return (
+    <nav className="admin-pager" aria-label="Phân trang">
+      <button type="button" disabled={page.page <= 1} onClick={() => onPage(page.page - 1)}>
+        Trước
+      </button>
+      <span>
+        Trang {page.page}/{last} · {page.total} mục
+      </span>
+      <button type="button" disabled={page.page >= last} onClick={() => onPage(page.page + 1)}>
+        Sau
+      </button>
+    </nav>
+  )
+}
+
+const when = (iso: string) => new Date(iso).toLocaleString('vi-VN')
+const STATE_LABEL = { active: 'đang hiện', hidden: 'đang ẩn', blocked: 'đã chặn', none: 'không có' } as const
+
+function Alert({ children }: { children: ReactNode }) {
+  return children ? <p role="alert">{children}</p> : null
+}
+
+function ReportsTab(ctx: Ctx) {
+  const [status, setStatus] = useState<'new' | 'resolved'>('new')
+  const [page, setPage] = useState(1)
+  const [reload, setReload] = useState(0)
+  const { data, error } = useList<ReportItem>(ctx, `reports?status=${status}&page=${page}`, reload)
+  const mod = useModerate(ctx, () => setReload((n) => n + 1))
+  return (
+    <>
+      <div className="admin-filters">
+        <label>
+          Trạng thái
+          <select
+            value={status}
+            onChange={(e) => {
+              setStatus(e.target.value as 'new' | 'resolved')
+              setPage(1)
+            }}
+          >
+            <option value="new">Mới</option>
+            <option value="resolved">Đã xử lý</option>
+          </select>
+        </label>
+        {mod.reasonBox}
+      </div>
+      <Alert>{error ?? mod.error}</Alert>
+      <table className="admin-table">
+        <thead>
+          <tr>
+            <th>Đích</th>
+            <th>Số người báo cáo</th>
+            <th>Lý do</th>
+            <th>Gần nhất</th>
+            <th>Trạng thái</th>
+            <th>Thao tác</th>
+          </tr>
+        </thead>
+        <tbody>
+          {data?.items.map((r) => (
+            <tr key={`${r.target}:${r.id}`}>
+              <td>
+                {r.emoji} {r.name} {r.target === 'image' && '(ảnh)'}
+              </td>
+              <td>{r.reporters}</td>
+              <td>
+                {Object.entries(r.reasons)
+                  .map(([k, n]) => `${k} × ${n}`)
+                  .join(', ')}
+              </td>
+              <td>{when(r.last_reported_at)}</td>
+              <td>{STATE_LABEL[r.state]}</td>
+              <td>
+                {r.state === 'active' && (
+                  <button type="button" onClick={() => mod.run(r.target, r.id, 'hide')}>
+                    Ẩn
+                  </button>
+                )}
+                {r.state === 'hidden' && (
+                  <button type="button" onClick={() => mod.run(r.target, r.id, 'show')}>
+                    Hiện
+                  </button>
+                )}
+                {status === 'new' && (
+                  <button type="button" onClick={() => mod.run(r.target, r.id, 'dismiss_reports')}>
+                    Bỏ qua
+                  </button>
+                )}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      {data?.items.length === 0 && <p>Không có báo cáo.</p>}
+      <Pager page={data} onPage={setPage} />
+    </>
+  )
+}
+
+function ContentTab(ctx: Ctx) {
+  const [q, setQ] = useState('')
+  const [query, setQuery] = useState('')
+  const [state, setState] = useState('')
+  const [page, setPage] = useState(1)
+  const [reload, setReload] = useState(0)
+  const [open, setOpen] = useState<ElementItem | null>(null)
+  const params = new URLSearchParams({ page: String(page) })
+  if (query) params.set('q', query)
+  if (state) params.set('state', state)
+  const { data, error } = useList<ElementItem>(ctx, `elements?${params}`, reload)
+  const recipes = useList<RecipeItem>(ctx, open ? `recipes?element_id=${open.id}` : null, reload)
+  const mod = useModerate(ctx, () => setReload((n) => n + 1))
+
+  const search = (e: FormEvent) => {
+    e.preventDefault()
+    setQuery(q.trim().slice(0, 100))
+    setPage(1)
+  }
+  const button = (label: string, kind: Kind, id: string, action: Action) => (
+    <button type="button" onClick={() => mod.run(kind, id, action)}>
+      {label}
+    </button>
+  )
+
+  return (
+    <>
+      <form className="admin-filters" onSubmit={search}>
+        <label>
+          Tìm phần tử
+          <input value={q} maxLength={100} onChange={(e) => setQ(e.target.value)} />
+        </label>
+        <label>
+          Trạng thái
+          <select
+            value={state}
+            onChange={(e) => {
+              setState(e.target.value)
+              setPage(1)
+            }}
+          >
+            <option value="">Tất cả</option>
+            <option value="active">Đang hiện</option>
+            <option value="hidden">Đang ẩn</option>
+            <option value="blocked">Đã chặn</option>
+          </select>
+        </label>
+        <button type="submit">Tìm</button>
+        {mod.reasonBox}
+      </form>
+      <Alert>{error ?? mod.error ?? recipes.error}</Alert>
+      <table className="admin-table">
+        <thead>
+          <tr>
+            <th>Phần tử</th>
+            <th>Độ sâu</th>
+            <th>Trạng thái</th>
+            <th>Ảnh</th>
+            <th>Thao tác</th>
+          </tr>
+        </thead>
+        <tbody>
+          {data?.items.map((e) => (
+            <tr key={e.id}>
+              <td>
+                {e.emoji} {e.name}
+              </td>
+              <td>{e.depth}</td>
+              <td>{STATE_LABEL[e.state]}</td>
+              <td>
+                {STATE_LABEL[e.image_state]}
+                {e.image_state === 'active' && button('Ẩn ảnh', 'image', e.id, 'hide')}
+                {e.image_state === 'hidden' && button('Hiện ảnh', 'image', e.id, 'show')}
+              </td>
+              <td>
+                {e.state === 'active' && button('Ẩn', 'element', e.id, 'hide')}
+                {e.state === 'hidden' && button('Hiện', 'element', e.id, 'show')}
+                {e.state === 'blocked' ? button('Gỡ chặn', 'element', e.id, 'unblock') : button('Chặn vĩnh viễn', 'element', e.id, 'block')}
+                <button type="button" onClick={() => setOpen(open?.id === e.id ? null : e)}>
+                  Công thức
+                </button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <Pager page={data} onPage={setPage} />
+      {open && (
+        <section aria-label={`Công thức của ${open.name}`}>
+          <h2>
+            Công thức có {open.emoji} {open.name}
+          </h2>
+          <ul className="admin-recipes">
+            {recipes.data?.items.map((r) => (
+              <li key={r.id}>
+                {r.a.emoji} {r.a.name} + {r.b.emoji} {r.b.name} = {r.result.emoji} {r.result.name} ({STATE_LABEL[r.state]}){' '}
+                {r.state === 'active' ? button('Ẩn công thức', 'recipe', r.id, 'hide') : button('Hiện công thức', 'recipe', r.id, 'show')}
+              </li>
+            ))}
+          </ul>
+          {recipes.data?.items.length === 0 && <p>Không có công thức.</p>}
+        </section>
+      )}
+    </>
+  )
+}
+
+function LogsTab(ctx: Ctx) {
+  const [batchPage, setBatchPage] = useState(1)
+  const [auditPage, setAuditPage] = useState(1)
+  const batches = useList<BatchItem>(ctx, `batches?page=${batchPage}&size=20`, 0)
+  const audit = useList<AuditItem>(ctx, `audit?page=${auditPage}&size=20`, 0)
+  return (
+    <>
+      <h2>Các đợt</h2>
+      <Alert>{batches.error}</Alert>
+      <table className="admin-table">
+        <thead>
+          <tr>
+            <th>Version</th>
+            <th>Giờ mẻ</th>
+            <th>Chế độ</th>
+            <th>Trạng thái</th>
+            <th>Thêm / chặn / hàng chờ</th>
+            <th>Lỗi nguồn</th>
+            <th>Issue</th>
+          </tr>
+        </thead>
+        <tbody>
+          {batches.data?.items.map((b) => (
+            <tr key={b.id}>
+              <td>{b.version ?? '—'}</td>
+              <td>{when(b.batch_at)}</td>
+              <td>{b.mode}</td>
+              <td>
+                {b.status}
+                {b.failed_step && ` (${b.failed_step})`}
+                {b.rollback_to != null && ` → v${b.rollback_to}`}
+              </td>
+              <td>
+                {b.stats.added ?? 0} / {Object.values(b.stats.blocked ?? {}).reduce((s, n) => s + n, 0)} / {b.stats.queued ?? 0}
+              </td>
+              <td>{Array.isArray(b.stats.source_errors) ? b.stats.source_errors.map((e) => e.source).join(', ') : ''}</td>
+              <td>
+                {b.issue_url?.startsWith('https://github.com/') && (
+                  <a href={b.issue_url} target="_blank" rel="noreferrer">
+                    Báo cáo
+                  </a>
+                )}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <Pager page={batches.data} onPage={setBatchPage} />
+
+      <h2>Audit</h2>
+      <Alert>{audit.error}</Alert>
+      <table className="admin-table">
+        <thead>
+          <tr>
+            <th>Thời điểm</th>
+            <th>Thao tác</th>
+            <th>Đích</th>
+            <th>Trước → sau</th>
+            <th>Lý do</th>
+            <th>Token</th>
+          </tr>
+        </thead>
+        <tbody>
+          {audit.data?.items.map((a, i) => (
+            <tr key={`${a.created_at}:${a.target_id}:${i}`}>
+              <td>{when(a.created_at)}</td>
+              <td>{a.action}</td>
+              <td>
+                {a.target_kind} <code>{a.target_id.slice(0, 10)}…</code>
+              </td>
+              <td>
+                {a.before} → {a.after}
+              </td>
+              <td>{a.reason ?? ''}</td>
+              <td>
+                <code>{a.token_fp}</code>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <Pager page={audit.data} onPage={setAuditPage} />
+    </>
+  )
+}
