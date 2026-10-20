@@ -1,27 +1,63 @@
 {
  "red": {
-  "ts": "2026-10-20T02:33:23+00:00",
-  "commit": "a8afc97",
+  "ts": "2026-10-20T06:53:21+00:00",
+  "commit": "e44e730",
   "results": {
    "AC-PIPE-01": {
-    "status": "FAIL",
-    "test": "test_batch#test_ac_pipe_01_che_do_full_o_giai_doan_1_khong_dang_va_khong_cham_adapter"
+    "status": "PASS",
+    "test": "test_batch#test_ac_pipe_01_version_for_doi_gio_sang_gmt7"
    },
    "AC-PIPE-02": {
+    "status": "PASS",
+    "test": "test_batch#test_ac_pipe_02_lich_chay_hai_cron_00_va_12_gio_gmt7"
+   },
+   "AC-PIPE-03": {
     "status": "FAIL",
-    "test": "test_batch#test_ac_pipe_02_chay_module_batch_voi_quyen_tao_issue_va_secret"
+    "test": "test_pipe2#test_ac_pipe_03_robots_cam_la_loi_nguon_khong_lam_hong_dot"
+   },
+   "AC-PIPE-04": {
+    "status": "FAIL",
+    "test": "test_pipe2#test_ac_pipe_04_khong_co_adapter_facebook_tiktok"
+   },
+   "AC-PIPE-05": {
+    "status": "FAIL",
+    "test": "test_pipe2#test_ac_pipe_05_nhieu_gan_giong_gui_dung_mot_lan_goi_voi_ten_gan_nhat"
+   },
+   "AC-PIPE-06": {
+    "status": "FAIL",
+    "test": "test_pipe2#test_ac_pipe_06_nhieu_cong_thuc_lay_duong_ngan_nhat_va_bo_phan_tu_an"
+   },
+   "AC-PIPE-07": {
+    "status": "FAIL",
+    "test": "test_pipe2#test_ac_pipe_07_hang_cho_het_quota_giu_nguyen_khong_bi_phat"
+   },
+   "AC-PIPE-08": {
+    "status": "FAIL",
+    "test": "test_pipe2#test_ac_pipe_08_cong_thuc_bo_sung_qua_cung_luat_hop_le"
+   },
+   "AC-PIPE-09": {
+    "status": "FAIL",
+    "test": "test_pipe2#test_ac_pipe_09_diem_1_va_2_la_low_score"
+   },
+   "AC-PIPE-10": {
+    "status": "FAIL",
+    "test": "test_pipe2#test_ac_pipe_10_khong_tao_phan_tu_hoac_cong_thuc_trung"
    },
    "AC-PIPE-11": {
+    "status": "PASS",
+    "test": "test_batch#test_ac_pipe_11_loi_o_buoc_state_khong_dang_gi_va_ghi_dot_loi"
+   },
+   "AC-PIPE-12": {
     "status": "FAIL",
-    "test": "test_batch#test_ac_pipe_11_cli_tra_1_khi_that_bai_va_0_khi_thanh_cong"
+    "test": "test_pipe2#test_ac_pipe_12_het_quota_o_pipeline_dua_vao_hang_cho_va_bao_cao"
    },
    "AC-PIPE-13": {
-    "status": "FAIL",
-    "test": "pipeline.test.ts#pipeline state > AC-PIPE-13: trạng thái pipeline chỉ có dữ liệu nội dung ẩn danh, không có trường người chơi"
+    "status": "PASS",
+    "test": "test_batch#test_ac_pipe_13_payload_llm_chi_giu_truong_duoc_phep"
    },
    "AC-PIPE-14": {
-    "status": "FAIL",
-    "test": "pipeline.test.ts#pipeline batch report > AC-PIPE-14: PATCH gắn link Issue vào đợt; id lạ 404; link sai 400; thiếu hoặc sai token 401"
+    "status": "PASS",
+    "test": "test_batch#test_ac_pipe_14_tieu_de_co_version_trang_thai_che_do_emoji_khong_lo_ten"
    }
   }
  },
