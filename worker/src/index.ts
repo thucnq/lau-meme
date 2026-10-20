@@ -1,7 +1,7 @@
 import { hasBearer } from './auth'
 import { getGraph, getManifest } from './features/content/content'
 import { getDailyLeaderboard, getMyStreak, getStreakLeaderboard, submitDailyResult } from './features/daily/daily'
-import { publishBatch, rollbackBatch } from './features/pipeline/batches'
+import { getPipelineState, patchBatchRun, publishBatch, rollbackBatch } from './features/pipeline/batches'
 import { HttpError, json, problem } from './http'
 
 type Handler = (req: Request, env: Env, ctx: ExecutionContext, params: string[]) => Promise<Response>
@@ -32,7 +32,9 @@ const routes: Route[] = [
   { pattern: /^\/api\/streaks\/leaderboard$/, methods: { GET: getStreakLeaderboard } },
   { pattern: /^\/api\/me\/streak$/, methods: { GET: getMyStreak } },
   { pattern: /^\/api\/pipeline\/batches$/, methods: { POST: pipelineOnly(publishBatch) } },
+  { pattern: /^\/api\/pipeline\/batches\/([^/]+)$/, methods: { PATCH: pipelineOnly(patchBatchRun) } },
   { pattern: /^\/api\/pipeline\/rollback$/, methods: { POST: pipelineOnly(rollbackBatch) } },
+  { pattern: /^\/api\/pipeline\/state$/, methods: { GET: pipelineOnly(getPipelineState) } },
 ]
 
 export default {

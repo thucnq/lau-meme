@@ -28,9 +28,9 @@ export function policyVersion(env: Env): number {
   return Number.isInteger(v) && v >= 1 ? v : 1
 }
 
-/** Path parameter `{version}`: positive integer, otherwise 400. */
+/** Path parameter `{version}`: positive integer (YYYYMMDDHHmm per ADR 0006, ≤ 15 digits stays a safe integer), otherwise 400. */
 export function versionParam(raw: string | undefined): number {
-  if (!/^[1-9]\d{0,9}$/.test(raw ?? '')) throw new HttpError(400, 'Version không hợp lệ')
+  if (!/^[1-9]\d{0,14}$/.test(raw ?? '')) throw new HttpError(400, 'Version không hợp lệ')
   return Number(raw)
 }
 
