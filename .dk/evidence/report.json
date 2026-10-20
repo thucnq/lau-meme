@@ -1,0 +1,44 @@
+{
+ "red": {
+  "ts": "2026-10-20T05:30:51+00:00",
+  "commit": "328d96e",
+  "results": {
+   "AC-REPORT-01": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-REPORT-02": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-REPORT-03": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-REPORT-04": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-REPORT-05": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-REPORT-06": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-REPORT-07": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-REPORT-08": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-REPORT-09": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   }
+  }
+ }
+}
