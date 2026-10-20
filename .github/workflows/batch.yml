@@ -50,4 +50,5 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
           GITHUB_REPOSITORY: ${{ github.repository }}
           MODE: ${{ inputs.mode || 'core' }}
+          BANNED_WORDS: ${{ secrets.BANNED_WORDS }}
         run: uv run python -m lau_meme_pipeline.batch --mode "$MODE" --core ../docs/input/noi-dung-loi.json
