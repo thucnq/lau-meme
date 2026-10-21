@@ -20,7 +20,7 @@ Cột Ảnh = gợi ý cho bước vẽ minh họa: vẽ **khái niệm**, khôn
 | 0 | ⏰ | Deadline | Quốc tế | đồng hồ báo thức đỏ rực rung bần bật |
 | 0 | 💀 | Toang | Việt | bình gốm vỡ toang, mảnh văng tung tóe |
 | 1 | 😏 | Cà Khịa | Việt | cái nhếch mép ngạo nghễ, liếc ngang |
-| 1 | 🫠 | Hết Cứu | Việt | nhân vật tan chảy thành vũng |
+| 1 | 🥀 | Hết Cứu | Việt | nhân vật tan chảy thành vũng |
 | 1 | 🥢 | Hết Nước Chấm | Việt | chén nước chấm trống trơn, đôi đũa buông thõng |
 | 1 | 👔 | Sếp | Việt | chiếc ghế xoay to đùng, cà vạt, không thấy mặt |
 | 1 | ☕ | This Is Fine | Quốc tế | nồi lẩu cười mỉm cầm ly cà phê giữa căn phòng có lửa nhỏ |
@@ -89,7 +89,7 @@ Cột Ảnh = gợi ý cho bước vẽ minh họa: vẽ **khái niệm**, khôn
 | 3 | 🙅 | Khum | Việt | bàn tay nhỏ xua xua dễ thương |
 | 3 | 🚗 | Kẹt Xe | Việt | dòng xe máy kín đường như hộp cá |
 | 3 | 🆓 | Làm Không Công | Việt | bảng lương ghi số 0 to đùng |
-| 3 | 🫕 | Lẩu Meme | Việt | nồi lẩu thả đủ thứ biểu tượng cảm xúc |
+| 3 | 🥘 | Lẩu Meme | Việt | nồi lẩu thả đủ thứ biểu tượng cảm xúc |
 | 3 | 🖼️ | Meme | Quốc tế | khung tranh có chữ trắng viền đen |
 | 3 | 🥂 | Một Hai Ba Dzô | Việt | nhiều cốc giơ cao, chữ DZÔ |
 | 3 | 🤖 | NPC | Quốc tế | dãy người giống hệt nhau nói cùng một câu |
@@ -103,7 +103,7 @@ Cột Ảnh = gợi ý cho bước vẽ minh họa: vẽ **khái niệm**, khôn
 | 3 | ⏱️ | Speedrun | Quốc tế | đồng hồ bấm giờ có cánh |
 | 3 | ✨ | Such Wow | Quốc tế | chữ màu Comic Sans bay lấp lánh |
 | 3 | 💪 | Swole Doge | Quốc tế | chú shiba vai u thịt bắp |
-| 3 | 🫶 | Thưởng Bằng Niềm Tin | Việt | phong bì rỗng có vẽ trái tim |
+| 3 | 🙏 | Thưởng Bằng Niềm Tin | Việt | phong bì rỗng có vẽ trái tim |
 | 3 | 🎣 | Thả Thính | Việt | cần câu thả mồi hình trái tim |
 | 3 | 🤝 | Tiếp Khách | Việt | bàn tiệc dài, ghế sếp ở giữa |
 | 3 | 🌱 | Touch Grass | Quốc tế | bàn tay chạm vào bãi cỏ thật lần đầu |
@@ -113,7 +113,7 @@ Cột Ảnh = gợi ý cho bước vẽ minh họa: vẽ **khái niệm**, khôn
 | 3 | ✉️ | Tâm Thư Xin Lỗi | Việt | lá thư viết tay có giọt nước mắt |
 | 3 | 🕊️ | Tự Do | Quốc tế | chim bồ câu bay ra khỏi cửa văn phòng |
 | 3 | 📚 | Đồ Án | Việt | cuốn đồ án dày cộp có quầng thâm |
-| 3 | 🥲 | Ế | Việt | một ghế đá công viên, một người, một cái bánh mì |
+| 3 | 😢 | Ế | Việt | một ghế đá công viên, một người, một cái bánh mì |
 | 4 | 🎆 | Cuối Năm | Việt | pháo hoa trên tờ lịch tháng 12 |
 | 4 | 🧸 | Có Gấu | Việt | gấu bông ôm điện thoại nhắn tin |
 | 4 | 🧍 | FA | Quốc tế | người đứng giữa đám đông các cặp đôi |
@@ -121,7 +121,7 @@ Cột Ảnh = gợi ý cho bước vẽ minh họa: vẽ **khái niệm**, khôn
 | 4 | 🧗 | Leo Rank | Quốc tế | người leo bậc thang huy hiệu |
 | 4 | 🤑 | Lương Về | Việt | tin nhắn biến động số dư phát sáng |
 | 4 | 🍜 | Mì Tôm | Việt | gói mì tôm phát sáng như báu vật |
-| 4 | 🪄 | Rizz | Quốc tế | cây đũa phép bắn ra tim |
+| 4 | 💘 | Rizz | Quốc tế | cây đũa phép bắn ra tim |
 | 4 | 🐺 | Sigma | Quốc tế | con sói đeo tai nghe đi một mình |
 | 4 | 📈 | Stonks | Quốc tế | biểu đồ đi lên, nhân vật đầu tượng 3D mặc vest (tự vẽ, không chép) |
 | 4 | 📉 | Âm Aura | Quốc tế | vầng hào quang tắt ngóm, -1000 |
@@ -136,7 +136,7 @@ Cột Ảnh = gợi ý cho bước vẽ minh họa: vẽ **khái niệm**, khôn
 | 5 | 🥶 | Not Stonks | Quốc tế | biểu đồ cắm đầu xuống, nhân vật vest run cầm cập |
 | 5 | 🛒 | Săn Sale | Việt | giỏ hàng lao vun vút lúc 0 giờ |
 | 5 | 💰 | Thưởng Tết | Việt | túi tiền có dây buộc |
-| 5 | 🧋 | Trà Sữa Full Topping | Việt | ly trà sữa đầy trân châu tràn miệng |
+| 5 | 🍹 | Trà Sữa Full Topping | Việt | ly trà sữa đầy trân châu tràn miệng |
 | 5 | 🌸 | Tết | Việt | cành hoa đào, bánh chưng |
 | 5 | 🍖 | Ăn Buffet Gỡ Vốn | Việt | đĩa thức ăn chồng cao như núi |
 | 5 | 🏔️ | Đu Đỉnh | Việt | người cắm cờ trên đỉnh núi biểu đồ, phía sau là vực |
@@ -168,7 +168,7 @@ Cột Ảnh = gợi ý cho bước vẽ minh họa: vẽ **khái niệm**, khôn
 | 5 | 🌶️ Cay | 😂 Cười | 😏 Cà Khịa |
 | 6 | 🌶️ Cay | 💀 Toang | 🧅 Ăn Hành |
 | 7 | 😂 Cười | 💀 Toang | ☕ This Is Fine |
-| 8 | 💀 Toang | ⏰ Deadline | 🫠 Hết Cứu |
+| 8 | 💀 Toang | ⏰ Deadline | 🥀 Hết Cứu |
 | 9 | 😂 Cười | ⏰ Deadline | 🐌 Để Mai Tính ⭐ |
 | 10 | 🌶️ Cay | ⏰ Deadline | 👔 Sếp |
 | 11 | 🐌 Để Mai Tính | ⏰ Deadline | 🏃 Chạy Deadline |
@@ -203,8 +203,8 @@ Cột Ảnh = gợi ý cho bước vẽ minh họa: vẽ **khái niệm**, khôn
 | 40 | 🧸 Có Gấu | 😂 Cười | 🍚 Cơm Chó ⭐ |
 | 41 | 🧸 Có Gấu | 💀 Toang | 💔 Chia Tay |
 | 42 | 💔 Chia Tay | 🌙 Thức Trắng | 🎧 Nhạc Suy |
-| 43 | 😍 Crush | 👀 Seen Không Rep | 🥲 Ế |
-| 44 | 🥲 Ế | 🥲 Ế | 🧍 FA |
+| 43 | 😍 Crush | 👀 Seen Không Rep | 😢 Ế |
+| 44 | 😢 Ế | 😢 Ế | 🧍 FA |
 | 45 | 😍 Crush | 😬 Cười Xã Giao | 🚧 Friendzone |
 | 46 | 🧸 Có Gấu | 👄 Khẩu Nghiệp | 🚩 Red Flag |
 | 47 | 😍 Crush | 🐌 Để Mai Tính | 🦄 Delulu |
@@ -213,19 +213,19 @@ Cột Ảnh = gợi ý cho bước vẽ minh họa: vẽ **khái niệm**, khôn
 | 50 | 🌸 Tết | 😂 Cười | 🧧 Lì Xì |
 | 51 | 🧧 Lì Xì | 🐌 Để Mai Tính | 👛 Mẹ Giữ Hộ ⭐ |
 | 52 | 🌸 Tết | 👔 Sếp | 💰 Thưởng Tết |
-| 53 | 💰 Thưởng Tết | 👖 Còn Cái Nịt | 🫶 Thưởng Bằng Niềm Tin ⭐ |
+| 53 | 💰 Thưởng Tết | 👖 Còn Cái Nịt | 🙏 Thưởng Bằng Niềm Tin ⭐ |
 | 54 | 🌸 Tết | 😏 Cà Khịa | 🍵 Hỏi Thăm Ngày Tết |
-| 55 | 🍵 Hỏi Thăm Ngày Tết | 🥲 Ế | 💍 Bao Giờ Cưới |
+| 55 | 🍵 Hỏi Thăm Ngày Tết | 😢 Ế | 💍 Bao Giờ Cưới |
 | 56 | 🍵 Hỏi Thăm Ngày Tết | ⏳ Lương Tháng Sau | 💵 Lương Bao Nhiêu |
 | 57 | 🍵 Hỏi Thăm Ngày Tết | 🧅 Ăn Hành | 🏅 Con Nhà Người Ta ⭐ |
 | 58 | 🌶️ Cay | 🥢 Hết Nước Chấm | 🍲 Nồi Lẩu |
 | 59 | 📱 Lướt Tới Sáng | 😂 Cười | 🖼️ Meme |
-| 60 | 🍲 Nồi Lẩu | 🖼️ Meme | 🫕 Lẩu Meme |
+| 60 | 🍲 Nồi Lẩu | 🖼️ Meme | 🥘 Lẩu Meme |
 | 61 | 🔥 Tới Công Chuyện | 😂 Cười | 🍻 Nhậu |
 | 62 | 🍻 Nhậu | 🍻 Nhậu | 🥂 Một Hai Ba Dzô |
 | 63 | 🍻 Nhậu | 👔 Sếp | 🤝 Tiếp Khách |
 | 64 | 📆 Cuối Tháng | 😂 Cười | 🤑 Lương Về |
-| 65 | 🤑 Lương Về | 🐌 Để Mai Tính | 🧋 Trà Sữa Full Topping |
+| 65 | 🤑 Lương Về | 🐌 Để Mai Tính | 🍹 Trà Sữa Full Topping |
 | 66 | 🤑 Lương Về | 💀 Toang | 💸 Cháy Túi |
 | 67 | 😏 Cà Khịa | 🥢 Hết Nước Chấm | 🦐 Chấm Mắm Tôm |
 | 68 | 🍲 Nồi Lẩu | 🤑 Lương Về | 🍖 Ăn Buffet Gỡ Vốn ⭐ |
@@ -244,7 +244,7 @@ Cột Ảnh = gợi ý cho bước vẽ minh họa: vẽ **khái niệm**, khôn
 | 81 | 🐆 Báo Thủ | 🔥 Tới Công Chuyện | 🏋️ Gánh Team |
 | 82 | 🐆 Báo Thủ | 💀 Toang | 🍼 Feed |
 | 83 | 🏋️ Gánh Team | 🌙 Thức Trắng | 🧗 Leo Rank |
-| 84 | 🧅 Ăn Hành | 🫠 Hết Cứu | 🏳️ GG |
+| 84 | 🧅 Ăn Hành | 🥀 Hết Cứu | 🏳️ GG |
 | 85 | 🧅 Ăn Hành | 🐌 Để Mai Tính | 🐢 Mạng Lag |
 | 86 | 🐢 Mạng Lag | 😏 Cà Khịa | 🎯 Skill Issue ⭐ |
 | 87 | 🐆 Báo Thủ | 😴 Ngủ Gật | 💤 AFK |
@@ -271,15 +271,15 @@ Cột Ảnh = gợi ý cho bước vẽ minh họa: vẽ **khái niệm**, khôn
 | 108 | 🌿 Chill | ☕ This Is Fine | 😎 Chill Guy |
 | 109 | 📸 Sống Ảo | 🦄 Delulu | 🌟 Main Character |
 | 110 | 😬 Cười Xã Giao | 📅 Họp | 🤖 NPC ⭐ |
-| 111 | 🎣 Thả Thính | 🚀 Gét Gô | 🪄 Rizz |
-| 112 | 🥲 Ế | 🔥 Tới Công Chuyện | 🐺 Sigma |
+| 111 | 🎣 Thả Thính | 🚀 Gét Gô | 💘 Rizz |
+| 112 | 😢 Ế | 🔥 Tới Công Chuyện | 🐺 Sigma |
 | 113 | 🐌 Để Mai Tính | 🌙 Thức Trắng | 📱 Lướt Tới Sáng |
 | 114 | 📱 Lướt Tới Sáng | 📱 Lướt Tới Sáng | 🧠 Brainrot |
 | 115 | 🧠 Brainrot | 🕊️ Tự Do | 🌱 Touch Grass |
 | 116 | 🐺 Sigma | 💎 Flex | 🌈 Aura |
 | 117 | 🎭 Phông Bạt | 💀 Toang | 📉 Âm Aura |
-| 118 | ⏳ Lương Tháng Sau | 🫠 Hết Cứu | 🕳️ Lương 404 ⭐ |
-| 119 | 📩 Đơn Nghỉ Việc | 🫠 Hết Cứu | ↩️ Ctrl Z ⭐ |
+| 118 | ⏳ Lương Tháng Sau | 🥀 Hết Cứu | 🕳️ Lương 404 ⭐ |
+| 119 | 📩 Đơn Nghỉ Việc | 🥀 Hết Cứu | ↩️ Ctrl Z ⭐ |
 | 120 | 🌪️ Biến Căng | 😂 Cười | 🌀 Plot Twist |
 | 121 | 🏃 Chạy Deadline | 🚀 Gét Gô | ⏱️ Speedrun |
 | 122 | 🐌 Để Mai Tính | 🚀 Gét Gô | 🗺️ Side Quest |
@@ -301,7 +301,7 @@ Cột Ảnh = gợi ý cho bước vẽ minh họa: vẽ **khái niệm**, khôn
 | 138 | 👔 Sếp | 🌶️ Cay | 📅 Họp |
 | 139 | 👔 Sếp | 😏 Cà Khịa | 📧 Như Email Trước |
 | 140 | 👔 Sếp | 🧅 Ăn Hành | 📩 Đơn Nghỉ Việc |
-| 141 | 👔 Sếp | 🫠 Hết Cứu | 🕳️ Lương 404 |
+| 141 | 👔 Sếp | 🥀 Hết Cứu | 🕳️ Lương 404 |
 | 142 | 👔 Sếp | 🆘 Ét O Ét | 🌃 Tăng Ca |
 | 143 | 👔 Sếp | ☕ This Is Fine | 🤫 Quiet Quitting |
 | 144 | 👔 Sếp | 🔥 Tới Công Chuyện | 🏢 Sếp Tổng |
@@ -326,7 +326,7 @@ Cột Ảnh = gợi ý cho bước vẽ minh họa: vẽ **khái niệm**, khôn
 | 163 | 📩 Đơn Nghỉ Việc | 🕊️ Tự Do | 🌿 Chill |
 | 164 | 📩 Đơn Nghỉ Việc | 🤑 Lương Về | ↩️ Ctrl Z |
 | 165 | 📩 Đơn Nghỉ Việc | 😏 Cà Khịa | 🧾 Bóc Phốt |
-| 166 | 🏃 Chạy Deadline | 💀 Toang | 🫠 Hết Cứu |
+| 166 | 🏃 Chạy Deadline | 💀 Toang | 🥀 Hết Cứu |
 | 167 | 🏃 Chạy Deadline | 😂 Cười | ☕ This Is Fine |
 | 168 | 🏃 Chạy Deadline | 🌶️ Cay | 🔥 Tới Công Chuyện |
 | 169 | 🏃 Chạy Deadline | 🆘 Ét O Ét | 📝 Mùa Thi |
@@ -338,7 +338,7 @@ Cột Ảnh = gợi ý cho bước vẽ minh họa: vẽ **khái niệm**, khôn
 | 175 | 🌙 Thức Trắng | 🥢 Hết Nước Chấm | 📱 Lướt Tới Sáng |
 | 176 | 🌙 Thức Trắng | 😍 Crush | 🎧 Nhạc Suy |
 | 177 | 🌙 Thức Trắng | 🛒 Săn Sale | ✅ Chốt Đơn |
-| 178 | 🐌 Để Mai Tính | 💀 Toang | 🫠 Hết Cứu |
+| 178 | 🐌 Để Mai Tính | 💀 Toang | 🥀 Hết Cứu |
 | 179 | 🐌 Để Mai Tính | 🌶️ Cay | ⏳ Lương Tháng Sau |
 | 180 | 🐌 Để Mai Tính | ☕ This Is Fine | 🌿 Chill |
 | 181 | 🐌 Để Mai Tính | 📚 Đồ Án | 🏃 Chạy Deadline |
@@ -352,7 +352,7 @@ Cột Ảnh = gợi ý cho bước vẽ minh họa: vẽ **khái niệm**, khôn
 | 189 | 😏 Cà Khịa | 🏅 Con Nhà Người Ta | 🍵 Hỏi Thăm Ngày Tết |
 | 190 | 🧅 Ăn Hành | 💀 Toang | 🏳️ GG |
 | 191 | 🧅 Ăn Hành | 😂 Cười | 🙈 Thánh Nhọ |
-| 192 | 🧅 Ăn Hành | ⏰ Deadline | 🫠 Hết Cứu |
+| 192 | 🧅 Ăn Hành | ⏰ Deadline | 🥀 Hết Cứu |
 | 193 | 🧅 Ăn Hành | 🆘 Ét O Ét | 🍼 Feed |
 | 194 | 🧅 Ăn Hành | 🔥 Tới Công Chuyện | 🐆 Báo Thủ |
 | 195 | 🧅 Ăn Hành | 😍 Crush | 🚧 Friendzone |
@@ -362,18 +362,18 @@ Cột Ảnh = gợi ý cho bước vẽ minh họa: vẽ **khái niệm**, khôn
 | 199 | ☕ This Is Fine | ⏰ Deadline | 🤫 Quiet Quitting |
 | 200 | ☕ This Is Fine | 🌧️ Mưa | 🏊 Bơi Đi Làm |
 | 201 | ☕ This Is Fine | 🚗 Kẹt Xe | 😎 Chill Guy |
-| 202 | ☕ This Is Fine | 🫠 Hết Cứu | 😵 Xỉu Up Xỉu Down |
+| 202 | ☕ This Is Fine | 🥀 Hết Cứu | 😵 Xỉu Up Xỉu Down |
 | 203 | ☕ This Is Fine | 🏔️ Đu Đỉnh | 🏖️ Chờ Về Bờ |
-| 204 | ☕ This Is Fine | ⏳ Lương Tháng Sau | 🫶 Thưởng Bằng Niềm Tin |
-| 205 | 🫠 Hết Cứu | 😂 Cười | 😵 Xỉu Up Xỉu Down |
-| 206 | 🫠 Hết Cứu | 🫠 Hết Cứu | 🏳️ GG |
-| 207 | 🫠 Hết Cứu | 🆘 Ét O Ét | 😫 U Là Trời |
-| 208 | 🫠 Hết Cứu | 📆 Cuối Tháng | 👖 Còn Cái Nịt |
-| 209 | 🫠 Hết Cứu | 📝 Mùa Thi | 🗑️ Trật Tủ |
+| 204 | ☕ This Is Fine | ⏳ Lương Tháng Sau | 🙏 Thưởng Bằng Niềm Tin |
+| 205 | 🥀 Hết Cứu | 😂 Cười | 😵 Xỉu Up Xỉu Down |
+| 206 | 🥀 Hết Cứu | 🥀 Hết Cứu | 🏳️ GG |
+| 207 | 🥀 Hết Cứu | 🆘 Ét O Ét | 😫 U Là Trời |
+| 208 | 🥀 Hết Cứu | 📆 Cuối Tháng | 👖 Còn Cái Nịt |
+| 209 | 🥀 Hết Cứu | 📝 Mùa Thi | 🗑️ Trật Tủ |
 | 210 | 🔥 Tới Công Chuyện | 💀 Toang | 🌪️ Biến Căng |
 | 211 | 🔥 Tới Công Chuyện | ⏰ Deadline | 🏃 Chạy Deadline |
 | 212 | 🔥 Tới Công Chuyện | 😍 Crush | 🎣 Thả Thính |
-| 213 | 🔥 Tới Công Chuyện | 🍲 Nồi Lẩu | 🫕 Lẩu Meme |
+| 213 | 🔥 Tới Công Chuyện | 🍲 Nồi Lẩu | 🥘 Lẩu Meme |
 | 214 | 🔥 Tới Công Chuyện | 🤑 Lương Về | 💸 Cháy Túi |
 | 215 | 🔥 Tới Công Chuyện | 📝 Mùa Thi | 📚 Đồ Án |
 | 216 | 🥢 Hết Nước Chấm | ⏰ Deadline | 🐌 Để Mai Tính |
@@ -381,7 +381,7 @@ Cột Ảnh = gợi ý cho bước vẽ minh họa: vẽ **khái niệm**, khôn
 | 218 | 🥢 Hết Nước Chấm | 🥢 Hết Nước Chấm | 🍁 Ảo Ma Canada |
 | 219 | 🥢 Hết Nước Chấm | 🍲 Nồi Lẩu | 🦐 Chấm Mắm Tôm |
 | 220 | 🥢 Hết Nước Chấm | 😍 Crush | 🦄 Delulu |
-| 221 | 🥢 Hết Nước Chấm | 🤑 Lương Về | 🧋 Trà Sữa Full Topping |
+| 221 | 🥢 Hết Nước Chấm | 🤑 Lương Về | 🍹 Trà Sữa Full Topping |
 | 222 | 🆘 Ét O Ét | ⏰ Deadline | 🏃 Chạy Deadline |
 | 223 | 🆘 Ét O Ét | 🌶️ Cay | 🌧️ Mưa |
 | 224 | 🆘 Ét O Ét | 😍 Crush | 📞 Ủa Alo |
@@ -389,12 +389,12 @@ Cột Ảnh = gợi ý cho bước vẽ minh họa: vẽ **khái niệm**, khôn
 | 226 | 🆘 Ét O Ét | ⏳ Lương Tháng Sau | 🕳️ Lương 404 |
 | 227 | 😂 Cười | 🍜 Mì Tôm | ☕ This Is Fine |
 | 228 | 😂 Cười | 😍 Crush | 🎣 Thả Thính |
-| 229 | 😂 Cười | 🥲 Ế | 🧍 FA |
+| 229 | 😂 Cười | 😢 Ế | 🧍 FA |
 | 230 | 😂 Cười | 🎭 Phông Bạt | 📸 Sống Ảo |
 | 231 | 😂 Cười | 📈 Stonks | 🐕 Doge |
 | 232 | 🌶️ Cay | 😍 Crush | 🚩 Red Flag |
 | 233 | 🌶️ Cay | 📱 Lướt Tới Sáng | ⌨️ Anh Hùng Bàn Phím |
-| 234 | 🌶️ Cay | 🥲 Ế | 🐺 Sigma |
+| 234 | 🌶️ Cay | 😢 Ế | 🐺 Sigma |
 | 235 | 🌶️ Cay | 🍲 Nồi Lẩu | ❄️ Trời Lạnh Ăn Lẩu |
 | 236 | 🌶️ Cay | 🍜 Mì Tôm | 🍲 Nồi Lẩu |
 | 237 | 🌶️ Cay | 🚗 Kẹt Xe | 👄 Khẩu Nghiệp |
@@ -411,21 +411,21 @@ Cột Ảnh = gợi ý cho bước vẽ minh họa: vẽ **khái niệm**, khôn
 | 248 | ⏰ Deadline | 🎉 Cuối Tuần | 😩 Thứ Hai |
 | 249 | 😍 Crush | 😍 Crush | 🦄 Delulu |
 | 250 | 😍 Crush | 🧸 Có Gấu | 🚩 Red Flag |
-| 251 | 😍 Crush | 💎 Flex | 🪄 Rizz |
+| 251 | 😍 Crush | 💎 Flex | 💘 Rizz |
 | 252 | 😍 Crush | 😩 Thứ Hai | 👀 Seen Không Rep |
 | 253 | 😍 Crush | 🍲 Nồi Lẩu | 💑 Hẹn Hò |
 | 254 | 🎣 Thả Thính | 🍲 Nồi Lẩu | 💑 Hẹn Hò |
-| 255 | 🎣 Thả Thính | 👀 Seen Không Rep | 🥲 Ế |
+| 255 | 🎣 Thả Thính | 👀 Seen Không Rep | 😢 Ế |
 | 256 | 🎣 Thả Thính | 💀 Toang | 🚧 Friendzone |
-| 257 | 🎣 Thả Thính | 💎 Flex | 🪄 Rizz |
+| 257 | 🎣 Thả Thính | 💎 Flex | 💘 Rizz |
 | 258 | 🧸 Có Gấu | 🧸 Có Gấu | 🍚 Cơm Chó |
 | 259 | 🧸 Có Gấu | 🌸 Tết | 💍 Bao Giờ Cưới |
 | 260 | 🧸 Có Gấu | 🤑 Lương Về | 💸 Cháy Túi |
 | 261 | 🧸 Có Gấu | 🎧 Nhạc Suy | 💔 Chia Tay |
-| 262 | 🥲 Ế | 🌸 Tết | 💍 Bao Giờ Cưới |
-| 263 | 🥲 Ế | 🍚 Cơm Chó | 🧍 FA |
-| 264 | 🥲 Ế | 🍲 Nồi Lẩu | ❄️ Trời Lạnh Ăn Lẩu |
-| 265 | 🥲 Ế | 📱 Lướt Tới Sáng | 🦄 Delulu |
+| 262 | 😢 Ế | 🌸 Tết | 💍 Bao Giờ Cưới |
+| 263 | 😢 Ế | 🍚 Cơm Chó | 🧍 FA |
+| 264 | 😢 Ế | 🍲 Nồi Lẩu | ❄️ Trời Lạnh Ăn Lẩu |
+| 265 | 😢 Ế | 📱 Lướt Tới Sáng | 🦄 Delulu |
 | 266 | 💔 Chia Tay | 😂 Cười | 🕊️ Tự Do |
 | 267 | 💔 Chia Tay | 😏 Cà Khịa | 🧾 Bóc Phốt |
 | 268 | 💔 Chia Tay | 📱 Lướt Tới Sáng | 🎧 Nhạc Suy |
@@ -438,11 +438,11 @@ Cột Ảnh = gợi ý cho bước vẽ minh họa: vẽ **khái niệm**, khôn
 | 275 | 📆 Cuối Tháng | 🍲 Nồi Lẩu | 🍜 Mì Tôm |
 | 276 | 📆 Cuối Tháng | 🛒 Săn Sale | 💸 Cháy Túi |
 | 277 | 👖 Còn Cái Nịt | 👖 Còn Cái Nịt | 🍜 Mì Tôm |
-| 278 | 👖 Còn Cái Nịt | 😂 Cười | 🫶 Thưởng Bằng Niềm Tin |
+| 278 | 👖 Còn Cái Nịt | 😂 Cười | 🙏 Thưởng Bằng Niềm Tin |
 | 279 | 👖 Còn Cái Nịt | 🐕 Doge | 🍔 Cheems |
 | 280 | 🍜 Mì Tôm | 🍜 Mì Tôm | 📆 Cuối Tháng |
 | 281 | 🍜 Mì Tôm | 🌙 Thức Trắng | 📚 Đồ Án |
-| 282 | 🍜 Mì Tôm | 🍲 Nồi Lẩu | 🫕 Lẩu Meme |
+| 282 | 🍜 Mì Tôm | 🍲 Nồi Lẩu | 🥘 Lẩu Meme |
 | 283 | 🍻 Nhậu | 💀 Toang | ↩️ Ctrl Z |
 | 284 | 🍻 Nhậu | 😏 Cà Khịa | 👄 Khẩu Nghiệp |
 | 285 | 🍻 Nhậu | 🍲 Nồi Lẩu | 🎉 Cuối Tuần |
@@ -508,7 +508,7 @@ Cột Ảnh = gợi ý cho bước vẽ minh họa: vẽ **khái niệm**, khôn
 | 345 | 🐺 Sigma | 🐺 Sigma | 🌈 Aura |
 | 346 | 🐺 Sigma | 😂 Cười | 😎 Chill Guy |
 | 347 | 📈 Stonks | 📈 Stonks | 🏔️ Đu Đỉnh |
-| 348 | 📈 Stonks | 🫠 Hết Cứu | ✂️ Cắt Lỗ |
+| 348 | 📈 Stonks | 🥀 Hết Cứu | ✂️ Cắt Lỗ |
 | 349 | 🏔️ Đu Đỉnh | 🏔️ Đu Đỉnh | ✂️ Cắt Lỗ |
 | 350 | ✂️ Cắt Lỗ | 😂 Cười | 🍜 Mì Tôm |
 | 351 | 🐕 Doge | 🐕 Doge | ✨ Such Wow |
@@ -521,7 +521,7 @@ Cột Ảnh = gợi ý cho bước vẽ minh họa: vẽ **khái niệm**, khôn
 | 358 | 🖼️ Meme | 🖼️ Meme | 🧠 Brainrot |
 | 359 | 🖼️ Meme | 🐕 Doge | ✨ Such Wow |
 | 360 | 🖼️ Meme | 📈 Stonks | 🥶 Not Stonks |
-| 361 | 🍲 Nồi Lẩu | 🍲 Nồi Lẩu | 🫕 Lẩu Meme |
+| 361 | 🍲 Nồi Lẩu | 🍲 Nồi Lẩu | 🥘 Lẩu Meme |
 | 362 | 🍲 Nồi Lẩu | 🧸 Có Gấu | 💑 Hẹn Hò |
 | 363 | 🍲 Nồi Lẩu | 💀 Toang | 🥢 Hết Nước Chấm |
 
