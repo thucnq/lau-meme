@@ -21,6 +21,7 @@ from lau_meme_pipeline.llm import (
     QuotaExhausted,
     RateLimited,
     call_in_batches,
+    retry_delay,
 )
 from lau_meme_pipeline.moderation import CATEGORIES
 
@@ -76,12 +77,16 @@ class _Http:
             conn.request("POST", self._path, body=json.dumps(body, ensure_ascii=False).encode(), headers=self._headers)
             res = conn.getresponse()
             raw = res.read()
+        except OSError as exc:  # timeout, reset or refused connection: transient like a 5xx
+            raise RateLimited(type(exc).__name__) from None
         finally:
             conn.close()
         if res.status == 429:
-            raise QuotaExhausted() if _per_day(raw) else RateLimited()
+            if _per_day(raw):
+                raise QuotaExhausted()
+            raise RateLimited("HTTP 429 theo phút", _retry_after(raw))
         if res.status >= 500:
-            raise RateLimited()
+            raise RateLimited(f"HTTP {res.status}")
         if res.status != 200:
             raise _HttpStatus(res.status, b"API_KEY_INVALID" in raw)
         try:
@@ -108,16 +113,31 @@ def _json(items: list) -> str:
     return json.dumps(items, ensure_ascii=False)
 
 
-def _per_day(raw: bytes) -> bool:
-    """Daily quota: a QuotaFailure violation whose quotaId names a per-day limit; per-minute ones are retried."""
+def _details(raw: bytes) -> list[Mapping]:
     try:
         details = json.loads(raw)["error"].get("details", [])
     except (ValueError, KeyError, AttributeError, TypeError):
-        return False
+        return []
+    return [d for d in details if isinstance(d, Mapping)] if isinstance(details, list) else []
+
+
+def _retry_after(raw: bytes) -> float | None:
+    """RetryInfo.retryDelay ("37s") of a 429, in seconds; None when absent or unreadable."""
+    for d in _details(raw):
+        delay = d.get("retryDelay")
+        if isinstance(delay, str) and delay.endswith("s"):
+            try:
+                return float(delay[:-1])
+            except ValueError:
+                return None
+    return None
+
+
+def _per_day(raw: bytes) -> bool:
+    """Daily quota: a QuotaFailure violation whose quotaId names a per-day limit; per-minute ones are retried."""
     return any(
         "PerDay" in str(v.get("quotaId", ""))
-        for d in details
-        if isinstance(d, Mapping)
+        for d in _details(raw)
         for v in d.get("violations", [])
         if isinstance(v, Mapping)
     )
@@ -133,10 +153,12 @@ class GeminiSteps(Mapping[str, Callable[[object], object]]):
         *,
         sleep: Callable[[float], None] = time.sleep,
         batch_size: int = 10,
+        max_retries: int = 3,
     ) -> None:
         self._http = _Http(api_key, model or DEFAULT_MODEL)
         self._sleep = sleep
         self._size = batch_size
+        self._retries = max_retries
         self.calls = 0
         self.quota_hit = False
 
@@ -170,7 +192,7 @@ class GeminiSteps(Mapping[str, Callable[[object], object]]):
                 raise LlmError("Gemini trả lời sai dạng")
             return answer
 
-        out = call_in_batches(items, self._size, call, sleep=self._sleep)
+        out = call_in_batches(items, self._size, call, sleep=self._sleep, max_retries=self._retries)
         if out.quota_hit:
             self.quota_hit = True
             if not out.results:
@@ -226,10 +248,10 @@ class GeminiImageCheck:
             try:
                 answer = self._http.send(parts)
                 break
-            except RateLimited:
+            except RateLimited as exc:
                 if attempt == self._retries:
-                    raise LlmError("Gemini kiểm ảnh: quá giới hạn tần suất") from None
-                self._sleep(2.0 * 2**attempt)
+                    raise LlmError(f"Gemini kiểm ảnh: {exc.cause}") from None
+                self._sleep(retry_delay(exc, 2.0 * 2**attempt))
             except _Unreadable:
                 return "banned_category"
             except _HttpStatus as exc:

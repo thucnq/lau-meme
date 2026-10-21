@@ -86,7 +86,8 @@ class FakeGemini:
     """Scripted server. `script` has one entry per HTTP request, in order:
     None -> 200 with a good answer built from the markers found in the request body,
     int -> that status with an error body, ("raw", text) -> 200 whose answer text is `text`,
-    dict -> 429/other error body given (status 429). Beyond the script every request gets a good 200.
+    dict -> 429/other error body given (status 429), an exception -> raised while waiting for the answer
+    (timeout, dropped connection). Beyond the script every request gets a good 200.
     `markers` are the unique ids of the payload items, used to count items per request and to build answers."""
 
     def __init__(self, markers, dict_answer=False, script=()):
@@ -109,6 +110,8 @@ class FakeGemini:
         step = self.script[n] if n < len(self.script) else None
         if step is None:
             return FakeResponse(200, self.good(req))
+        if isinstance(step, BaseException):
+            raise step
         if isinstance(step, tuple) and step[0] == "raw":
             return FakeResponse(200, {"candidates": [{"content": {"parts": [{"text": step[1]}]}}]})
         if isinstance(step, tuple) and step[0] == "error":
@@ -488,3 +491,70 @@ def test_ac_pipe_13_candidates_phai_la_danh_sach_chuoi(monkeypatch, candidates):
 
     assert seen == []
     assert steps.calls == 0
+
+
+# ================================================================ transient errors: cause, timeout, server hint
+
+
+def per_minute_with_delay(delay: str) -> dict:
+    body = json.loads(json.dumps(QUOTA_PER_MINUTE))
+    body["error"]["details"].append({"@type": "type.googleapis.com/google.rpc.RetryInfo", "retryDelay": delay})
+    return body
+
+
+@pytest.mark.parametrize(
+    ("failure", "cause"),
+    [(503, "HTTP 503"), (500, "HTTP 500"), (QUOTA_PER_MINUTE, "HTTP 429 theo phút"), (TimeoutError(), "TimeoutError")],
+)
+def test_ac_pipe_12_het_luot_thu_lai_thi_loi_ghi_dung_ma_http(monkeypatch, failure, cause):
+    """AC-PIPE-12: hết lượt thử lại thì LlmError ghi đúng nguyên nhân (mã HTTP, 429 theo phút, timeout), không gộp
+    chung thành "quá giới hạn tần suất"."""
+    from lau_meme_pipeline.llm import LlmError
+
+    server = FakeGemini(keys(3), script=[failure] * 4)
+    install(monkeypatch, server)
+    steps, _ = make_steps()
+
+    with pytest.raises(LlmError) as info:
+        steps["same"](concepts(3))
+
+    assert f"({cause})" in str(info.value)
+    assert "tần suất" not in str(info.value)
+
+
+def test_ac_pipe_12_timeout_va_mat_ket_noi_duoc_thu_lai_voi_backoff(monkeypatch):
+    """AC-PIPE-12: timeout và mất kết nối là lỗi tạm thời: thử lại theo backoff như 5xx, không bỏ lô ngay."""
+    server = FakeGemini(keys(3), script=[TimeoutError(), ConnectionResetError(), None])
+    seen = install(monkeypatch, server)
+    steps, sleeps = make_steps()
+
+    assert answered_keys(steps["classify"](concepts(3))) == keys(3)
+    assert sleeps == [2.0, 4.0]
+    assert len(seen) == 3
+
+
+def test_ac_pipe_12_429_co_retry_delay_thi_cho_dung_thoi_gian_may_chu_yeu_cau(monkeypatch):
+    """AC-PIPE-12: 429 theo phút kèm RetryInfo.retryDelay thì chờ theo đó khi lâu hơn backoff; tối đa 60 giây."""
+    server = FakeGemini(
+        keys(3),
+        script=[per_minute_with_delay("37s"), per_minute_with_delay("1.5s"), per_minute_with_delay("600s"), None],
+    )
+    install(monkeypatch, server)
+    steps, sleeps = make_steps()
+
+    assert answered_keys(steps["classify"](concepts(3))) == keys(3)
+    assert sleeps == [37.0, 4.0, 60.0]
+
+
+def test_ac_pipe_12_so_lan_thu_lai_cau_hinh_duoc(monkeypatch):
+    """AC-PIPE-12: GeminiSteps(max_retries=5) thử lại 5 lần với backoff lũy thừa 2, 4, 8, 16, 32."""
+    from lau_meme_pipeline.gemini import GeminiSteps
+
+    server = FakeGemini(keys(3), script=[503] * 5)
+    install(monkeypatch, server)
+    sleeps: list[float] = []
+    steps = GeminiSteps(API_KEY, sleep=sleeps.append, max_retries=5)
+
+    assert answered_keys(steps["classify"](concepts(3))) == keys(3)
+    assert sleeps == [2.0, 4.0, 8.0, 16.0, 32.0]
+    assert steps.calls == 6

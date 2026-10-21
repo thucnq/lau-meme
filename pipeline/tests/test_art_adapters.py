@@ -36,7 +36,8 @@ WEBP = b"RIFF\x1a\x00\x00\x00WEBPVP8 \x01\x02\x03\x04\x05"
 
 class Server:
     """Scripted server. `script`: one entry per request; an int is a status with an error body that echoes
-    `echo`, a (status, body) tuple is a literal answer, None is the default answer. Beyond the script: default."""
+    `echo`, a (status, body) tuple is a literal answer, an exception is raised while waiting for the answer, None is
+    the default answer. Beyond the script: default."""
 
     def __init__(self, default, script=(), echo=""):
         self.default = default
@@ -49,6 +50,8 @@ class Server:
         step = self.script[n] if n < len(self.script) else None
         if step is None:
             return FakeResponse(*self.default)
+        if isinstance(step, BaseException):
+            raise step
         if isinstance(step, tuple):
             return FakeResponse(*step)
         return FakeResponse(step, {"errors": [{"message": f"upstream said {self.echo}"}]})
@@ -555,3 +558,29 @@ def test_ac_art_02_gemini_400_khac_van_la_draw_rejected(monkeypatch):
         check(IMAGE)
 
     assert not isinstance(info.value, ArtConfigError)
+
+
+def test_ac_art_03_gemini_kiem_anh_timeout_duoc_thu_lai(monkeypatch):
+    """AC-ART-03: timeout khi kiểm ảnh được thử lại theo backoff như 5xx."""
+    server = Server(gemini_answer(json.dumps({"ok": True})), script=[TimeoutError(), None])
+    install(monkeypatch, server)
+    check, sleeps = make_check()
+
+    assert check(IMAGE) is None
+    assert sleeps == [2.0]
+
+
+def test_ac_art_03_gemini_kiem_anh_het_luot_thu_lai_thi_loi_ghi_ma_http(monkeypatch):
+    """AC-ART-03: 503 liên tiếp đến hết lượt thử lại thì LlmError ghi "HTTP 503", không ghi "tần suất"."""
+    from lau_meme_pipeline.llm import LlmError, QuotaExhausted
+
+    server = Server(gemini_answer(json.dumps({"ok": True})), script=[503] * 4)
+    install(monkeypatch, server)
+    check, _ = make_check()
+
+    with pytest.raises(LlmError) as info:
+        check(IMAGE)
+
+    assert not isinstance(info.value, QuotaExhausted)
+    assert "HTTP 503" in str(info.value)
+    assert "tần suất" not in str(info.value)
