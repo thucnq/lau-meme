@@ -1,6 +1,6 @@
 # Gantt — ƯỚC LƯỢNG - LẨU MEME
 
-Tiến độ 56% · nghiệm thu KH 2027-11-23 · dự báo 2027-05-21. Bản tương tác: `gantt.html`.
+Tiến độ 55% · nghiệm thu KH 2027-11-23 · dự báo 2027-03-17. Bản tương tác: `gantt.html`.
 
 ```mermaid
 gantt
@@ -42,11 +42,11 @@ gantt
     UAT Kiểm thử nghiệm thu & sửa lỗi (giai đoạn 1) (0%) :UAT, 2027-01-11, 31d
     section Nội dung
     MOD Kiểm duyệt nội dung tự động (giai đoạn 2) (100%) :done, MOD, 2026-10-20, 1d
-    PIPE2 Pipeline Mẻ nhúng - crawl và tự động đăng (giai đoạn 2) (0%) :PIPE2, 2027-03-02, 31d
-    ART Ảnh minh họa tự tạo (giai đoạn 2) (0%) :ART, 2027-04-14, 16d
+    PIPE2 Pipeline Mẻ nhúng - crawl và tự động đăng (giai đoạn 2) (0%) :PIPE2, 2026-11-18, 31d
+    ART Ảnh minh họa tự tạo (giai đoạn 2) (0%) :active, ART, 2026-10-21, 20d
     section Kiểm thử
-    UAT2 Kiểm thử nghiệm thu & sửa lỗi (giai đoạn 2) (0%) :UAT2, 2027-05-07, 10d
+    UAT2 Kiểm thử nghiệm thu & sửa lỗi (giai đoạn 2) (0%) :UAT2, 2027-03-02, 11d
     section Bàn giao
-    UAT 0 tuần :uat, 2027-05-21, 0d
-    Nghiệm thu :milestone, 2027-05-21, 0d
+    UAT 0 tuần :uat, 2027-03-17, 0d
+    Nghiệm thu :milestone, 2027-03-17, 0d
 ```

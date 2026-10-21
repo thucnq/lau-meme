@@ -345,8 +345,8 @@
       "id": "ART",
       "module": "Nội dung",
       "name": "Ảnh minh họa tự tạo (giai đoạn 2)",
-      "desc": "ART · AC-ART-01..08 · Workers AI FLUX.1 schnell, kiểm duyệt ảnh Gemini, vẽ lại 1 lần rồi về emoji, R2 + Cache API immutable, client hiện emoji trước, phóng lớn khi ghép ra món lần đầu",
-      "points": 7,
+      "desc": "ART · AC-ART-01..10 · Workers AI FLUX.1 schnell, kiểm duyệt ảnh Gemini, vẽ lại 1 lần rồi về emoji, R2 + Cache API immutable, client hiện emoji trước, phóng lớn khi ghép ra món lần đầu, nối vào mẻ full qua REST + tải lên R2 qua Worker (AC-ART-09/10, ADR 0012)",
+      "points": 9,
       "deps": [
         "MOD"
       ],
@@ -363,7 +363,7 @@
       "module": "Kiểm thử",
       "name": "Kiểm thử nghiệm thu & sửa lỗi (giai đoạn 2)",
       "desc": "15% điểm tính năng giai đoạn 2; chạy pipeline crawl thật vài đợt trên staging trước khi bật tự động đăng",
-      "points": 4.5,
+      "points": 5,
       "deps": [
         "*"
       ],

@@ -11,8 +11,8 @@
    "2027-11-23"
   ],
   "fcUat": [
-   "2027-05-21",
-   "2027-05-21"
+   "2027-03-17",
+   "2027-03-17"
   ],
   "holidays": [
    "2027-01-01",
@@ -26,11 +26,11 @@
    "2027-04-30",
    "2027-05-01"
   ],
-  "pct": 55.9,
+  "pct": 55.0,
   "counts": {
    "done": 13,
-   "doing": 0,
-   "todo": 8,
+   "doing": 1,
+   "todo": 7,
    "late": 0
   },
   "slip": 0,
@@ -455,7 +455,7 @@
      "id": "AC-GAME-18",
      "title": "Nồi lẩu nằm trong màn hình đầu tiên (thêm 2026-10-21)",
      "optional": false,
-     "tested": false,
+     "tested": true,
      "done": false,
      "line": 51
     }
@@ -908,7 +908,7 @@
      "id": "AC-DAILY-15",
      "title": "Bảng xếp hạng trên giao diện, chưa đăng nhập và bảng rỗng (thêm 2026-10-21)",
      "optional": false,
-     "tested": false,
+     "tested": true,
      "done": false,
      "line": 104
     }
@@ -947,7 +947,7 @@
      "id": "AC-AUTH-01",
      "title": "Đăng nhập bằng Google",
      "optional": false,
-     "tested": false,
+     "tested": true,
      "done": false,
      "line": 108
     },
@@ -955,7 +955,7 @@
      "id": "AC-AUTH-02",
      "title": "Phiên đăng nhập",
      "optional": false,
-     "tested": false,
+     "tested": true,
      "done": false,
      "line": 109
     },
@@ -963,7 +963,7 @@
      "id": "AC-AUTH-03",
      "title": "ID token không hợp lệ",
      "optional": false,
-     "tested": false,
+     "tested": true,
      "done": false,
      "line": 110
     },
@@ -971,7 +971,7 @@
      "id": "AC-AUTH-04",
      "title": "Cùng tài khoản trên nhiều máy",
      "optional": false,
-     "tested": false,
+     "tested": true,
      "done": false,
      "line": 111
     },
@@ -979,7 +979,7 @@
      "id": "AC-AUTH-05",
      "title": "Đăng xuất",
      "optional": false,
-     "tested": false,
+     "tested": true,
      "done": false,
      "line": 112
     },
@@ -987,7 +987,7 @@
      "id": "AC-AUTH-06",
      "title": "Xóa tài khoản và dữ liệu",
      "optional": false,
-     "tested": false,
+     "tested": true,
      "done": false,
      "line": 113
     },
@@ -995,7 +995,7 @@
      "id": "AC-AUTH-07",
      "title": "Giới hạn tần suất đăng nhập",
      "optional": false,
-     "tested": false,
+     "tested": true,
      "done": false,
      "line": 114
     }
@@ -1107,7 +1107,7 @@
      "id": "AC-DAILY-15",
      "title": "Bảng xếp hạng trên giao diện, chưa đăng nhập và bảng rỗng (thêm 2026-10-21)",
      "optional": false,
-     "tested": false,
+     "tested": true,
      "done": false,
      "line": 127
     }
@@ -1919,7 +1919,7 @@
      "id": "AC-GAME-18",
      "title": "Nồi lẩu nằm trong màn hình đầu tiên (thêm 2026-10-21)",
      "optional": false,
-     "tested": false,
+     "tested": true,
      "done": false,
      "line": 220
     }
@@ -2060,8 +2060,8 @@
     "2027-10-15"
    ],
    "fc": [
-    "2027-03-02",
-    "2027-04-13"
+    "2026-11-18",
+    "2026-12-30"
    ],
    "line": 234,
    "acs": [
@@ -2143,8 +2143,8 @@
    "id": "ART",
    "module": "Nội dung",
    "name": "Ảnh minh họa tự tạo (giai đoạn 2)",
-   "points": 7.0,
-   "days": 16,
+   "points": 9.0,
+   "days": 20,
    "risk": "HIGH",
    "deps": [
     "MOD"
@@ -2153,18 +2153,18 @@
    "lane": "Thuc",
    "pct": 0,
    "pctAuto": false,
-   "status": "todo",
+   "status": "doing",
    "slip": 0,
-   "note": "",
-   "startActual": "",
+   "note": "đã nối vào mẻ full (ADR 0012, nhánh feat/art-wiring); cần WORKERS_AI_TOKEN + CLOUDFLARE_ACCOUNT_ID để vẽ thật; hạn mức Workers AI vẫn chờ kiểm (câu hỏi mở 13)",
+   "startActual": "2026-10-21",
    "finishActual": "",
    "kh": [
     "2027-10-18",
     "2027-11-08"
    ],
    "fc": [
-    "2027-04-14",
-    "2027-05-06"
+    "2026-10-21",
+    "2026-11-17"
    ],
    "line": 244,
    "acs": [
@@ -2172,7 +2172,7 @@
      "id": "AC-ART-01",
      "title": "Prompt vẽ khái niệm, không người thật",
      "optional": false,
-     "tested": false,
+     "tested": true,
      "done": false,
      "line": 245
     },
@@ -2180,7 +2180,7 @@
      "id": "AC-ART-02",
      "title": "Kiểm duyệt ảnh, vẽ lại một lần rồi về emoji",
      "optional": false,
-     "tested": false,
+     "tested": true,
      "done": false,
      "line": 246
     },
@@ -2188,7 +2188,7 @@
      "id": "AC-ART-03",
      "title": "Hết hạn mức thì vẽ bù đợt sau",
      "optional": false,
-     "tested": false,
+     "tested": true,
      "done": false,
      "line": 247
     },
@@ -2196,7 +2196,7 @@
      "id": "AC-ART-04",
      "title": "Lưu ảnh theo băm nội dung",
      "optional": false,
-     "tested": false,
+     "tested": true,
      "done": false,
      "line": 248
     },
@@ -2204,7 +2204,7 @@
      "id": "AC-ART-05",
      "title": "Phục vụ ảnh qua Worker với cache bất biến",
      "optional": false,
-     "tested": false,
+     "tested": true,
      "done": false,
      "line": 249
     },
@@ -2212,7 +2212,7 @@
      "id": "AC-ART-06",
      "title": "Client hiện emoji trước, ảnh sau",
      "optional": false,
-     "tested": false,
+     "tested": true,
      "done": false,
      "line": 250
     },
@@ -2220,7 +2220,7 @@
      "id": "AC-ART-07",
      "title": "Ảnh bị chặn không được tải",
      "optional": false,
-     "tested": false,
+     "tested": true,
      "done": false,
      "line": 251
     },
@@ -2228,9 +2228,25 @@
      "id": "AC-ART-08",
      "title": "Phóng lớn bất ngờ khi ghép ra món lần đầu (thêm 2026-10-20)",
      "optional": false,
-     "tested": false,
+     "tested": true,
      "done": false,
      "line": 252
+    },
+    {
+     "id": "AC-ART-09",
+     "title": "Mẻ full vẽ ảnh cho phần tử mới (thêm 2026-10-21, ADR 0012)",
+     "optional": false,
+     "tested": false,
+     "done": false,
+     "line": 253
+    },
+    {
+     "id": "AC-ART-10",
+     "title": "Thiếu cấu hình hoặc lỗi vẽ kéo dài không làm hỏng mẻ (thêm 2026-10-21, ADR 0012)",
+     "optional": false,
+     "tested": false,
+     "done": false,
+     "line": 254
     }
    ]
   },
@@ -2238,8 +2254,8 @@
    "id": "UAT2",
    "module": "Kiểm thử",
    "name": "Kiểm thử nghiệm thu & sửa lỗi (giai đoạn 2)",
-   "points": 4.5,
-   "days": 10,
+   "points": 5.0,
+   "days": 11,
    "risk": "MEDIUM",
    "deps": [
     "*"
@@ -2258,10 +2274,10 @@
     "2027-11-22"
    ],
    "fc": [
-    "2027-05-07",
-    "2027-05-20"
+    "2027-03-02",
+    "2027-03-16"
    ],
-   "line": 255,
+   "line": 257,
    "acs": []
   }
  ],
@@ -2269,7 +2285,7 @@
   "# Tiến độ — ƯỚC LƯỢNG - LẨU MEME",
   "",
   "> Sinh bởi `/dk:plan` (gen-plan.py) từ `docs/estimate/items.json`. **Người sửa trực tiếp file này**: dấu `[x]` (hạng mục hoặc AC), `tiến độ: N%`, `người`, `bắt đầu`, `xong` (YYYY-MM-DD), `ghi chú` — giữ nguyên dấu ` · ` giữa các trường. Chạy lại `/dk:plan` để tính dự báo và vẽ lại `gantt.html`. `KH` là kế hoạch gốc, chỉ đổi bằng `/dk:plan rebaseline`.",
-  "> Bắt đầu dự án: 2026-10-20 · Kỹ sư: 1 (Thuc) · Giờ/tuần: 20 · Nghiệm thu KH: 2027-11-23 · Dự báo: 2027-05-21 · Cập nhật: 2026-10-21",
+  "> Bắt đầu dự án: 2026-10-20 · Kỹ sư: 1 (Thuc) · Giờ/tuần: 20 · Nghiệm thu KH: 2027-11-23 · Dự báo: 2027-03-17 · Cập nhật: 2026-10-21",
   "",
   "",
   "## Nền tảng",
@@ -2510,7 +2526,7 @@
   "  - [ ] AC-PIPE-09 Giám khảo hài",
   "  - [ ] AC-PIPE-10 Idempotent",
   "  - [ ] AC-PIPE-12 Gom lô Gemini, backoff, hết quota dừng êm",
-  "- [ ] **ART** Ảnh minh họa tự tạo (giai đoạn 2) · 7đ · rủi ro: HIGH · KH: 2027-10-18 → 2027-11-08 · tiến độ: 0% · người: Thuc · bắt đầu:  · xong:  · ghi chú: ",
+  "- [ ] **ART** Ảnh minh họa tự tạo (giai đoạn 2) · 9đ · rủi ro: HIGH · KH: 2027-10-18 → 2027-11-08 · tiến độ: 0% · người: Thuc · bắt đầu: 2026-10-21 · xong:  · ghi chú: đã nối vào mẻ full (ADR 0012, nhánh feat/art-wiring); cần WORKERS_AI_TOKEN + CLOUDFLARE_ACCOUNT_ID để vẽ thật; hạn mức Workers AI vẫn chờ kiểm (câu hỏi mở 13)",
   "  - [ ] AC-ART-01 Prompt vẽ khái niệm, không người thật",
   "  - [ ] AC-ART-02 Kiểm duyệt ảnh, vẽ lại một lần rồi về emoji",
   "  - [ ] AC-ART-03 Hết hạn mức thì vẽ bù đợt sau",
@@ -2519,8 +2535,10 @@
   "  - [ ] AC-ART-06 Client hiện emoji trước, ảnh sau",
   "  - [ ] AC-ART-07 Ảnh bị chặn không được tải",
   "  - [ ] AC-ART-08 Phóng lớn bất ngờ khi ghép ra món lần đầu (thêm 2026-10-20)",
+  "  - [ ] AC-ART-09 Mẻ full vẽ ảnh cho phần tử mới (thêm 2026-10-21, ADR 0012)",
+  "  - [ ] AC-ART-10 Thiếu cấu hình hoặc lỗi vẽ kéo dài không làm hỏng mẻ (thêm 2026-10-21, ADR 0012)",
   "",
   "## Kiểm thử",
-  "- [ ] **UAT2** Kiểm thử nghiệm thu & sửa lỗi (giai đoạn 2) · 4.5đ · rủi ro: MEDIUM · KH: 2027-11-09 → 2027-11-22 · tiến độ: 0% · người: Thuc · bắt đầu:  · xong:  · ghi chú: "
+  "- [ ] **UAT2** Kiểm thử nghiệm thu & sửa lỗi (giai đoạn 2) · 5đ · rủi ro: MEDIUM · KH: 2027-11-09 → 2027-11-22 · tiến độ: 0% · người: Thuc · bắt đầu:  · xong:  · ghi chú: "
  ]
 }
