@@ -32,7 +32,7 @@
 | SEED | Nạp lõi nội dung classic | Nạp `noi-dung-loi.json` (139 phần tử, 363 công thức, 40 câu Nồi trào, 4 khởi đầu); kiểm tới được, không trùng | Bắt buộc | `docs/acceptance/seed.md` |
 | PIPE | Pipeline Mẻ nhúng mới | Chế độ lõi (giai đoạn 1); crawl theo adapter, khử trùng, liên kết ngược + BFS, hàng chờ, công thức bổ sung, giám khảo, deploy; idempotent; gom lô Gemini; báo cáo đợt qua GitHub Issue (giai đoạn 2) | Bắt buộc | `docs/acceptance/pipe.md` |
 | MOD | Kiểm duyệt nội dung tự động | Từ cấm + LLM theo danh mục cấm; luật người thật dựa trên ngữ cảnh nguồn; danh sách chặn bí danh; không chắc thì loại; hoãn nội dung nóng 30 ngày (giai đoạn 2) | Bắt buộc | `docs/acceptance/mod.md` |
-| ART | Ảnh minh họa tự tạo | Workers AI vẽ khái niệm, Gemini kiểm duyệt ảnh, R2 + Cache API immutable, emoji dự phòng (giai đoạn 2) | Bắt buộc | `docs/acceptance/art.md` |
+| ART | Ảnh minh họa tự tạo | Workers AI vẽ khái niệm phong cách vẽ tay, Gemini kiểm duyệt ảnh, phóng lớn ảnh khi ghép ra món lần đầu, R2 + Cache API immutable, emoji dự phòng (giai đoạn 2) | Bắt buộc | `docs/acceptance/art.md` |
 | DAILY | Món đặc biệt hôm nay | 1 món/mẻ (độ sâu [4, 8]); emoji + gợi ý mờ; đếm mọi lượt ghép; bảng xếp hạng ít bước nhất (server kiểm đường); **streak**; đồng hồ theo manifest thật | Bắt buộc | `docs/acceptance/daily.md` |
 | DISC | Công thức gia truyền | UUID cục bộ + nickname tùy chọn (lọc từ cấm + bí danh); server kiểm công thức rồi ghi người đầu tiên; giới hạn tần suất theo UUID và IP băm | Bắt buộc | `docs/acceptance/disc.md` |
 | SHARE | Thẻ chia sẻ | Thẻ Daily kiểu Wordle (chữ + PNG) và thẻ Công thức gia truyền; sao chép / chia sẻ hệ thống; không lộ đáp án | Bắt buộc | `docs/acceptance/share.md` |
@@ -167,3 +167,4 @@ Stack là Cloudflare Worker + D1 + Python pipeline (không Docker/Postgres), nê
 | Ngày | Phiên bản | Nội dung | Người duyệt |
 |---|---|---|---|
 | 2026-10-19 | 0.1 | Bản đầu từ phạm vi đã chốt (14 tính năng + bất biến); chia giai đoạn 1/2; thêm streak, bảng sự kiện D1 | - |
+| 2026-10-20 | 0.2 | AC-PIPE-08: thêm hạn mức 150 cặp/đợt chọn theo mức hay cùng nằm trên Đĩa (giảm ghép trượt, mô phỏng: +200 cặp đúng chỗ kéo 20 lượt đầu từ 41,5 % xuống 28 %); AC-ART-01 đổi phong cách sticker sang vẽ tay; thêm AC-ART-08 phóng lớn ảnh khi ghép ra món lần đầu | nguyenquythuc (chờ /dk:approve spec) |
