@@ -5,13 +5,23 @@ chunks of `batch_size` through `llm.call_in_batches` (backoff, quota stop - AC-P
 AC-PIPE-13 allow-list first. Errors carry only their type and HTTP status, never the key or the URL.
 """
 
+import base64
 import http.client
 import json
 import time
 from collections.abc import Callable, Iterator, Mapping
 
+from lau_meme_pipeline.art import REJECT_REASONS
 from lau_meme_pipeline.batch import TIMEOUT_SECONDS, build_llm_payload
-from lau_meme_pipeline.llm import LlmError, PartialAnswer, QuotaExhausted, RateLimited, call_in_batches
+from lau_meme_pipeline.llm import (
+    ArtConfigError,
+    DrawRejected,
+    LlmError,
+    PartialAnswer,
+    QuotaExhausted,
+    RateLimited,
+    call_in_batches,
+)
 from lau_meme_pipeline.moderation import CATEGORIES
 
 HOST = "generativelanguage.googleapis.com"
@@ -54,8 +64,11 @@ class _Http:
         self._path = f"/v1beta/models/{model}:generateContent"
 
     def ask(self, prompt: str, items: list) -> object:
+        return self.send([{"text": _COMMON + prompt}, {"text": _json(items)}])
+
+    def send(self, parts: list[dict]) -> object:
         body = {
-            "contents": [{"role": "user", "parts": [{"text": _COMMON + prompt}, {"text": _json(items)}]}],
+            "contents": [{"role": "user", "parts": parts}],
             "generationConfig": {"responseMimeType": "application/json", "temperature": 0},
         }
         conn = http.client.HTTPSConnection(HOST, timeout=TIMEOUT_SECONDS)
@@ -70,12 +83,25 @@ class _Http:
         if res.status >= 500:
             raise RateLimited()
         if res.status != 200:
-            raise LlmError(f"Gemini HTTP {res.status}")
+            raise _HttpStatus(res.status, b"API_KEY_INVALID" in raw)
         try:
             text = json.loads(raw)["candidates"][0]["content"]["parts"][0]["text"]
             return json.loads(text)
         except (ValueError, KeyError, IndexError, TypeError):
-            raise LlmError("Gemini trả lời không phải JSON") from None
+            raise _Unreadable("Gemini trả lời không phải JSON") from None
+
+
+class _HttpStatus(LlmError):
+    """A non-2xx answer; the message holds only the status, never the key the server may echo."""
+
+    def __init__(self, status: int, key_invalid: bool) -> None:
+        super().__init__(f"Gemini HTTP {status}")
+        self.status = status
+        self.key_invalid = key_invalid
+
+
+class _Unreadable(LlmError):
+    """HTTP 200 but no JSON answer: a step decides whether that fails open or closed."""
 
 
 def _json(items: list) -> str:
@@ -160,3 +186,58 @@ class GeminiSteps(Mapping[str, Callable[[object], object]]):
         if out.failed or out.pending:
             raise PartialAnswer(answer, quota=out.quota_hit)  # usable now, never cached (AC-PIPE-10)
         return answer
+
+
+IMAGE_PROMPT = (
+    "Kiểm duyệt ảnh minh họa cho game ghép meme. Ảnh vi phạm nếu có: mặt người giống thật (real_face), "
+    "logo hoặc thương hiệu (logo), nhân vật có bản quyền (copyright), chữ trong ảnh (text), nội dung tình dục, "
+    'bạo lực, ma túy, chính trị, tôn giáo hoặc phân biệt (banned_category). Trả JSON {"ok": true} nếu đạt, '
+    '{"ok": false, "reason": "<một trong real_face, logo, copyright, text, banned_category>"} nếu vi phạm.'
+)
+_SIGNATURES = ((b"\x89PNG", "image/png"), (b"\xff\xd8", "image/jpeg"), (b"RIFF", "image/webp"))
+
+
+class GeminiImageCheck:
+    """`check(image) -> None | reason` of `art.ArtAdapters` (AC-ART-02, ADR 0012). Fails closed: an answer it cannot
+    read is a violation. Per-minute limits are retried; the daily quota raises QuotaExhausted."""
+
+    def __init__(
+        self,
+        api_key: str,
+        model: str = DEFAULT_MODEL,
+        *,
+        sleep: Callable[[float], None] = time.sleep,
+        max_retries: int = 3,
+    ) -> None:
+        self._http = _Http(api_key, model or DEFAULT_MODEL)
+        self._sleep = sleep
+        self._retries = max_retries
+        self.calls = 0
+
+    def __call__(self, image: bytes) -> str | None:
+        mime = next((m for sig, m in _SIGNATURES if image.startswith(sig)), "image/png")
+        parts = [
+            {"text": IMAGE_PROMPT},
+            {"inline_data": {"mime_type": mime, "data": base64.b64encode(image).decode("ascii")}},
+        ]
+        for attempt in range(self._retries + 1):
+            self.calls += 1
+            try:
+                answer = self._http.send(parts)
+                break
+            except RateLimited:
+                if attempt == self._retries:
+                    raise LlmError("Gemini kiểm ảnh: quá giới hạn tần suất") from None
+                self._sleep(2.0 * 2**attempt)
+            except _Unreadable:
+                return "banned_category"
+            except _HttpStatus as exc:
+                if exc.status in (401, 403, 404) or exc.key_invalid:  # key or model: every image would fail
+                    raise ArtConfigError(str(exc)) from None
+                raise DrawRejected(str(exc)) from None  # this image is refused, a retry cannot help
+        if not isinstance(answer, Mapping) or not isinstance(answer.get("ok"), bool):
+            return "banned_category"
+        if answer["ok"]:
+            return None
+        reason = answer.get("reason")
+        return reason if reason in REJECT_REASONS else "banned_category"

@@ -9,6 +9,7 @@ from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, field, replace
 from datetime import date, datetime, timedelta, timezone
 
+from lau_meme_pipeline.art import ArtItem, ArtResult, apply_images, order_for_drawing
 from lau_meme_pipeline.crawl import CrawlResult, crawl_report_line
 from lau_meme_pipeline.daily import build_daily_block, select_daily
 from lau_meme_pipeline.dedupe import dedupe, dedupe_key
@@ -31,6 +32,8 @@ from lau_meme_pipeline.seed import ACTIVE, CLASSIC, ContentStore, StoredElement,
 from lau_meme_pipeline.text import fold
 
 GMT7 = timezone(timedelta(hours=7))
+MAX_ART_ATTEMPTS = 3  # batches an element may fail with transient errors before it keeps its emoji (ADR 0012)
+MAX_ART_PENDING = 2000  # stored backlog; anything beyond is found again from the store (ADR 0009 row size)
 MAX_NAME = 100  # D1/Worker limit of element name and fold (UTF-16 units, as the Worker counts)
 MAX_EMOJI = 16
 TREND = "trend"
@@ -75,6 +78,7 @@ def _combined(core: Mapping, store: Mapping) -> ContentStore:
             image_hint=e.get("image_hint", "") if e.get("image_hint_ok", True) else "",
             batch=str(e["added_version"]),
             status=ACTIVE,
+            image_key=e.get("image_key"),
         )
     for r in store.get("recipes", []):
         recipes[r["id"]] = StoredRecipe(id=r["id"], a=r["a"], b=r["b"], result=r["result"], batch=TREND, status=ACTIVE)
@@ -115,6 +119,7 @@ def run_full(
     *,
     blocked: frozenset[str] = frozenset(),
     daily_history: Sequence[Mapping] = (),
+    draw: Callable[[list[ArtItem]], ArtResult] | None = None,
 ) -> FullOutcome:
     version = _version(batch_at)
     batch_date: date = batch_at.astimezone(GMT7).date()
@@ -323,6 +328,10 @@ def run_full(
     after = simulate_plate(_graph(content, frozenset(blocked)))  # same graph as the exported one (AC-INV-12)
     report["supplement"]["miss_after"] = [after.first20, after.overall]
 
+    # 6b. Illustrations (ADR 0012, AC-ART-01..04): `draw` holds the network side; without it nothing is tracked.
+    if draw is not None:
+        content = _illustrate(content, out_store, store.get("art_pending", []), blocked, version, draw, report)
+
     # 7. Daily: core examples, plus trend elements with an approved hint that are not held.
     candidates_daily = []
     for ex in core.get("daily_examples", []):
@@ -359,6 +368,70 @@ def run_full(
         daily_element_id=chosen["element_id"],
         new_aliases=moderated.new_aliases,
     )
+
+
+def _illustrate(
+    content: ContentStore,
+    out_store: dict,
+    waiting: Sequence[str],
+    blocked: frozenset[str],
+    version: int,
+    draw: Callable[[list[ArtItem]], ArtResult],
+    report: dict,
+) -> ContentStore:
+    """Elements waiting from earlier batches first, then this batch's, then older ones never drawn (AC-ART-03).
+    An element whose draws were refused, whose hint failed moderation, or that kept failing for MAX_ART_ATTEMPTS
+    batches keeps its emoji for good (AC-ART-02). One with no hint yet is only skipped: a later hint is drawn."""
+    trend = {e["id"]: e for e in out_store["elements"]}
+
+    def drawable(eid: str) -> bool:
+        e, el = trend.get(eid), content.elements.get(eid)
+        return (
+            e is not None
+            and el is not None
+            and el.status == ACTIVE
+            and eid not in blocked
+            and not e.get("image_key")
+            and not e.get("image_fallback")
+        )
+
+    def item(eid: str) -> ArtItem:
+        e = trend[eid]
+        return ArtItem(eid, e["name"], e.get("image_hint", "") if e.get("image_hint_ok", True) else "")
+
+    first = [eid for eid in dict.fromkeys(waiting) if drawable(eid)]
+    rest = sorted(
+        (e for e in out_store["elements"] if drawable(e["id"]) and e["id"] not in first),
+        key=lambda e: (e.get("added_version") != version, e["id"]),
+    )
+    art = draw(order_for_drawing([item(i) for i in first], [item(e["id"]) for e in rest]))
+    for eid, key in art.images.items():
+        trend[eid]["image_key"] = key
+    pending = list(art.pending)
+    gave_up = []
+    # An error counts against an element only when drawing worked for something else in this batch; otherwise it
+    # is an outage (network, Worker, credentials) and holding it against the elements would lose their images.
+    progress = bool(art.images or art.rejections or art.errors.get("draw_rejected") or art.errors.get("decode_error"))
+    for eid in art.errored if progress else []:
+        trend[eid]["art_attempts"] = trend[eid].get("art_attempts", 0) + 1
+        if trend[eid]["art_attempts"] >= MAX_ART_ATTEMPTS:
+            gave_up.append(eid)
+    pending = [eid for eid in pending if eid not in gave_up]
+    for eid in [*art.fallback, *gave_up]:
+        e = trend[eid]
+        if e.get("image_hint", "").strip() or not e.get("image_hint_ok", True) or eid in gave_up:
+            e["image_fallback"] = True
+    out_store["art_pending"] = pending[:MAX_ART_PENDING]
+    report["art"] = {
+        "drawn": len(art.images),
+        "fallback": len(art.fallback) - len(art.skipped) + len(gave_up),
+        "pending": len(pending),
+        "draws": art.draws,
+        "rejections": dict(sorted(art.rejections.items())),
+        "errors": dict(sorted(art.errors.items())),
+        "config_error": art.config_error,
+    }
+    return apply_images(content, art.images)
 
 
 def _store_of(trend: Mapping[str, dict], trend_recipes: Mapping[str, dict]) -> dict:

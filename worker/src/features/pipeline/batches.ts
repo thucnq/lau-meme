@@ -7,7 +7,7 @@ import { currentVersion } from '../content/content'
 const KEEP_VERSIONS = 14
 /** D1 caps a row at 2 MB; the phase 2 pipeline store (ADR 0009) must fit one row. */
 const MAX_STORE_BYTES = 1_900_000
-const STORE_KEYS = ['elements', 'recipes', 'queue', 'asked_pairs', 'llm_cache'] as const
+const STORE_KEYS = ['elements', 'recipes', 'queue', 'asked_pairs', 'llm_cache', 'art_pending'] as const
 const MODES = ['core', 'full'] as const
 
 type Element = { id: string; name: string; fold: string; emoji: string; depth: number; origin: string | null; image_key: string | null }
@@ -256,6 +256,10 @@ function parseStore(value: unknown): string {
   const store = obj(value, 'store', STORE_KEYS, [])
   for (const key of ['elements', 'recipes', 'queue', 'asked_pairs'] as const) {
     if (key in store && !Array.isArray(store[key])) fail(`store.${key}: phải là mảng`)
+  }
+  if ('art_pending' in store) {
+    // ADR 0012: element ids waiting for an illustration
+    arr(store.art_pending, 'store.art_pending', 20000).forEach((v, i) => id43(v, `store.art_pending[${i}]`))
   }
   const cache = store.llm_cache
   if ('llm_cache' in store && (typeof cache !== 'object' || cache === null || Array.isArray(cache))) fail('store.llm_cache: phải là object')

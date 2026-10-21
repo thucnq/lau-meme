@@ -17,7 +17,7 @@ flowchart LR
   subgraph gh["GitHub"]
     actions["Pipeline Python<br/>GitHub Actions cron 05:00/17:00 UTC + chạy tay"]
     issues["GitHub Issues<br/>báo cáo đợt"]
-    secrets["GitHub Secrets<br/>PIPELINE_TOKEN, BANNED_WORDS,<br/>GEMINI_API_KEY"]
+    secrets["GitHub Secrets<br/>PIPELINE_TOKEN, BANNED_WORDS,<br/>GEMINI_API_KEY, WORKERS_AI_TOKEN"]
   end
 
   google["Google Identity Services<br/>ID token + JWKS (ADR 0010)"]
@@ -38,6 +38,6 @@ flowchart LR
   secrets --> actions
   actions -.-> sources
   actions -.-> gemini
-  actions -.-> wai
-  actions -.-> r2
-  worker -.-> r2
+  actions -. "vẽ ảnh qua REST (ADR 0012)" .-> wai
+  actions -. "PUT /pipeline/images/{key} (ADR 0012)" .-> worker
+  worker -. "ghi ảnh đã kiểm, đọc /img/* (binding IMG)" .-> r2

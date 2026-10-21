@@ -27,7 +27,7 @@ T = datetime(2026, 10, 20, 17, 0, 0, tzinfo=UTC)
 T_VERSION = 202610210000
 T2 = T + timedelta(hours=12)
 STEPS = ("same", "describe", "classify", "link", "judge", "supplement_element", "supplement_pair")
-STORE_KEYS = {"elements", "recipes", "queue", "asked_pairs", "llm_cache"}
+STORE_KEYS = {"elements", "recipes", "queue", "asked_pairs", "llm_cache", "art_pending"}
 SUCCESS_KEYS_FULL = {"status", "version", "batch_at", "mode", "manifest", "graph", "content", "stats", "store"}
 ERROR_KEYS = {"status", "batch_at", "mode", "failed_step", "stats"}
 

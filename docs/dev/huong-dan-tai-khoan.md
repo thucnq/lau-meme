@@ -182,30 +182,23 @@ npx wrangler r2 bucket list
 - Không cần CORS: ảnh cùng origin với game.
 - Tên bucket không phải bí mật.
 
-### 6.3. Token S3 cho pipeline
-Pipeline chạy trên GitHub Actions và ghi ảnh qua S3 API của R2.
-1. Trang R2 → Manage R2 API Tokens → **Create Account API Token**.
-2. Permissions: **Object Read & Write**. Scope: **Apply to specific buckets only**, chỉ chọn một bucket. Tạo hai token: một cho `lau-meme-img-staging`, một cho `lau-meme-img`.
-3. Màn hình kết quả hiện `Access Key ID`, `Secret Access Key` và endpoint S3 `https://<ACCOUNT_ID>.r2.cloudflarestorage.com` **một lần duy nhất**. Chép thẳng vào GitHub, không ghi vào file, issue, chat hay commit nào.
-4. GitHub → Settings → Environments, thêm vào từng environment (`staging`, `production`, `production-no-approval`; hai environment production dùng chung token của `lau-meme-img`):
+### 6.3. Pipeline ghi ảnh qua Worker (không cần token S3)
+Từ ADR 0012, pipeline tải ảnh bằng `PUT /lau-meme/api/pipeline/images/{key}` với `PIPELINE_TOKEN`. Worker kiểm nội dung rồi ghi R2 qua binding `IMG` (mục 6.4).
+- **Không** tạo R2 API token / S3 access key cho dự án này.
+- Nếu đã tạo theo bản hướng dẫn cũ: xóa token ở R2 → Manage R2 API Tokens, rồi xóa `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_ENDPOINT`, `R2_BUCKET` khỏi các GitHub Environment.
+
+### 6.5. Token Workers AI cho pipeline (vẽ ảnh)
+1. Dashboard → My Profile → API Tokens → Create Token → Custom token.
+2. Permissions: **Account → Workers AI → Edit** (gồm Read). Account Resources: chỉ account chứa `dinoduct.fun`. Không thêm quyền nào khác.
+3. GitHub → Settings → Environments, thêm vào `staging` và `production-no-approval`:
 
 | Tên | Loại | Giá trị |
 |---|---|---|
-| `R2_ACCESS_KEY_ID` | Secret | Access Key ID của token |
-| `R2_SECRET_ACCESS_KEY` | Secret | Secret Access Key của token |
-| `R2_ENDPOINT` | Variable | `https://<ACCOUNT_ID>.r2.cloudflarestorage.com` |
-| `R2_BUCKET` | Variable | `lau-meme-img-staging` hoặc `lau-meme-img` |
+| `WORKERS_AI_TOKEN` | Secret | token ở bước 2 (khác `CLOUDFLARE_API_TOKEN` dùng để deploy) |
+| `CLOUDFLARE_ACCOUNT_ID` | Variable | Account ID (trang Overview của zone, cột phải) |
+| `WORKERS_AI_MODEL` | Variable | để trống = `@cf/black-forest-labs/flux-1-schnell` |
 
-Ví dụ cho staging (secret thì dán khi được hỏi, để giá trị không nằm lại trong lịch sử shell):
-```bash
-gh secret set R2_ACCESS_KEY_ID --env staging
-gh secret set R2_SECRET_ACCESS_KEY --env staging
-gh variable set R2_ENDPOINT --env staging --body 'https://<ACCOUNT_ID>.r2.cloudflarestorage.com'
-gh variable set R2_BUCKET --env staging --body 'lau-meme-img-staging'
-```
-- Client S3 (vd boto3) dùng `endpoint_url=R2_ENDPOINT` và `region_name="auto"`.
-- Worker **không** cần token này: Worker đọc R2 qua binding (mục 6.4).
-- Đổi token (định kỳ hoặc khi nghi lộ): tạo token mới, cập nhật hai secret, rồi xóa token cũ trên dashboard.
+Mỗi đợt vẽ tối đa 20 ảnh; hết hạn mức gói free thì phần còn lại chờ vẽ đợt sau (AC-ART-03), đợt không thất bại. Báo cáo đợt (GitHub Issue) ghi số ảnh vẽ, bị loại, chờ vẽ.
 
 ### 6.4. Binding cho Worker
 Đã khai báo trong `worker/wrangler.jsonc` ngày 2026-10-21, ở **cả** top-level lẫn `env.staging` (binding không kế thừa sang env). Chỉ một binding `IMG` mỗi môi trường. Nếu `wrangler r2 bucket create` hỏi có thêm binding vào file cấu hình không thì chọn **không**: lệnh đó thêm binding vào top-level (tức production) với tên tự sinh và `"remote": true`, đồng thời định dạng lại cả file.

@@ -56,6 +56,10 @@ jobs:
           # Chỉ dùng ở mode full. Thiếu GEMINI_API_KEY ⇒ đợt full thất bại, bản hiện hành giữ nguyên.
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           GEMINI_MODEL: ${{ vars.GEMINI_MODEL }}
+          # Ảnh minh họa (ADR 0012): thiếu WORKERS_AI_TOKEN thì đợt full bỏ bước vẽ, phần tử mới chờ vẽ.
+          WORKERS_AI_TOKEN: ${{ secrets.WORKERS_AI_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+          WORKERS_AI_MODEL: ${{ vars.WORKERS_AI_MODEL }}
           YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
           # Câu hỏi mở 25: danh sách phân tách bằng dấu phẩy; trống thì adapter đó không thu gì.
           REDDIT_SUBREDDITS: ${{ vars.REDDIT_SUBREDDITS }}

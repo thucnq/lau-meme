@@ -17,6 +17,15 @@ class LlmError(Exception):
     """A call still failed after its retries: the items of that call are treated as not safe."""
 
 
+class DrawRejected(LlmError):
+    """The provider refused this input for good (HTTP 4xx other than 429): retrying the same prompt cannot help."""
+
+
+class ArtConfigError(LlmError):
+    """The provider rejects our credentials, account or model (401/403/404, invalid key): every call would fail the
+    same way, so drawing stops and nothing is held against the elements."""
+
+
 class PartialAnswer(Exception):
     """Some chunks were answered, others failed or hit the quota: usable now, never cached (AC-PIPE-10)."""
 

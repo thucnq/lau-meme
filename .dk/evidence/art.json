@@ -1,45 +1,53 @@
 {
  "red": {
-  "ts": "2026-10-21T03:21:19+00:00",
-  "commit": "ad12b84",
+  "ts": "2026-10-21T12:56:45+00:00",
+  "commit": "02bca48",
   "results": {
    "AC-ART-01": {
     "status": "FAIL",
-    "test": "test_art#test_ac_art_01_ten_nam_trong_danh_sach_chan_bi_danh_khong_vao_prompt[\\xe1bc xyz]"
+    "test": "test_art_hardening#test_ac_art_01_nhieu_phan_tu_khong_goi_y_deu_vao_fallback_theo_thu_tu"
    },
    "AC-ART-02": {
     "status": "FAIL",
-    "test": "test_art#test_ac_art_02_prompt_gui_ve_chua_goi_y_anh_va_phong_cach"
+    "test": "test_art_hardening#test_ac_art_02_ly_do_la_hai_lan_thi_ve_emoji_va_dem_hai_lan"
    },
    "AC-ART-03": {
     "status": "FAIL",
-    "test": "test_art#test_ac_art_03_dot_sau_ve_bu_cac_phan_tu_cho_ve_va_het_cho"
+    "test": "art-upload.test.ts#art: PipelineStore.art_pending > AC-ART-03: mẻ full kèm store.art_pending "
    },
    "AC-ART-04": {
     "status": "FAIL",
-    "test": "test_art#test_ac_art_04_phan_tu_luu_khoa_anh_va_graph_chua_khoa_trong_ket_qua_ma_hoa"
+    "test": "art-upload.test.ts#art: PUT /pipeline/images/{key} > AC-ART-04: idempotent - đã có object cùng khóa thì PUT lại vẫn 204, nội dung không đổi; PUT hai lần cũng 204"
    },
    "AC-ART-05": {
-    "status": "FAIL",
-    "test": "art.test.ts#art: GET /img/{key} > AC-ART-05: khóa sai định dạng không chạm tới R2 và không vào cache "
+    "status": "PASS",
+    "test": "art.test.ts#art: GET /img/{key} > AC-ART-05: ảnh tồn tại trả 200 image/webp, đúng byte, Cache-Control public immutable một năm"
    },
    "AC-ART-06": {
-    "status": "FAIL",
-    "test": "art.ui.test.tsx#art: emoji trước, ảnh sau > AC-ART-06: phần tử khởi đầu "
+    "status": "PASS",
+    "test": "art.ui.test.tsx#art: emoji trước, ảnh sau > AC-ART-06: phần tử có khóa ảnh hiện emoji ngay, kèm <img> trỏ tới /lau-meme/img/<khóa>"
    },
    "AC-ART-07": {
-    "status": "FAIL",
-    "test": "art.ui.test.tsx#art: ảnh bị chặn không được tải > AC-ART-07: chỉ ảnh của P bị chặn; phần tử khác có ảnh vẫn tải bình thường; phần tử P vẫn ở trên Đĩa "
+    "status": "PASS",
+    "test": "art.ui.test.tsx#art: ảnh bị chặn không được tải > AC-ART-07: id phần tử có trong images của danh sách chặn thì chỉ hiện emoji, không <img>, không yêu cầu /img/..."
    },
    "AC-ART-08": {
+    "status": "PASS",
+    "test": "art.ui.test.tsx#art: phóng lớn khi ghép ra món lần đầu > AC-ART-08: ghép ra phần tử chưa có thì lớp phủ hiện tên, emoji "
+   },
+   "AC-ART-VALIDATION": {
+    "status": "PASS",
+    "test": "art-upload.test.ts#art: PipelineStore.art_pending > AC-ART-VALIDATION: art_pending sai dạng "
+   },
+   "AC-ART-ABUSE": {
     "status": "FAIL",
-    "test": "art.ui.test.tsx#art: phóng lớn khi ghép ra món lần đầu > AC-ART-08: chế độ Thử thách "
+    "test": "art-upload.test.ts#art: PUT /pipeline/images/{key} > AC-ART-ABUSE: token pipeline bị lộ cũng không ghi đè được ảnh có sẵn bằng nội dung khác hay ghi khóa giả"
    }
   }
  },
  "green": {
-  "ts": "2026-10-21T11:21:31+00:00",
-  "commit": "34d224b",
+  "ts": "2026-10-21T14:16:15+00:00",
+  "commit": "067e9c7",
   "results": {
    "AC-ART-01": {
     "status": "PASS",
@@ -72,6 +80,14 @@
    "AC-ART-08": {
     "status": "PASS",
     "test": "art.ui.test.tsx#art: phóng lớn khi ghép ra món lần đầu > AC-ART-08: ghép ra phần tử chưa có thì lớp phủ hiện tên, emoji "
+   },
+   "AC-ART-VALIDATION": {
+    "status": "PASS",
+    "test": "art-upload.test.ts#art: PipelineStore.art_pending > AC-ART-VALIDATION: art_pending sai dạng "
+   },
+   "AC-ART-ABUSE": {
+    "status": "PASS",
+    "test": "art-upload.test.ts#art: PUT /pipeline/images/{key} > AC-ART-ABUSE: token pipeline bị lộ cũng không ghi đè được ảnh có sẵn bằng nội dung khác hay ghi khóa giả"
    }
   }
  }
