@@ -20,3 +20,4 @@ review-feat-inv: approved
 review-feat-admin: approved
 review-feat-auth: approved
 review-feat-daily-v2: approved
+review-fix-table-height: approved
