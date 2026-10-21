@@ -761,7 +761,7 @@ paths:
         hiện hành; sau rollback là kho của version đã quay về. Version hiện hành chưa có kho (mẻ `core`, hoặc chưa
         đăng mẻ nào) → `{}`. `version` chỉ định mà không còn lưu (ngoài 14 bản) → 404. Không có dữ liệu người chơi.
       security: [{ PipelineToken: [] }]
-      x-ac: [AC-PIPE-07, AC-PIPE-10, AC-PIPE-13, AC-INV-05]
+      x-ac: [AC-PIPE-07, AC-PIPE-10, AC-PIPE-13, AC-INV-05, AC-ART-03, AC-ART-10]
       parameters:
         - name: version
           in: query
@@ -788,7 +788,7 @@ paths:
         `IMG`. Khóa theo nội dung nên đã có thì không ghi lại, vẫn trả 204 (idempotent). Ảnh tải lên trước khi đăng mẻ;
         mẻ lỗi thì ảnh mồ côi vô hại (không ai tham chiếu). Không có dữ liệu người chơi.
       security: [{ PipelineToken: [] }]
-      x-ac: [AC-ART-04]
+      x-ac: [AC-ART-04, AC-ART-09]
       parameters:
         - name: key
           in: path
@@ -851,7 +851,7 @@ paths:
         `version` phải lớn hơn mọi version đã đăng (409). `status = error`: chỉ ghi nhật ký đợt, không đổi bản
         đang chạy.
       security: [{ PipelineToken: [] }]
-      x-ac: [AC-PIPE-01, AC-PIPE-10, AC-PIPE-11, AC-GRAPH-04, AC-GRAPH-05, AC-SEED-01, AC-SEED-08, AC-DAILY-01, AC-DAILY-02, AC-INV-06]
+      x-ac: [AC-PIPE-01, AC-PIPE-10, AC-PIPE-11, AC-GRAPH-04, AC-GRAPH-05, AC-SEED-01, AC-SEED-08, AC-DAILY-01, AC-DAILY-02, AC-INV-06, AC-ART-09]
       requestBody:
         required: true
         content:
@@ -1702,7 +1702,7 @@ components:
       properties:
         elements:
           type: array
-          description: Phần tử trend (id, tên, emoji, mô tả, gợi ý, `hint_ok`, `image_hint_ok`, `held_until`, nguồn, `added_version`, `depth`)
+          description: Phần tử trend (id, tên, emoji, mô tả, gợi ý, `hint_ok`, `image_hint_ok`, `held_until`, nguồn, `added_version`, `depth`; với ART thêm `image_key`, `art_attempts` (đợt lỗi tạm thời, tối đa 3) và `image_fallback` (giữ emoji) - AC-ART-09/10)
           items: { type: object }
         recipes:
           type: array
