@@ -1,6 +1,6 @@
 # 0009 - Kho pipeline giai đoạn 2 lưu trong D1, đăng cùng mẻ
 
-- Trạng thái: Đề xuất (chờ người duyệt - thêm endpoint, trường và migration)
+- Trạng thái: Đã chấp nhận (người duyệt 2026-10-21)
 - Ngày: 2026-10-20
 - Nguồn: PIPE giai đoạn 2 (AC-PIPE-03..10, 12), MOD (AC-MOD-08/10), INV (AC-INV-03/05/06)
 
@@ -14,7 +14,7 @@ Giai đoạn 1 không cần nhớ gì giữa các mẻ: mỗi mẻ nạp lại l
 GitHub Actions không giữ file giữa các lần chạy. Repo có thể công khai nên không commit kho này vào git, vì kho chứa công thức đọc được, đúng thứ ADR 0002 mã hóa trong graph.
 
 ## Quyết định
-- **Bảng mới** `pipeline_store` (migration `0005_pipeline_store.sql`, expand-only):
+- **Bảng mới** `pipeline_store` (migration `0006_pipeline_store.sql`, expand-only; số 0005 đã dùng cho tài khoản, ADR 0010):
   - Cột: `version INTEGER PRIMARY KEY` (version mẻ ghi), `store_json TEXT NOT NULL CHECK (json_valid(store_json))`, `created_at INTEGER NOT NULL`.
   - Giữ 14 bản như `batch_content` (AC-GRAPH-05), để rollback nội dung cũng có kho tương ứng.
 - **Ghi nguyên tử cùng mẻ:** `POST /api/pipeline/batches` (status `success`) nhận thêm trường tùy chọn `store`, ghi trong **cùng** `DB.batch` với `batch_content`. Lỗi giữa chừng thì không có gì đổi (AC-PIPE-11, AC-INV-06). Mẻ chế độ `core` không gửi `store`.
@@ -26,11 +26,11 @@ GitHub Actions không giữ file giữa các lần chạy. Repo có thể công 
   - `queue`: khái niệm, `attempts`, `reason` (`unlinked` / `quota`).
   - `llm_cache`: chỉ của mẻ ghi, khóa = `sha256(bước + payload)`. Không giữ cache của mẻ cũ, để kho không phình.
 - **Kích thước:** D1 giới hạn 2 MB mỗi dòng. Báo cáo đợt ghi kích thước kho; tới ~1 MB thì viết ADR chuyển kho sang R2, cùng lúc với graph (ADR 0003).
-- **Phản hồi LLM gửi đi** vẫn chỉ gồm trường công khai của meme. Danh sách trường cho phép (AC-PIPE-13, `ALLOWED_LLM_FIELDS`) mở rộng thêm `key`, `kind`, `emoji`, `description`, `daily_hint` mà kiểm duyệt cần (AC-MOD-04). Test AC-PIPE-13 đang so khớp đúng tập cũ, nên phải sửa test theo, và việc đó cần người duyệt.
+- **Phản hồi LLM gửi đi** vẫn chỉ gồm trường công khai của meme. Danh sách trường cho phép (AC-PIPE-13, `ALLOWED_LLM_FIELDS`) mở rộng thêm `key`, `kind`, `emoji`, `description`, `daily_hint` mà kiểm duyệt cần (AC-MOD-04). Test AC-PIPE-13 đang so khớp đúng tập cũ, nên phải sửa test theo (người duyệt cùng ADR này, 2026-10-21).
 
 ## Hệ quả
 - Một migration, một endpoint đọc, một trường ghi và một trường mới trong `PipelineState`. Worker không cần hiểu nội dung kho, chỉ lưu và trả lại.
-- Chạy lại đúng mẻ (cùng `batch_at`) đọc lại kho trước mẻ đó qua `GET /api/pipeline/store?version=<trước>`, nếu version đó còn trong 14 bản, cùng `llm_cache` đã lưu. Muốn vậy endpoint phải nhận tham số `version`.
+- Chạy lại đúng mẻ (cùng `batch_at`) đọc lại kho trước mẻ đó qua `GET /api/pipeline/store?version=<trước>`, nếu version đó còn trong 14 bản, cùng `llm_cache` đã lưu. Vì vậy endpoint nhận tham số `version` (version không còn lưu → 404).
 - Token pipeline đọc được kho chứa tên công thức. Kho không chứa dữ liệu người chơi (AC-PIPE-13).
 
 ## Phương án đã loại

@@ -367,16 +367,30 @@ def _report(
     return issue_url
 
 
+LOOPBACK_HOSTS = frozenset({"localhost", "127.0.0.1", "::1"})
+
+
+def parse_api_url(base_url: str) -> tuple[bool, str, int | None, str]:
+    """(tls, host, port, prefix). Plain http only to a loopback Worker (`wrangler dev`, docs/dev/setup.md)."""
+    parts = urlsplit(base_url)
+    local = parts.scheme == "http" and parts.hostname in LOOPBACK_HOSTS
+    if not (parts.scheme == "https" or local) or not parts.hostname:
+        raise ValueError("URL phải có dạng https://<host>[/<tiền tố>] (http chỉ cho localhost)")
+    return parts.scheme == "https", parts.hostname, parts.port, parts.path.rstrip("/")
+
+
+def open_connection(tls: bool, host: str, port: int | None) -> http.client.HTTPConnection:
+    cls = http.client.HTTPSConnection if tls else http.client.HTTPConnection
+    return cls(host, port, timeout=TIMEOUT_SECONDS)
+
+
 class _Https:
     def __init__(self, base_url: str, headers: Mapping[str, str]) -> None:
-        parts = urlsplit(base_url)
-        if parts.scheme != "https" or not parts.hostname:
-            raise ValueError("URL phải có dạng https://<host>")
-        self.host, self.port, self.prefix = parts.hostname, parts.port, parts.path.rstrip("/")
+        self.tls, self.host, self.port, self.prefix = parse_api_url(base_url)
         self.headers = {"User-Agent": "lau-meme-pipeline", "Content-Type": "application/json", **headers}
 
     def request(self, method: str, path: str, body: Mapping | None = None) -> dict:
-        conn = http.client.HTTPSConnection(self.host, self.port, timeout=TIMEOUT_SECONDS)
+        conn = open_connection(self.tls, self.host, self.port)
         try:
             payload = None if body is None else json.dumps(body, ensure_ascii=False).encode("utf-8")
             conn.request(method, self.prefix + path, body=payload, headers=self.headers)
