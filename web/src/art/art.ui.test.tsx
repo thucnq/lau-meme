@@ -17,7 +17,7 @@
  *                     - tự gỡ sau 2500 ms; bấm vào lớp phủ hoặc phím Escape gỡ ngay
  *                     - không modal: không aria-modal, không role=dialog, không khóa Đĩa/Nồi
  *                     - có vùng aria-live (hoặc role=status) chứa tên phần tử
- *                     - cũng hiện khi ghép qua bàn thử thách (Daily), không đổi số bước
+ *                     - cũng hiện khi ghép ra Món đặc biệt (Daily) lần đầu trên nồi chính
  */
 import { createHash, webcrypto } from 'node:crypto'
 import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
@@ -39,7 +39,7 @@ const BLOCK_KEY = 'laumeme:blocklist'
 const C = 'Tới Công Chuyện' // Cay + Cười, 🔥, có ảnh
 const C_KEY = 'aaaaaaaaaaaa.webp'
 const D = 'Lẩu Thập Cẩm' // Cay + Toang, 🥣, không ảnh
-const H = 'Cơm Cháy' // Cay + Deadline, 🍚, dùng cho bàn thử thách
+const H = 'Cơm Cháy' // Cay + Deadline, 🍚, cũng là Món đặc biệt trong test Daily
 const H_KEY = 'bbbbbbbbbbbb.webp'
 const SPECS = [
   { a: 'Cay', b: 'Cười', name: C, emoji: '🔥', image_key: C_KEY as string | null },
@@ -460,30 +460,28 @@ describe('art: phóng lớn khi ghép ra món lần đầu', () => {
     expect(live.some((el) => (el.textContent ?? '').includes(D))).toBe(true)
   })
 
-  it('AC-ART-08: chế độ Thử thách (Daily) cũng phóng lớn, không chặn thao tác và không đổi số bước (câu hỏi mở 31)', async () => {
+  it('AC-ART-08: ghép ra Món đặc biệt lần đầu trên nồi chính cũng phóng lớn và không chặn ghép tiếp', async () => {
     seed()
     await installNet()
+    // Chỉ trong test này: manifest công bố Món đặc biệt là H (kết quả của Cay + Deadline).
+    const base = fetchMock as unknown as typeof fetch
+    vi.stubGlobal('fetch', async (input: RequestInfo | URL) => {
+      const res = await base(input)
+      if (!urlOf(input).includes('/manifest')) return res
+      const m = (await res.json()) as Manifest
+      return json({ ...m, daily: { element_id: eid(H), emoji: '🍚', hint: 'Món cháy giòn', depth: 4 } })
+    })
     render(<Game />)
-    await screen.findByRole('region', { name: 'Món đặc biệt hôm nay' })
-    await waitFor(() => expect(pot().dataset.state).toBe('idle'), { timeout: 3000 })
-    fireEvent.click(screen.getByRole('button', { name: /thử thách/i }))
-    const board = await screen.findByRole('region', { name: 'Bàn thử thách' })
-    const ch = (label: string) => within(board).getByRole('button', { name: label })
-    const steps = () => Number(/Bước: (\d+)/.exec(board.textContent ?? '')![1])
+    await screen.findByRole('list', { name: 'Đĩa nhúng' })
+    await waitFor(() => expect(pot().dataset.state).toBe('idle'))
 
-    fireEvent.click(ch('🌶️ Cay'))
-    fireEvent.click(ch('⏰ Deadline'))
-    await waitFor(() => expect(pot().dataset.state).toBe('boiling'), { timeout: 3000 })
-    await advance(1100)
-    await waitFor(() => expect(pot().dataset.state).toBe('idle'), { timeout: 3000 })
-
+    await potCombine('Cay', 'Deadline')
     const overlay = await screen.findByTestId('discovery-zoom')
     expect(overlay.textContent).toContain(H)
-    expect(steps()).toBe(1)
 
     // không chặn: đặt tiếp một phần tử vào nồi khi lớp phủ còn hiện
-    fireEvent.click(ch('🌶️ Cay'))
+    drag(plateItem('Cay'), slot(1))
     expect(slot(1).textContent ?? '').toContain('Cay')
-    expect(steps()).toBe(1)
+    expect(zoom()).not.toBeNull()
   })
 })

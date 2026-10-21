@@ -161,7 +161,6 @@ def test_ac_art_01_ten_nam_trong_danh_sach_chan_bi_danh_khong_vao_prompt(name):
     """AC-ART-01: tên phần tử trùng danh sách chặn bí danh (so khớp không dấu,
     hoa thường) không xuất hiện trong prompt."""
     from lau_meme_pipeline.art import build_prompt
-
     from lau_meme_pipeline.moderation import ModLists
 
     prompt = build_prompt(HINT, name, ModLists(aliases=frozenset({"abc xyz"})))
@@ -325,8 +324,9 @@ def test_ac_art_03_dot_sau_ve_bu_cac_phan_tu_cho_ve_va_het_cho():
 
 def test_ac_art_04_chuyen_webp_256x256():
     """AC-ART-04: ảnh đạt kiểm duyệt (PNG bất kỳ cỡ) được chuyển thành WebP đúng 256x256."""
-    from lau_meme_pipeline.art import to_webp_256
     from PIL import Image
+
+    from lau_meme_pipeline.art import to_webp_256
 
     for size in ((512, 300), (1024, 1024), (100, 400)):
         out = to_webp_256(png_bytes(size))
@@ -389,7 +389,6 @@ def test_ac_art_04_phan_tu_luu_khoa_anh_va_graph_chua_khoa_trong_ket_qua_ma_hoa(
     """AC-ART-04: phần tử lưu khóa ảnh; graph xuất ra chứa image_key trong kết quả giải mã được,
     phần tử khác vẫn None."""
     from lau_meme_pipeline.art import apply_images, draw_images, save_image
-
     from lau_meme_pipeline.graph import decrypt_entry, export_graph
     from lau_meme_pipeline.ids import element_id
     from lau_meme_pipeline.seed import ContentStore, load_core
