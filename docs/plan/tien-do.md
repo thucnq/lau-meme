@@ -1,17 +1,17 @@
 # Tiến độ — ƯỚC LƯỢNG - LẨU MEME
 
 > Sinh bởi `/dk:plan` (gen-plan.py) từ `docs/estimate/items.json`. **Người sửa trực tiếp file này**: dấu `[x]` (hạng mục hoặc AC), `tiến độ: N%`, `người`, `bắt đầu`, `xong` (YYYY-MM-DD), `ghi chú` — giữ nguyên dấu ` · ` giữa các trường. Chạy lại `/dk:plan` để tính dự báo và vẽ lại `gantt.html`. `KH` là kế hoạch gốc, chỉ đổi bằng `/dk:plan rebaseline`.
-> Bắt đầu dự án: 2026-10-20 · Kỹ sư: 1 (Thuc) · Giờ/tuần: 20 · Nghiệm thu KH: 2027-11-23 · Dự báo: 2028-02-10 · Cập nhật: 2026-10-21
+> Bắt đầu dự án: 2026-10-20 · Kỹ sư: 1 (Thuc) · Giờ/tuần: 20 · Nghiệm thu KH: 2027-11-23 · Dự báo: 2027-05-21 · Cập nhật: 2026-10-21
 
 
 ## Nền tảng
-- [ ] **NEN** Khởi tạo dự án & hạ tầng · 3đ · rủi ro: LOW · KH: 2026-10-20 → 2026-10-28 · tiến độ: 0% · người: Thuc · bắt đầu:  · xong:  · ghi chú: 
+- [x] **NEN** Khởi tạo dự án & hạ tầng · 3đ · rủi ro: LOW · KH: 2026-10-20 → 2026-10-28 · tiến độ: 100% · người: Thuc · bắt đầu: 2026-10-19 · xong: 2026-10-19 · ghi chú: 
   - [ ] AC-HEALTH-01 API sức khỏe
   - [ ] AC-HEALTH-02 Trang chủ hiện trạng thái máy chủ
   - [ ] AC-HEALTH-03 Khóa so khớp văn bản
 
 ## Nội dung
-- [ ] **SEED** Nạp lõi nội dung classic · 3đ · rủi ro: LOW · KH: 2026-10-29 → 2026-11-06 · tiến độ: 0% · người: Thuc · bắt đầu:  · xong:  · ghi chú: 
+- [x] **SEED** Nạp lõi nội dung classic · 3đ · rủi ro: LOW · KH: 2026-10-29 → 2026-11-06 · tiến độ: 100% · người: Thuc · bắt đầu: 2026-10-19 · xong: 2026-10-20 · ghi chú: 
   - [ ] AC-SEED-01 Nạp lõi hợp lệ
   - [ ] AC-SEED-02 Phần tử không tới được
   - [ ] AC-SEED-03 Trùng cặp
@@ -20,7 +20,7 @@
   - [ ] AC-SEED-06 Depth tính lại bằng BFS
   - [ ] AC-SEED-07 Ràng buộc tên
   - [ ] AC-SEED-08 Nạp lại idempotent
-- [ ] **GRAPH** Graph mã hóa + manifest + rollback · 6đ · rủi ro: MEDIUM · KH: 2026-11-09 → 2026-11-26 · tiến độ: 0% · người: Thuc · bắt đầu:  · xong:  · ghi chú: 
+- [x] **GRAPH** Graph mã hóa + manifest + rollback · 6đ · rủi ro: MEDIUM · KH: 2026-11-09 → 2026-11-26 · tiến độ: 100% · người: Thuc · bắt đầu: 2026-10-19 · xong: 2026-10-19 · ghi chú: 
   - [ ] AC-GRAPH-01 Khóa tra cứu là băm của cặp tên đã chuẩn hóa
   - [ ] AC-GRAPH-02 Kết quả mã hóa bằng khóa dẫn xuất từ 2 tên đầu vào
   - [ ] AC-GRAPH-03 Graph công khai không lộ tên kết quả
@@ -31,7 +31,7 @@
   - [ ] AC-GRAPH-08 Manifest chưa có
 
 ## Trò chơi
-- [ ] **GAME** Chơi ghép (Nhúng lẩu) · 13.5đ · rủi ro: MEDIUM · KH: 2026-11-27 → 2027-01-05 · tiến độ: 0% · người: Thuc · bắt đầu:  · xong:  · ghi chú: 
+- [x] **GAME** Chơi ghép (Nhúng lẩu) · 13.5đ · rủi ro: MEDIUM · KH: 2026-11-27 → 2027-01-05 · tiến độ: 100% · người: Thuc · bắt đầu: 2026-10-20 · xong: 2026-10-20 · ghi chú: 
   - [ ] AC-GAME-01 Bàn chơi lần đầu
   - [ ] AC-GAME-02 Nhúng lẩu qua nồi - ghép thành công
   - [ ] AC-GAME-03 Thả chồng trên mặt bàn
@@ -52,7 +52,7 @@
   - [ ] AC-GAME-18 Nồi lẩu nằm trong màn hình đầu tiên (thêm 2026-10-21)
 
 ## Nội dung
-- [ ] **PIPE** Pipeline Mẻ nhúng - chế độ lõi (giai đoạn 1) · 5đ · rủi ro: MEDIUM · KH: 2027-01-06 → 2027-01-20 · tiến độ: 0% · người: Thuc · bắt đầu:  · xong:  · ghi chú: 
+- [x] **PIPE** Pipeline Mẻ nhúng - chế độ lõi (giai đoạn 1) · 5đ · rủi ro: MEDIUM · KH: 2027-01-06 → 2027-01-20 · tiến độ: 100% · người: Thuc · bắt đầu: 2026-10-20 · xong: 2026-10-21 · ghi chú: 
   - [ ] AC-PIPE-01 Chế độ lõi (giai đoạn 1)
   - [ ] AC-PIPE-02 Lịch chạy và chạy tay
   - [ ] AC-PIPE-11 Lỗi giữa chừng không đăng gì
@@ -60,7 +60,7 @@
   - [ ] AC-PIPE-14 Báo cáo đợt qua GitHub Issue
 
 ## Vận hành
-- [ ] **PRIV** Chính sách quyền riêng tư · 6đ · rủi ro: HIGH · KH: 2027-01-21 → 2027-02-16 · tiến độ: 0% · người: Thuc · bắt đầu:  · xong:  · ghi chú: 
+- [x] **PRIV** Chính sách quyền riêng tư · 6đ · rủi ro: HIGH · KH: 2027-01-21 → 2027-02-16 · tiến độ: 100% · người: Thuc · bắt đầu: 2026-10-20 · xong: 2026-10-20 · ghi chú: 
   - [ ] AC-PRIV-01 Trang chính sách
   - [ ] AC-PRIV-02 Đồng ý trước khi gửi dữ liệu
   - [ ] AC-PRIV-03 Lưu bằng chứng đồng ý
@@ -72,7 +72,7 @@
   - [ ] AC-PRIV-09 Chính sách đổi version
 
 ## Cộng đồng
-- [ ] **DISC** Công thức gia truyền · 6.5đ · rủi ro: HIGH · KH: 2027-02-17 → 2027-03-09 · tiến độ: 0% · người: Thuc · bắt đầu:  · xong:  · ghi chú: 
+- [x] **DISC** Công thức gia truyền · 6.5đ · rủi ro: HIGH · KH: 2027-02-17 → 2027-03-09 · tiến độ: 100% · người: Thuc · bắt đầu: 2026-10-20 · xong: 2026-10-20 · ghi chú: 
   - [ ] AC-DISC-01 Sinh UUID cục bộ
   - [ ] AC-DISC-02 Đặt nickname hợp lệ
   - [ ] AC-DISC-03 Nickname bị từ chối
@@ -87,7 +87,7 @@
   - [ ] AC-DISC-12 Đầu vào sai định dạng
 
 ## Trò chơi
-- [ ] **DAILY** Món đặc biệt hôm nay · 9đ · rủi ro: MEDIUM · KH: 2027-03-10 → 2027-04-06 · tiến độ: 0% · người: Thuc · bắt đầu:  · xong:  · ghi chú: 
+- [x] **DAILY** Món đặc biệt hôm nay · 9đ · rủi ro: MEDIUM · KH: 2027-03-10 → 2027-04-06 · tiến độ: 100% · người: Thuc · bắt đầu: 2026-10-20 · xong: 2026-10-21 · ghi chú: 
   - [ ] AC-DAILY-01 Chọn Món đặc biệt
   - [ ] AC-DAILY-02 Không có ứng viên nào
   - [ ] AC-DAILY-03 Công bố món không lộ tên
@@ -137,7 +137,7 @@
   - [ ] AC-SHARE-06 Ghi sự kiện chia sẻ
 
 ## An toàn
-- [ ] **REPORT** Báo cáo + chặn nóng · 5.5đ · rủi ro: MEDIUM · KH: 2027-04-20 → 2027-05-07 · tiến độ: 0% · người: Thuc · bắt đầu:  · xong:  · ghi chú: 
+- [x] **REPORT** Báo cáo + chặn nóng · 5.5đ · rủi ro: MEDIUM · KH: 2027-04-20 → 2027-05-07 · tiến độ: 100% · người: Thuc · bắt đầu: 2026-10-20 · xong: 2026-10-20 · ghi chú: 
   - [ ] AC-REPORT-01 Báo cáo phần tử
   - [ ] AC-REPORT-02 Báo cáo không hợp lệ
   - [ ] AC-REPORT-03 Một UUID chỉ tính một lần
@@ -147,7 +147,7 @@
   - [ ] AC-REPORT-07 Client áp danh sách chặn khi khởi động
   - [ ] AC-REPORT-08 Giới hạn tần suất báo cáo
   - [ ] AC-REPORT-09 Phần tử bị ẩn và các công thức liên quan
-- [ ] **ADMIN** Trang quản trị tối giản · 6đ · rủi ro: MEDIUM · KH: 2027-05-10 → 2027-05-27 · tiến độ: 0% · người: Thuc · bắt đầu:  · xong:  · ghi chú: 
+- [x] **ADMIN** Trang quản trị tối giản · 6đ · rủi ro: MEDIUM · KH: 2027-05-10 → 2027-05-27 · tiến độ: 100% · người: Thuc · bắt đầu: 2026-10-20 · xong: 2026-10-20 · ghi chú: 
   - [ ] AC-ADMIN-01 Thiếu hoặc sai token
   - [ ] AC-ADMIN-02 Chống dò token
   - [ ] AC-ADMIN-03 Ẩn / hiện phần tử có hiệu lực ngay
@@ -170,7 +170,7 @@
   - [ ] AC-METRIC-07 Dọn sự kiện quá hạn
 
 ## Kiểm thử
-- [ ] **INV** Bất biến nội dung và trò chơi · 6đ · rủi ro: HIGH · KH: 2027-06-11 → 2027-06-30 · tiến độ: 0% (theo AC) · người: Thuc · bắt đầu:  · xong:  · ghi chú: 
+- [x] **INV** Bất biến nội dung và trò chơi · 6đ · rủi ro: HIGH · KH: 2027-06-11 → 2027-06-30 · tiến độ: 100% · người: Thuc · bắt đầu: 2026-10-20 · xong: 2026-10-20 · ghi chú: 
   - [ ] AC-INV-01 Ghép đối xứng
   - [ ] AC-INV-02 Mỗi cặp tối đa một kết quả
   - [ ] AC-INV-03 Mọi phần tử hoạt động đều tới được, depth = BFS
@@ -185,7 +185,7 @@
   - [ ] AC-INV-12 Tỉ lệ ghép trượt khi chơi ngẫu nhiên
 
 ## Nền tảng
-- [ ] **SUBPATH** Chạy dưới đường dẫn con dinoduct.fun/lau-meme · 4đ · rủi ro: MEDIUM · KH: 2027-07-01 → 2027-07-13 · tiến độ: 0% (theo AC) · người: Thuc · bắt đầu:  · xong:  · ghi chú: 
+- [x] **SUBPATH** Chạy dưới đường dẫn con dinoduct.fun/lau-meme · 4đ · rủi ro: MEDIUM · KH: 2027-07-01 → 2027-07-13 · tiến độ: 100% · người: Thuc · bắt đầu: 2026-10-20 · xong: 2026-10-20 · ghi chú: 
   - [ ] AC-SUBPATH-01 Một nguồn tiền tố, route đúng
   - [ ] AC-SUBPATH-02 API dưới tiền tố
   - [ ] AC-SUBPATH-03 Thiếu dấu gạch chéo cuối
@@ -221,7 +221,7 @@
   - [ ] AC-GAME-18 Nồi lẩu nằm trong màn hình đầu tiên (thêm 2026-10-21)
 
 ## Nội dung
-- [ ] **MOD** Kiểm duyệt nội dung tự động (giai đoạn 2) · 9đ · rủi ro: HIGH · KH: 2027-08-05 → 2027-09-01 · tiến độ: 0% · người: Thuc · bắt đầu:  · xong:  · ghi chú: 
+- [x] **MOD** Kiểm duyệt nội dung tự động (giai đoạn 2) · 9đ · rủi ro: HIGH · KH: 2027-08-05 → 2027-09-01 · tiến độ: 100% · người: Thuc · bắt đầu: 2026-10-20 · xong: 2026-10-20 · ghi chú: 
   - [ ] AC-MOD-01 Lớp 1 - danh sách từ cấm
   - [ ] AC-MOD-02 Lớp 2 - LLM phân loại theo danh mục
   - [ ] AC-MOD-03 Không chắc thì loại
