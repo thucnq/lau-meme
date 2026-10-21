@@ -32,7 +32,7 @@
   "r2_buckets": [{ "binding": "IMG", "bucket_name": "lau-meme-img" }],
   // Daily retention job 03:00 GMT+7 (ADR 0004, AC-PRIV-06). Not inherited by env.staging: declared there too.
   "triggers": { "crons": ["0 20 * * *"] },
-  "vars": { "APP_ENV": "production", "POLICY_VERSION": "1", "BASE_PATH": "/lau-meme", "ADMIN_HOST": "laumeme-admin.dinoduct.fun" },
+  "vars": { "APP_ENV": "production", "POLICY_VERSION": "1", "BASE_PATH": "/lau-meme", "ADMIN_HOST": "laumeme-admin.dinoduct.fun", "GOOGLE_CLIENT_ID": "983893414114-5s71asl52rc0c5o5pffdnbfa1n0uc2r1.apps.googleusercontent.com" },
   "env": {
     "staging": {
       "name": "lau-meme-staging",
@@ -45,7 +45,7 @@
       ],
       "r2_buckets": [{ "binding": "IMG", "bucket_name": "lau-meme-img-staging" }],
       "triggers": { "crons": ["0 20 * * *"] },
-      "vars": { "APP_ENV": "staging", "POLICY_VERSION": "1", "BASE_PATH": "/lau-meme", "ADMIN_HOST": "laumeme-admin-staging.dinoduct.fun" }
+      "vars": { "APP_ENV": "staging", "POLICY_VERSION": "1", "BASE_PATH": "/lau-meme", "ADMIN_HOST": "laumeme-admin-staging.dinoduct.fun", "GOOGLE_CLIENT_ID": "983893414114-4fqirgtmr60j2ae9mumhtuuthr31vl4c.apps.googleusercontent.com" }
     }
   }
 }

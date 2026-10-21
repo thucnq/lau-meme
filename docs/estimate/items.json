@@ -59,8 +59,8 @@
       "id": "GAME",
       "module": "Trò chơi",
       "name": "Chơi ghép (Nhúng lẩu)",
-      "desc": "GAME · AC-GAME-01..17 · nồi lẩu kéo thả chuột/cảm ứng, Đĩa nhúng tìm không dấu + sắp xếp, Nồi trào, gợi ý, nhãn MỚI, lưu cục bộ, chế độ tối, hướng dẫn, < 50 ms, đổi version giữ tiến độ",
-      "points": 12,
+      "desc": "GAME · AC-GAME-01..18 · nồi lẩu kéo thả chuột/cảm ứng, Đĩa nhúng tìm không dấu + sắp xếp, Nồi trào, gợi ý, nhãn MỚI, lưu cục bộ, chế độ tối, hướng dẫn, < 50 ms, đổi version giữ tiến độ; AC-GAME-18 nồi lẩu trong màn hình đầu tiên, đo bằng Vitest browser mode + Playwright (thêm 2026-10-21)",
+      "points": 13.5,
       "deps": [
         "GRAPH"
       ],
@@ -127,7 +127,7 @@
       "id": "DAILY",
       "module": "Trò chơi",
       "name": "Món đặc biệt hôm nay",
-      "desc": "DAILY · AC-DAILY-01..13 · chọn món depth [4, 8], bàn thử thách đếm bước, server kiểm đường ghép, bảng xếp hạng đợt, streak + bảng streak, đồng hồ theo manifest",
+      "desc": "DAILY · AC-DAILY-01..14 (bản cũ, đã làm) · chọn món depth [4, 8], bàn thử thách đếm bước, server kiểm đường ghép, bảng xếp hạng đợt, streak + bảng streak, đồng hồ theo manifest",
       "points": 9,
       "deps": [
         "DISC",
@@ -137,18 +137,56 @@
         "AC-DAILY"
       ],
       "risk": "MEDIUM",
-      "owner": "Thuc",
-      "open": true,
-      "question": "Thử thách Daily chơi trên bàn riêng từ 4 phần tử khởi đầu, hay dùng Đĩa hiện có? (open-questions #3 - mặc định: bàn riêng)"
+      "owner": "Thuc"
+    },
+    {
+      "id": "AUTH",
+      "module": "Cộng đồng",
+      "name": "Đăng nhập bằng Google",
+      "desc": "AUTH · AC-AUTH-01..07 · Google Identity Services, Worker kiểm ID token (JWKS, aud/iss/exp), tài khoản = HMAC(sub), phiên cookie HttpOnly 90 ngày, nhiều máy, đăng xuất, xóa tài khoản + chính sách, giới hạn tần suất (thêm 2026-10-21)",
+      "points": 8.5,
+      "deps": [
+        "PRIV"
+      ],
+      "ac": [
+        "AC-AUTH"
+      ],
+      "risk": "HIGH",
+      "owner": "Thuc"
+    },
+    {
+      "id": "DAILY2",
+      "module": "Trò chơi",
+      "name": "Món đặc biệt - làm lại theo thời gian và tài khoản",
+      "desc": "DAILY · AC-DAILY-04..11, 14, 15 (đổi 2026-10-21) · bỏ bàn thử thách và đếm bước, ghép ra món trên bàn lẩu là giải, nộp cặp + server kiểm, solved_at do server ghi, bảng mẻ theo thời điểm, bảng tuần/tháng GMT+7 (số mẻ giải rồi tổng thời gian, xem lùi 3 tháng), streak theo tài khoản, migration expand-only",
+      "points": 8.5,
+      "deps": [
+        "DAILY",
+        "AUTH"
+      ],
+      "ac": [
+        "AC-DAILY-04",
+        "AC-DAILY-05",
+        "AC-DAILY-06",
+        "AC-DAILY-07",
+        "AC-DAILY-08",
+        "AC-DAILY-09",
+        "AC-DAILY-10",
+        "AC-DAILY-11",
+        "AC-DAILY-14",
+        "AC-DAILY-15"
+      ],
+      "risk": "MEDIUM",
+      "owner": "Thuc"
     },
     {
       "id": "SHARE",
       "module": "Cộng đồng",
       "name": "Thẻ chia sẻ",
-      "desc": "SHARE · AC-SHARE-01..06 · thẻ Daily chữ + PNG nồi lẩu tạo ở client, thẻ Công thức gia truyền, sao chép / chia sẻ hệ thống, ghi sự kiện",
+      "desc": "SHARE · AC-SHARE-01..06 · thẻ Daily chữ + PNG (thời gian giải và hạng thay số bước, 2026-10-21) nồi lẩu tạo ở client, thẻ Công thức gia truyền, sao chép / chia sẻ hệ thống, ghi sự kiện",
       "points": 4,
       "deps": [
-        "DAILY"
+        "DAILY2"
       ],
       "ac": [
         "AC-SHARE"
@@ -210,7 +248,7 @@
       "desc": "INV · AC-INV-01..12 · kiểm thuộc tính trên bộ dữ liệu vàng: đối xứng, tới được, graph không lộ, idempotent, chèn lỗi từng bước, mô phỏng tỉ lệ trượt; chạy mỗi đợt",
       "points": 6,
       "deps": [
-        "DAILY",
+        "DAILY2",
         "REPORT",
         "PIPE"
       ],
@@ -240,8 +278,8 @@
       "id": "UAT",
       "module": "Kiểm thử",
       "name": "Kiểm thử nghiệm thu & sửa lỗi (giai đoạn 1)",
-      "desc": "15% điểm tính năng giai đoạn 1; chạy cron chế độ lõi vài ngày trên staging, kiểm trên 2–3 điện thoại",
-      "points": 11.5,
+      "desc": "15% điểm tính năng giai đoạn 1; chạy cron chế độ lõi vài ngày trên staging, kiểm trên 2–3 điện thoại; gồm thêm AUTH, DAILY làm lại, AC-GAME-18",
+      "points": 14,
       "deps": [
         "*"
       ],
@@ -307,7 +345,7 @@
       "id": "ART",
       "module": "Nội dung",
       "name": "Ảnh minh họa tự tạo (giai đoạn 2)",
-      "desc": "ART · AC-ART-01..07 · Workers AI FLUX.1 schnell, kiểm duyệt ảnh Gemini, vẽ lại 1 lần rồi về emoji, R2 + Cache API immutable, client hiện emoji trước",
+      "desc": "ART · AC-ART-01..08 · Workers AI FLUX.1 schnell, kiểm duyệt ảnh Gemini, vẽ lại 1 lần rồi về emoji, R2 + Cache API immutable, client hiện emoji trước, phóng lớn khi ghép ra món lần đầu",
       "points": 7,
       "deps": [
         "MOD"
@@ -318,7 +356,7 @@
       "risk": "HIGH",
       "owner": "Thuc",
       "open": true,
-      "question": "R2 có đòi khai báo thẻ thanh toán không; hạn mức Workers AI gói free hiện hành? (open-questions #13 - mặc định: R2, nếu bị đòi thẻ thì đóng gói ảnh làm static assets)"
+      "question": "Hạn mức Workers AI gói free hiện hành (R2 đã chốt 2026-10-21, không đòi thẻ)"
     },
     {
       "id": "UAT2",

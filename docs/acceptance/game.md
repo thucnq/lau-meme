@@ -104,3 +104,10 @@
 - **Khi** client tải V2
 - **Thì** mọi phần tử đã khám phá vẫn còn trong Đĩa (trừ phần tử bị chặn - AC-GAME-15); tra cứu dùng graph V2; không hỏi người chơi gì
 - Ưu tiên: Bắt buộc
+
+### AC-GAME-18: Nồi lẩu nằm trong màn hình đầu tiên (thêm 2026-10-21)
+- **Cho** thực khách mở trang lần đầu (đã đóng hướng dẫn) ở các khung nhìn 1366×768 (PC), 1024×768 và 768×1024 (tablet), 390×844 và 360×640 (mobile), thẻ Món đặc biệt đang hiện
+- **Khi** trang vừa tải xong, chưa cuộn
+- **Thì** toàn bộ nồi lẩu (2 chỗ thả) nằm trọn trong khung nhìn; trên mobile Đĩa nhúng có thể nằm dưới nồi và phải cuộn mới thấy; chiều cao mặt bàn co theo khung nhìn thay vì cố định. Kiểm bằng Vitest browser mode với Playwright (Chromium thật) đo hộp bao của nồi ở cả 5 khung nhìn, vì jsdom không tính bố cục; test vẫn chạy qua `vitest -t AC-GAME-18` như các test khác (chốt 2026-10-21)
+- Ưu tiên: Bắt buộc
+

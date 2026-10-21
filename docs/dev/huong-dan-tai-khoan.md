@@ -1,10 +1,10 @@
-# Hướng dẫn tài khoản Cloudflare - dinoduct.fun (người làm)
+# Hướng dẫn tài khoản Cloudflare và Google - dinoduct.fun (người làm)
 
 > Các bước trong file này **chỉ người làm**, trên dashboard Cloudflare hoặc bằng lệnh production. Agent không làm thay được: guard hook chặn `wrangler deploy` không kèm `--env staging`.
 > Bối cảnh: Q15 và ADR 0007. Zone `dinoduct.fun` mua qua Cloudflare Registrar, lúc viết hướng dẫn **chưa có bản ghi DNS nào**.
 > Tài liệu Cloudflare thay đổi thường xuyên. Tên menu bên dưới đúng vào ngày viết (2026-10-20); nếu dashboard khác đi thì làm theo ý của bước, đừng làm theo chữ.
 
-Thứ tự nên làm: 1 → 3 → deploy staging (`/dk:ship staging`) → 2 → 4 → 5. Mục 6 (R2) làm trước khi build ART ở giai đoạn 2.
+Thứ tự nên làm: 1 → 3 → deploy staging (`/dk:ship staging`) → 2 → 4 → 5. Mục 6 (R2) làm trước khi build ART ở giai đoạn 2. Mục 7 (Google OAuth) làm trước khi build AUTH.
 
 ## 1. Bản ghi DNS cho host chỉ có Worker
 Route Worker chỉ chạy khi host phân giải **qua proxy Cloudflare** (đám mây cam). Game không có máy chủ gốc, nên dùng bản ghi "không origin": AAAA trỏ `100::`, dải IPv6 dùng để loại bỏ (RFC 6666), không bao giờ có máy chủ nào trả lời ở địa chỉ này.
@@ -231,3 +231,68 @@ Sau khi deploy bản có ART:
 curl -s -o /dev/null -w '%{http_code}\n' https://staging.dinoduct.fun/lau-meme/img/000000000000.webp   # 404 (khóa không có)
 curl -s -o /dev/null -w '%{http_code}\n' https://staging.dinoduct.fun/lau-meme/img/abc.png            # 400 (sai định dạng)
 ```
+
+## 7. Google OAuth client ID - đăng nhập Google (AUTH)
+Dùng cho AUTH (`docs/acceptance/auth.md`, câu hỏi mở 33). Game dùng **Google Identity Services** (nút "Đăng nhập bằng Google"): trình duyệt nhận **ID token** từ Google rồi gửi cho Worker, Worker kiểm chữ ký bằng khóa công khai của Google. Không có redirect OAuth và không dùng client secret, nên chỉ cần **client ID** (công khai) và **Authorized JavaScript origins**.
+Tên menu đúng vào ngày viết (2026-10-21). Google đang đổi tên "OAuth consent screen" thành **Google Auth Platform**; nếu menu khác thì làm theo ý của bước.
+
+### 7.1. Tạo project
+1. Vào https://console.cloud.google.com bằng tài khoản Google sẽ quản lý game.
+2. Thanh trên cùng → chọn project → **New project**. Tên: `lau-meme`. Organization: để "No organization" nếu là tài khoản cá nhân → **Create**.
+3. Chọn project `lau-meme` vừa tạo. Không cần bật API nào: kiểm ID token không gọi Google API.
+
+### 7.2. Màn hình xin quyền (Google Auth Platform)
+1. Menu ☰ → **APIs & Services → OAuth consent screen** (hoặc **Google Auth Platform → Branding**) → **Get started**.
+2. **App information**: App name `Lẩu Meme`, User support email là email của bạn.
+3. **Audience**: chọn **External** (người chơi là bất kỳ tài khoản Google nào).
+4. **Contact information**: email của bạn → đồng ý điều khoản → **Create**.
+5. **Branding** (bổ sung, cần để xuất bản):
+   - Application home page: `https://dinoduct.fun/lau-meme/`
+   - Application privacy policy link: `https://dinoduct.fun/lau-meme/chinh-sach`
+   - Authorized domains: `dinoduct.fun`
+   - Logo: bỏ trống. Có logo thì Google bắt xác minh thương hiệu, mất vài ngày.
+6. **Data Access** (Scopes): chỉ để 3 scope mặc định `openid`, `.../auth/userinfo.email`, `.../auth/userinfo.profile`. **Không thêm scope nào khác.** Đây là scope "non-sensitive" nên không cần Google duyệt. Worker chỉ đọc `sub` trong ID token, bỏ qua email và tên (AC-AUTH-01).
+7. **Audience → Publishing status**: bấm **Publish app** để chuyển từ Testing sang **In production**. Ở Testing chỉ tối đa 100 "test users" thêm tay mới đăng nhập được. Với 3 scope mặc định và không có logo, xuất bản không phải chờ Google duyệt.
+
+### 7.3. Tạo client ID
+Tạo **hai** client: một cho production, một cho staging và máy local. Tách ra để sửa origin của staging không đụng production.
+1. **Clients** (hoặc **APIs & Services → Credentials → Create credentials → OAuth client ID**) → **Create client**.
+2. Application type: **Web application**.
+3. Client production:
+   - Name: `lau-meme-production`
+   - Authorized JavaScript origins: `https://dinoduct.fun`
+   - Authorized redirect URIs: **để trống** (không có redirect)
+4. Client staging:
+   - Name: `lau-meme-staging`
+   - Authorized JavaScript origins: `https://staging.dinoduct.fun`, `http://localhost`, `http://localhost:5173`, `http://localhost:8787`
+   - Authorized redirect URIs: để trống
+5. Origin chỉ gồm scheme + host (+ cổng), **không có đường dẫn** `/lau-meme`, không có dấu `/` ở cuối.
+6. Mỗi client hiện **Client ID** dạng `123456789012-abc...apps.googleusercontent.com`. Client ID **không phải bí mật** (nằm trong mã web gửi cho mọi người). Màn hình có thể hiện cả **Client secret**: không dùng, không chép đi đâu.
+7. Origin mới có thể mất 5 phút tới vài giờ mới có hiệu lực. Nếu nút báo `origin_mismatch` hoặc `The given origin is not allowed` thì đợi rồi thử lại.
+
+### 7.4. Đưa client ID vào cấu hình
+Client ID công khai nên để trong `worker/wrangler.jsonc` vars, mỗi môi trường một giá trị; web lấy từ Worker. Tên biến và cách web nhận do `/dk:design` chốt (ADR đăng nhập Google), dự kiến:
+```jsonc
+// top-level (production)
+"vars": { ..., "GOOGLE_CLIENT_ID": "<client ID của lau-meme-production>" },
+// env.staging
+"vars": { ..., "GOOGLE_CLIENT_ID": "<client ID của lau-meme-staging>" }
+```
+Đã tạo và điền ngày 2026-10-21: production `983893414114-5s71asl52rc0c5o5pffdnbfa1n0uc2r1.apps.googleusercontent.com`, staging `983893414114-4fqirgtmr60j2ae9mumhtuuthr31vl4c.apps.googleusercontent.com`.
+
+### 7.5. Khóa băm mã tài khoản (secret)
+Worker lưu HMAC-SHA256(`sub`) chứ không lưu `sub` thô (AC-AUTH-01). Khóa HMAC là **bí mật**, mỗi môi trường một khóa, **không đổi** sau khi đã có người đăng nhập (đổi khóa thì mọi tài khoản cũ thành tài khoản mới trống).
+```bash
+cd worker
+openssl rand -base64 32 | npx wrangler secret put ACCOUNT_HASH_KEY --env staging
+openssl rand -base64 32 | npx wrangler secret put ACCOUNT_HASH_KEY   # production: chỉ người làm (guard chặn agent)
+```
+- Lệnh dùng pipe nên khóa không hiện trên màn hình và không nằm lại trong lịch sử shell. Không cần chép khóa ra đâu khác: Cloudflare giữ nó.
+- Kiểm tra: `npx wrangler secret list --env staging` thấy tên `ACCOUNT_HASH_KEY` (không thấy giá trị).
+- Chạy local có đăng nhập (`npm --prefix worker run dev`): tự thêm `ACCOUNT_HASH_KEY=<chuỗi bất kỳ>` vào file biến local của Worker (agent không được đọc/ghi file đó). Test tự đặt khóa giả, không cần.
+
+### 7.6. Kiểm tra sau khi deploy bản có AUTH
+1. Mở `https://staging.dinoduct.fun/lau-meme/`, đồng ý gửi dữ liệu, bấm "Đăng nhập bằng Google", chọn tài khoản: giao diện hiện "Đã đăng nhập".
+2. DevTools → Application → Cookies: có cookie phiên với `HttpOnly`, `Secure`, `Path=/lau-meme`.
+3. Ghép ra Món đặc biệt → thẻ hiện "Hạng #…"; Bảng xếp hạng có dòng của bạn.
+4. Đăng xuất → bảng xếp hạng vẫn xem được, thẻ món mời đăng nhập lại.

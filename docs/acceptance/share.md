@@ -3,28 +3,27 @@
 > Giai đoạn 1. Component: web (tạo thẻ chữ và ảnh PNG ở client, không gọi server để vẽ). Không lộ đáp án.
 
 ### AC-SHARE-01: Thẻ Daily dạng chữ
-- **Cho** thực khách hoàn thành Món đặc biệt của mẻ 12:00 ngày 20/10 trong 7 bước, món có emoji 📈
+- **Cho** thực khách hoàn thành Món đặc biệt của mẻ 12:00 ngày 20/10 sau 1 giờ 05 phút kể từ lúc mẻ lên (thời gian giải do server tính, AC-DAILY-06), xếp hạng 12 trong mẻ, món có emoji 📈
 - **Khi** mở thẻ chia sẻ Daily
 - **Thì** chữ có dạng:
   ```
   Lẩu Meme 🍲 Món đặc biệt 20/10 · mẻ 12h
-  📈 sau 7 bước
-  <chuỗi emoji các bước>
+  📈 giải sau 1 giờ 05 phút · hạng #12
   <link trang chủ>?ref=daily
   ```
-  không chứa tên món đích và không chứa tên phần tử nào trên đường ghép
+  không chứa tên món đích và không chứa tên 2 phần tử đã ghép ra món; chưa nộp được kết quả (chưa đăng nhập) thì bỏ phần hạng
 - Ưu tiên: Bắt buộc
 
-### AC-SHARE-02: Chuỗi emoji các bước
-- **Cho** 7 bước gồm 5 lượt ra phần tử và 2 lượt trượt
+### AC-SHARE-02: Thời gian giải trên thẻ (cập nhật 2026-10-21, thay chuỗi emoji các bước)
+- **Cho** thời gian giải 45 phút 08 giây; và 26 giờ 3 phút (mẻ kéo dài)
 - **Khi** tạo thẻ Daily
-- **Thì** chuỗi có đúng 7 ký hiệu theo thứ tự: emoji của kết quả với lượt ghép được, 💨 với lượt trượt; bước cuối là emoji món đích; quá 30 bước thì chỉ hiện 30 ký hiệu đầu và "…"
+- **Thì** thẻ hiện "45 phút" và "26 giờ 03 phút" (làm tròn xuống phút, dưới 1 phút hiện "dưới 1 phút"); không còn chuỗi emoji các bước vì DAILY không đếm bước nữa
 - Ưu tiên: Bắt buộc
 
 ### AC-SHARE-03: Thẻ Daily dạng ảnh PNG
 - **Cho** cùng dữ liệu như AC-SHARE-01
 - **Khi** bấm "Lưu ảnh" / "Chia sẻ ảnh"
-- **Thì** client tạo PNG 1080×1080 hình nồi lẩu có: logo chữ "Lẩu Meme", ngày + mẻ, emoji món, số bước, chuỗi emoji, link; không chứa tên món và tên phần tử trên đường ghép
+- **Thì** client tạo PNG 1080×1080 hình nồi lẩu có: logo chữ "Lẩu Meme", ngày + mẻ, emoji món, thời gian giải, hạng (nếu có), link; không chứa tên món và tên 2 phần tử đã ghép
 - Ưu tiên: Bắt buộc
 
 ### AC-SHARE-04: Thẻ Công thức gia truyền

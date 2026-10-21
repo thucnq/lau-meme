@@ -1,7 +1,7 @@
 # Tiêu chí nghiệm thu - Món đặc biệt hôm nay (DAILY)
 
 > Giai đoạn 1. Component: pipeline (chọn món - logic thuần), worker (nhận kết quả, bảng xếp hạng, streak), web (thử thách, đếm bước, đồng hồ).
-> Thực khách gửi kèm UUID của mình (header) ở mọi yêu cầu ghi; chỉ người đã đồng ý gửi dữ liệu (AC-PRIV-02) mới nộp được kết quả.
+> Cập nhật 2026-10-21: bỏ bàn thử thách và đếm bước. Ghép ra Món đặc biệt ngay trên bàn lẩu là được ghi nhận; thời gian giải = thời điểm server nhận kết quả − `batch_at` của mẻ. Chỉ thực khách **đã đăng nhập Google** (AC-AUTH) mới nộp kết quả và có tên trên bảng xếp hạng; kết quả, streak, nickname thuộc về tài khoản.
 
 ### AC-DAILY-01: Chọn Món đặc biệt
 - **Cho** kho có phần tử trend mới (giai đoạn 2) và phần tử classic, cùng danh sách món đã từng chọn
@@ -21,50 +21,50 @@
 - **Thì** manifest có emoji, gợi ý mờ, depth và khóa băm của tên đã `fold`; không chứa tên "Stonks" dạng đọc được; thẻ Daily hiện emoji + gợi ý, tên hiện là "???"
 - Ưu tiên: Bắt buộc
 
-### AC-DAILY-04: Bàn thử thách và đếm bước
-- **Cho** thực khách chưa chơi Daily của mẻ hiện tại
-- **Khi** bấm "Thử thách", ghép 7 lượt trong đó 2 lượt trượt, và lượt thứ 7 ra món đích
-- **Thì** bàn thử thách bắt đầu từ 4 phần tử khởi đầu, tách khỏi Đĩa chính (mặc định - câu hỏi mở); bộ đếm hiện 7 bước; tên món lộ ra khi ghép được (so khóa băm); phần tử khám phá trên bàn thử thách cũng được thêm vào Đĩa chính
+### AC-DAILY-04: Ghép ra Món đặc biệt trên bàn lẩu
+- **Cho** mẻ V có Món đặc biệt "Stonks" (manifest chỉ có khóa băm, AC-DAILY-03); thực khách chưa giải V
+- **Khi** thực khách ghép bằng nồi lẩu hoặc thả chồng trên bàn (AC-GAME-02/04) một cặp ra đúng phần tử có khóa băm của món đích; kể cả khi "Stonks" đã có sẵn trong Đĩa từ trước (có sẵn mà không ghép lại trong mẻ thì chưa tính là giải - câu hỏi mở 36)
+- **Thì** lượt ghép đó được ghi nhận là đã giải V: thẻ Món đặc biệt lộ tên "Stonks" và hiện "Đã giải"; client gửi kết quả (AC-DAILY-06) nếu đã đăng nhập; không có bàn thử thách riêng, không đếm bước, ghép trượt không ảnh hưởng gì tới Món đặc biệt
 - Ưu tiên: Bắt buộc
 
-### AC-DAILY-05: Tiếp tục thử thách sau khi tải lại
-- **Cho** thực khách đang thử thách ở bước 4
-- **Khi** tải lại trang trong cùng mẻ
-- **Thì** bàn thử thách, các phần tử đã có trên bàn và bộ đếm 4 bước được khôi phục từ lưu trữ cục bộ; sang mẻ mới thì thử thách cũ đóng, bàn mới bắt đầu
+### AC-DAILY-05: Trạng thái đã giải giữ qua tải lại
+- **Cho** thực khách đã giải V nhưng kết quả chưa gửi được (chưa đăng nhập, mất mạng hoặc 429)
+- **Khi** tải lại trang trong cùng mẻ; và khi mẻ V+1 lên
+- **Thì** trong mẻ V thẻ vẫn hiện "Đã giải" kèm cặp đã ghép ra món (lưu cục bộ) và client thử gửi lại khi đã đăng nhập; sang mẻ V+1 thì trạng thái của V bị bỏ, thẻ mới hiện "???"
 - Ưu tiên: Bắt buộc
 
 ### AC-DAILY-06: Nộp kết quả hợp lệ
-- **Cho** đường ghép gồm các bước (a, b, kết quả), mỗi bước là công thức có thật trong version hiện hành, mỗi đầu vào là phần tử khởi đầu hoặc kết quả của bước trước, bước cuối ra món đích; số bước khai báo ≥ số bước của đường
-- **Khi** client gửi `POST` kết quả Daily cho version hiện hành
-- **Thì** trả 201 với số bước, hạng hiện tại trong đợt và streak mới; kết quả được lưu một lần cho (UUID, version)
+- **Cho** thực khách đã đăng nhập (phiên hợp lệ, AC-AUTH-02); cặp (a, b) là công thức có thật trong graph của version hiện hành V và ra đúng món đích
+- **Khi** client gửi `POST` kết quả Daily của V kèm a, b
+- **Thì** server lấy thời điểm nhận yêu cầu làm `solved_at` (không tin thời gian từ client), thời gian giải = `solved_at` − `batch_at` của V; trả 201 với thời gian giải, hạng hiện tại trong mẻ và streak mới; kết quả lưu một lần cho (tài khoản, V)
 - Ưu tiên: Bắt buộc
 
 ### AC-DAILY-07: Nộp kết quả không hợp lệ
-- **Cho** đường ghép có một bước không phải công thức có thật, hoặc dùng phần tử chưa có ở thời điểm đó, hoặc không kết thúc ở món đích, hoặc số bước khai báo nhỏ hơn số bước của đường, hoặc quá 200 bước
+- **Cho** cặp (a, b) không phải công thức có thật trong V, hoặc có thật nhưng không ra món đích
 - **Khi** gửi `POST` kết quả
-- **Thì** trả 422 problem+json nêu lỗi đầu tiên; không ghi gì; không đổi streak
+- **Thì** trả 422 problem+json; không ghi gì; không đổi streak
 - Ưu tiên: Bắt buộc
 
-### AC-DAILY-08: Nộp trùng và nộp cho mẻ đã qua
-- **Cho** UUID đã nộp cho version V; và một yêu cầu nộp cho version V−1 khi V đã là hiện hành
-- **Khi** gửi lại kết quả cho V; gửi kết quả cho V−1
-- **Thì** nộp lại trả 409 kèm kết quả đã lưu (không ghi đè); nộp cho mẻ đã qua trả 410; thiếu UUID hoặc UUID sai định dạng trả 400
+### AC-DAILY-08: Nộp trùng, nộp cho mẻ đã qua, chưa đăng nhập
+- **Cho** tài khoản đã nộp cho V; một yêu cầu nộp cho V−1 khi V đã là hiện hành; một yêu cầu không có phiên hoặc phiên hết hạn
+- **Khi** gửi các yêu cầu đó
+- **Thì** nộp lại trả 409 kèm kết quả đã lưu (không ghi đè, không đổi `solved_at`); nộp cho mẻ đã qua trả 410; không có phiên hợp lệ trả 401; tất cả dạng problem+json
 - Ưu tiên: Bắt buộc
 
-### AC-DAILY-09: Bảng xếp hạng đợt
-- **Cho** đợt V có 30 kết quả, có người hòa số bước, có người không đặt nickname
-- **Khi** gọi `GET` bảng xếp hạng của V (kèm UUID của mình hoặc không)
-- **Thì** trả tối đa 20 dòng: hạng, nickname (không có nickname → "Thực khách ẩn danh"), số bước; xếp theo số bước tăng dần, hòa thì ai nộp trước đứng trước; không có UUID của người khác trong phản hồi; nếu có UUID của mình thì kèm hạng của mình kể cả khi ngoài top 20; đợt chưa có kết quả trả danh sách rỗng
+### AC-DAILY-09: Bảng xếp hạng mẻ
+- **Cho** mẻ V có 30 kết quả, có người không đặt nickname
+- **Khi** gọi `GET` bảng xếp hạng của V (có phiên hoặc không)
+- **Thì** trả tối đa 20 dòng: hạng, nickname (không có → "Thực khách ẩn danh"), thời gian giải; xếp theo `solved_at` tăng dần (ai nộp trước đứng trước), hòa tới từng ms thì theo thứ tự ghi; không có mã tài khoản hay UUID của người khác trong phản hồi; có phiên thì kèm hạng của mình kể cả ngoài top 20; mẻ chưa có kết quả trả danh sách rỗng. Client hiện thời gian dạng "1 giờ 05 phút 12 giây" (dưới 1 giờ bỏ phần giờ)
 - Ưu tiên: Bắt buộc
 
 ### AC-DAILY-10: Streak
-- **Cho** thực khách hoàn thành ít nhất 1 Món đặc biệt vào các ngày 20, 21, 22/10 (ngày theo GMT+7 của `batch_at`), bỏ ngày 23, rồi hoàn thành ngày 24
+- **Cho** tài khoản giải ít nhất 1 Món đặc biệt vào các ngày 20, 21, 22/10 (ngày theo GMT+7 của `batch_at`), bỏ ngày 23, rồi giải ngày 24
 - **Khi** nộp kết quả mỗi ngày
-- **Thì** streak sau ngày 22 là 3; sau ngày 24 là 1; streak dài nhất lưu là 3; hoàn thành 2 món trong cùng một ngày chỉ tính 1 ngày (định nghĩa theo ngày - câu hỏi mở). `GET` streak của mình trả streak hiện tại (về 0 nếu ngày gần nhất hoàn thành cách hôm nay quá 1 ngày) và streak dài nhất
+- **Thì** streak sau ngày 22 là 3; sau ngày 24 là 1; streak dài nhất lưu là 3; giải 2 món trong cùng một ngày chỉ tính 1 ngày. `GET` streak của mình (cần phiên) trả streak hiện tại (về 0 nếu ngày gần nhất giải cách hôm nay quá 1 ngày) và streak dài nhất. Streak theo tài khoản, đăng nhập ở máy khác vẫn thấy cùng streak
 - Ưu tiên: Bắt buộc
 
 ### AC-DAILY-11: Bảng xếp hạng streak
-- **Cho** nhiều thực khách có streak hiện tại khác nhau
+- **Cho** nhiều tài khoản có streak hiện tại khác nhau
 - **Khi** gọi `GET` bảng xếp hạng streak
 - **Thì** trả tối đa 20 dòng: hạng, nickname (hoặc "Thực khách ẩn danh"), streak hiện tại; xếp giảm dần, hòa thì ai đạt trước đứng trước; streak 0 không xuất hiện
 - Ưu tiên: Bắt buộc
@@ -76,14 +76,19 @@
 - Ưu tiên: Bắt buộc
 
 ### AC-DAILY-13: Giới hạn tần suất nộp
-- **Cho** cùng UUID hoặc cùng IP băm gửi quá 10 yêu cầu nộp/phút (mặc định)
+- **Cho** cùng tài khoản hoặc cùng IP băm gửi quá 10 yêu cầu nộp/phút (mặc định)
 - **Khi** gửi yêu cầu thứ 11 trong phút
 - **Thì** trả 429 problem+json có `Retry-After`
 - Ưu tiên: Bắt buộc
 
-### AC-DAILY-14: Ghép thử thách qua nồi lẩu
-- **Cho** bàn thử thách đang mở với 4 phần tử khởi đầu; graph có Cay + Deadline = Tới Công Chuyện và không có công thức Cay + Cười
-- **Khi** bấm Cay rồi Cười trên bàn thử thách; bấm Cay rồi Cười lần nữa; rồi bấm Cay rồi Deadline
-- **Thì** mỗi món bấm được đặt vào chỗ thả trống tiếp theo của nồi lẩu trên mặt bàn (món đầu chỗ 1, món sau chỗ 2; nồi đang ngoài màn hình thì được cuộn vào tầm nhìn); đủ 2 món thì nồi sôi như AC-GAME-02 (tối đa 1,2 s, bấm trong lúc sôi bị bỏ qua) rồi 2 chỗ thả trống lại; trượt thì hiện câu Nồi trào theo cặp (AC-GAME-05) ở nồi, không kèm gợi ý; câu bị ẩn trong lúc nồi sôi nên lần trượt liên tiếp thứ 2 cũng hiện lại câu (kèm hiệu ứng như bàn lẩu); ghép được thì món mới hiện trên bàn thử thách và vào Đĩa chính (AC-DAILY-04); bộ đếm hiện 3 bước. Mặt bàn chính, Đĩa (ngoài món mới) và bộ đếm trượt của AC-GAME-06 không đổi
-- **Và** nồi đang chờ 1 món thử thách mà thả vào một món từ Đĩa nhúng hoặc mặt bàn (hoặc nồi đang chờ món Đĩa mà bấm món thử thách) thì món đang chờ bị bỏ ra, nồi chỉ còn món vừa thả; món thử thách không bao giờ được ghép với món Đĩa
+### AC-DAILY-14: Bảng xếp hạng tuần và tháng (thêm 2026-10-21)
+- **Cho** tuần lịch GMT+7 (00:00 thứ Hai → 00:00 thứ Hai sau) có 14 mẻ; A giải 14 mẻ, tổng thời gian 30 giờ; B giải 14 mẻ, tổng 20 giờ; C giải 12 mẻ, tổng 5 giờ; D giải 14 mẻ, tổng 20 giờ nhưng có kết quả cuối nộp sau B
+- **Khi** gọi `GET` bảng xếp hạng tuần (hoặc tháng lịch GMT+7, 00:00 ngày 1 → 00:00 ngày 1 tháng sau) của kỳ hiện tại hoặc một kỳ đã qua (tham số kỳ `2026-W43` / `2026-10`, xem lùi tối đa 3 tháng, quá thì 400)
+- **Thì** mẻ thuộc kỳ theo `batch_at` (GMT+7); xếp theo số mẻ đã giải giảm dần, rồi tổng thời gian giải tăng dần, rồi ai có kết quả cuối nộp trước đứng trước ⇒ B, D, A, C; mẻ không giải không cộng thời gian; trả tối đa 20 dòng: hạng, nickname, số mẻ đã giải / số mẻ trong kỳ, tổng thời gian; có phiên thì kèm hạng của mình; kỳ chưa có kết quả trả danh sách rỗng; kỳ mới bắt đầu là bảng mới
+- Ưu tiên: Bắt buộc
+
+### AC-DAILY-15: Bảng xếp hạng trên giao diện, chưa đăng nhập và bảng rỗng (thêm 2026-10-21)
+- **Cho** thực khách giải xong V khi chưa đăng nhập
+- **Khi** thẻ Món đặc biệt hiện "Đã giải"; thực khách bấm "Đăng nhập bằng Google" và đăng nhập thành công; rồi mở Bảng xếp hạng
+- **Thì** thẻ hiện lời mời "Đăng nhập bằng Google để lên bảng xếp hạng"; đăng nhập xong kết quả tự gửi ngay (không cần bấm thêm), `solved_at` là lúc server nhận (sau khi đăng nhập) và hiện "Hạng #… · Streak …"; Bảng xếp hạng có 3 thẻ "Mẻ này", "Tuần", "Tháng"; bảng rỗng hiện "Chưa có ai giải món này" (thẻ Tuần/Tháng: "Chưa có ai giải món nào trong kỳ"), không để trống; chưa đăng nhập vẫn xem được bảng, kèm dòng nhắc đăng nhập
 - Ưu tiên: Bắt buộc
