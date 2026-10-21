@@ -1,44 +1,37 @@
 // @vitest-environment jsdom
 /// <reference types="node" />
 /**
- * Acceptance tests cho docs/acceptance/daily.md, phần nối UI: AC-DAILY-03/04/05/06/08/09/12.
+ * Acceptance tests for docs/acceptance/daily.md, the DailyPanel UI: AC-DAILY-03/04/05/06/08/09/12/13/14/15.
+ * Model of 2026-10-21: no challenge board and no step counting; the result is posted automatically for a signed-in
+ * account once the Món đặc biệt is solved on the normal board.
  *
- * BỀ MẶT CÔNG KHAI MÀ TEST NÀY YÊU CẦU
- *   ./api:  submitDailyResult(version, {steps, path}, {storage, policyVersion}) -> {result, already}
- *             201 -> already:false; 409 -> already:true với result trong body problem; lỗi khác -> SendError(.status);
- *             chưa đồng ý -> ném lỗi, không fetch.
- *           getDailyLeaderboard(version, {storage, policyVersion}) -> {version, rows, me}; X-Player-Id chỉ khi đã đồng ý.
- *   ./DailyPanel: <DailyPanel manifest lookup onDiscover storage />
- *   Game: render <DailyPanel> sau khi tải manifest + graph; onDiscover của bàn thử thách thêm phần tử vào Đĩa chính.
+ * PUBLIC SURFACE THIS FILE REQUIRES
+ *   ./DailyPanel:  DailyPanel({ manifest, storage, solved }: { manifest: Manifest; storage: Storage | null; solved: SolvedDaily | null })
+ *     - card (aria-label "Món đặc biệt hôm nay"): emoji + hint + name "???" until `solved`, then `solved.name` and "Đã giải"
+ *     - solved + signed in: POST /daily/{v}/results { a, b } once, shows "Hạng #<rank> · Streak <current>"
+ *     - solved + signed out: shows "Đăng nhập bằng Google để lên bảng xếp hạng", sends nothing; after sign-in sends at once
+ *     - 429: "Gửi quá nhanh, thử lại sau."; 409: shows the stored rank; countdown line as AC-DAILY-12
+ *     - button "Bảng xếp hạng" opens a panel with role="tab" "Mẻ này" | "Tuần" | "Tháng"
+ *   ../auth/session: setCurrentSession(s | null), getCurrentSession(), useSession()
  */
 import { createHash, webcrypto } from 'node:crypto'
-import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
-import { SendError } from '../disc/api'
-import { initialProgress, saveProgress } from '../game/engine'
+import { setCurrentSession } from '../auth/session'
 import type { Manifest } from '../game/engine'
-import { Game } from '../game/Game'
 import { fold } from '../graph/crypto'
-import type { Graph, GraphResult } from '../graph/crypto'
 import { saveConsent } from '../privacy/consent'
 import { getPlayerId } from '../privacy/player'
-import { getDailyLeaderboard, submitDailyResult } from './api'
 import { DailyPanel } from './DailyPanel'
 
 // ---------------------------------------------------------------- fixtures
-const enc = new TextEncoder()
 const sha = (s: string): string => createHash('sha256').update(s, 'utf8').digest('base64url')
 const eid = (name: string): string => sha('lm1|e|' + fold(name))
-const T0 = new Date('2026-10-20T03:00:00.000Z')
+const T0 = new Date('2026-10-20T03:00:00.000Z') // W43 / 2026-10
 const VERSION = 7
-
-const CHAIN = [
-  { a: 'Cay', b: 'Cười', name: 'Tới Công Chuyện', emoji: '🔥' },
-  { a: 'Tới Công Chuyện', b: 'Deadline', name: 'Chạy Deadline', emoji: '🏃' },
-  { a: 'Chạy Deadline', b: 'Toang', name: 'Hết Cứu', emoji: '🆘' },
-  { a: 'Hết Cứu', b: 'Cay', name: 'Stonks', emoji: '📈' },
-  { a: 'Cay', b: 'Cay', name: 'Siêu Cay', emoji: '🥵' },
-]
+const SOLVED = { a: 'Hết Cứu', b: 'Cay', name: 'Stonks' }
+type SessionArg = Parameters<typeof setCurrentSession>[0]
+const SESSION = { nickname: null, created_at: '2026-10-20T02:00:00.000Z' } as unknown as SessionArg
 
 function manifestOf(version = VERSION, batchAt = '2026-10-20T00:00:00.000Z'): Manifest {
   return {
@@ -51,35 +44,10 @@ function manifestOf(version = VERSION, batchAt = '2026-10-20T00:00:00.000Z'): Ma
       { id: eid('Toang'), name: 'Toang', emoji: '💀' },
       { id: eid('Deadline'), name: 'Deadline', emoji: '⏰' },
     ],
-    miss_lines: Array.from({ length: 30 }, (_, i) => `Nồi trào kiểu ${i}, khét rồi!`),
+    miss_lines: ['Nồi trào kiểu 0, khét rồi!'],
     daily: { element_id: eid('Stonks'), emoji: '📈', hint: 'Món lên như diều gặp gió', depth: 4 },
     policy_version: 1,
   } as Manifest
-}
-
-const pairKey = (a: string, b: string): string => [fold(a), fold(b)].sort().join('|')
-const RESULTS = new Map(CHAIN.map((s) => [pairKey(s.a, s.b), { added_version: VERSION, depth: 1, emoji: s.emoji, id: eid(s.name), image_key: null, name: s.name } as GraphResult]))
-const lookup = async (a: string, b: string): Promise<GraphResult | null> => RESULTS.get(pairKey(a, b)) ?? null
-
-async function buildGraph(): Promise<Graph> {
-  const entries: Record<string, string> = {}
-  for (const s of CHAIN) {
-    const plain = RESULTS.get(pairKey(s.a, s.b))!
-    const [x, y] = [fold(s.a), fold(s.b)].sort()
-    const key = sha('lm1|k|' + x + '\0' + y)
-    const ikm = await webcrypto.subtle.importKey('raw', enc.encode(x + '\0' + y), 'HKDF', false, ['deriveBits'])
-    const okm = new Uint8Array(
-      await webcrypto.subtle.deriveBits(
-        { name: 'HKDF', hash: 'SHA-256', salt: enc.encode('lm1|graph|v' + VERSION), info: enc.encode('lm1|aes-gcm') },
-        ikm,
-        44 * 8,
-      ),
-    )
-    const aes = await webcrypto.subtle.importKey('raw', okm.slice(0, 32), 'AES-GCM', false, ['encrypt'])
-    const ct = await webcrypto.subtle.encrypt({ name: 'AES-GCM', iv: okm.slice(32), additionalData: enc.encode(key) }, aes, enc.encode(JSON.stringify(plain)))
-    entries[key] = Buffer.from(new Uint8Array(ct)).toString('base64url')
-  }
-  return { format: 1, version: VERSION, entries }
 }
 
 const json = (body: unknown, status = 200): Response =>
@@ -89,22 +57,22 @@ const methodOf = (input: RequestInfo | URL, init?: RequestInit): string => (init
 const headerOf = (input: RequestInfo | URL, init: RequestInit | undefined, name: string): string | null =>
   new Headers(init?.headers ?? (input instanceof Request ? input.headers : undefined)).get(name)
 
-const STORED = { version: VERSION, steps: 5, rank: 3, streak: { current: 2, longest: 4 }, submitted_at: '2026-10-20T03:10:00.000Z' }
+const STORED = { version: VERSION, solve_ms: 312_000, rank: 3, streak: { current: 2, longest: 4 }, solved_at: '2026-10-20T05:35:12.000Z' }
+const NEW_RESULT = { version: VERSION, solve_ms: 1_805_000, rank: 1, streak: { current: 1, longest: 1 }, solved_at: '2026-10-20T06:00:05.000Z' }
 let resultsReply: () => Response
-let leaderboardReply: () => Response
+let batchBoardReply: () => Response
+let periodBoardReply: (period: string) => Response
 let fetchMock: ReturnType<typeof vi.fn>
 
-function installNet(extra?: { graph?: Graph }): void {
+function installNet(): void {
   fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
     const url = urlOf(input)
     const method = methodOf(input, init)
     if (url.includes('/daily/') && url.endsWith('/results') && method === 'POST') return resultsReply()
-    if (url.includes('/daily/') && url.endsWith('/leaderboard') && method === 'GET') return leaderboardReply()
-    if (url.includes('/manifest')) return json(manifestOf())
-    if (url.includes('/graph/') && extra?.graph) return json(extra.graph)
-    if (url.includes('/blocklist')) return json({ elements: [], recipes: [], images: [] })
-    if (url.includes('/health')) return json({ status: 'ok', env: 'test', schema: '1' })
-    if (url.includes('/api/discoveries') && method === 'GET') return json({ items: [] })
+    if (url.includes('/daily/leaderboard') && method === 'GET') {
+      return periodBoardReply(new URL(url, 'https://example.com').searchParams.get('period') ?? '')
+    }
+    if (url.includes('/daily/') && url.endsWith('/leaderboard') && method === 'GET') return batchBoardReply()
     return new Response(null, { status: 204 })
   })
   vi.stubGlobal('fetch', fetchMock)
@@ -117,7 +85,8 @@ const calls = () =>
     body: (c[1] as RequestInit | undefined)?.body as string | undefined,
   }))
 const resultPosts = () => calls().filter((c) => c.method === 'POST' && c.url.includes('/daily/') && c.url.endsWith('/results'))
-const leaderboardGets = () => calls().filter((c) => c.method === 'GET' && c.url.includes('/daily/') && c.url.endsWith('/leaderboard'))
+const batchBoardGets = () => calls().filter((c) => c.method === 'GET' && c.url.includes(`/daily/${VERSION}/leaderboard`))
+const periodGets = () => calls().filter((c) => c.method === 'GET' && c.url.includes('/daily/leaderboard'))
 
 beforeAll(() => {
   vi.stubGlobal('crypto', webcrypto)
@@ -126,70 +95,65 @@ beforeEach(() => {
   vi.useFakeTimers({ shouldAdvanceTime: true })
   vi.setSystemTime(T0)
   localStorage.clear()
-  window.history.pushState({}, '', '/lau-meme/')
-  resultsReply = () => json({ ...STORED, steps: 5, rank: 1, streak: { current: 1, longest: 1 } }, 201)
-  leaderboardReply = () => json({ version: VERSION, rows: [], me: null })
+  resultsReply = () => json(NEW_RESULT, 201)
+  batchBoardReply = () => json({ version: VERSION, rows: [], me: null })
+  periodBoardReply = (period) =>
+    json({ period, starts_at: '2026-10-18T17:00:00.000Z', ends_at: '2026-10-25T17:00:00.000Z', batches: 0, rows: [], me: null })
   installNet()
-  Object.defineProperty(window, 'matchMedia', {
-    configurable: true,
-    writable: true,
-    value: (q: string) => ({ matches: false, media: q, onchange: null, addEventListener: () => {}, removeEventListener: () => {}, addListener: () => {}, removeListener: () => {}, dispatchEvent: () => false }),
-  })
+  act(() => setCurrentSession(null))
 })
 afterEach(() => {
   cleanup()
+  act(() => setCurrentSession(null))
   vi.useRealTimers()
   vi.unstubAllGlobals()
   vi.restoreAllMocks()
   vi.stubGlobal('crypto', webcrypto)
 })
 
-// ---------------------------------------------------------------- UI helpers
-const board = (): HTMLElement => screen.getByRole('region', { name: 'Bàn thử thách' })
-const el = (label: string): HTMLElement => within(board()).getByRole('button', { name: label })
-const counter = (n: number): HTMLElement => within(board()).getByText(`Bước: ${n}`)
-const NAMES: Record<string, string> = { Cay: '🌶️ Cay', Cười: '😂 Cười', Toang: '💀 Toang', Deadline: '⏰ Deadline' }
-for (const s of CHAIN) NAMES[s.name] = `${s.emoji} ${s.name}`
-let stepsDone = 0
-async function mix(a: string, b: string): Promise<void> {
-  fireEvent.click(el(NAMES[a]!))
-  fireEvent.click(el(NAMES[b]!))
-  stepsDone += 1
-  // AC-DAILY-14: trong <Game /> bước thử thách đi qua nồi lẩu, bộ đếm chỉ đổi sau BOIL_MS = 1000 ms
-  await waitFor(() => counter(stepsDone), { timeout: 3000 })
+// ---------------------------------------------------------------- helpers
+function panel(opts: { manifest?: Manifest; solved?: typeof SOLVED | null } = {}) {
+  return <DailyPanel manifest={opts.manifest ?? manifestOf()} storage={localStorage} solved={opts.solved === undefined ? null : opts.solved} />
 }
+const signIn = () => act(() => setCurrentSession(SESSION))
+const signOut = () => act(() => setCurrentSession(null))
+const card = (): HTMLElement => screen.getByRole('region', { name: 'Món đặc biệt hôm nay' })
+/** True when some element's whole text is exactly `t`. */
+const hasText = (t: string): boolean => Array.from(document.body.querySelectorAll('*')).some((e) => e.textContent?.trim() === t)
+const hasMatch = (re: RegExp): boolean => Array.from(document.body.querySelectorAll('*')).some((e) => re.test(e.textContent ?? ''))
+const seeText = (t: string) => waitFor(() => expect(hasText(t), `thiếu dòng "${t}"`).toBe(true))
+const seeMatch = (re: RegExp) => waitFor(() => expect(hasMatch(re), `thiếu ${String(re)}`).toBe(true))
+const INVITE = 'Đăng nhập bằng Google để lên bảng xếp hạng'
+const BOARD_INVITE = 'Đăng nhập bằng Google để có tên trên bảng xếp hạng'
 async function openBoard(): Promise<void> {
-  stepsDone = 0
-  fireEvent.click(screen.getByRole('button', { name: /thử thách/i }))
-  await screen.findByRole('region', { name: 'Bàn thử thách' })
-}
-function panel(opts: { manifest?: Manifest; onDiscover?: (e: { id: string; name: string; emoji: string }) => void } = {}) {
-  return (
-    <DailyPanel manifest={opts.manifest ?? manifestOf()} lookup={lookup} onDiscover={opts.onDiscover ?? (() => {})} storage={localStorage} />
-  )
-}
-async function solve(): Promise<void> {
-  await mix('Cay', 'Toang') // trượt
-  await mix('Cay', 'Cười')
-  await mix('Tới Công Chuyện', 'Deadline')
-  await mix('Chạy Deadline', 'Toang')
-  await mix('Hết Cứu', 'Cay')
+  fireEvent.click(screen.getByRole('button', { name: 'Bảng xếp hạng' }))
+  await screen.findByRole('tab', { name: 'Mẻ này' })
 }
 
-// ================================================================ AC-DAILY-03 / 12: thẻ + đồng hồ
-describe('daily ui: thẻ và đồng hồ', () => {
-  it('AC-DAILY-03: DailyPanel hiện thẻ "Món đặc biệt hôm nay" với emoji, gợi ý và tên "???", không lộ tên món', () => {
+// ================================================================ AC-DAILY-03 / 04 / 12: card and clock
+describe('daily ui: thẻ Món đặc biệt và đồng hồ', () => {
+  it('AC-DAILY-03: thẻ hiện emoji, gợi ý và tên "???", không lộ tên món, không có nút "Thử thách" hay bàn thử thách', () => {
     const { container } = render(panel())
-    const card = screen.getByRole('region', { name: 'Món đặc biệt hôm nay' })
-    expect(card.textContent).toContain('📈')
-    expect(within(card).getByText('Món lên như diều gặp gió')).toBeTruthy()
-    expect(within(card).getByText('???')).toBeTruthy()
+    expect(card().textContent).toContain('📈')
+    expect(within(card()).getByText('Món lên như diều gặp gió')).toBeTruthy()
+    expect(within(card()).getByText('???')).toBeTruthy()
+    expect(within(card()).queryByText('Đã giải')).toBeNull()
     expect(container.textContent).not.toContain('Stonks')
+    expect(screen.queryByRole('button', { name: /thử thách/i })).toBeNull()
     expect(screen.queryByRole('region', { name: 'Bàn thử thách' })).toBeNull()
+    expect(container.textContent).not.toMatch(/Bước:/)
+  })
+
+  it('AC-DAILY-04: khi đã giải thẻ lộ tên "Stonks" và hiện "Đã giải", không còn "???"', () => {
+    render(panel({ solved: SOLVED }))
+    expect(within(card()).getByText('Stonks')).toBeTruthy()
+    expect(within(card()).getByText('Đã giải')).toBeTruthy()
+    expect(within(card()).queryByText('???')).toBeNull()
+    expect(screen.queryByRole('button', { name: /thử thách/i })).toBeNull()
   })
 
   it('AC-DAILY-12: hiện "Mẻ mới sau h:mm:ss" tính từ batch_at của manifest', () => {
-    render(panel()) // batch_at 00:00 UTC, bây giờ 03:00 UTC => mốc 05:00 UTC còn 2 giờ
+    render(panel()) // batch_at 00:00 UTC, now 03:00 UTC => the 05:00 UTC mark is 2 h away
     expect(screen.getByText(/Mẻ mới sau 2:00:0\d/)).toBeTruthy()
   })
 
@@ -208,358 +172,221 @@ describe('daily ui: thẻ và đồng hồ', () => {
   })
 })
 
-// ================================================================ AC-DAILY-04: bàn thử thách
-describe('daily ui: bàn thử thách', () => {
-  it('AC-DAILY-04: bấm "Thử thách" mở bàn có 4 phần tử khởi đầu (aria-pressed) và bộ đếm "Bước: 0"', async () => {
-    render(panel())
-    await openBoard()
-    for (const s of ['Cay', 'Cười', 'Toang', 'Deadline']) {
-      expect(el(NAMES[s]!).getAttribute('aria-pressed')).toBe('false')
-    }
-    expect(within(board()).getAllByRole('button')).toHaveLength(4)
-    counter(0)
-    fireEvent.click(el(NAMES.Cay!))
-    expect(el(NAMES.Cay!).getAttribute('aria-pressed')).toBe('true')
-  })
-
-  it('AC-DAILY-04: trượt hiện "💨 Trượt rồi" và vẫn tăng bộ đếm; không gọi onDiscover', async () => {
-    const onDiscover = vi.fn()
-    render(panel({ onDiscover }))
-    await openBoard()
-    await mix('Cay', 'Toang')
-    expect(await screen.findByText('💨 Trượt rồi')).toBeTruthy()
-    expect(within(board()).getAllByRole('button')).toHaveLength(4)
-    expect(onDiscover).not.toHaveBeenCalled()
-  })
-
-  it('AC-DAILY-04: ghép trúng thêm nút phần tử mới lên bàn và gọi onDiscover đúng một lần; ghép lại món đã có chỉ tăng bước', async () => {
-    const onDiscover = vi.fn()
-    render(panel({ onDiscover }))
-    await openBoard()
-    await mix('Cay', 'Cười')
-    expect(el(NAMES['Tới Công Chuyện']!)).toBeTruthy()
-    expect(onDiscover).toHaveBeenCalledTimes(1)
-    expect(onDiscover.mock.calls[0]![0]).toMatchObject({ id: eid('Tới Công Chuyện'), name: 'Tới Công Chuyện', emoji: '🔥' })
-    await mix('Cười', 'Cay')
-    expect(onDiscover).toHaveBeenCalledTimes(1)
-    expect(within(board()).getAllByRole('button')).toHaveLength(5)
-  })
-
-  it('AC-DAILY-04: bấm cùng một nút hai lần ghép phần tử với chính nó', async () => {
-    render(panel())
-    await openBoard()
-    await mix('Cay', 'Cay')
-    expect(el(NAMES['Siêu Cay']!)).toBeTruthy()
-    counter(1)
-  })
-
-  it('AC-DAILY-04: ghép ra món đích (so theo id) thì lộ tên thay "???" và hiện "Xong sau N bước" (kể cả lượt trượt)', async () => {
-    render(panel())
-    await openBoard()
-    await solve()
-    expect(await screen.findByText('Xong sau 5 bước')).toBeTruthy()
-    const card = screen.getByRole('region', { name: 'Món đặc biệt hôm nay' })
-    expect(within(card).getByText('Stonks')).toBeTruthy()
-    expect(within(card).queryByText('???')).toBeNull()
-  })
-
-  it('AC-DAILY-04: Game hiện DailyPanel sau khi tải; phần tử khám phá trên bàn thử thách được thêm vào Đĩa chính', async () => {
-    const p = initialProgress(manifestOf(), T0)
-    p.tutorial_seen = true
-    saveProgress(localStorage, p)
-    installNet({ graph: await buildGraph() })
-    render(<Game />)
-    const plate = await screen.findByRole('list', { name: 'Đĩa nhúng' })
-    const names = () => within(plate).queryAllByTestId('plate-item').map((e) => (e as HTMLElement).dataset.name)
-    expect(names()).not.toContain('Tới Công Chuyện')
-    await screen.findByRole('region', { name: 'Món đặc biệt hôm nay' })
-    await openBoard()
-    await mix('Cay', 'Toang') // trượt: không thêm gì vào Đĩa
-    await mix('Cay', 'Cười')
-    await waitFor(() => expect(names()).toContain('Tới Công Chuyện'))
-    expect(names().filter((n) => n === 'Tới Công Chuyện')).toHaveLength(1)
-    // bàn thử thách tách khỏi Đĩa: Đĩa không dùng cho thử thách và ngược lại
-    expect(within(board()).getAllByRole('button').length).toBe(5)
-  })
-})
-
-// ================================================================ AC-DAILY-05: tải lại
-describe('daily ui: tải lại', () => {
-  it('AC-DAILY-05: dựng lại DailyPanel với cùng storage khôi phục bàn đang mở, phần tử đã có và bộ đếm', async () => {
-    const first = render(panel())
-    await openBoard()
-    await mix('Cay', 'Cười')
-    await mix('Cay', 'Toang')
-    first.unmount()
-    render(panel())
-    await screen.findByRole('region', { name: 'Bàn thử thách' })
-    counter(2)
-    expect(el(NAMES['Tới Công Chuyện']!)).toBeTruthy()
-    expect(within(board()).getAllByRole('button')).toHaveLength(5)
-    // chơi tiếp được
-    stepsDone = 2
-    await mix('Tới Công Chuyện', 'Deadline')
-    expect(el(NAMES['Chạy Deadline']!)).toBeTruthy()
-  })
-
-  it('AC-DAILY-05: sang mẻ mới (version khác) thì thử thách cũ đóng, bàn mới chỉ có 4 phần tử và bộ đếm 0', async () => {
-    const first = render(panel())
-    await openBoard()
-    await mix('Cay', 'Cười')
-    first.unmount()
-    render(panel({ manifest: manifestOf(VERSION + 1, '2026-10-20T05:04:00.000Z') }))
-    if (!screen.queryByRole('region', { name: 'Bàn thử thách' })) {
-      fireEvent.click(screen.getByRole('button', { name: /thử thách/i }))
-      await screen.findByRole('region', { name: 'Bàn thử thách' })
-    }
-    counter(0)
-    expect(within(board()).getAllByRole('button')).toHaveLength(4)
-  })
-})
-
-// ================================================================ AC-DAILY-06 / 08: nộp kết quả
-describe('daily ui: nộp kết quả', () => {
-  it('AC-DAILY-06: đã đồng ý, giải xong thì POST /daily/{version}/results {steps, path} kèm X-Player-Id và hiện hạng + streak', async () => {
+// ================================================================ AC-DAILY-05 / 06 / 08 / 13 / 15: submitting
+describe('daily ui: gửi kết quả', () => {
+  it('AC-DAILY-15: giải khi chưa đăng nhập thì hiện lời mời đăng nhập, không gửi gì; đăng nhập xong tự gửi ngay (không cần bấm) và hiện "Hạng #… · Streak …"', async () => {
     saveConsent(localStorage, 1, 'granted')
-    render(panel())
-    await openBoard()
-    await solve()
-    expect(await screen.findByText('Hạng #1 · Streak 1 ngày')).toBeTruthy()
-    const posts = resultPosts()
-    expect(posts).toHaveLength(1)
-    expect(posts[0]!.url).toContain(`/lau-meme/api/daily/${VERSION}/results`)
-    expect(posts[0]!.player).toBe(getPlayerId(localStorage))
-    const body = JSON.parse(posts[0]!.body!) as { steps: number; path: Array<{ a: string; b: string; result: string }> }
-    expect(body.steps).toBe(5)
-    expect(body.path.map((s) => s.result)).toEqual(['Tới Công Chuyện', 'Chạy Deadline', 'Hết Cứu', 'Stonks'])
-    expect([body.path[3]!.a, body.path[3]!.b].sort()).toEqual(['Cay', 'Hết Cứu'])
-  })
-
-  it('AC-DAILY-06: chưa đồng ý thì hiện "Cần đồng ý chính sách dữ liệu để gửi", không gửi gì, không có X-Player-Id', async () => {
-    saveConsent(localStorage, 1, 'declined')
-    render(panel())
-    await openBoard()
-    await solve()
-    expect(await screen.findByText('Xong sau 5 bước')).toBeTruthy()
-    expect(await screen.findByText(/Cần đồng ý chính sách dữ liệu để gửi/)).toBeTruthy()
+    render(panel({ solved: SOLVED }))
+    expect(await screen.findByText(INVITE)).toBeTruthy()
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(3000)
+    })
     expect(resultPosts()).toEqual([])
-    expect(calls().filter((c) => c.player !== null)).toEqual([])
+    expect(screen.queryByText(/Hạng #/)).toBeNull()
+
+    await signIn()
+    await seeMatch(/Hạng #1 · Streak 1/)
+    expect(resultPosts()).toHaveLength(1)
+    expect(screen.queryByText(INVITE)).toBeNull()
+    const post = resultPosts()[0]!
+    expect(post.url).toContain(`/lau-meme/api/daily/${VERSION}/results`)
+    expect(post.player).toBe(getPlayerId(localStorage))
+    expect(JSON.parse(post.body!)).toEqual({ a: 'Hết Cứu', b: 'Cay' })
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(5000)
+    })
+    expect(resultPosts()).toHaveLength(1) // only once
   })
 
-  it('AC-DAILY-08: máy chủ trả 409 thì hiện hạng + streak từ kết quả đã lưu', async () => {
+  it('AC-DAILY-06: đã đăng nhập sẵn và giải rồi (tải lại trang) thì tự gửi đúng một lần khi dựng thẻ, hiện hạng và streak', async () => {
     saveConsent(localStorage, 1, 'granted')
-    resultsReply = () => json({ type: 'about:blank', title: 'Đã nộp', status: 409, result: STORED }, 409)
-    render(panel())
-    await openBoard()
-    await solve()
-    expect(await screen.findByText('Hạng #3 · Streak 2 ngày')).toBeTruthy()
+    await signIn()
+    render(panel({ solved: SOLVED }))
+    await seeMatch(/Hạng #1 · Streak 1/)
+    expect(resultPosts()).toHaveLength(1)
+    expect(screen.queryByText(INVITE)).toBeNull()
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(5000)
+    })
     expect(resultPosts()).toHaveLength(1)
   })
 
-  it('AC-DAILY-06: máy chủ trả 429 thì hiện "Gửi quá nhanh, thử lại sau."', async () => {
+  it('AC-DAILY-06: chưa giải thì đăng nhập cũng không gửi gì', async () => {
     saveConsent(localStorage, 1, 'granted')
-    resultsReply = () => json({ type: 'about:blank', title: 'Quá nhanh', status: 429 }, 429)
     render(panel())
-    await openBoard()
-    await solve()
-    expect(await screen.findByText('Gửi quá nhanh, thử lại sau.')).toBeTruthy()
+    await signIn()
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(3000)
+    })
+    expect(resultPosts()).toEqual([])
     expect(screen.queryByText(/Hạng #/)).toBeNull()
   })
-})
 
-describe('daily ui: submitDailyResult', () => {
-  const body = { steps: 4, path: [{ a: 'Cay', b: 'Cười', result: 'Tới Công Chuyện' }] }
-  const opts = () => ({ storage: localStorage as Storage | null, policyVersion: 1 })
-
-  it('AC-DAILY-06: 201 trả {result, already:false}; POST đúng đường dẫn, JSON và X-Player-Id', async () => {
-    saveConsent(localStorage, 1, 'granted')
-    const out = await submitDailyResult(VERSION, body, opts())
-    expect(out.already).toBe(false)
-    expect(out.result.rank).toBe(1)
-    const p = resultPosts()[0]!
-    expect(p.url).toContain(`/lau-meme/api/daily/${VERSION}/results`)
-    expect(JSON.parse(p.body!)).toEqual(body)
-    expect(p.player).toBe(getPlayerId(localStorage))
+  it('AC-DAILY-06: chưa đồng ý chính sách thì không gửi gì và không có yêu cầu nào mang X-Player-Id', async () => {
+    saveConsent(localStorage, 1, 'declined')
+    await signIn()
+    render(panel({ solved: SOLVED }))
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(3000)
+    })
+    expect(resultPosts()).toEqual([])
+    expect(calls().filter((c) => c.player !== null)).toEqual([])
+    expect(screen.queryByText(/Hạng #/)).toBeNull()
   })
 
-  it('AC-DAILY-08: 409 trả {result: kết quả đã lưu, already:true}', async () => {
+  it('AC-DAILY-08: máy chủ trả 409 thì hiện hạng và streak của kết quả đã lưu', async () => {
     saveConsent(localStorage, 1, 'granted')
     resultsReply = () => json({ type: 'about:blank', title: 'Đã nộp', status: 409, result: STORED }, 409)
-    const out = await submitDailyResult(VERSION, body, opts())
-    expect(out).toEqual({ result: STORED, already: true })
+    await signIn()
+    render(panel({ solved: SOLVED }))
+    await seeMatch(/Hạng #3 · Streak 2/)
+    expect(resultPosts()).toHaveLength(1)
   })
 
-  it('AC-DAILY-08: 410 (mẻ đã qua), 400 và 422 ném SendError mang status', async () => {
+  it('AC-DAILY-13: máy chủ trả 429 thì hiện "Gửi quá nhanh, thử lại sau." và không hiện hạng', async () => {
     saveConsent(localStorage, 1, 'granted')
-    for (const status of [410, 400, 422, 429]) {
-      resultsReply = () => json({ type: 'about:blank', title: 'Lỗi', status }, status)
-      const err = await submitDailyResult(VERSION, body, opts()).then(
-        () => null,
-        (e: unknown) => e,
-      )
-      expect(err).toBeInstanceOf(SendError)
-      expect((err as SendError).status).toBe(status)
-    }
+    resultsReply = () => json({ type: 'about:blank', title: 'Quá nhanh', status: 429 }, 429)
+    await signIn()
+    render(panel({ solved: SOLVED }))
+    expect(await screen.findByText('Gửi quá nhanh, thử lại sau.')).toBeTruthy()
+    expect(screen.queryByText(/Hạng #/)).toBeNull()
+    // still shown as solved, locally kept
+    expect(within(card()).getByText('Đã giải')).toBeTruthy()
   })
 
-  it('AC-DAILY-06: chưa đồng ý thì ném lỗi (không phải SendError) và không fetch', async () => {
-    const err = await submitDailyResult(VERSION, body, opts()).then(
-      () => null,
-      (e: unknown) => e,
-    )
-    expect(err).toBeTruthy()
-    expect(err).not.toBeInstanceOf(SendError)
-    expect(fetchMock).not.toHaveBeenCalled()
+  it('AC-DAILY-05: thẻ vẫn "Đã giải" kèm tên khi chưa gửi được; dựng lại ở mẻ khác (solved = null) thì lại "???"', () => {
+    const first = render(panel({ solved: SOLVED }))
+    expect(within(card()).getByText('Stonks')).toBeTruthy()
+    first.unmount()
+    render(panel({ manifest: manifestOf(VERSION + 1, '2026-10-20T05:04:00.000Z'), solved: null }))
+    expect(within(card()).getByText('???')).toBeTruthy()
+    expect(within(card()).queryByText('Đã giải')).toBeNull()
   })
 })
 
-// ================================================================ AC-DAILY-09: bảng xếp hạng
+// ================================================================ AC-DAILY-09 / 14 / 15: leaderboards
 describe('daily ui: bảng xếp hạng', () => {
-  const ROWS = [
-    { rank: 1, nickname: 'Bếp Trưởng', value: 5 },
-    { rank: 2, nickname: 'Thực khách ẩn danh', value: 6 },
-  ]
-
-  it('AC-DAILY-09: nút "Bảng xếp hạng" tải GET /daily/{version}/leaderboard và liệt kê "#1 Bếp Trưởng - 5 bước"', async () => {
-    leaderboardReply = () => json({ version: VERSION, rows: ROWS, me: null })
-    render(panel())
-    fireEvent.click(screen.getByRole('button', { name: 'Bảng xếp hạng' }))
-    const list = await screen.findByRole('list', { name: 'Bảng xếp hạng' })
-    const items = within(list).getAllByRole('listitem')
-    expect(items).toHaveLength(2)
-    expect(items[0]!.textContent).toBe('#1 Bếp Trưởng - 5 bước')
-    expect(items[1]!.textContent).toBe('#2 Thực khách ẩn danh - 6 bước')
-    expect(leaderboardGets()[0]!.url).toContain(`/lau-meme/api/daily/${VERSION}/leaderboard`)
-  })
-
-  it('AC-DAILY-09: chưa đồng ý thì GET bảng xếp hạng không mang X-Player-Id', async () => {
-    saveConsent(localStorage, 1, 'declined')
-    render(panel())
-    fireEvent.click(screen.getByRole('button', { name: 'Bảng xếp hạng' }))
-    await screen.findByRole('list', { name: 'Bảng xếp hạng' })
-    expect(leaderboardGets()).toHaveLength(1)
-    expect(calls().filter((c) => c.player !== null)).toEqual([])
-  })
-
-  it('AC-DAILY-09: getDailyLeaderboard gửi X-Player-Id khi đã đồng ý và trả {version, rows, me}', async () => {
-    saveConsent(localStorage, 1, 'granted')
-    const me = { rank: 25, nickname: 'Tôi', value: 9 }
-    leaderboardReply = () => json({ version: VERSION, rows: ROWS, me })
-    const out = await getDailyLeaderboard(VERSION, { storage: localStorage, policyVersion: 1 })
-    expect(out).toEqual({ version: VERSION, rows: ROWS, me })
-    expect(leaderboardGets()[0]!.player).toBe(getPlayerId(localStorage))
-  })
-
-  it('AC-DAILY-09: getDailyLeaderboard không gửi X-Player-Id khi chưa đồng ý hoặc không có storage (AC-PRIV-02)', async () => {
-    await getDailyLeaderboard(VERSION, { storage: localStorage, policyVersion: 1 })
-    await getDailyLeaderboard(VERSION, { storage: null, policyVersion: 1 })
-    saveConsent(localStorage, 1, 'declined')
-    await getDailyLeaderboard(VERSION, { storage: localStorage, policyVersion: 1 })
-    expect(leaderboardGets()).toHaveLength(3)
-    expect(leaderboardGets().every((g) => g.player === null)).toBe(true)
-  })
-})
-
-// ================================================================ bổ sung: gửi lại, tự gửi sau tải lại, hạng của tôi, lỗi
-describe('daily ui: gửi lại, tự gửi, hạng của tôi, lỗi', () => {
-  it('AC-DAILY-06: giải xong khi chưa đồng ý thì không gửi; có nút "Gửi lại kết quả"; đồng ý rồi bấm thì POST và hiện hạng', async () => {
-    saveConsent(localStorage, 1, 'declined')
+  it('AC-DAILY-15: nút "Bảng xếp hạng" mở panel có 3 thẻ "Mẻ này", "Tuần", "Tháng"; mặc định là "Mẻ này"', async () => {
     render(panel())
     await openBoard()
-    await solve()
-    expect(await screen.findByText(/Cần đồng ý chính sách dữ liệu để gửi/)).toBeTruthy()
-    expect(resultPosts()).toEqual([])
-    const retry = await screen.findByRole('button', { name: 'Gửi lại kết quả' })
-    saveConsent(localStorage, 1, 'granted')
-    fireEvent.click(retry)
-    expect(await screen.findByText('Hạng #1 · Streak 1 ngày')).toBeTruthy()
-    expect(resultPosts()).toHaveLength(1)
+    const tabs = screen.getAllByRole('tab')
+    expect(tabs.map((t) => t.textContent?.trim())).toEqual(['Mẻ này', 'Tuần', 'Tháng'])
+    expect(screen.getByRole('tab', { name: 'Mẻ này' }).getAttribute('aria-selected')).toBe('true')
+    await waitFor(() => expect(batchBoardGets().length).toBeGreaterThanOrEqual(1))
+    expect(batchBoardGets()[0]!.url).toContain(`/lau-meme/api/daily/${VERSION}/leaderboard`)
   })
 
-  it('AC-DAILY-06: POST lần đầu trả 500 thì hiện "Gửi lại kết quả"; bấm sẽ POST lại', async () => {
-    saveConsent(localStorage, 1, 'granted')
-    resultsReply = () => json({ type: 'about:blank', title: 'Lỗi', status: 500 }, 500)
+  it('AC-DAILY-09: thẻ "Mẻ này" liệt kê "#<hạng> <nickname> - <thời gian>" với thời gian "5 phút 12 giây" / "1 giờ 05 phút 12 giây"', async () => {
+    batchBoardReply = () =>
+      json({
+        version: VERSION,
+        rows: [
+          { rank: 1, nickname: 'Bếp Trưởng', value: 312_000 },
+          { rank: 2, nickname: 'Thực khách ẩn danh', value: 3_912_000 },
+        ],
+        me: null,
+      })
     render(panel())
     await openBoard()
-    await solve()
-    const retry = await screen.findByRole('button', { name: 'Gửi lại kết quả' })
-    expect(resultPosts()).toHaveLength(1)
-    resultsReply = () => json({ ...STORED, rank: 2, streak: { current: 3, longest: 3 } }, 201)
-    fireEvent.click(retry)
-    expect(await screen.findByText('Hạng #2 · Streak 3 ngày')).toBeTruthy()
-    expect(resultPosts()).toHaveLength(2)
+    await seeText('#1 Bếp Trưởng - 5 phút 12 giây')
+    await seeText('#2 Thực khách ẩn danh - 1 giờ 05 phút 12 giây')
   })
 
-  it('AC-DAILY-05: bàn đã giải nhưng chưa có kết quả; tải lại khi đã đồng ý thì tự POST đúng một lần, 409 hiện hạng đã lưu', async () => {
-    saveConsent(localStorage, 1, 'granted')
-    resultsReply = () => json({ type: 'about:blank', title: 'Lỗi', status: 500 }, 500)
+  it('AC-DAILY-09: me nằm ngoài rows thì thêm dòng "Bạn: #25 ..."; me đã trong rows hoặc null thì không có dòng "Bạn:"', async () => {
+    batchBoardReply = () =>
+      json({
+        version: VERSION,
+        rows: [{ rank: 1, nickname: 'A', value: 4_000 }],
+        me: { rank: 25, nickname: 'Bếp Trưởng', value: 3_912_000 },
+      })
     const first = render(panel())
     await openBoard()
-    await solve()
-    await screen.findByRole('button', { name: 'Gửi lại kết quả' })
-    expect(resultPosts()).toHaveLength(1)
+    await seeMatch(/^Bạn: #25 .*1 giờ 05 phút 12 giây/)
     first.unmount()
 
-    resultsReply = () => json({ type: 'about:blank', title: 'Đã nộp', status: 409, result: STORED }, 409)
+    batchBoardReply = () =>
+      json({ version: VERSION, rows: [{ rank: 1, nickname: 'A', value: 4_000 }], me: { rank: 1, nickname: 'A', value: 4_000 } })
     const second = render(panel())
-    expect(await screen.findByText('Hạng #3 · Streak 2 ngày')).toBeTruthy()
-    expect(resultPosts()).toHaveLength(2)
-    await vi.advanceTimersByTimeAsync(2000)
-    expect(resultPosts()).toHaveLength(2)
-
-    second.unmount()
-    render(panel())
-    await screen.findByRole('region', { name: 'Bàn thử thách' })
-    await vi.advanceTimersByTimeAsync(2000)
-    expect(resultPosts().length).toBeLessThanOrEqual(3)
-  })
-
-  it('AC-DAILY-09: me ngoài top hiện thêm dòng "Bạn: #25 - 9 bước"', async () => {
-    leaderboardReply = () => json({ version: VERSION, rows: [{ rank: 1, nickname: 'A', value: 4 }], me: { rank: 25, nickname: 'Bếp Trưởng', value: 9 } })
-    render(panel())
-    fireEvent.click(screen.getByRole('button', { name: 'Bảng xếp hạng' }))
-    await screen.findByRole('list', { name: 'Bảng xếp hạng' })
-    expect(await screen.findByText('Bạn: #25 - 9 bước')).toBeTruthy()
-  })
-
-  it('AC-DAILY-09: me null hoặc hạng đã nằm trong rows thì không có dòng "Bạn:"', async () => {
-    leaderboardReply = () => json({ version: VERSION, rows: [{ rank: 1, nickname: 'A', value: 4 }], me: null })
-    const a = render(panel())
-    fireEvent.click(screen.getByRole('button', { name: 'Bảng xếp hạng' }))
-    await screen.findByRole('list', { name: 'Bảng xếp hạng' })
-    expect(screen.queryByText(/Bạn:/)).toBeNull()
-    a.unmount()
-
-    leaderboardReply = () =>
-      json({ version: VERSION, rows: [{ rank: 1, nickname: 'A', value: 4 }], me: { rank: 1, nickname: 'A', value: 4 } })
-    render(panel())
-    fireEvent.click(screen.getByRole('button', { name: 'Bảng xếp hạng' }))
-    await screen.findByRole('list', { name: 'Bảng xếp hạng' })
-    expect(screen.queryByText(/Bạn:/)).toBeNull()
-  })
-
-  it('AC-DAILY-09: GET bảng xếp hạng trả 500 thì hiện "Không tải được bảng xếp hạng"', async () => {
-    leaderboardReply = () => json({ type: 'about:blank', title: 'Lỗi', status: 500 }, 500)
-    render(panel())
-    fireEvent.click(screen.getByRole('button', { name: 'Bảng xếp hạng' }))
-    expect(await screen.findByText('Không tải được bảng xếp hạng')).toBeTruthy()
-  })
-
-  it('AC-DAILY-04: lookup bị từ chối thì hiện "Nồi trục trặc, thử lại nhé.", bộ đếm giữ nguyên và bàn vẫn dùng được', async () => {
-    let broken = true
-    const flaky = async (a: string, b: string): Promise<GraphResult | null> => {
-      if (broken) throw new Error('giải mã lỗi')
-      return lookup(a, b)
-    }
-    render(<DailyPanel manifest={manifestOf()} lookup={flaky} onDiscover={() => {}} storage={localStorage} />)
     await openBoard()
-    fireEvent.click(el(NAMES.Cay!))
-    fireEvent.click(el(NAMES['Cười']!))
-    expect(await screen.findByText('Nồi trục trặc, thử lại nhé.')).toBeTruthy()
-    counter(0)
-    broken = false
-    stepsDone = 0
-    await mix('Cay', 'Cười')
-    expect(el(NAMES['Tới Công Chuyện']!)).toBeTruthy()
+    await seeText('#1 A - 0 phút 04 giây')
+    expect(hasMatch(/Bạn:/)).toBe(false)
+    second.unmount()
+
+    batchBoardReply = () => json({ version: VERSION, rows: [{ rank: 1, nickname: 'A', value: 4_000 }], me: null })
+    render(panel())
+    await openBoard()
+    await seeText('#1 A - 0 phút 04 giây')
+    expect(hasMatch(/Bạn:/)).toBe(false)
+  })
+
+  it('AC-DAILY-15: bảng mẻ rỗng hiện "Chưa có ai giải món này", không để trống', async () => {
+    render(panel())
+    await openBoard()
+    await seeText('Chưa có ai giải món này')
+  })
+
+  it('AC-DAILY-14: thẻ "Tuần" tải ?period=2026-W43 và liệt kê "#1 <nickname> - <đã giải>/<số mẻ> mẻ - <tổng thời gian>"; có "Bạn:" khi me ngoài rows', async () => {
+    periodBoardReply = (period) =>
+      json({
+        period,
+        starts_at: '2026-10-18T17:00:00.000Z',
+        ends_at: '2026-10-25T17:00:00.000Z',
+        batches: 4,
+        rows: [
+          { rank: 1, nickname: 'Bếp Phó B', solved: 3, total_ms: 72_000_000 },
+          { rank: 2, nickname: 'Thực khách ẩn danh', solved: 2, total_ms: 3_912_000 },
+        ],
+        me: { rank: 30, nickname: 'Tôi', solved: 1, total_ms: 312_000 },
+      })
+    render(panel())
+    await openBoard()
+    fireEvent.click(screen.getByRole('tab', { name: 'Tuần' }))
+    await seeText('#1 Bếp Phó B - 3/4 mẻ - 20 giờ 00 phút 00 giây')
+    await seeText('#2 Thực khách ẩn danh - 2/4 mẻ - 1 giờ 05 phút 12 giây')
+    await seeMatch(/^Bạn: #30 /)
+    expect(periodGets().length).toBeGreaterThanOrEqual(1)
+    expect(periodGets()[0]!.url).toContain('period=2026-W43')
+    expect(screen.getByRole('tab', { name: 'Tuần' }).getAttribute('aria-selected')).toBe('true')
+  })
+
+  it('AC-DAILY-14: thẻ "Tháng" tải ?period=2026-10', async () => {
+    render(panel())
+    await openBoard()
+    fireEvent.click(screen.getByRole('tab', { name: 'Tháng' }))
+    await waitFor(() => expect(periodGets().some((g) => g.url.includes('period=2026-10'))).toBe(true))
+    expect(screen.getByRole('tab', { name: 'Tháng' }).getAttribute('aria-selected')).toBe('true')
+  })
+
+  it('AC-DAILY-15: thẻ Tuần và Tháng rỗng hiện "Chưa có ai giải món nào trong kỳ", không để trống', async () => {
+    render(panel())
+    await openBoard()
+    fireEvent.click(screen.getByRole('tab', { name: 'Tuần' }))
+    await seeText('Chưa có ai giải món nào trong kỳ')
+    fireEvent.click(screen.getByRole('tab', { name: 'Tháng' }))
+    await seeText('Chưa có ai giải món nào trong kỳ')
+  })
+
+  it('AC-DAILY-15: chưa đăng nhập vẫn xem được bảng, kèm dòng nhắc đăng nhập ở mọi thẻ; đăng nhập rồi thì dòng nhắc biến mất', async () => {
+    render(panel())
+    await openBoard()
+    await seeText(BOARD_INVITE)
+    fireEvent.click(screen.getByRole('tab', { name: 'Tuần' }))
+    await seeText('Chưa có ai giải món nào trong kỳ')
+    expect(hasText(BOARD_INVITE)).toBe(true)
+
+    await signIn()
+    await waitFor(() => expect(hasText(BOARD_INVITE)).toBe(false))
+    await signOut()
+    await seeText(BOARD_INVITE)
+  })
+
+  it('AC-DAILY-09: GET bảng xếp hạng không mang X-Player-Id (cookie phiên tự đi kèm) kể cả khi đã đồng ý', async () => {
+    saveConsent(localStorage, 1, 'granted')
+    render(panel())
+    await openBoard()
+    fireEvent.click(screen.getByRole('tab', { name: 'Tuần' }))
+    await waitFor(() => expect(periodGets().length).toBeGreaterThanOrEqual(1))
+    expect(batchBoardGets().length).toBeGreaterThanOrEqual(1)
+    expect([...batchBoardGets(), ...periodGets()].every((g) => g.player === null)).toBe(true)
   })
 })
