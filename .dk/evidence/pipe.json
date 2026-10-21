@@ -1,19 +1,19 @@
 {
  "red": {
-  "ts": "2026-10-21T00:24:20+00:00",
-  "commit": "7924044",
+  "ts": "2026-10-21T09:20:28+00:00",
+  "commit": "e08eedd",
   "results": {
    "AC-PIPE-01": {
-    "status": "PASS",
-    "test": "test_batch#test_ac_pipe_01_version_for_doi_gio_sang_gmt7"
+    "status": "FAIL",
+    "test": "test_pipe_full_batch#test_ac_pipe_01_full_dang_mot_me_success_kem_store_va_meme_moi"
    },
    "AC-PIPE-02": {
-    "status": "FAIL",
-    "test": "test_batch#test_ac_pipe_02_chay_module_batch_voi_quyen_tao_issue_va_secret"
+    "status": "PASS",
+    "test": "test_batch#test_ac_pipe_02_lich_chay_hai_cron_00_va_12_gio_gmt7"
    },
    "AC-PIPE-03": {
-    "status": "PASS",
-    "test": "test_pipe2#test_ac_pipe_03_mot_nguon_loi_khong_lam_hong_ca_dot"
+    "status": "FAIL",
+    "test": "test_pipe_full_batch#test_ac_pipe_03_full_mot_nguon_loi_van_thanh_cong_va_bao_cao_ghi_loi_nguon"
    },
    "AC-PIPE-04": {
     "status": "PASS",
@@ -28,36 +28,36 @@
     "test": "test_pipe2#test_ac_pipe_06_chi_cap_hop_le_duoc_them_hai_cap_kia_bi_loai_kem_ly_do"
    },
    "AC-PIPE-07": {
-    "status": "PASS",
-    "test": "test_pipe2#test_ac_pipe_07_meme_chua_noi_duoc_vao_hang_cho_voi_so_lan_thu_1"
+    "status": "FAIL",
+    "test": "test_pipe_full_batch#test_ac_pipe_07_full_dot_sau_thu_lai_meme_trong_hang_cho_truoc_meme_moi"
    },
    "AC-PIPE-08": {
-    "status": "FAIL",
-    "test": "test_pipe2#test_ac_pipe_08_payload_chi_gom_ten_va_tra_loi_khong_phai_danh_sach_thi_khong_sap"
+    "status": "PASS",
+    "test": "test_pipe2#test_ac_pipe_08_phan_tu_duoi_3_cong_thuc_can_bo_sung"
    },
    "AC-PIPE-09": {
-    "status": "PASS",
-    "test": "test_pipe2#test_ac_pipe_09_chi_giu_diem_tu_3_tro_len_va_luu_diem_kem_cong_thuc"
+    "status": "FAIL",
+    "test": "test_pipe_gemini#test_ac_pipe_09_buoc_judge_gop_cac_lo_thanh_mot_dict"
    },
    "AC-PIPE-10": {
-    "status": "PASS",
-    "test": "test_pipe2#test_ac_pipe_10_cached_llm_khoa_la_sha256_va_khong_goi_lai"
+    "status": "FAIL",
+    "test": "pipeline-store.test.ts#pipeline store round trip > AC-PIPE-10: 15 mẻ full thì kho cũ nhất bị dọn cùng batch_content "
    },
    "AC-PIPE-11": {
-    "status": "PASS",
-    "test": "test_batch#test_ac_pipe_11_loi_o_buoc_state_khong_dang_gi_va_ghi_dot_loi"
+    "status": "FAIL",
+    "test": "pipeline-store.test.ts#pipeline store size cap > AC-PIPE-11: store lớn hơn 1,9 MB bị từ chối 413, version hiện hành và kho không đổi"
    },
    "AC-PIPE-12": {
-    "status": "PASS",
-    "test": "test_pipe2#test_ac_pipe_12_vi_du_25_khai_niem_429_hai_lan_roi_het_quota_o_lo_3"
+    "status": "FAIL",
+    "test": "test_pipe_gemini#test_ac_pipe_12_moi_lo_deu_hong_thi_nem_llm_error[not_json]"
    },
    "AC-PIPE-13": {
-    "status": "PASS",
-    "test": "test_batch#test_ac_pipe_13_payload_llm_chi_giu_truong_duoc_phep"
+    "status": "FAIL",
+    "test": "pipeline.test.ts#pipeline state > AC-PIPE-13: trạng thái pipeline chỉ có dữ liệu nội dung ẩn danh, không có trường người chơi"
    },
    "AC-PIPE-14": {
-    "status": "PASS",
-    "test": "test_batch#test_ac_pipe_14_tieu_de_co_version_trang_thai_che_do_emoji_khong_lo_ten"
+    "status": "FAIL",
+    "test": "test_pipe_full_batch#test_ac_pipe_14_full_quota_used_lay_tu_llm_calls_khi_co"
    }
   }
  },

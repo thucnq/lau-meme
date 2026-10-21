@@ -351,15 +351,6 @@ def test_ac_pipe_01_chay_lai_cung_dau_vao_cho_body_giong_het_byte():
     assert bodies[0] == bodies[1]
 
 
-def test_ac_pipe_01_che_do_full_o_giai_doan_1_khong_dang_va_khong_cham_adapter():
-    """AC-PIPE-01: giai đoạn 1 chưa hỗ trợ mode=full ⇒ mẻ thất bại, không đăng success, adapter/LLM không bị gọi."""
-    client = FakeClient()
-    outcome = run(client, mode="full", adapters=(Untouchable(),), llm=Untouchable())
-    assert outcome.ok is False
-    assert outcome.status == "error"
-    assert client.success_posts == []
-
-
 # ---------------------------------------------------------------- AC-PIPE-02
 
 
@@ -488,7 +479,26 @@ def test_ac_pipe_11_cli_tra_1_khi_that_bai_va_0_khi_thanh_cong():
 # ---------------------------------------------------------------- AC-PIPE-13
 
 
-ALLOWED = {"name", "quote", "context", "source_name", "element_name", "image_hint"}
+ALLOWED = {
+    "key",
+    "kind",
+    "name",
+    "quote",
+    "context",
+    "source_name",
+    "element_name",
+    "image_hint",
+    "emoji",
+    "description",
+    "daily_hint",
+    "existing",
+    "candidates",
+    "need",
+    "id",
+    "a",
+    "b",
+    "result",
+}
 
 
 def test_ac_pipe_13_payload_llm_chi_giu_truong_duoc_phep():
