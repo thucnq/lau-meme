@@ -118,6 +118,7 @@ GitHub → Settings → Environments:
 - `production` (bật Required reviewers) và `production-no-approval` (không duyệt, cho cron mẻ nhúng): variable (Environment variables, không phải secret) `API_BASE_URL` = `https://dinoduct.fun/lau-meme` (**có tiền tố**, không có `/` cuối); secret `PIPELINE_TOKEN` = giá trị production ở mục 4.2, `BANNED_WORDS` = danh sách từ cấm (mỗi dòng một từ).
 - `staging`: variable `API_BASE_URL` = `https://staging.dinoduct.fun/lau-meme`; secret `PIPELINE_TOKEN` = giá trị staging, `BANNED_WORDS`.
 - `ADMIN_TOKEN` và `IP_HASH_KEY` **không** đặt ở GitHub: không workflow nào cần.
+- Mẻ `full` (giai đoạn 2, crawl + Gemini - xem mục 8): thêm vào **cả** `staging` và `production-no-approval`.
 
 Deploy (trên `main` đã merge, máy sạch):
 ```bash
@@ -296,3 +297,16 @@ openssl rand -base64 32 | npx wrangler secret put ACCOUNT_HASH_KEY   # productio
 2. DevTools → Application → Cookies: có cookie phiên với `HttpOnly`, `Secure`, `Path=/lau-meme`.
 3. Ghép ra Món đặc biệt → thẻ hiện "Hạng #…"; Bảng xếp hạng có dòng của bạn.
 4. Đăng xuất → bảng xếp hạng vẫn xem được, thẻ món mời đăng nhập lại.
+
+## 8. Gemini và nguồn crawl - mẻ `full` (giai đoạn 2)
+Mẻ `full` crawl meme rồi gọi Gemini để khử trùng, mô tả, kiểm duyệt, liên kết và chấm điểm (ADR 0009, 0011). Chỉ dữ liệu meme công khai được gửi đi (AC-PIPE-13).
+
+1. **Khóa Gemini:** vào https://aistudio.google.com/apikey → Create API key (gói free). Khóa là bí mật: không dán vào chat, issue, commit.
+2. GitHub → Settings → Environments → `staging` (rồi lặp lại cho `production-no-approval`):
+   - Secret `GEMINI_API_KEY` = khóa ở bước 1.
+   - Variable `GEMINI_MODEL` = `gemini-2.5-flash` (để trống cũng dùng giá trị này).
+   - Variable `REDDIT_SUBREDDITS`, `RSS_FEEDS`: danh sách phân tách bằng dấu phẩy (câu hỏi mở 25). Để trống thì nguồn đó không thu gì; Know Your Meme và Google Trends VN chạy không cần cấu hình.
+   - Secret `YOUTUBE_API_KEY` (tùy chọn): khóa YouTube Data API v3; không có thì nguồn YouTube báo lỗi trong báo cáo đợt, các nguồn khác vẫn chạy (AC-PIPE-03).
+   - Variable `BATCH_MODE`: để trống (cron chạy `core`) cho tới khi chạy tay `full` ổn định, rồi đặt `full` để cron tự crawl.
+3. Chép `docs/dev/workflows/batch.yml` vào `.github/workflows/batch.yml` (agent không được sửa workflow).
+4. Thử: Actions → batch → Run workflow → mode `full`, target `staging`. Xem GitHub Issue báo cáo đợt: số crawl/thêm/bị chặn/hàng chờ, lỗi từng nguồn, quota Gemini.
