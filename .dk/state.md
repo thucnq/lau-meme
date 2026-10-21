@@ -23,3 +23,4 @@ review-feat-daily-v2: approved
 review-fix-table-height: approved
 review-feat-pipe-full: approved
 review-feat-art: approved
+review-feat-art-wiring: approved
