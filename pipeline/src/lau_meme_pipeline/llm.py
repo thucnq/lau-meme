@@ -17,6 +17,10 @@ class LlmError(Exception):
     """A call still failed after its retries: the items of that call are treated as not safe."""
 
 
+class DrawRejected(LlmError):
+    """The provider refused this input for good (HTTP 4xx other than 429): retrying the same prompt cannot help."""
+
+
 class PartialAnswer(Exception):
     """Some chunks were answered, others failed or hit the quota: usable now, never cached (AC-PIPE-10)."""
 

@@ -13,7 +13,7 @@ from typing import Protocol
 
 from PIL import Image, ImageOps
 
-from lau_meme_pipeline.llm import QuotaExhausted
+from lau_meme_pipeline.llm import DrawRejected, QuotaExhausted
 from lau_meme_pipeline.moderation import ModLists
 from lau_meme_pipeline.seed import ContentStore
 
@@ -31,6 +31,9 @@ R2_PREFIX = "img/"
 MAX_INPUT_BYTES = 8 * 1024 * 1024
 MAX_PIXELS = 4096 * 4096
 INPUT_FORMATS = ("PNG", "JPEG", "WEBP")
+
+
+Image.MAX_IMAGE_PIXELS = MAX_PIXELS  # Pillow raises DecompressionBombError at twice this, warns above it
 
 
 class UploadFailed(Exception):
@@ -59,6 +62,7 @@ class ArtResult:
     pending: list[str] = field(default_factory=list)
     rejections: dict[str, int] = field(default_factory=dict)
     errors: dict[str, int] = field(default_factory=dict)
+    errored: list[str] = field(default_factory=list)  # pending because of a transient error (not quota/limit)
     draws: int = 0
 
 
@@ -90,10 +94,14 @@ def draw_images(
     save: Callable[[bytes], str],
     *,
     limit: int = MAX_PER_BATCH,
+    encode: Callable[[bytes], bytes] | None = None,
+    deadline: float | None = None,
+    clock: Callable[[], float] | None = None,
 ) -> ArtResult:
-    """Draw, redraw once on a violation, else fall back to the emoji (AC-ART-02). Quota, the per-batch limit and
-    errors outside the image (network, upload) leave the element waiting for the next batch (AC-ART-03); an image
-    that cannot be decoded counts as a failed draw. Never raises for one element."""
+    """Draw, redraw once on a violation, else fall back to the emoji (AC-ART-02). `encode` turns the model output into
+    what gets published, and the check sees exactly that. A refused prompt or image (DrawRejected) and an image that
+    cannot be decoded count as failed draws. Quota, the per-batch limit, the time budget and transient errors
+    (network, upload, 5xx) leave the element waiting for the next batch (AC-ART-03). Never raises for one element."""
     result = ArtResult()
     rejections: Counter[str] = Counter()
     errors: Counter[str] = Counter()
@@ -102,16 +110,31 @@ def draw_images(
         if not art.image_hint.strip():
             result.fallback.append(art.id)  # no approved hint: a generic picture would mislead (AC-ART-01)
             continue
-        if drawn_items >= limit:
+        out_of_time = deadline is not None and clock is not None and clock() > deadline
+        if drawn_items >= limit or out_of_time:
             result.pending.append(art.id)
             continue
         drawn_items += 1
         prompt = build_prompt(art.image_hint, art.name)
         try:
             for _ in range(MAX_DRAWS):
-                image = generate(prompt)
+                try:
+                    raw = generate(prompt)
+                except DrawRejected:
+                    result.draws += 1
+                    errors["draw_rejected"] += 1
+                    continue
                 result.draws += 1
-                reason = check(image)
+                try:
+                    image = encode(raw) if encode is not None else raw
+                except Exception:  # corrupt or oversized model output (Pillow): a failed draw
+                    errors["decode_error"] += 1
+                    continue
+                try:
+                    reason = check(image)
+                except DrawRejected:
+                    errors["draw_rejected"] += 1
+                    continue
                 if reason is not None:
                     rejections[reason if reason in REJECT_REASONS else "banned_category"] += 1
                     continue
@@ -120,7 +143,7 @@ def draw_images(
                     break
                 except UploadFailed:
                     raise
-                except Exception:  # corrupt or oversized model output (Pillow): a failed draw
+                except Exception:  # save may still decode (no `encode` given): a failed draw
                     errors["decode_error"] += 1
             else:
                 result.fallback.append(art.id)
@@ -128,8 +151,10 @@ def draw_images(
             result.pending.extend(i.id for i in items[index:] if i.image_hint.strip())
             result.fallback.extend(i.id for i in items[index + 1 :] if not i.image_hint.strip())
             break
-        except Exception:  # Workers AI / check / upload error for this element: try again next batch
+        except Exception as exc:  # network, 5xx after retries, upload: try again next batch, but say so
             result.pending.append(art.id)
+            result.errored.append(art.id)
+            errors[type(exc).__name__] += 1
     result.rejections = dict(rejections)
     result.errors = dict(errors)
     return result
@@ -151,7 +176,6 @@ def to_webp_256(data: bytes) -> bytes:
     pixel count are bounded (Pillow raises DecompressionBombError above MAX_PIXELS)."""
     if len(data) > MAX_INPUT_BYTES:
         raise ValueError("ảnh đầu vào quá lớn")
-    Image.MAX_IMAGE_PIXELS = MAX_PIXELS
     with Image.open(io.BytesIO(data), formats=INPUT_FORMATS) as source:
         if source.width * source.height > MAX_PIXELS:
             raise ValueError("ảnh quá nhiều điểm ảnh")

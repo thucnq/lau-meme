@@ -298,3 +298,122 @@ def test_ac_art_04_du_lieu_khong_phai_anh_bi_tu_choi(junk):
     from lau_meme_pipeline.art import to_webp_256
 
     assert failure_of(to_webp_256, junk) is not None
+
+
+# ================================================================ AC-ART-02 / 03: refused vs transient draws
+
+
+def test_ac_art_02_generate_bi_tu_choi_hai_lan_thi_ve_emoji_va_dem_draw_rejected():
+    """AC-ART-02: generate ném DrawRejected ở cả hai lần vẽ: id vào fallback (không phải chờ vẽ), errors đếm
+    draw_rejected 2."""
+    from lau_meme_pipeline.art import draw_images
+    from lau_meme_pipeline.llm import DrawRejected
+
+    gen = RaisingGenerate(DrawRejected("refused"), on_calls=[1, 2])
+    result = draw_images([item(0), item(1)], gen, FakeCheck(), FakeSave())
+
+    assert result.fallback == ["e00"]
+    assert result.pending == []
+    assert list(result.images) == ["e01"]
+    assert result.errors == {"draw_rejected": 2}
+
+
+def test_ac_art_02_generate_bi_tu_choi_mot_lan_roi_ve_duoc_thi_luu_anh():
+    """AC-ART-02: DrawRejected ở lần vẽ đầu, lần hai thành công: ảnh lần hai được lưu và dùng."""
+    from lau_meme_pipeline.art import draw_images
+    from lau_meme_pipeline.llm import DrawRejected
+
+    gen, save = RaisingGenerate(DrawRejected("refused"), on_calls=[1]), FakeSave()
+    result = draw_images([item(0)], gen, FakeCheck(), save)
+
+    assert save.saved == [b"img2"]
+    assert result.images == {"e00": key_of(b"img2")}
+    assert result.fallback == []
+    assert result.pending == []
+
+
+@pytest.mark.parametrize("exc_name", ["LlmError", "OSError"])
+def test_ac_art_03_loi_tam_thoi_thi_cho_ve_va_ghi_vao_errored_theo_ten_lop(exc_name):
+    """AC-ART-03: LlmError (không phải DrawRejected) hoặc OSError: id vào pending và vào result.errored, errors đếm theo
+    tên lớp ngoại lệ."""
+    import lau_meme_pipeline.llm as llm
+    from lau_meme_pipeline.art import draw_images
+
+    exc = {"LlmError": llm.LlmError, "OSError": OSError}[exc_name]("boom")
+    gen = RaisingGenerate(exc, on_calls=[1])
+
+    result = draw_images([item(0), item(1)], gen, FakeCheck(), FakeSave())
+
+    assert result.pending == ["e00"]
+    assert "e00" in result.errored
+    assert "e01" not in result.errored
+    assert result.errors == {exc_name: 1}
+    assert result.fallback == []
+    assert list(result.images) == ["e01"]
+
+
+# ================================================================ AC-ART-04: encode before check
+
+
+def test_ac_art_04_encode_chay_truoc_check_va_save_nhan_dung_byte_da_ma_hoa():
+    """AC-ART-04: với encode=f, check nhận f(raw) và save nhận đúng các byte đã mã hóa đó (cái được kiểm là cái được
+    đăng)."""
+    from lau_meme_pipeline.art import draw_images
+
+    check, save = FakeCheck(), FakeSave()
+    result = draw_images([item(0)], FakeGenerate(), check, save, encode=lambda raw: b"ENC:" + raw)
+
+    assert check.seen == [b"ENC:img1"]
+    assert save.saved == [b"ENC:img1"]
+    assert result.images == {"e00": key_of(b"ENC:img1")}
+
+
+def test_ac_art_04_encode_loi_thi_tinh_la_decode_error_va_la_mot_lan_ve():
+    """AC-ART-04: encode ném lỗi (ảnh hỏng) ở lần vẽ đầu: tính decode_error 1 và là một lần vẽ; vẽ lại lần hai thì
+    dùng ảnh lần hai."""
+    from lau_meme_pipeline.art import draw_images
+
+    calls = []
+
+    def encode(raw):
+        calls.append(raw)
+        if len(calls) == 1:
+            raise ValueError("corrupt image")
+        return b"ENC:" + raw
+
+    gen, check, save = FakeGenerate(), FakeCheck(), FakeSave()
+    result = draw_images([item(0)], gen, check, save, encode=encode)
+
+    assert result.errors == {"decode_error": 1}
+    assert result.draws == 2
+    assert len(gen.prompts) == 2
+    assert check.seen == [b"ENC:img2"]
+    assert result.images == {"e00": key_of(b"ENC:img2")}
+
+
+# ================================================================ AC-ART-03: time budget
+
+
+class Clock:
+    """Returns 0 on the first call and 100 on every call after it."""
+
+    def __init__(self):
+        self.calls = 0
+
+    def __call__(self):
+        self.calls += 1
+        return 0 if self.calls == 1 else 100
+
+
+def test_ac_art_03_het_thoi_gian_thi_phan_tu_sau_cho_ve_khong_ve_tiep():
+    """AC-ART-03: deadline=50, clock trả 0 rồi 100 mãi: phần tử đầu được vẽ, mọi phần tử có gợi ý sau đó vào pending
+    và không được vẽ."""
+    from lau_meme_pipeline.art import draw_images
+
+    gen = FakeGenerate()
+    result = draw_images([item(0), item(1), item(2)], gen, FakeCheck(), FakeSave(), deadline=50, clock=Clock())
+
+    assert len(gen.prompts) == 1
+    assert list(result.images) == ["e00"]
+    assert result.pending == ["e01", "e02"]
+    assert result.fallback == []

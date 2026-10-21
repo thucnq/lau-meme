@@ -16,6 +16,7 @@ import hashlib
 import io
 import itertools
 import re
+from datetime import timedelta
 
 import pytest
 
@@ -112,7 +113,7 @@ def llm_with_hints():
     return make_llm(describe=describe, link=link)
 
 
-def run(client, reporter, names, art, batch_at=T):
+def run(client, reporter, names, art, batch_at=T, llm=None):
     from lau_meme_pipeline.batch import run_batch
     from lau_meme_pipeline.crawl import Http
 
@@ -124,7 +125,7 @@ def run(client, reporter, names, art, batch_at=T):
         reporter=reporter,
         adapters=[FakeAdapter("RSS", names)],
         crawl_http=Http(lambda url: ("text/plain", "")),
-        llm=llm_with_hints(),
+        llm=llm if llm is not None else llm_with_hints(),
         log=lambda msg: None,
         banned_words=[],
         art=art,
@@ -373,3 +374,86 @@ def test_ac_art_01_meme_khong_co_goi_y_anh_thi_khong_ve_va_dung_emoji(hint):
     (body,) = client.success_posts
     assert content_element(body, MEME).get("image_key") is None
     assert pending_of(body) == []
+
+
+# ================================================================ review additions
+
+
+def test_ac_art_02_ve_bi_tu_choi_mai_thi_ve_emoji_dut_diem_va_issue_ghi_draw_rejected():
+    """AC-ART-02: generate luôn ném DrawRejected: mẻ success, meme không nằm trong art_pending, không image_key, Issue
+    nhắc "draw_rejected"."""
+    from lau_meme_pipeline.llm import DrawRejected
+
+    client, reporter = ArtClient(), FakeReporter()
+    outcome = run(client, reporter, [MEME], art_adapters(Draw(DrawRejected("refused")), Check()))
+
+    assert outcome.ok is True and outcome.status == "success"
+    (body,) = client.success_posts
+    assert pending_of(body) == []
+    assert content_element(body, MEME).get("image_key") is None
+    assert client.puts == []
+    assert "draw_rejected" in reporter.issues[0][1]
+
+
+def test_ac_art_03_loi_tam_thoi_ba_me_lien_tiep_thi_bo_cuoc_ve_emoji_va_ghi_art_attempts_3():
+    """AC-ART-03: generate luôn ném LlmError thường: sau mẻ 1 và 2 meme còn trong art_pending; sau mẻ thứ 3 liên tiếp
+    (mỗi mẻ nhận kho của mẻ trước, thêm meme mới) meme hết chờ vẽ (về emoji) và phần tử trong kho có art_attempts 3."""
+    from lau_meme_pipeline.llm import LlmError
+
+    plan = [(MEME, T), (MEME2, T2), (MANY_NAMES[0], T + timedelta(hours=24))]
+    store, meme_id, bodies = {}, None, []
+    for name, batch_at in plan:
+        client = ArtClient(store=store)
+        outcome = run(client, FakeReporter(), [name], art_adapters(Draw(LlmError("boom")), Check()), batch_at=batch_at)
+        assert outcome.ok is True and outcome.status == "success"
+        (body,) = client.success_posts
+        bodies.append(body)
+        store = body["store"]
+        meme_id = meme_id or content_element(body, MEME)["id"]
+
+    assert meme_id in pending_of(bodies[0])
+    assert meme_id in pending_of(bodies[1])
+    assert meme_id not in pending_of(bodies[2])
+    assert store_element(bodies[2], MEME)["art_attempts"] == 3
+    assert content_element(bodies[2], MEME).get("image_key") is None
+
+
+def test_ac_art_01_goi_y_rong_khong_bi_danh_dau_fallback_va_duoc_ve_khi_dot_sau_co_goi_y():
+    """AC-ART-01: mẻ 1 describe trả image_hint "": meme không được vẽ và KHÔNG bị đánh dấu image_fallback trong kho;
+    sửa kho thành có image_hint thì mẻ 2 vẽ meme đó."""
+    import copy
+
+    def no_hint(items):
+        return [{**d, "image_hint": ""} for d in _describe(items)]
+
+    llm = llm_with_hints()
+    llm["describe"] = no_hint
+    first, draw1 = ArtClient(), Draw()
+    run(first, FakeReporter(), [MEME], art_adapters(draw1, Check()), llm=llm)
+
+    assert draw1.prompts == []
+    (body1,) = first.success_posts
+    assert not store_element(body1, MEME).get("image_fallback")
+
+    store = copy.deepcopy(body1["store"])
+    (element,) = [e for e in store["elements"] if e["name"] == MEME]
+    element["image_hint"] = HINT
+    second, draw2 = ArtClient(store=store), Draw()
+    run(second, FakeReporter(), [MEME2], art_adapters(draw2, Check()), batch_at=T2)
+
+    assert any(HINT in p for p in draw2.prompts)
+    (body2,) = second.success_posts
+    assert content_element(body2, MEME)["image_key"] is not None
+
+
+def test_ac_art_04_check_nhan_dung_byte_webp_se_duoc_dang():
+    """AC-ART-04: byte đưa cho check là WebP (bắt đầu RIFF) và đúng là byte được tải lên R2 (cái được kiểm là cái được
+    đăng)."""
+    client, check = ArtClient(), Check()
+    run(client, FakeReporter(), [MEME], art_adapters(Draw(), check))
+
+    assert len(check.seen) == 1
+    assert check.seen[0][:4] == b"RIFF" and check.seen[0][8:12] == b"WEBP"
+    (key, data) = client.puts[0]
+    assert data == check.seen[0]
+    assert key == key_of(check.seen[0])

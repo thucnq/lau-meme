@@ -32,6 +32,8 @@ from lau_meme_pipeline.seed import ACTIVE, CLASSIC, ContentStore, StoredElement,
 from lau_meme_pipeline.text import fold
 
 GMT7 = timezone(timedelta(hours=7))
+MAX_ART_ATTEMPTS = 3  # batches an element may fail with transient errors before it keeps its emoji (ADR 0012)
+MAX_ART_PENDING = 2000  # stored backlog; anything beyond is found again from the store (ADR 0009 row size)
 MAX_NAME = 100  # D1/Worker limit of element name and fold (UTF-16 units, as the Worker counts)
 MAX_EMOJI = 16
 TREND = "trend"
@@ -378,7 +380,8 @@ def _illustrate(
     report: dict,
 ) -> ContentStore:
     """Elements waiting from earlier batches first, then this batch's, then older ones never drawn (AC-ART-03).
-    An element that fell back to its emoji after two rejected draws stays so (AC-ART-02)."""
+    An element whose draws were refused, whose hint failed moderation, or that kept failing for MAX_ART_ATTEMPTS
+    batches keeps its emoji for good (AC-ART-02). One with no hint yet is only skipped: a later hint is drawn."""
     trend = {e["id"]: e for e in out_store["elements"]}
 
     def drawable(eid: str) -> bool:
@@ -404,13 +407,22 @@ def _illustrate(
     art = draw(order_for_drawing([item(i) for i in first], [item(e["id"]) for e in rest]))
     for eid, key in art.images.items():
         trend[eid]["image_key"] = key
-    for eid in art.fallback:
-        trend[eid]["image_fallback"] = True
-    out_store["art_pending"] = list(art.pending)
+    pending = list(art.pending)
+    gave_up = []
+    for eid in art.errored:
+        trend[eid]["art_attempts"] = trend[eid].get("art_attempts", 0) + 1
+        if trend[eid]["art_attempts"] >= MAX_ART_ATTEMPTS:
+            gave_up.append(eid)
+    pending = [eid for eid in pending if eid not in gave_up]
+    for eid in [*art.fallback, *gave_up]:
+        e = trend[eid]
+        if e.get("image_hint", "").strip() or not e.get("image_hint_ok", True) or eid in gave_up:
+            e["image_fallback"] = True
+    out_store["art_pending"] = pending[:MAX_ART_PENDING]
     report["art"] = {
         "drawn": len(art.images),
-        "fallback": len(art.fallback),
-        "pending": len(art.pending),
+        "fallback": len(art.fallback) + len(gave_up),
+        "pending": len(pending),
         "draws": art.draws,
         "rejections": dict(sorted(art.rejections.items())),
         "errors": dict(sorted(art.errors.items())),

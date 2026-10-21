@@ -19,7 +19,9 @@ Pipeline chạy trên GitHub Actions, gói Cloudflare free. Hạn mức Workers 
   - Model mặc định `@cf/black-forest-labs/flux-1-schnell`, đổi bằng variable `WORKERS_AI_MODEL`.
   - Gọi bằng `http.client`, cùng kiểu adapter với ADR 0011.
   - Khóa là GitHub Environment secret `WORKERS_AI_TOKEN`: API token chỉ có quyền **Workers AI** (Read + Edit) trên account này, khác `CLOUDFLARE_API_TOKEN` dùng để deploy.
-  - Ánh xạ lỗi: HTTP 429 hoặc lỗi hết phân bổ ngày → `QuotaExhausted`, và phần còn lại vào "chờ vẽ" (AC-ART-03). 5xx → thử lại theo backoff. Lỗi khác → lần vẽ đó hỏng.
+  - Ánh xạ lỗi: HTTP 429 hoặc lỗi hết phân bổ ngày → `QuotaExhausted`, và phần còn lại vào "chờ vẽ" (AC-ART-03). 5xx → thử lại theo backoff, hết lượt thì phần tử chờ vẽ. 4xx khác → `DrawRejected`: lần vẽ đó hỏng (tính vào 2 lần vẽ, rồi về emoji).
+  - Chỉ đọc dạng trả lời của Flux (`result.image` base64). Đổi `WORKERS_AI_MODEL` sang model trả ảnh thô thì mọi lần vẽ đều lỗi.
+  - **Chạy lại cho cùng ảnh (AC-PIPE-10, AC-INV-05):** gửi `seed` = 8 hex đầu của SHA-256(prompt + số lần đã hỏi prompt đó trong lần chạy). Cùng mẻ chạy lại thì cùng seed, nên cùng ảnh và cùng khóa (với điều kiện model giữ nguyên); lần vẽ lại trong cùng mẻ là seed mới.
 - **Kiểm ảnh:** Gemini (ADR 0011, cùng khóa `GEMINI_API_KEY`), bước mới `check_image`.
   - Gửi ảnh dạng `inline_data` và nhận `{ok, reason}`.
   - `reason` thuộc 5 lý do của AC-ART-02. Lý do lạ được quy về `banned_category`.
@@ -31,6 +33,11 @@ Pipeline chạy trên GitHub Actions, gói Cloudflare free. Hạn mức Workers 
   - Object đã có thì không ghi lại.
   - Pipeline tải ảnh trước khi đăng mẻ. Mẻ lỗi thì ảnh mồ côi vô hại, vì khóa theo nội dung và không ai tham chiếu.
 - **Thiếu `WORKERS_AI_TOKEN` hoặc `CLOUDFLARE_ACCOUNT_ID`:** mẻ `full` vẫn chạy, bỏ bước vẽ, phần tử mới vào "chờ vẽ" và báo cáo đợt ghi cảnh báo. Khác `GEMINI_API_KEY`: thiếu khóa Gemini thì đợt `full` thất bại (ADR 0011), vì không kiểm duyệt được meme.
+- **Lỗi tạm thời** (mạng, 5xx, tải lên): phần tử chờ vẽ và tăng `art_attempts` trong kho; sau **3 đợt** lỗi liên tiếp thì giữ emoji, để một phần tử hỏng không chiếm suất vẽ mãi. Báo cáo đợt đếm lỗi theo loại, để token sai (401) không bị che thành "chờ vẽ".
+- **Ngân sách thời gian:** bước vẽ dừng sau 8 phút, phần còn lại chờ vẽ, để cả đợt xong trong 15 phút.
+- **Kiểm đúng ảnh được đăng:** ảnh của model được chuyển WebP 256×256 trước, Gemini kiểm chính các byte đó, rồi mới tải lên.
+- **Phần tử chưa có gợi ý ảnh** chỉ bị bỏ qua, không đánh dấu giữ emoji; đợt sau có gợi ý thì vẽ. Gợi ý bị kiểm duyệt loại thì giữ emoji luôn.
+- **Danh sách chờ vẽ** lưu tối đa 2000 id; phần dư được tìm lại từ kho ở đợt sau.
 - **Giới hạn:** tối đa **20 ảnh mỗi đợt** (người chọn 2026-10-21). Phần vượt vào "chờ vẽ" và được vẽ trước ở đợt sau. Mỗi ảnh tối đa 2 lần vẽ (AC-ART-02).
 - **Kho:** `PipelineStore.art_pending` (id phần tử chờ vẽ). Phần tử trend trong kho giữ `image_key`.
   - Worker nhận thêm khóa `art_pending` (danh sách khóa hợp lệ của `store`).

@@ -10,6 +10,7 @@ import http.client
 import json
 import os
 import sys
+import time
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, replace
 from datetime import UTC, datetime, timedelta, timezone
@@ -39,6 +40,7 @@ ALLOWED_LLM_FIELDS = frozenset(
     | {"existing", "candidates", "need", "id", "a", "b", "result"}
 )
 MAX_TERM = 100  # banned_term.term_fold limit in D1
+ART_BUDGET_SECONDS = 8 * 60  # drawing stops in time for the 15-minute batch (ADR 0012); the rest waits
 MAX_STORE_BYTES = 1_900_000  # the Worker refuses a bigger pipeline store (one D1 row, ADR 0009)
 
 
@@ -296,9 +298,8 @@ def _art_lines(report: Mapping | None) -> list[str]:
 def _drawer(art: ArtAdapters | None, client: BatchClient) -> Callable[[list[ArtItem]], ArtResult]:
     """The `draw` of run_full (ADR 0012). Without adapters nothing is drawn and every element with a hint waits."""
 
-    def save(image: bytes) -> str:
-        webp = to_webp_256(image)  # decode errors count as a failed draw (art.draw_images)
-        key = image_key(webp)
+    def save(webp: bytes) -> str:
+        key = image_key(webp)  # already encoded by `to_webp_256`, the bytes the check saw
         try:
             if not client.image_exists(key):
                 client.put_image(key, webp)
@@ -311,7 +312,14 @@ def _drawer(art: ArtAdapters | None, client: BatchClient) -> Callable[[list[ArtI
             fallback=[i.id for i in items if not i.image_hint.strip()],
             pending=[i.id for i in items if i.image_hint.strip()],
         )
-    return lambda items: draw_images(items, art.generate, art.check, save)
+
+    def draw(items: list[ArtItem]) -> ArtResult:
+        deadline = time.monotonic() + ART_BUDGET_SECONDS
+        return draw_images(
+            items, art.generate, art.check, save, encode=to_webp_256, deadline=deadline, clock=time.monotonic
+        )
+
+    return draw
 
 
 def _send_aliases(client: BatchClient, state: Mapping, new_aliases: frozenset[str], log: Callable[[str], None]) -> None:

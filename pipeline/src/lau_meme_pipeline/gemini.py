@@ -13,7 +13,7 @@ from collections.abc import Callable, Iterator, Mapping
 
 from lau_meme_pipeline.art import REJECT_REASONS
 from lau_meme_pipeline.batch import TIMEOUT_SECONDS, build_llm_payload
-from lau_meme_pipeline.llm import LlmError, PartialAnswer, QuotaExhausted, RateLimited, call_in_batches
+from lau_meme_pipeline.llm import DrawRejected, LlmError, PartialAnswer, QuotaExhausted, RateLimited, call_in_batches
 from lau_meme_pipeline.moderation import CATEGORIES
 
 HOST = "generativelanguage.googleapis.com"
@@ -214,6 +214,8 @@ class GeminiImageCheck:
                 self._sleep(2.0 * 2**attempt)
             except _Unreadable:
                 return "banned_category"
+            except LlmError as exc:  # HTTP 4xx: this image is refused, a retry cannot help
+                raise DrawRejected(str(exc)) from None
         if not isinstance(answer, Mapping) or not isinstance(answer.get("ok"), bool):
             return "banned_category"
         if answer["ok"]:

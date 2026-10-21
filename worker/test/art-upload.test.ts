@@ -206,6 +206,35 @@ describe('art: PUT /pipeline/images/{key}', () => {
     expect(await stored(freshKey)).toEqual(fresh)
   })
 
+  it('AC-ART-04: thân dạng stream 600 KB không có Content-Length thì vẫn 413 và không ghi gì', async () => {
+    const data = webp(14, 600 * 1024 - 12)
+    const key = await keyOf(data)
+    used.push(key)
+    const chunk = 64 * 1024
+    let offset = 0
+    const stream = new ReadableStream<Uint8Array>({
+      pull(controller) {
+        if (offset >= data.length) {
+          controller.close()
+          return
+        }
+        controller.enqueue(data.slice(offset, offset + chunk))
+        offset += chunk
+      },
+    })
+
+    const res = await call(`${BASE}/images/${key}`, {
+      method: 'PUT',
+      body: stream,
+      duplex: 'half',
+      headers: { 'Content-Type': 'image/webp' },
+    } as RequestInit)
+
+    expect(res.status).toBe(413)
+    expectProblem(res)
+    await expectNothingWritten(key)
+  })
+
   it('AC-ART-ABUSE: token pipeline bị lộ cũng không ghi đè được ảnh có sẵn bằng nội dung khác hay ghi khóa giả', async () => {
     const original = webp(12)
     const key = await keyOf(original)
