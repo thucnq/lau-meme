@@ -5,6 +5,9 @@ import { currentVersion } from '../content/content'
 
 /** Pipeline publishing (ADR 0003): one DB.batch per version, keep the 14 newest, rollback = pointer switch. */
 const KEEP_VERSIONS = 14
+/** D1 caps a row at 2 MB; the phase 2 pipeline store (ADR 0009) must fit one row. */
+const MAX_STORE_BYTES = 1_900_000
+const STORE_KEYS = ['elements', 'recipes', 'queue', 'asked_pairs', 'llm_cache'] as const
 const MODES = ['core', 'full'] as const
 
 type Element = { id: string; name: string; fold: string; emoji: string; depth: number; origin: string | null; image_key: string | null }
@@ -161,7 +164,12 @@ export async function publishBatch(req: Request, env: Env): Promise<Response> {
     return json(toBatchRun(run), { status: 201 })
   }
 
-  const b = obj(body, 'body', ['status', 'version', 'batch_at', 'mode', 'manifest', 'graph', 'content', 'stats'])
+  const b = obj(
+    body,
+    'body',
+    ['status', 'version', 'batch_at', 'mode', 'manifest', 'graph', 'content', 'stats', 'store'],
+    ['status', 'version', 'batch_at', 'mode', 'manifest', 'graph', 'content', 'stats'],
+  )
   const version = int(b.version, 'version', 1)
   const batchAt = instant(b.batch_at, 'batch_at')
   const mode = oneOf(b.mode, 'mode', MODES)
@@ -176,6 +184,7 @@ export async function publishBatch(req: Request, env: Env): Promise<Response> {
   for (const ref of [...starters, daily]) if (!known.has(ref)) fail('content: khởi đầu / Món đặc biệt không có trong content.elements')
   const manifestJson = parseManifest(b.manifest, { version, batchAt, starters, daily, byId })
   const statsJson = parseStats(b.stats)
+  const storeJson = b.store === undefined ? null : parseStore(b.store)
 
   if (version <= (await maxPublishedVersion(env.DB))) {
     return problem(409, 'Version phải lớn hơn mọi version đã đăng')
@@ -234,8 +243,46 @@ export async function publishBatch(req: Request, env: Env): Promise<Response> {
     db
       .prepare('DELETE FROM batch_content WHERE version NOT IN (SELECT version FROM batch_content ORDER BY version DESC LIMIT ?)')
       .bind(KEEP_VERSIONS),
+    ...(storeJson === null
+      ? []
+      : [db.prepare('INSERT INTO pipeline_store (version, store_json, created_at) VALUES (?, ?, ?)').bind(version, storeJson, now)]),
+    db.prepare('DELETE FROM pipeline_store WHERE version NOT IN (SELECT version FROM batch_content)'),
   ])
   return json(toBatchRun(run), { status: 201 })
+}
+
+/** ADR 0009: opaque to the Worker - only the top-level shape and the one-row size are checked. */
+function parseStore(value: unknown): string {
+  const store = obj(value, 'store', STORE_KEYS, [])
+  for (const key of ['elements', 'recipes', 'queue', 'asked_pairs'] as const) {
+    if (key in store && !Array.isArray(store[key])) fail(`store.${key}: phải là mảng`)
+  }
+  const cache = store.llm_cache
+  if ('llm_cache' in store && (typeof cache !== 'object' || cache === null || Array.isArray(cache))) fail('store.llm_cache: phải là object')
+  const text = JSON.stringify(store)
+  if (new TextEncoder().encode(text).length > MAX_STORE_BYTES) throw new HttpError(413, 'Kho pipeline quá lớn (tối đa 1,9 MB)')
+  return text
+}
+
+/**
+ * GET /api/pipeline/store - ADR 0009: the store written with the current version (or `?version=`); `{}` when that
+ * version was published without one (core mode) or nothing is published yet; 404 for a version no longer kept.
+ */
+export async function getPipelineStore(req: Request, env: Env): Promise<Response> {
+  const raw = new URL(req.url).searchParams.get('version')
+  let version: number | null
+  if (raw === null) {
+    version = await currentVersion(env.DB)
+  } else {
+    if (!/^[1-9][0-9]{0,15}$/.test(raw)) return problem(400, 'version: số nguyên ≥ 1')
+    version = Number(raw)
+    const kept = await env.DB.prepare('SELECT version FROM batch_content WHERE version = ?').bind(version).first()
+    if (kept === null) return problem(404, 'Version không còn lưu')
+  }
+  if (version === null) return json({})
+  const row = await env.DB.prepare('SELECT store_json FROM pipeline_store WHERE version = ?').bind(version).first<{ store_json: string }>()
+  // Stored text as is: never re-serialised, so the pipeline reads back byte-identical JSON (AC-PIPE-10).
+  return new Response(row?.store_json ?? '{}', { headers: { 'content-type': 'application/json', 'cache-control': 'no-store' } })
 }
 
 function setCurrent(db: D1Database, version: number, now: number): D1PreparedStatement {
@@ -302,7 +349,7 @@ const DAILY_HISTORY_LIMIT = 1000
  */
 export async function getPipelineState(_req: Request, env: Env): Promise<Response> {
   const db = env.DB
-  const [current, blocks, aliases, history] = await db.batch([
+  const [current, blocks, aliases, history, admin] = await db.batch([
     db.prepare('SELECT value FROM app_meta WHERE key = ?').bind('current_version'),
     db.prepare('SELECT kind, target_id FROM block ORDER BY kind, target_id'),
     db.prepare("SELECT term_fold FROM banned_term WHERE source IN ('mod', 'admin') ORDER BY term_fold"),
@@ -310,6 +357,7 @@ export async function getPipelineState(_req: Request, env: Env): Promise<Respons
       `SELECT version, daily_element_id, batch_at FROM batch_run
        WHERE status = 'success' AND daily_element_id IS NOT NULL ORDER BY version DESC LIMIT ?`,
     ).bind(DAILY_HISTORY_LIMIT),
+    db.prepare("SELECT term_fold FROM banned_term WHERE source = 'admin' ORDER BY term_fold"),
   ])
   const value = (current?.results[0] as { value: string } | undefined)?.value
   const blocklist: Record<'elements' | 'recipes' | 'images', string[]> = { elements: [], recipes: [], images: [] }
@@ -320,6 +368,7 @@ export async function getPipelineState(_req: Request, env: Env): Promise<Respons
     current_version: value === undefined ? null : Number(value),
     blocklist,
     banned_aliases: [...new Set(((aliases?.results ?? []) as { term_fold: string }[]).map((r) => r.term_fold))],
+    admin_blocked: ((admin?.results ?? []) as { term_fold: string }[]).map((r) => r.term_fold),
     daily_history: ((history?.results ?? []) as { version: number; daily_element_id: string; batch_at: number }[]).reverse().map(
       (r) => ({ version: r.version, element_id: r.daily_element_id, batch_at: new Date(r.batch_at).toISOString() }),
     ),

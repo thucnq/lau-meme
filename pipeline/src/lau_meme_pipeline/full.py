@@ -25,7 +25,7 @@ from lau_meme_pipeline.linking import (
     validate_links,
 )
 from lau_meme_pipeline.linkqueue import next_queue
-from lau_meme_pipeline.llm import CachedLlm
+from lau_meme_pipeline.llm import CachedLlm, QuotaExhausted
 from lau_meme_pipeline.moderation import Concept, ModLists, is_held, moderate
 from lau_meme_pipeline.seed import ACTIVE, CLASSIC, ContentStore, StoredElement, StoredRecipe, load_core
 from lau_meme_pipeline.text import fold
@@ -43,6 +43,9 @@ class FullOutcome:
     manifest: dict
     store: dict
     report: dict = field(default_factory=dict)
+    content: ContentStore | None = None  # what was exported, for the publish body (batch._content)
+    daily_element_id: str | None = None
+    new_aliases: frozenset[str] = frozenset()  # MOD aliases found this batch (AC-MOD-06)
 
 
 def _version(batch_at: datetime) -> int:
@@ -109,10 +112,18 @@ def run_full(
     version = _version(batch_at)
     batch_date: date = batch_at.astimezone(GMT7).date()
     used: dict = {}
+    quota = {"hit": False}
     cache = CachedLlm(lambda step, payload: llm[step](payload), dict(store.get("llm_cache", {})))
 
     def ask(step: str, payload: object) -> object:
-        answer = cache.ask(step, payload)
+        try:
+            answer = cache.ask(step, payload)
+        except QuotaExhausted:
+            if step == "classify":
+                raise  # moderation queues the rest itself (AC-PIPE-12)
+            # Any other step: no answer, never cached; what it would have added waits in the queue.
+            quota["hit"] = True
+            return {} if step == "judge" else []
         used[CachedLlm.key(step, payload)] = answer  # the new store keeps only this batch's answers
         return answer
 
@@ -152,13 +163,14 @@ def run_full(
         answers = ask("describe", payload)
         by_key = {a.get("key"): a for a in answers if isinstance(a, Mapping)} if isinstance(answers, list) else {}
         for i in to_describe:
+            if not isinstance(by_key.get(i["key"]), Mapping):
+                continue  # no answer (quota, truncated): described again next batch, from the queue
             i["described"] = {
-                k: str(by_key.get(i["key"], {}).get(k, ""))
-                for k in ("emoji", "description", "daily_hint", "image_hint")
+                k: str(by_key[i["key"]].get(k, "")) for k in ("emoji", "description", "daily_hint", "image_hint")
             }
 
     # 3. Moderate.
-    concepts = [_concept_from(i, i["described"]) for i in items]
+    concepts = [_concept_from(i, i.get("described", {})) for i in items]
     moderated = moderate(concepts, lists, lambda reqs: ask("classify", reqs), batch_date)
     report["moderation"] = moderated.counts
     by_key_item = {i["key"]: i for i in items}
@@ -170,6 +182,10 @@ def run_full(
     name_to_id = {fold(e.name): e.id for e in content.elements.values()}
     candidates = sorted(e.name for e in content.elements.values() if e.id not in graph.inactive)
     passed = [p for p in moderated.passed if p.concept.emoji]
+    for p in moderated.passed:
+        if not p.concept.emoji:  # not described this batch: never dropped silently, it waits in the queue
+            item = by_key_item[p.concept.key]
+            unlinked.append({**item, "reason": "quota"} if quota["hit"] else item)
     link_answers = (
         ask("link", [{"key": p.concept.key, "name": p.concept.name, "candidates": candidates} for p in passed])
         if passed
@@ -217,7 +233,8 @@ def run_full(
     for p in passed:
         recipes_for = kept_by_key.get(p.concept.key, [])
         if not recipes_for:
-            unlinked.append(by_key_item[p.concept.key])
+            item = by_key_item[p.concept.key]
+            unlinked.append({**item, "reason": "quota"} if quota["hit"] else item)
             continue
         linked.add(p.concept.key)
         new_id = recipes_for[0]["result_id"]
@@ -247,7 +264,7 @@ def run_full(
         unlinked.append({**by_key_item[c.key], "reason": "quota"})
     q = next_queue(queue, unlinked, linked)
     report["queue"] = {"linked": len(linked), "queued": len(q.queue), "dropped": q.dropped}
-    report["quota"] = bool(moderated.queued)
+    report["quota"] = bool(moderated.queued) or quota["hit"]
 
     # 5b. Supplementary recipes (AC-PIPE-08): needy elements first, then the pairs most often on the plate together.
     asked_in = {(p[0], p[1]) for p in store.get("asked_pairs", [])}
@@ -319,7 +336,16 @@ def run_full(
     out_store["queue"] = q.queue
     out_store["asked_pairs"] = [list(p) for p in sorted(asked_in | supplemented.rejected)]
     out_store["llm_cache"] = {k: used[k] for k in sorted(used)}
-    return FullOutcome(graph=graph_out, manifest=manifest, store=out_store, report=report)
+    report["quota"] = report["quota"] or quota["hit"]  # supplement steps may hit it too
+    return FullOutcome(
+        graph=graph_out,
+        manifest=manifest,
+        store=out_store,
+        report=report,
+        content=content,
+        daily_element_id=chosen["element_id"],
+        new_aliases=moderated.new_aliases,
+    )
 
 
 def _store_of(trend: Mapping[str, dict], trend_recipes: Mapping[str, dict]) -> dict:

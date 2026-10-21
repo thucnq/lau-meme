@@ -5,12 +5,13 @@ reads robots.txt before any page and refuses media. One failing source never fai
 Facebook or TikTok adapter (BRD 6).
 """
 
+import http.client
 import json
 import re
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, field
 from html import unescape
-from urllib.parse import quote, urlsplit
+from urllib.parse import quote, urljoin, urlsplit
 from urllib.robotparser import RobotFileParser
 from xml.etree.ElementTree import Element
 
@@ -20,6 +21,8 @@ USER_AGENT = "lau-meme-pipeline"
 MAX_CONTEXT = 500
 MEDIA = (".jpg", ".jpeg", ".png", ".gif", ".webp", ".mp4", ".webm", ".mov")
 TEXT_TYPES = ("text/", "application/json", "application/rss+xml", "application/atom+xml", "application/xml")
+GET_TIMEOUT_SECONDS = 20
+MAX_BODY_BYTES = 2 * 1024 * 1024  # a feed or API page; anything bigger is cut, never a media file
 
 
 @dataclass(frozen=True)
@@ -187,6 +190,40 @@ def default_adapters(env: Mapping[str, str]) -> list:
         YoutubeTrendingAdapter(env.get("YOUTUBE_API_KEY", "")),
         RssAdapter(feeds),
     ]
+
+
+MAX_REDIRECTS = 3
+
+
+def http_get(url: str) -> tuple[str, str]:
+    """Network adapter of `Http`: https GET with a timeout, a size cap and a few https-only redirects; a non-2xx
+    answer raises HttpStatus (robots.txt tells "absent" from "failing" by it)."""
+    for _ in range(MAX_REDIRECTS + 1):
+        parts = urlsplit(url)
+        if parts.scheme != "https" or not parts.hostname:
+            raise ValueError("chỉ crawl qua https")
+        path = (parts.path or "/") + (f"?{parts.query}" if parts.query else "")
+        conn = http.client.HTTPSConnection(parts.hostname, parts.port, timeout=GET_TIMEOUT_SECONDS)
+        try:
+            conn.request("GET", path, headers={"User-Agent": USER_AGENT, "Accept": "text/*, application/*"})
+            res = conn.getresponse()
+            location = res.getheader("Location")
+            content_type = res.getheader("Content-Type", "")
+            raw = res.read(MAX_BODY_BYTES)
+        finally:
+            conn.close()
+        if res.status in (301, 302, 303, 307, 308) and location:
+            url = urljoin(url, location)
+            continue
+        if not 200 <= res.status < 300:
+            raise HttpStatus(res.status)
+        match = re.search(r"charset=([\w-]+)", content_type)
+        charset = match.group(1) if match else "utf-8"
+        try:
+            return content_type, raw.decode(charset, errors="replace")
+        except LookupError:  # unknown charset name in the header
+            return content_type, raw.decode("utf-8", errors="replace")
+    raise HttpStatus(310)  # too many redirects
 
 
 @dataclass

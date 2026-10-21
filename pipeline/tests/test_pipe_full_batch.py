@@ -355,8 +355,8 @@ def test_ac_pipe_07_full_dot_sau_thu_lai_meme_trong_hang_cho_truoc_meme_moi():
 
 
 def test_ac_pipe_10_full_chay_lai_cung_batch_at_cho_graph_va_manifest_giong_het_va_khong_goi_llm():
-    """AC-PIPE-10: chạy lại cùng batch_at, cùng crawl, kho = kho mẻ trước: LLM không bị gọi, graph và manifest giống
-    hệt mẻ đầu."""
+    """AC-PIPE-10: chạy lại cùng batch_at, cùng crawl, kho đầu vào giống mẻ đầu, kèm phản hồi LLM đã lưu:
+    LLM không bị gọi, graph và manifest giống hệt mẻ đầu."""
     first_client = FakeClient()
     first_llm = make_llm()
     run_full_batch(first_client, FakeReporter(), [FakeAdapter("RSS", [MEME, "Meme Thử Hai"])], first_llm)
@@ -370,7 +370,7 @@ def test_ac_pipe_10_full_chay_lai_cung_batch_at_cho_graph_va_manifest_giong_het_
         return Counting(f)
 
     second_llm = {step: forbidden(step) for step in STEPS}
-    second_client = FakeClient(store=first["store"])
+    second_client = FakeClient(store={"llm_cache": first["store"]["llm_cache"]})
     outcome = run_full_batch(second_client, FakeReporter(), [FakeAdapter("RSS", [MEME, "Meme Thử Hai"])], second_llm)
 
     assert outcome.ok is True
