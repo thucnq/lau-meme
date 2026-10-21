@@ -242,7 +242,7 @@
   - [ ] AC-PIPE-09 Giám khảo hài
   - [ ] AC-PIPE-10 Idempotent
   - [ ] AC-PIPE-12 Gom lô Gemini, backoff, hết quota dừng êm
-- [ ] **ART** Ảnh minh họa tự tạo (giai đoạn 2) · 7đ · rủi ro: HIGH · KH: 2027-10-18 → 2027-11-08 · tiến độ: 0% · người: Thuc · bắt đầu: 2026-10-21 · xong:  · ghi chú: logic thuần + Worker /img + web xong (8/8 AC ở mức đơn vị); CHƯA nối vào mẻ full: adapter vẽ (Workers AI, câu hỏi mở 13), kiểm ảnh Gemini, tải R2 qua S3, trạng thái chờ vẽ trong kho (đổi contract) - cần /dk:design; chưa ship tới khi nối xong 
+- [ ] **ART** Ảnh minh họa tự tạo (giai đoạn 2) · 7đ · rủi ro: HIGH · KH: 2027-10-18 → 2027-11-08 · tiến độ: 0% · người: Thuc · bắt đầu: 2026-10-21 · xong:  · ghi chú: đã nối vào mẻ full (ADR 0012, nhánh feat/art-wiring); cần WORKERS_AI_TOKEN + CLOUDFLARE_ACCOUNT_ID để vẽ thật; hạn mức Workers AI vẫn chờ kiểm (câu hỏi mở 13) 
   - [ ] AC-ART-01 Prompt vẽ khái niệm, không người thật
   - [ ] AC-ART-02 Kiểm duyệt ảnh, vẽ lại một lần rồi về emoji
   - [ ] AC-ART-03 Hết hạn mức thì vẽ bù đợt sau
