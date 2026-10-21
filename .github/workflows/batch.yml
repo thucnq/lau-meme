@@ -1,6 +1,8 @@
 # Mẻ nhúng (AC-PIPE-01/02/11/14, ADR 0003/0006). Đề xuất - người chép vào .github/workflows/batch.yml
 # (guard chặn agent sửa workflow). 00:00 và 12:00 GMT+7 = 17:00 và 05:00 UTC.
 # Đăng dữ liệu qua API của Worker, không deploy code; lỗi ở bất kỳ bước nào ⇒ bản hiện hành giữ nguyên, job đỏ.
+# Giai đoạn 2 (ADR 0009, 0011): chạy tay chọn mode `full`; cron dùng variable `BATCH_MODE` của environment
+# (trống = core), nên bật crawl tự động chỉ cần đặt BATCH_MODE=full, không phải sửa workflow.
 name: batch
 
 on:
@@ -10,7 +12,7 @@ on:
   workflow_dispatch:
     inputs:
       mode:
-        description: Chế độ (giai đoạn 1 chỉ có core)
+        description: Chế độ (core = chỉ lõi; full = crawl + Gemini)
         type: choice
         options: [core, full]
         default: core
@@ -49,6 +51,13 @@ jobs:
           PIPELINE_TOKEN: ${{ secrets.PIPELINE_TOKEN }}
           GITHUB_TOKEN: ${{ github.token }}
           GITHUB_REPOSITORY: ${{ github.repository }}
-          MODE: ${{ inputs.mode || 'core' }}
+          MODE: ${{ inputs.mode || vars.BATCH_MODE || 'core' }}
           BANNED_WORDS: ${{ secrets.BANNED_WORDS }}
+          # Chỉ dùng ở mode full. Thiếu GEMINI_API_KEY ⇒ đợt full thất bại, bản hiện hành giữ nguyên.
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GEMINI_MODEL: ${{ vars.GEMINI_MODEL }}
+          YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
+          # Câu hỏi mở 25: danh sách phân tách bằng dấu phẩy; trống thì adapter đó không thu gì.
+          REDDIT_SUBREDDITS: ${{ vars.REDDIT_SUBREDDITS }}
+          RSS_FEEDS: ${{ vars.RSS_FEEDS }}
         run: uv run python -m lau_meme_pipeline.batch --mode "$MODE" --core ../docs/input/noi-dung-loi.json
