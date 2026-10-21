@@ -56,10 +56,14 @@ def dedupe(
     same: list[bool] = []
     if near:
         same = ask_same([{"name": c.name, "existing": closest} for c, closest in near])
-    near_same = {c.name for (c, _), s in zip(near, same, strict=False) if s is True}
+    answers = {c.name: s for (c, _), s in zip(near, same, strict=False) if isinstance(s, bool)}
+    near_names = {c.name for c, _ in near}
     for c in candidates:
-        if c.name in near_same:
+        if answers.get(c.name) is True:
             result.dropped[c.name] = "llm_same"
+        elif c.name in near_names and c.name not in answers:
+            # No clear answer (quota, failed call): never published as new; crawled again next batch.
+            result.dropped[c.name] = "no_answer"
         else:
             result.kept.append(c)
     return result

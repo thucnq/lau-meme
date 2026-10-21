@@ -4,7 +4,7 @@ import { getGraph, getManifest } from './features/content/content'
 import { createDiscovery, listDiscoveries, putBannedTerms } from './features/disc/disc'
 import { getSession, signInWithGoogle, signOut } from './features/auth/auth'
 import { getDailyLeaderboard, getDailyPeriodLeaderboard, getMyStreak, getStreakLeaderboard, submitDailyResult } from './features/daily/daily'
-import { getPipelineState, patchBatchRun, publishBatch, rollbackBatch } from './features/pipeline/batches'
+import { getPipelineState, getPipelineStore, patchBatchRun, publishBatch, rollbackBatch } from './features/pipeline/batches'
 import { cleanup } from './features/player/cleanup'
 import { createConsent, deleteMyData, getMyData, putNickname } from './features/player/me'
 import { createReport, getBlocklist } from './features/report/report'
@@ -54,6 +54,7 @@ const routes: Route[] = [
   { pattern: /^\/api\/pipeline\/rollback$/, methods: { POST: pipelineOnly(rollbackBatch) } },
   { pattern: /^\/api\/pipeline\/banned-terms\/([^/]+)$/, methods: { PUT: pipelineOnly(putBannedTerms) } },
   { pattern: /^\/api\/pipeline\/state$/, methods: { GET: pipelineOnly(getPipelineState) } },
+  { pattern: /^\/api\/pipeline\/store$/, methods: { GET: pipelineOnly(getPipelineStore) } },
 ]
 
 /** Admin API (ADR 0008): only on the admin host, at `/api/admin/*` (no BASE_PATH there). */

@@ -11,26 +11,34 @@ import json
 import os
 import sys
 from collections.abc import Callable, Mapping, Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import UTC, datetime, timedelta, timezone
 from pathlib import Path
 from typing import Protocol
 from urllib.parse import urlsplit
 
+from lau_meme_pipeline.crawl import Http, crawl
 from lau_meme_pipeline.daily import build_daily_block, select_daily
+from lau_meme_pipeline.full import run_full
 from lau_meme_pipeline.graph import build_manifest, decrypt_entry, export_graph
 from lau_meme_pipeline.ids import element_id
 from lau_meme_pipeline.invariants import InvariantError, check_all, miss_rate_warning, simulate_miss_rate
-from lau_meme_pipeline.moderation import ModLists
+from lau_meme_pipeline.moderation import QUOTA_LABEL, ModLists
 from lau_meme_pipeline.seed import ACTIVE, ContentStore, load_core
 from lau_meme_pipeline.text import fold
 
 STEPS = ("state", "seed", "daily", "export", "check", "invariants", "banned", "publish", "report")
 GMT7 = timezone(timedelta(hours=7))
 TIMEOUT_SECONDS = 30
-# AC-PIPE-13: public meme data only - never anything about players.
-ALLOWED_LLM_FIELDS = frozenset({"name", "quote", "context", "source_name", "element_name", "image_hint"})
+# AC-PIPE-13: public meme data only - never anything about players. ADR 0009 adds the fields moderation needs; the
+# rest are the structure of the steps (element names, recipe ids, counts - ADR 0011).
+ALLOWED_LLM_FIELDS = frozenset(
+    {"name", "quote", "context", "source_name", "element_name", "image_hint"}
+    | {"key", "kind", "emoji", "description", "daily_hint"}
+    | {"existing", "candidates", "need", "id", "a", "b", "result"}
+)
 MAX_TERM = 100  # banned_term.term_fold limit in D1
+MAX_STORE_BYTES = 1_900_000  # the Worker refuses a bigger pipeline store (one D1 row, ADR 0009)
 
 
 def version_for(batch_at: datetime) -> int:
@@ -44,15 +52,24 @@ def build_llm_payload(items: Sequence[Mapping]) -> list[dict]:
     """Every LLM payload (phase 2) goes through here; any field outside the allow-list is refused."""
     out: list[dict] = []
     for item in items:
+        if not isinstance(item, Mapping):
+            raise ValueError("Mỗi mục gửi LLM phải là object")
         extra = sorted(set(item) - ALLOWED_LLM_FIELDS)
         if extra:
             raise ValueError(f"Trường không được gửi cho LLM: {', '.join(extra)}")
+        for field, value in item.items():  # flat values only: a nested object could carry any field
+            if field == "candidates":
+                if not (isinstance(value, list) and all(isinstance(v, str) for v in value)):
+                    raise ValueError("Trường candidates gửi LLM phải là danh sách chuỗi")
+            elif not (isinstance(value, str | int | float | bool) or value is None):
+                raise ValueError(f"Trường {field} gửi LLM phải là giá trị đơn")
         out.append(dict(item))
     return out
 
 
 class BatchClient(Protocol):
     def get_state(self) -> dict: ...
+    def get_store(self, version: int | None = None) -> dict: ...
     def post_batch(self, body: dict) -> dict: ...
     def patch_batch(self, run_id: str, issue_url: str) -> dict: ...
     def put_banned_terms(self, source: str, terms: list[str]) -> None: ...
@@ -178,6 +195,8 @@ def _render_report(
     emoji: str | None,
     banned_count: int | None = None,
     miss: tuple[float, float] | None = None,
+    quota_hit: bool = False,
+    store_bytes: int | None = None,
 ) -> tuple[str, str]:
     """Title shows the dish's emoji only, never its name (AC-PIPE-14)."""
     status = "error" if failed_step else "success"
@@ -201,6 +220,12 @@ def _render_report(
         "- blocked: " + (", ".join(f"{k} {v}" for k, v in sorted(blocked.items())) or "0"),
         "- Lỗi nguồn: " + (", ".join(f"{e.get('source')}: lỗi {e.get('error')}" for e in errors) or "không có"),
         f"- quota: {stats.get('quota_used', 0)} lượt gọi Gemini",
+        *(["- ⚠️ Gemini hết quota: phần chưa xử lý nằm trong hàng chờ, đợt sau làm tiếp"] if quota_hit else []),
+        *(
+            [f"- Kho pipeline: {store_bytes // 1024} KB / {MAX_STORE_BYTES // 1024} KB"]
+            if store_bytes is not None
+            else []
+        ),
         f"- Món đặc biệt: {emoji or '-'}",
     ]
     # Only the count: the words themselves are secret (ADR 0005).
@@ -219,6 +244,47 @@ def _render_report(
     return title, "\n".join(lines) + "\n"
 
 
+class _CountedLlm(Mapping[str, Callable]):
+    """Counts step calls (cache misses): the report's quota when the adapter does not count requests itself."""
+
+    def __init__(self, llm: Mapping[str, Callable]) -> None:
+        self._llm = llm
+        self.n = 0
+
+    def __getitem__(self, step: str) -> Callable:
+        fn = self._llm[step]
+
+        def call(payload: object) -> object:
+            self.n += 1
+            return fn(payload)
+
+        return call
+
+    def __iter__(self):
+        return iter(self._llm)
+
+    def __len__(self) -> int:
+        return len(self._llm)
+
+    def used(self, llm: object) -> int:
+        calls = getattr(llm, "calls", None)
+        return calls if isinstance(calls, int) else self.n
+
+
+def _send_aliases(client: BatchClient, state: Mapping, new_aliases: frozenset[str], log: Callable[[str], None]) -> None:
+    """AC-MOD-06, after a successful publish only: a discarded batch never changes the alias list. The `mod` source
+    is replaced whole, so the old aliases go with the new. A failure is logged; the next full batch sends them
+    again, if it crawls them again (the classify answer is cached)."""
+    if not new_aliases:
+        return
+    admin = set(state.get("admin_blocked", []))
+    mod = {t for t in state["banned_aliases"] if t not in admin} | set(new_aliases)
+    try:
+        client.put_banned_terms("mod", sorted(t for t in mod if len(t) <= MAX_TERM))
+    except Exception as exc:
+        log(f"Không gửi được bí danh MOD: {type(exc).__name__}")
+
+
 def run_batch(
     *,
     mode: str,
@@ -227,13 +293,20 @@ def run_batch(
     client: BatchClient,
     reporter: IssueReporter,
     adapters: Sequence = (),
-    llm: object | None = None,
+    crawl_http: Http | None = None,
+    llm: Mapping[str, Callable] | None = None,
     log: Callable[[str], None] = print,
     banned_words: Sequence[str] = (),
 ) -> BatchOutcome:
-    """Run one batch. Never raises: a failure posts an error run, keeps the current version and is reported."""
-    del adapters, llm  # phase 2 (crawl + LLM); the core mode never touches them (AC-PIPE-01)
+    """Run one batch. Never raises: a failure posts an error run, keeps the current version and is reported.
+    The core mode never touches `adapters`, `crawl_http` or `llm` (AC-PIPE-01); the full mode (ADR 0009) crawls,
+    asks the LLM through `full.run_full` and publishes the new pipeline store with the version."""
     stats = _core_stats()
+    counted = _CountedLlm(llm if mode == "full" and llm is not None else {})  # core never touches llm (AC-PIPE-01)
+    quota_hit = False
+    store_out: dict | None = None
+    new_aliases: frozenset[str] = frozenset()
+    store_bytes: int | None = None
     version: int | None = None
     emoji: str | None = None
     run_id: str | None = None
@@ -242,29 +315,74 @@ def run_batch(
     miss: tuple[float, float] | None = None
     step = "state"
     try:
-        if mode != "core":
-            raise ValueError(f"chế độ {mode!r} chưa có ở giai đoạn 1 (chỉ core)")
+        if mode not in ("core", "full"):
+            raise ValueError(f"chế độ {mode!r} không có (core hoặc full)")
         version = version_for(batch_at)
+        if mode == "full":
+            step = "llm"
+            if llm is None or crawl_http is None:
+                raise ValueError("mode full cần GEMINI_API_KEY (ADR 0011)")
+            step = "state"
         state = client.get_state()
-        step = "seed"
-        store = load_core(core, ContentStore.empty()).store
-        step = "daily"
-        daily = _pick_daily(store, core, state, version)
-        emoji = daily["emoji"]
-        step = "export"
-        graph = export_graph(store, version)
-        manifest = build_manifest(store, version=version, batch_at=batch_at, daily=daily, previous_version=None)
-        content = _content(store, daily["element_id"])
-        step = "check"
-        _check(store, graph, content)
-        step = "invariants"
-        check_all(graph, manifest, store, _mod_lists(state, banned_words))
-        miss = _miss_rate(graph, manifest["starters"], log)
+        if mode == "full":
+            step = "store"
+            previous = client.get_store()
+            step = "seed"
+            load_core(core, ContentStore.empty())  # a broken core fails here, before any crawl or LLM call
+            step = "crawl"
+            crawled = crawl(adapters, crawl_http)
+            stats["crawled"] = len(crawled.concepts)
+            stats["source_errors"] = [{"source": e["source"], "error": e["error"]} for e in crawled.errors]
+            step = "full"
+            lists = replace(_mod_lists(state, banned_words), admin_blocked=frozenset(state.get("admin_blocked", [])))
+            full = run_full(
+                core,
+                previous,
+                crawled,
+                counted,
+                batch_at,
+                lists,
+                blocked=frozenset(state["blocklist"]["elements"]),
+                daily_history=state.get("daily_history", []),
+            )
+            store = full.content
+            graph, manifest, store_out = full.graph, full.manifest, full.store
+            emoji = manifest["daily"]["emoji"]
+            quota_hit = bool(full.report.get("quota"))
+            new_aliases = full.new_aliases
+            stats["added"] = sum(1 for e in store_out["elements"] if e.get("added_version") == version)
+            stats["queued"] = len(store_out.get("queue", []))
+            moderation = full.report.get("moderation") or {}
+            stats["blocked"] = {k: v for k, v in sorted(moderation.items()) if k != QUOTA_LABEL}
+            miss = tuple(full.report["miss_rate"]) if full.report.get("miss_rate") else None
+            content = _content(store, full.daily_element_id)
+            step = "check"
+            _check(store, graph, content)  # run_full already checked the invariants (AC-INV)
+        else:
+            step = "seed"
+            store = load_core(core, ContentStore.empty()).store
+            step = "daily"
+            daily = _pick_daily(store, core, state, version)
+            emoji = daily["emoji"]
+            step = "export"
+            graph = export_graph(store, version)
+            manifest = build_manifest(store, version=version, batch_at=batch_at, daily=daily, previous_version=None)
+            content = _content(store, daily["element_id"])
+            step = "check"
+            _check(store, graph, content)
+            step = "invariants"
+            check_all(graph, manifest, store, _mod_lists(state, banned_words))
+            miss = _miss_rate(graph, manifest["starters"], log)
         step = "banned"
         terms = banned_terms(banned_words)
         if terms:  # an empty secret never wipes the list already in D1
             client.put_banned_terms("wordlist", terms)
         banned_count = len(terms)
+        if store_out is not None:
+            step = "store_size"
+            store_bytes = len(json.dumps(store_out, ensure_ascii=False, separators=(",", ":")).encode("utf-8"))
+            if store_bytes > MAX_STORE_BYTES:  # caught here with a clear step, not as a 413 at publish
+                raise ValueError(f"kho pipeline {store_bytes // 1024} KB vượt giới hạn {MAX_STORE_BYTES // 1024} KB")
         step = "publish"
         body = {
             "status": "success",
@@ -276,10 +394,30 @@ def run_batch(
             "content": content,
             "stats": stats,
         }
+        if store_out is not None:
+            body["store"] = store_out
+        stats["quota_used"] = counted.used(llm if mode == "full" else None)
         run_id = client.post_batch(body).get("id")
+        _send_aliases(client, state, new_aliases, log)
     except Exception as exc:  # every failure ends the same way: current version kept (AC-PIPE-11)
         if step == "publish" and version is not None and _published(client, version, log):
-            return _finish(reporter, client, None, version, batch_at, mode, None, stats, emoji, log, banned_count, miss)
+            _send_aliases(client, state, new_aliases, log)
+            return _finish(
+                reporter,
+                client,
+                None,
+                version,
+                batch_at,
+                mode,
+                None,
+                stats,
+                emoji,
+                log,
+                banned_count,
+                miss,
+                quota_hit,
+                store_bytes,
+            )
         failed_step, version = step, None
         # Network errors may carry the API host: the public workflow log only gets their type.
         # The banned words are secret (ADR 0005): that step's errors are logged by type only too.
@@ -291,6 +429,7 @@ def run_batch(
             hidden = len(exc.violations) - len(shown)
             detail = "; ".join(shown + ([f"INV-07: {hidden} phần tử khớp danh mục cấm"] if hidden else []))
         log(f"Mẻ thất bại ở bước {step}: {detail}")
+        stats["quota_used"] = counted.used(llm if mode == "full" else None)
         error_body = {"status": "error", "batch_at": _iso(batch_at), "mode": mode, "failed_step": step, "stats": stats}
         try:
             run_id = client.post_batch(error_body).get("id")
@@ -298,7 +437,20 @@ def run_batch(
             log(f"Không ghi được nhật ký đợt lỗi: {type(post_exc).__name__}")
 
     return _finish(
-        reporter, client, run_id, version, batch_at, mode, failed_step, stats, emoji, log, banned_count, miss
+        reporter,
+        client,
+        run_id,
+        version,
+        batch_at,
+        mode,
+        failed_step,
+        stats,
+        emoji,
+        log,
+        banned_count,
+        miss,
+        quota_hit,
+        store_bytes,
     )
 
 
@@ -327,6 +479,8 @@ def _finish(
     log: Callable[[str], None],
     banned_count: int | None = None,
     miss: tuple[float, float] | None = None,
+    quota_hit: bool = False,
+    store_bytes: int | None = None,
 ) -> BatchOutcome:
     title, report = _render_report(
         version=version,
@@ -337,6 +491,8 @@ def _finish(
         emoji=emoji,
         banned_count=banned_count,
         miss=miss,
+        quota_hit=quota_hit,
+        store_bytes=store_bytes,
     )
     return BatchOutcome(
         ok=failed_step is None,
@@ -412,6 +568,10 @@ class HttpBatchClient:
     def get_state(self) -> dict:
         return self.http.request("GET", "/api/pipeline/state")
 
+    def get_store(self, version: int | None = None) -> dict:
+        query = "" if version is None else f"?version={int(version)}"
+        return self.http.request("GET", "/api/pipeline/store" + query)
+
     def post_batch(self, body: dict) -> dict:
         return self.http.request("POST", "/api/pipeline/batches", body)
 
@@ -457,8 +617,27 @@ def main(argv: list[str], *, client=None, reporter=None, now: Callable[[], datet
         reporter = GitHubIssues(repository, os.environ["GITHUB_TOKEN"]) if repository else NoIssues()
     batch_at = (now or (lambda: datetime.now(UTC)))().replace(microsecond=0)
     banned_words = os.environ.get("BANNED_WORDS", "").splitlines()  # GitHub Secret, one word per line
+    adapters: list = []
+    crawl_http: Http | None = None
+    llm = None
+    if args.mode == "full":  # ADR 0009/0011; without the key run_batch fails at step "llm" before any network call
+        from lau_meme_pipeline.crawl import default_adapters, http_get
+        from lau_meme_pipeline.gemini import GeminiSteps
+
+        adapters = default_adapters(os.environ)
+        crawl_http = Http(http_get)
+        key = os.environ.get("GEMINI_API_KEY", "")
+        llm = GeminiSteps(key, os.environ.get("GEMINI_MODEL", "")) if key else None
     outcome = run_batch(
-        mode=args.mode, batch_at=batch_at, core=core, client=client, reporter=reporter, banned_words=banned_words
+        mode=args.mode,
+        batch_at=batch_at,
+        core=core,
+        client=client,
+        reporter=reporter,
+        adapters=adapters,
+        crawl_http=crawl_http,
+        llm=llm,
+        banned_words=banned_words,
     )
     print(outcome.report_title)
     print(outcome.report_body, end="")
