@@ -3,6 +3,8 @@ declare namespace Cloudflare {
   interface Env {
     DB: D1Database
     ASSETS: Fetcher
+    /** Illustrations (AC-ART-04/05), objects `img/<sha256-12>.webp`. */
+    IMG: R2Bucket
     APP_ENV: string
     /** Sub-path the game lives under, no trailing slash (base-path.json, ADR 0007). */
     BASE_PATH: string

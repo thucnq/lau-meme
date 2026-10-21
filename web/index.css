@@ -210,3 +210,26 @@ a { color: var(--accent-2); }
 .daily-items { display: flex; flex-wrap: wrap; gap: 0.4rem; }
 .daily-items button[aria-pressed='true'] { border-color: var(--accent); background: var(--accent); color: var(--on-accent); }
 .daily ol { margin: 0; padding-left: 1.5rem; }
+
+/* Illustrations (ART): emoji first, the drawing once it has loaded; the loading image takes no room (AC-ART-06) */
+.chip .art { width: 1.4rem; height: 1.4rem; border-radius: 0.3rem; object-fit: cover; }
+.art.loading { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+
+/* First-discovery zoom (AC-ART-08): only the card takes clicks, the table around it keeps working */
+.discovery-zoom { position: absolute; inset: 0; display: grid; place-items: center; z-index: 5; pointer-events: none; }
+.discovery-card {
+  pointer-events: auto; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 0.4rem;
+  padding: 1rem 1.25rem; background: var(--surface); border: 2px solid var(--accent); border-radius: 1.25rem;
+  box-shadow: 0 0.5rem 2rem var(--glow); font-weight: 800; font-size: 1.15rem;
+}
+.discovery-icon { font-size: 4.5rem; line-height: 1; }
+.discovery-icon .art { width: 9rem; height: 9rem; border-radius: 1rem; object-fit: cover; }
+.discovery-zoom[data-motion='bounce'] .discovery-card { animation: zoom-pop 2.5s ease-in-out forwards; }
+@keyframes zoom-pop {
+  0% { transform: scale(0.2); opacity: 0; }
+  12% { transform: scale(1.12); opacity: 1; }
+  20% { transform: scale(1); }
+  85% { transform: scale(1); opacity: 1; }
+  100% { transform: scale(0.25) translateY(40%); opacity: 0; }
+}

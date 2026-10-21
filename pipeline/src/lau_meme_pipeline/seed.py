@@ -33,6 +33,7 @@ class StoredElement:
     image_hint: str
     batch: str
     status: str
+    image_key: str | None = None  # '<sha256-12>.webp' once drawn (AC-ART-04)
 
 
 @dataclass(frozen=True)

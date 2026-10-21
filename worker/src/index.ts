@@ -1,6 +1,6 @@
 import { hasBearer } from './auth'
 import { adminOnly, listAudit, listBatches, listElements, listRecipes, listReports, moderate } from './features/admin/admin'
-import { getGraph, getManifest } from './features/content/content'
+import { getGraph, getImage, getManifest } from './features/content/content'
 import { createDiscovery, listDiscoveries, putBannedTerms } from './features/disc/disc'
 import { getSession, signInWithGoogle, signOut } from './features/auth/auth'
 import { getDailyLeaderboard, getDailyPeriodLeaderboard, getMyStreak, getStreakLeaderboard, submitDailyResult } from './features/daily/daily'
@@ -148,8 +148,8 @@ export default {
     const rest = url.pathname.slice(base.length)
     if (rest === '/api' || rest.startsWith('/api/')) return api(routes, req, env, ctx, rest)
     if (ADMIN_PAGE.test(rest)) return problem(404, 'Không tìm thấy')
-    // Images (AC-ART-05, phase 2: R2) - reserved so the SPA never answers for them.
-    if (rest.startsWith('/img/')) return problem(404, 'Không tìm thấy')
+    // Images (AC-ART-05): R2 behind the Worker, never the SPA.
+    if (rest.startsWith('/img/')) return isRead(req) ? getImage(req, env, ctx, rest.slice('/img/'.length)) : problem(405, 'Phương thức không hỗ trợ')
     return asset(req, env, url)
   },
 
