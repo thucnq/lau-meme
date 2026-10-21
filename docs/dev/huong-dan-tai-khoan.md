@@ -153,7 +153,7 @@ openssl rand -base64 32 | tr -d '\n' | npx wrangler preview base-config secret p
 - Preview dùng chung D1 `lau-meme-staging` và bucket R2 `lau-meme-img-staging`, và không tự áp migration. Migration mới phải áp cho staging trước (mục 4.1 và runbook).
 - Lệnh build/deploy production trong Workers Builds nên là `npx wrangler versions upload`, không phải `npx wrangler deploy`, để production vẫn do người làm kích hoạt.
 - Đăng nhập Google thường không chạy trên URL preview vì origin chưa được đăng ký với Client ID. Kiểm đăng nhập trên `staging.dinoduct.fun` (mục 7.6).
-> TODO(doc): Comment trong `worker/wrangler.jsonc` (khối `previews`) ghi `wrangler preview secret`, còn tài liệu này ghi `wrangler preview base-config secret put`. Cần xác nhận lệnh đúng rồi sửa comment hoặc tài liệu cho khớp.
+Hai lệnh đều có: `wrangler preview base-config secret put <KEY>` đặt một lần cho mọi preview (nên dùng); `wrangler preview secret put <KEY> --name <nhánh>` chỉ đặt cho preview của một nhánh.
 
 ## 5. Kiểm tra mạng và xem trước link
 **Nhà mạng và bộ lọc.** Một số bộ lọc doanh nghiệp, DNS gia đình và trình chặn quảng cáo xếp đuôi `.fun` vào nhóm rủi ro. Mở `https://dinoduct.fun/lau-meme/` và chơi thử một ván trên từng mạng, ghi kết quả (mở được / bị chặn / chậm):
