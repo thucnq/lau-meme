@@ -1,7 +1,7 @@
-# Tiến độ - ƯỚC LƯỢNG - LẨU MEME
+# Tiến độ — ƯỚC LƯỢNG - LẨU MEME
 
-> Sinh bởi `/dk:plan` (gen-plan.py) từ `docs/estimate/items.json`. **Người sửa trực tiếp file này**: dấu `[x]` (hạng mục hoặc AC), `tiến độ: N%`, `người`, `bắt đầu`, `xong` (YYYY-MM-DD), `ghi chú` - giữ nguyên dấu ` · ` giữa các trường. Chạy lại `/dk:plan` để tính dự báo và vẽ lại `gantt.html`. `KH` là kế hoạch gốc, chỉ đổi bằng `/dk:plan rebaseline`.
-> Bắt đầu dự án: 2026-10-20 · Kỹ sư: 1 (Thuc) · Giờ/tuần: 20 · Nghiệm thu KH: 2027-11-23 · Dự báo: 2027-12-07 · Cập nhật: 2026-10-20
+> Sinh bởi `/dk:plan` (gen-plan.py) từ `docs/estimate/items.json`. **Người sửa trực tiếp file này**: dấu `[x]` (hạng mục hoặc AC), `tiến độ: N%`, `người`, `bắt đầu`, `xong` (YYYY-MM-DD), `ghi chú` — giữ nguyên dấu ` · ` giữa các trường. Chạy lại `/dk:plan` để tính dự báo và vẽ lại `gantt.html`. `KH` là kế hoạch gốc, chỉ đổi bằng `/dk:plan rebaseline`.
+> Bắt đầu dự án: 2026-10-20 · Kỹ sư: 1 (Thuc) · Giờ/tuần: 20 · Nghiệm thu KH: 2027-11-23 · Dự báo: 2028-02-10 · Cập nhật: 2026-10-21
 
 
 ## Nền tảng
@@ -31,7 +31,7 @@
   - [ ] AC-GRAPH-08 Manifest chưa có
 
 ## Trò chơi
-- [ ] **GAME** Chơi ghép (Nhúng lẩu) · 12đ · rủi ro: MEDIUM · KH: 2026-11-27 → 2027-01-05 · tiến độ: 0% · người: Thuc · bắt đầu:  · xong:  · ghi chú: 
+- [ ] **GAME** Chơi ghép (Nhúng lẩu) · 13.5đ · rủi ro: MEDIUM · KH: 2026-11-27 → 2027-01-05 · tiến độ: 0% · người: Thuc · bắt đầu:  · xong:  · ghi chú: 
   - [ ] AC-GAME-01 Bàn chơi lần đầu
   - [ ] AC-GAME-02 Nhúng lẩu qua nồi - ghép thành công
   - [ ] AC-GAME-03 Thả chồng trên mặt bàn
@@ -49,6 +49,7 @@
   - [ ] AC-GAME-15 Phần tử bị chặn nóng
   - [ ] AC-GAME-16 Lỗi tải graph
   - [ ] AC-GAME-17 Đổi version graph giữ tiến độ
+  - [ ] AC-GAME-18 Nồi lẩu nằm trong màn hình đầu tiên (thêm 2026-10-21)
 
 ## Nội dung
 - [ ] **PIPE** Pipeline Mẻ nhúng - chế độ lõi (giai đoạn 1) · 5đ · rủi ro: MEDIUM · KH: 2027-01-06 → 2027-01-20 · tiến độ: 0% · người: Thuc · bắt đầu:  · xong:  · ghi chú: 
@@ -90,21 +91,46 @@
   - [ ] AC-DAILY-01 Chọn Món đặc biệt
   - [ ] AC-DAILY-02 Không có ứng viên nào
   - [ ] AC-DAILY-03 Công bố món không lộ tên
-  - [ ] AC-DAILY-04 Bàn thử thách và đếm bước
-  - [ ] AC-DAILY-05 Tiếp tục thử thách sau khi tải lại
+  - [ ] AC-DAILY-04 Ghép ra Món đặc biệt trên bàn lẩu
+  - [ ] AC-DAILY-05 Trạng thái đã giải giữ qua tải lại
   - [ ] AC-DAILY-06 Nộp kết quả hợp lệ
   - [ ] AC-DAILY-07 Nộp kết quả không hợp lệ
-  - [ ] AC-DAILY-08 Nộp trùng và nộp cho mẻ đã qua
-  - [ ] AC-DAILY-09 Bảng xếp hạng đợt
+  - [ ] AC-DAILY-08 Nộp trùng, nộp cho mẻ đã qua, chưa đăng nhập
+  - [ ] AC-DAILY-09 Bảng xếp hạng mẻ
   - [ ] AC-DAILY-10 Streak
   - [ ] AC-DAILY-11 Bảng xếp hạng streak
   - [ ] AC-DAILY-12 Đồng hồ đếm ngược theo manifest thật
   - [ ] AC-DAILY-13 Giới hạn tần suất nộp
+  - [ ] AC-DAILY-14 Bảng xếp hạng tuần và tháng (thêm 2026-10-21)
+  - [ ] AC-DAILY-15 Bảng xếp hạng trên giao diện, chưa đăng nhập và bảng rỗng (thêm 2026-10-21)
+
+## Cộng đồng
+- [ ] **AUTH** Đăng nhập bằng Google · 8.5đ · rủi ro: HIGH · KH: 2027-04-12 → 2027-05-07 · tiến độ: 0% (theo AC) · người: Thuc · bắt đầu:  · xong:  · ghi chú: 
+  - [ ] AC-AUTH-01 Đăng nhập bằng Google
+  - [ ] AC-AUTH-02 Phiên đăng nhập
+  - [ ] AC-AUTH-03 ID token không hợp lệ
+  - [ ] AC-AUTH-04 Cùng tài khoản trên nhiều máy
+  - [ ] AC-AUTH-05 Đăng xuất
+  - [ ] AC-AUTH-06 Xóa tài khoản và dữ liệu
+  - [ ] AC-AUTH-07 Giới hạn tần suất đăng nhập
+
+## Trò chơi
+- [ ] **DAILY2** Món đặc biệt - làm lại theo thời gian và tài khoản · 8.5đ · rủi ro: MEDIUM · KH: 2027-05-10 → 2027-06-03 · tiến độ: 0% (theo AC) · người: Thuc · bắt đầu:  · xong:  · ghi chú: 
+  - [ ] AC-DAILY-04 Ghép ra Món đặc biệt trên bàn lẩu
+  - [ ] AC-DAILY-05 Trạng thái đã giải giữ qua tải lại
+  - [ ] AC-DAILY-06 Nộp kết quả hợp lệ
+  - [ ] AC-DAILY-07 Nộp kết quả không hợp lệ
+  - [ ] AC-DAILY-08 Nộp trùng, nộp cho mẻ đã qua, chưa đăng nhập
+  - [ ] AC-DAILY-09 Bảng xếp hạng mẻ
+  - [ ] AC-DAILY-10 Streak
+  - [ ] AC-DAILY-11 Bảng xếp hạng streak
+  - [ ] AC-DAILY-14 Bảng xếp hạng tuần và tháng (thêm 2026-10-21)
+  - [ ] AC-DAILY-15 Bảng xếp hạng trên giao diện, chưa đăng nhập và bảng rỗng (thêm 2026-10-21)
 
 ## Cộng đồng
 - [ ] **SHARE** Thẻ chia sẻ · 4đ · rủi ro: MEDIUM · KH: 2027-04-07 → 2027-04-19 · tiến độ: 0% · người: Thuc · bắt đầu:  · xong:  · ghi chú: 
   - [ ] AC-SHARE-01 Thẻ Daily dạng chữ
-  - [ ] AC-SHARE-02 Chuỗi emoji các bước
+  - [ ] AC-SHARE-02 Thời gian giải trên thẻ (cập nhật 2026-10-21, thay chuỗi emoji các bước)
   - [ ] AC-SHARE-03 Thẻ Daily dạng ảnh PNG
   - [ ] AC-SHARE-04 Thẻ Công thức gia truyền
   - [ ] AC-SHARE-05 Sao chép và chia sẻ hệ thống
@@ -155,7 +181,7 @@
   - [ ] AC-INV-08 First Discovery chỉ cho công thức có thật
   - [ ] AC-INV-09 Đủ 3 báo cáo từ 3 UUID khác nhau ⇒ không còn hiện
   - [ ] AC-INV-10 Món đặc biệt luôn hợp lệ
-  - [ ] AC-INV-11 Bảng xếp hạng chỉ có đường ghép hợp lệ
+  - [ ] AC-INV-11 Bảng xếp hạng chỉ có kết quả hợp lệ (cập nhật 2026-10-21)
   - [ ] AC-INV-12 Tỉ lệ ghép trượt khi chơi ngẫu nhiên
 
 ## Nền tảng
@@ -174,7 +200,25 @@
   - [ ] AC-SUBPATH-12 Pipeline gọi API dưới tiền tố
 
 ## Kiểm thử
-- [ ] **UAT** Kiểm thử nghiệm thu & sửa lỗi (giai đoạn 1) · 11.5đ · rủi ro: MEDIUM · KH: 2027-07-01 → 2027-08-04 · tiến độ: 0% · người: Thuc · bắt đầu:  · xong:  · ghi chú: 
+- [ ] **UAT** Kiểm thử nghiệm thu & sửa lỗi (giai đoạn 1) · 14đ · rủi ro: MEDIUM · KH: 2027-07-01 → 2027-08-04 · tiến độ: 0% · người: Thuc · bắt đầu:  · xong:  · ghi chú: 
+  - [ ] AC-GAME-01 Bàn chơi lần đầu
+  - [ ] AC-GAME-02 Nhúng lẩu qua nồi - ghép thành công
+  - [ ] AC-GAME-03 Thả chồng trên mặt bàn
+  - [ ] AC-GAME-04 Ghép ra phần tử đã có
+  - [ ] AC-GAME-05 Nồi trào - câu cố định theo cặp
+  - [ ] AC-GAME-06 Gợi ý khi trượt
+  - [ ] AC-GAME-07 Tìm trong Đĩa nhúng không dấu
+  - [ ] AC-GAME-08 Sắp xếp Đĩa nhúng
+  - [ ] AC-GAME-09 Nhãn "MỚI"
+  - [ ] AC-GAME-10 Lưu và khôi phục tiến độ cục bộ
+  - [ ] AC-GAME-11 Dọn bàn và Chơi lại từ đầu
+  - [ ] AC-GAME-12 Hướng dẫn lần đầu
+  - [ ] AC-GAME-13 Chế độ tối
+  - [ ] AC-GAME-14 Ghép tra trong bộ nhớ dưới 50 ms
+  - [ ] AC-GAME-15 Phần tử bị chặn nóng
+  - [ ] AC-GAME-16 Lỗi tải graph
+  - [ ] AC-GAME-17 Đổi version graph giữ tiến độ
+  - [ ] AC-GAME-18 Nồi lẩu nằm trong màn hình đầu tiên (thêm 2026-10-21)
 
 ## Nội dung
 - [ ] **MOD** Kiểm duyệt nội dung tự động (giai đoạn 2) · 9đ · rủi ro: HIGH · KH: 2027-08-05 → 2027-09-01 · tiến độ: 0% · người: Thuc · bắt đầu:  · xong:  · ghi chú: 
@@ -194,7 +238,7 @@
   - [ ] AC-PIPE-05 Khử trùng
   - [ ] AC-PIPE-06 Liên kết ngược hợp lệ
   - [ ] AC-PIPE-07 Hàng chờ meme chưa nối được
-  - [ ] AC-PIPE-08 Công thức bổ sung
+  - [ ] AC-PIPE-08 Công thức bổ sung (cập nhật 2026-10-20)
   - [ ] AC-PIPE-09 Giám khảo hài
   - [ ] AC-PIPE-10 Idempotent
   - [ ] AC-PIPE-12 Gom lô Gemini, backoff, hết quota dừng êm
@@ -206,6 +250,7 @@
   - [ ] AC-ART-05 Phục vụ ảnh qua Worker với cache bất biến
   - [ ] AC-ART-06 Client hiện emoji trước, ảnh sau
   - [ ] AC-ART-07 Ảnh bị chặn không được tải
+  - [ ] AC-ART-08 Phóng lớn bất ngờ khi ghép ra món lần đầu (thêm 2026-10-20)
 
 ## Kiểm thử
 - [ ] **UAT2** Kiểm thử nghiệm thu & sửa lỗi (giai đoạn 2) · 4.5đ · rủi ro: MEDIUM · KH: 2027-11-09 → 2027-11-22 · tiến độ: 0% · người: Thuc · bắt đầu:  · xong:  · ghi chú: 
