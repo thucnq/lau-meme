@@ -401,12 +401,12 @@ def test_ac_pipe_02_timeout_15_phut_va_concurrency_khong_huy_mau_dang_chay():
 
 def test_ac_pipe_02_chay_module_batch_voi_quyen_tao_issue_va_secret():
     """AC-PIPE-02: chạy `python -m lau_meme_pipeline.batch`, quyền issues: write,
-    dùng PIPELINE_TOKEN và API_BASE_URL."""
+    dùng secret PIPELINE_TOKEN và API_BASE_URL (từ vars hoặc secrets)."""
     text = workflow_text()
     assert "python -m lau_meme_pipeline.batch" in text
     assert re.search(r"issues:\s*write", text)
     assert "secrets.PIPELINE_TOKEN" in text
-    assert "secrets.API_BASE_URL" in text
+    assert re.search(r"(vars|secrets)\.API_BASE_URL", text)
 
 
 # ---------------------------------------------------------------- AC-PIPE-11

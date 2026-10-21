@@ -1,4 +1,4 @@
-"""Full batch (phase 2): crawl → dedupe → describe → moderate → link → judge → BFS → Daily → graph + manifest.
+"""Full batch (phase 2): crawl → dedupe → describe → moderate → link → judge → supplement → BFS → Daily → graph.
 
 Pure: crawl results, LLM steps, the store from the previous batch and the batch time are passed in; the new store
 comes out (ADR 0009). Every LLM answer goes through a per-batch cache, so re-running the same batch with the store
@@ -16,7 +16,14 @@ from lau_meme_pipeline.graph import build_manifest, export_graph
 from lau_meme_pipeline.ids import element_id, recipe_id
 from lau_meme_pipeline.invariants import check_all, miss_rate_warning, simulate_miss_rate
 from lau_meme_pipeline.judge import judge
-from lau_meme_pipeline.linking import Graph, bfs_depths, needs_supplement, validate_links
+from lau_meme_pipeline.linking import (
+    Graph,
+    bfs_depths,
+    needs_supplement,
+    simulate_plate,
+    supplement_pairs,
+    validate_links,
+)
 from lau_meme_pipeline.linkqueue import next_queue
 from lau_meme_pipeline.llm import CachedLlm
 from lau_meme_pipeline.moderation import Concept, ModLists, is_held, moderate
@@ -242,11 +249,31 @@ def run_full(
     report["queue"] = {"linked": len(linked), "queued": len(q.queue), "dropped": q.dropped}
     report["quota"] = bool(moderated.queued)
 
-    # 6. Depth by BFS over everything; trend elements that lost every path are inactive (AC-INV-03).
-    out_store = {
-        "elements": [trend[k] for k in sorted(trend)],
-        "recipes": [trend_recipes[k] for k in sorted(trend_recipes)],
+    # 5b. Supplementary recipes (AC-PIPE-08): needy elements first, then the pairs most often on the plate together.
+    asked_in = {(p[0], p[1]) for p in store.get("asked_pairs", [])}
+    graph = _graph(_combined(core, _store_of(trend, trend_recipes)), frozenset(blocked))
+    before = simulate_plate(graph)
+    supplemented = _supplement(graph, before.presence, asked_in, ask)
+    for r in supplemented.kept:
+        trend_recipes[r["id"]] = {
+            "id": r["id"],
+            "a": r["a_id"],
+            "b": r["b_id"],
+            "result": r["result_id"],
+            "score": r["score"],
+            "supplement": True,
+        }
+    after = simulate_plate(_graph(_combined(core, _store_of(trend, trend_recipes)), frozenset(blocked)))
+    report["supplement"] = {
+        "needed": 0,  # filled in after BFS below
+        "asked": supplemented.asked,
+        "added": len(supplemented.kept),
+        "miss_before": [before.first20, before.overall],
+        "miss_after": [after.first20, after.overall],
     }
+
+    # 6. Depth by BFS over everything; trend elements that lost every path are inactive (AC-INV-03).
+    out_store = _store_of(trend, trend_recipes)
     content = _combined(core, out_store)
     depths = bfs_depths(_graph(content, frozenset(blocked)))
     elements = {}
@@ -263,6 +290,7 @@ def run_full(
     for e in out_store["elements"]:
         e["depth"] = depths.get(e["id"], 0)
     report["supplement_needed"] = len(needs_supplement(_graph(content, frozenset(blocked))))
+    report["supplement"]["needed"] = report["supplement_needed"]
 
     # 7. Daily: core examples, plus trend elements with an approved hint that are not held.
     candidates_daily = []
@@ -288,8 +316,108 @@ def run_full(
     except Exception as exc:
         report["miss_rate"], report["miss_rate_warning"] = None, f"Không chạy được mô phỏng: {type(exc).__name__}"
     out_store["queue"] = q.queue
+    out_store["asked_pairs"] = [list(p) for p in sorted(asked_in | supplemented.rejected)]
     out_store["llm_cache"] = {k: used[k] for k in sorted(used)}
     return FullOutcome(graph=graph_out, manifest=manifest, store=out_store, report=report)
+
+
+def _store_of(trend: Mapping[str, dict], trend_recipes: Mapping[str, dict]) -> dict:
+    return {
+        "elements": [trend[k] for k in sorted(trend)],
+        "recipes": [trend_recipes[k] for k in sorted(trend_recipes)],
+    }
+
+
+@dataclass
+class _Supplemented:
+    kept: list[dict]
+    rejected: set[tuple[str, str]]  # asked and not added: never asked again
+    asked: int  # pairs sent to the pair step
+
+
+def _supplement(
+    graph: Graph, presence: Mapping[str, int], asked_before: set[tuple[str, str]], ask: Callable
+) -> _Supplemented:
+    """Both supplement steps share the rules of the link step: the result is an existing active element, the pair
+    passes validate_links, then one judge call keeps scores >= 3 (AC-PIPE-08/09)."""
+    by_fold = {fold(n): e for e, n in graph.elements.items() if e not in graph.inactive}
+    proposed: dict[tuple[str, str], dict] = {}
+    rejected: set[tuple[str, str]] = set()
+
+    def propose(a: str, b: str, result_name: object, owner: str | None) -> None:
+        pair = (a, b) if a <= b else (b, a)
+        if pair in proposed or pair in asked_before:
+            return
+        result_id = by_fold.get(fold(result_name)) if isinstance(result_name, str) else None
+        if result_id is None or not validate_links(result_id, [pair], graph).accepted:
+            rejected.add(pair)
+            return
+        names = (graph.elements[pair[0]], graph.elements[pair[1]])
+        proposed[pair] = {
+            "id": recipe_id(*names),
+            "a": names[0],
+            "b": names[1],
+            "result": graph.elements[result_id],
+            "a_id": pair[0],
+            "b_id": pair[1],
+            "result_id": result_id,
+            "owner": owner,
+        }
+
+    # Step 1: elements used as an input by fewer than 3 recipes.
+    out_count = {e: 0 for e in graph.elements if e not in graph.inactive}
+    for pair in graph.recipes:
+        for x in set(pair):
+            if x in out_count:
+                out_count[x] += 1
+    needy = sorted(needs_supplement(graph), key=lambda e: graph.elements[e])
+    need = {e: 3 - out_count[e] for e in needy}
+    if needy:
+        candidates = sorted(graph.elements[e] for e in out_count)
+        answers = ask(
+            "supplement_element",
+            [{"name": graph.elements[e], "need": need[e], "candidates": candidates} for e in needy],
+        )
+        for item in answers if isinstance(answers, list) else []:
+            owner = by_fold.get(fold(item.get("name", ""))) if isinstance(item, Mapping) else None
+            if owner not in need:
+                continue
+            for r in item.get("recipes") or []:
+                if not isinstance(r, Mapping) or not isinstance(r.get("with"), str):
+                    continue
+                partner = by_fold.get(fold(r["with"]))
+                if partner is not None:
+                    propose(owner, partner, r.get("result"), owner)
+
+    # Step 2: pairs most often on the plate together that still have no recipe.
+    pairs = [p for p in supplement_pairs(graph, presence, asked=asked_before) if p not in proposed]
+    if pairs:
+        answers = ask("supplement_pair", [{"a": graph.elements[a], "b": graph.elements[b]} for a, b in pairs])
+        result_of = {}
+        for item in answers if isinstance(answers, list) else []:
+            if isinstance(item, Mapping) and isinstance(item.get("a"), str) and isinstance(item.get("b"), str):
+                result_of[frozenset((fold(item["a"]), fold(item["b"])))] = item.get("result")
+        for a, b in pairs:
+            propose(a, b, result_of.get(frozenset((fold(graph.elements[a]), fold(graph.elements[b])))), None)
+
+    candidates_judged = list(proposed.values())
+    scores = (
+        ask("judge", [{k: r[k] for k in ("id", "a", "b", "result")} for r in candidates_judged])
+        if candidates_judged
+        else {}
+    )
+    judged = judge(candidates_judged, scores if isinstance(scores, Mapping) else {})
+    kept: list[dict] = []
+    for r in judged.kept:
+        owner = r["owner"]
+        if owner is not None:
+            if need[owner] <= 0:
+                continue  # enough for this element; the pair stays askable later
+            need[owner] -= 1
+        kept.append(r)
+    kept_pairs = {(r["a_id"], r["b_id"]) for r in kept}
+    rejected |= {(r["a_id"], r["b_id"]) for r in candidates_judged if r["id"] in judged.rejected}
+    return _Supplemented(kept=kept, rejected=rejected - kept_pairs, asked=len(pairs))
 
 
 def _hint_valid(e: StoredElement, hint: str) -> bool:

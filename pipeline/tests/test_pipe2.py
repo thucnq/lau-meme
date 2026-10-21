@@ -635,6 +635,317 @@ def test_ac_pipe_08_cong_thuc_bo_sung_qua_cung_luat_hop_le():
     assert result.rejected == {("a", "s"): "exists", ("b", "c"): "self", ("a", "x"): "inactive"}
 
 
+# ---- AC-PIPE-08 (cập nhật 2026-10-20): mô phỏng Đĩa, chọn cặp, bước bổ sung trong run_full
+
+
+def test_ac_pipe_08_mo_phong_dia_khong_cong_thuc_thi_luot_nao_cung_truot():
+    """AC-PIPE-08: graph không có công thức: mọi lượt trượt, mỗi phần tử khởi đầu có mặt games*turns lượt."""
+    from lau_meme_pipeline.linking import Graph, Simulation, simulate_plate
+
+    g = Graph(starters=("a", "b"), elements={"a": "A", "b": "B"}, recipes={})
+    sim = simulate_plate(g, games=3, turns=10, seed=7)
+    assert isinstance(sim, Simulation)
+    assert Simulation.__dataclass_params__.frozen
+    assert sim.presence == {"a": 30, "b": 30}
+    assert sim.first20 == 1.0
+    assert sim.overall == 1.0
+
+
+def test_ac_pipe_08_mo_phong_dia_xac_dinh_theo_seed_va_phan_tu_khoi_dau_luon_co_mat():
+    """AC-PIPE-08: cùng graph + seed cho kết quả y hệt; phần tử khởi đầu luôn trên Đĩa, phần tử chưa ra thì không."""
+    from lau_meme_pipeline.linking import simulate_plate
+
+    g = graph()
+    first = simulate_plate(g, games=20, turns=30, seed=3)
+    second = simulate_plate(g, games=20, turns=30, seed=3)
+    assert first == second
+    assert first.presence["a"] == 20 * 30
+    assert first.presence["s"] == 20 * 30
+    assert all(0 < n <= 20 * 30 for n in first.presence.values())
+    assert set(first.presence) <= set(g.elements)
+    assert "m" not in first.presence  # no recipe makes M, so it never reaches the plate
+    assert 0.0 <= first.first20 <= 1.0
+    assert 0.0 <= first.overall < 1.0  # (a, s) -> b is hit sometimes
+
+
+def test_ac_pipe_08_mo_phong_dia_phan_tu_an_khong_len_dia_va_ket_qua_an_la_truot():
+    """AC-PIPE-08: phần tử khởi đầu đang ẩn không có trên Đĩa; công thức có đầu vào hoặc kết quả ẩn là trượt."""
+    from lau_meme_pipeline.linking import simulate_plate
+
+    only_a = simulate_plate(graph(inactive=frozenset({"s"})), games=5, turns=8)
+    assert only_a.presence == {"a": 40}
+    assert only_a.first20 == 1.0 and only_a.overall == 1.0
+
+    hidden_result = simulate_plate(graph(inactive=frozenset({"b"})), games=10, turns=30)
+    assert "b" not in hidden_result.presence
+
+
+def test_ac_pipe_08_mo_phong_dia_dia_rong_hoac_khong_van_tra_ty_le_0():
+    """AC-PIPE-08: Đĩa rỗng, games=0 hoặc turns=0 thì tỉ lệ 0.0 và presence rỗng."""
+    from lau_meme_pipeline.linking import Graph, simulate_plate
+
+    empty = simulate_plate(Graph(starters=(), elements={}, recipes={}))
+    assert (empty.presence, empty.first20, empty.overall) == ({}, 0.0, 0.0)
+    no_games = simulate_plate(graph(), games=0)
+    assert (no_games.presence, no_games.first20, no_games.overall) == ({}, 0.0, 0.0)
+    no_turns = simulate_plate(graph(), turns=0)
+    assert (no_turns.presence, no_turns.first20, no_turns.overall) == ({}, 0.0, 0.0)
+
+
+def test_ac_pipe_08_chon_cap_xep_theo_tich_so_dem_gom_cap_cung_phan_tu():
+    """AC-PIPE-08: cặp xếp theo tích hai số đếm giảm dần, bằng nhau thì theo tên fold; có cặp (a, a); bỏ cặp đã có."""
+    from lau_meme_pipeline.linking import Graph, supplement_pairs
+
+    g = Graph(
+        starters=("a", "b"),
+        elements={"a": "Alpha", "b": "Beta", "c": "Cam", "d": "Dưa"},
+        recipes={("a", "b"): "c"},
+    )
+    presence = {"a": 10, "b": 5, "c": 2, "d": 1}
+    assert supplement_pairs(g, presence) == [
+        ("a", "a"),  # 100
+        ("b", "b"),  # 25
+        ("a", "c"),  # 20
+        ("a", "d"),  # 10, ("alpha", "dua") before ("beta", "cam")
+        ("b", "c"),  # 10
+        ("b", "d"),  # 5
+        ("c", "c"),  # 4
+        ("c", "d"),  # 2
+        ("d", "d"),  # 1
+    ]
+
+
+def test_ac_pipe_08_chon_cap_hoa_bang_nhau_theo_ten_da_fold_khong_theo_id():
+    """AC-PIPE-08: tích bằng nhau thì xếp theo tên đã fold (bỏ dấu, chữ thường), hai tên trong cặp xếp tăng dần."""
+    from lau_meme_pipeline.linking import Graph, supplement_pairs
+
+    g = Graph(starters=("x", "y"), elements={"x": "Zeta", "y": "Alpha", "z": "Beta"}, recipes={})
+    assert supplement_pairs(g, {"x": 1, "y": 1, "z": 1}) == [
+        ("y", "y"),  # (alpha, alpha)
+        ("y", "z"),  # (alpha, beta)
+        ("x", "y"),  # (alpha, zeta)
+        ("z", "z"),  # (beta, beta)
+        ("x", "z"),  # (beta, zeta)
+        ("x", "x"),  # (zeta, zeta)
+    ]
+
+    accents = Graph(starters=("p", "q"), elements={"p": "Ếch", "q": "Eo"}, recipes={})
+    assert supplement_pairs(accents, {"p": 1, "q": 1}) == [("p", "p"), ("p", "q"), ("q", "q")]
+
+
+def test_ac_pipe_08_chon_cap_bo_cap_an_cap_da_hoi_cap_co_mat_0_va_cap_da_co_cong_thuc():
+    """AC-PIPE-08: bỏ phần tử ẩn, phần tử có mặt 0 hoặc thiếu, cặp đã hỏi (bị loại) và cặp đã có công thức."""
+    from lau_meme_pipeline.linking import Graph, supplement_pairs
+
+    g = Graph(
+        starters=("a", "b"),
+        elements={k: k.upper() for k in "abcdef"},
+        recipes={("a", "c"): "b"},
+        inactive=frozenset({"d"}),
+    )
+    presence = {"a": 3, "b": 2, "c": 1, "d": 9, "e": 0}  # f is missing
+    result = supplement_pairs(g, presence, asked={("a", "b")})
+    assert result == [("a", "a"), ("b", "b"), ("b", "c"), ("c", "c")]
+
+
+def test_ac_pipe_08_chon_cap_toi_da_150_theo_mac_dinh_va_ton_trong_limit():
+    """AC-PIPE-08: tối đa 150 cặp mỗi đợt (SUPPLEMENT_LIMIT), limit nhỏ hơn cắt đúng phần đầu danh sách."""
+    from lau_meme_pipeline.linking import SUPPLEMENT_LIMIT, Graph, supplement_pairs
+
+    ids = [f"e{i:02d}" for i in range(20)]
+    g = Graph(starters=tuple(ids[:2]), elements={i: i.upper() for i in ids}, recipes={})
+    presence = dict.fromkeys(ids, 1)
+    full = supplement_pairs(g, presence, limit=1000)
+    assert SUPPLEMENT_LIMIT == 150
+    assert len(full) == 210  # 20 * 21 / 2 pairs including (a, a)
+    assert supplement_pairs(g, presence) == full[:150]
+    assert supplement_pairs(g, presence, limit=5) == full[:5]
+    assert supplement_pairs(g, presence, limit=0) == []
+
+
+def _none_pairs(items):
+    return [{"a": i["a"], "b": i["b"], "result": None} for i in items]
+
+
+class _Ids(dict):
+    """name -> element id for ANY name (the store only keeps trend elements; ids are deterministic)."""
+
+    def __missing__(self, name):
+        from lau_meme_pipeline.ids import element_id
+
+        return element_id(name)
+
+
+def _id_by_name(outcome):
+    return _Ids()
+
+
+def test_ac_pipe_08_buoc_bo_sung_cap_hop_le_duoc_them_cap_khong_hop_vao_danh_sach_da_hoi():
+    """AC-PIPE-08: cặp LLM trả kết quả hợp lệ qua giám khảo được thêm (supplement, có điểm); cặp "không hợp" được
+    ghi "đã hỏi"; báo cáo ghi số cặp hỏi/thêm và tỉ lệ trượt trước/sau."""
+    from lau_meme_pipeline.full import run_full
+
+    state: dict = {}
+
+    def pair_fake(payload):
+        first = payload[0]
+        result = next(n for p in payload for n in (p["a"], p["b"]) if n not in (first["a"], first["b"]))
+        state.update(pair=(first["a"], first["b"]), result=result)
+        return [{"a": p["a"], "b": p["b"], "result": result if k == 0 else None} for k, p in enumerate(payload)]
+
+    pair_llm = Recording(pair_fake)
+    outcome = run_full(
+        real_core(), {}, crawl_of("Meme Thử Một"), make_llm(supplement_pair=pair_llm), BATCH_AT, mod_lists()
+    )
+
+    assert pair_llm.calls == 1
+    payload = pair_llm.payloads[0]
+    ids = _id_by_name(outcome)
+    a_id, b_id = (ids[n] for n in state["pair"])
+    added = [r for r in outcome.store["recipes"] if r.get("supplement")]
+    assert len(added) == 1
+    assert sorted((added[0]["a"], added[0]["b"])) == sorted((a_id, b_id))
+    assert added[0]["result"] == ids[state["result"]]
+    assert added[0]["score"] == 4 and added[0]["supplement"] is True
+
+    asked = outcome.store["asked_pairs"]
+    assert asked == sorted(sorted((ids[p["a"]], ids[p["b"]])) for p in payload[1:])
+    assert sorted((a_id, b_id)) not in asked
+
+    sup = outcome.report["supplement"]
+    assert sup["asked"] == len(payload) <= 150
+    assert sup["added"] == 1
+    assert outcome.report["supplement_needed"] == sup["needed"]
+    assert len(sup["miss_before"]) == 2 and len(sup["miss_after"]) == 2
+    assert sup["miss_after"][0] <= sup["miss_before"][0]
+
+
+def test_ac_pipe_08_cap_da_hoi_bi_loai_khong_bi_hoi_lai_o_dot_sau():
+    """AC-PIPE-08: cặp trong danh sách "đã hỏi, bị loại" của kho không được gửi lại ở đợt sau và được giữ nguyên."""
+    from lau_meme_pipeline.full import run_full
+
+    pair1 = Recording(_none_pairs)
+    first = run_full(real_core(), {}, crawl_of("Meme Thử Một"), make_llm(supplement_pair=pair1), BATCH_AT, mod_lists())
+    asked1 = first.store["asked_pairs"]
+    assert asked1
+    assert len(asked1) == len(pair1.payloads[0])
+
+    ids1 = _id_by_name(first)
+    name_of = {ids1[n]: n for p in pair1.payloads[0] for n in (p["a"], p["b"])}
+    asked_names = {frozenset((name_of[a], name_of[b])) for a, b in asked1}
+
+    pair2 = Recording(_none_pairs)
+    second = run_full(
+        real_core(),
+        {"asked_pairs": asked1},
+        crawl_of("Meme Thử Một"),
+        make_llm(supplement_pair=pair2),
+        BATCH_AT,
+        mod_lists(),
+    )
+    assert pair2.calls == 1
+    payload2 = pair2.payloads[0]
+    assert payload2
+    assert not [p for p in payload2 if frozenset((p["a"], p["b"])) in asked_names]
+    assert all(pair in second.store["asked_pairs"] for pair in asked1)
+    assert second.store["asked_pairs"] == sorted(second.store["asked_pairs"])
+
+
+def test_ac_pipe_08_phan_tu_duoi_3_cong_thuc_xin_llm_bo_sung_de_xuat_sai_bi_loai_vao_da_hoi():
+    """AC-PIPE-08: LLM đề xuất công thức cho phần tử thiếu: hợp lệ được thêm, kết quả không tồn tại bị loại và ghi
+    vào danh sách đã hỏi."""
+    from lau_meme_pipeline.full import run_full
+
+    state: dict = {}
+
+    def element_fake(payload):
+        item = payload[0]
+        name, cands = item["name"], item["candidates"]
+        result = next(c for c in reversed(cands) if c != name)
+        partners = [c for c in cands if c not in (name, result)]
+        state.update(name=name, result=result, bad_partner=partners[0])
+        recipes = [{"with": partners[0], "result": "Phần Tử Không Tồn Tại"}]
+        recipes += [{"with": w, "result": result} for w in partners[1:6]]
+        return [{"name": name, "recipes": recipes}]
+
+    element_llm = Recording(element_fake)
+    outcome = run_full(
+        real_core(), {}, crawl_of("Meme Thử Một"), make_llm(supplement_element=element_llm), BATCH_AT, mod_lists()
+    )
+
+    assert element_llm.calls == 1
+    assert all(set(i) == {"name", "need", "candidates"} for i in element_llm.payloads[0])
+    ids = _id_by_name(outcome)
+    p_id, r_id, bad_id = ids[state["name"]], ids[state["result"]], ids[state["bad_partner"]]
+    assert not [r for r in outcome.store["recipes"] if r["result"] == ids["Phần Tử Không Tồn Tại"]]
+
+    added = [r for r in outcome.store["recipes"] if r.get("supplement")]
+    assert added
+    assert all(p_id in (r["a"], r["b"]) and r["result"] == r_id and r["score"] >= 3 for r in added)
+    bad_pair = sorted((p_id, bad_id))
+    assert bad_pair in outcome.store["asked_pairs"]
+    assert not [r for r in added if sorted((r["a"], r["b"])) == bad_pair]
+    assert outcome.report["supplement"]["added"] == len(added)
+
+
+def test_ac_pipe_08_giam_khao_cham_2_thi_khong_them_va_cap_vao_danh_sach_da_hoi():
+    """AC-PIPE-08: công thức bổ sung bị giám khảo chấm 2 thì không được thêm và cặp được ghi "đã hỏi"."""
+    from lau_meme_pipeline.full import run_full
+
+    state: dict = {}
+
+    def pair_fake(payload):
+        first = payload[0]
+        result = next(n for p in payload for n in (p["a"], p["b"]) if n not in (first["a"], first["b"]))
+        state["pair"] = (first["a"], first["b"])
+        return [{"a": p["a"], "b": p["b"], "result": result if k == 0 else None} for k, p in enumerate(payload)]
+
+    def judge_fake(items):
+        # the supplement judge call comes after the pair step has been asked; earlier judge calls score 4
+        return {i["id"]: (2 if state else 4) for i in items}
+
+    llm = make_llm(supplement_pair=Recording(pair_fake), judge=judge_fake)
+    outcome = run_full(real_core(), {}, crawl_of("Meme Thử Một"), llm, BATCH_AT, mod_lists())
+
+    ids = _id_by_name(outcome)
+    pair_ids = sorted(ids[n] for n in state["pair"])
+    assert not [r for r in outcome.store["recipes"] if r.get("supplement")]
+    assert not [r for r in outcome.store["recipes"] if sorted((r["a"], r["b"])) == pair_ids]
+    assert pair_ids in outcome.store["asked_pairs"]
+    assert outcome.report["supplement"]["added"] == 0
+
+
+def test_ac_pipe_08_payload_chi_gom_ten_va_tra_loi_khong_phai_danh_sach_thi_khong_sap():
+    """AC-PIPE-08: payload gửi LLM chỉ có tên; phản hồi không phải danh sách coi như không đề xuất gì, không sập."""
+    from lau_meme_pipeline.full import run_full
+
+    element_llm = Recording(lambda items: "không hiểu")
+    pair_llm = Recording(lambda items: None)
+    outcome = run_full(
+        real_core(),
+        {},
+        crawl_of("Meme Thử Một"),
+        make_llm(supplement_element=element_llm, supplement_pair=pair_llm),
+        BATCH_AT,
+        mod_lists(),
+    )
+
+    assert element_llm.calls == 1 and pair_llm.calls == 1
+    for item in element_llm.payloads[0]:
+        assert set(item) == {"name", "need", "candidates"}
+        assert isinstance(item["name"], str) and item["need"] in (1, 2, 3)
+        assert all(isinstance(c, str) for c in item["candidates"])
+    payload = pair_llm.payloads[0]
+    assert payload
+    assert all(set(p) == {"a", "b"} and isinstance(p["a"], str) and isinstance(p["b"], str) for p in payload)
+
+    assert not [r for r in outcome.store["recipes"] if r.get("supplement")]
+    ids = _id_by_name(outcome)
+    assert outcome.store["asked_pairs"] == sorted(sorted((ids[p["a"]], ids[p["b"]])) for p in payload)
+    assert outcome.report["supplement"]["added"] == 0
+    assert outcome.report["supplement"]["asked"] == len(payload)
+
+
 # ================================================================ AC-PIPE-09
 
 
@@ -958,6 +1269,18 @@ class Counting:
         return self.fn(payload)
 
 
+class Recording(Counting):
+    """Counting fake that also keeps every payload it was called with."""
+
+    def __init__(self, fn):
+        super().__init__(fn)
+        self.payloads: list = []
+
+    def __call__(self, payload):
+        self.payloads.append(payload)
+        return super().__call__(payload)
+
+
 def _same(items):
     return [False for _ in items]
 
@@ -1004,8 +1327,24 @@ def _judge(items):
     return {i["id"]: 4 for i in items}
 
 
+def _supplement_element(items):
+    return [{"name": i["name"], "recipes": []} for i in items]
+
+
+def _supplement_pair(items):
+    return [{"a": i["a"], "b": i["b"], "result": None} for i in items]
+
+
 def make_llm(**over):
-    fns = {"same": _same, "classify": _classify, "describe": _describe, "link": _link, "judge": _judge}
+    fns = {
+        "same": _same,
+        "classify": _classify,
+        "describe": _describe,
+        "link": _link,
+        "judge": _judge,
+        "supplement_element": _supplement_element,
+        "supplement_pair": _supplement_pair,
+    }
     fns.update(over)
     return {k: Counting(v) if not isinstance(v, Counting) else v for k, v in fns.items()}
 
@@ -1030,7 +1369,10 @@ def test_ac_pipe_10_chay_lai_cung_dau_vao_cho_byte_giong_nhau_khong_goi_llm_lai(
     assert sum(f.calls for f in first_llm.values()) > 0
     assert first.store["llm_cache"]
 
-    second_llm = {step: forbidden(step) for step in ("same", "classify", "describe", "link", "judge")}
+    second_llm = {
+        step: forbidden(step)
+        for step in ("same", "classify", "describe", "link", "judge", "supplement_element", "supplement_pair")
+    }
     second_store = {**store_in, "llm_cache": first.store["llm_cache"]}
     second = run_full(core, second_store, crawl_result, second_llm, BATCH_AT, mod_lists())
 

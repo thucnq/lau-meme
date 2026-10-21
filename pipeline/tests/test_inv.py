@@ -643,7 +643,21 @@ def fake_llm() -> dict:
     def judge(items):
         return {i["id"]: 4 for i in items}
 
-    return {"same": same, "classify": classify, "describe": describe, "link": link, "judge": judge}
+    def supplement_element(items):
+        return [{"name": i["name"], "recipes": []} for i in items]
+
+    def supplement_pair(items):
+        return [{"a": i["a"], "b": i["b"], "result": None} for i in items]
+
+    return {
+        "same": same,
+        "classify": classify,
+        "describe": describe,
+        "link": link,
+        "judge": judge,
+        "supplement_element": supplement_element,
+        "supplement_pair": supplement_pair,
+    }
 
 
 @pytest.mark.parametrize("seed", [1, 2, 3, 4])
