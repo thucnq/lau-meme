@@ -1,7 +1,7 @@
 import { withBase } from '../base'
 
 /** Policy text (AC-PRIV-01). A change of content needs a new POLICY_VERSION (wrangler.jsonc) so players re-consent. */
-export const POLICY = { version: 1, effective: '20/10/2026' }
+export const POLICY = { version: 1, effective: '21/10/2026' } // AUTH added while only on staging: still version 1 (open question 37)
 const CONTACT = 'thucnguyenquy@gmail.com' // open question #20 (chốt 2026-10-20)
 
 export function PolicyPage() {
@@ -53,19 +53,26 @@ export function PolicyPage() {
 
       <h2>Không chia sẻ</h2>
       <p>
-        Dữ liệu của bạn không được gửi cho AI hay bất kỳ bên thứ ba nào. Trò chơi không dùng cookie theo dõi; số lượt
-        xem trang đo bằng Cloudflare Web Analytics, không dùng cookie.
+        Dữ liệu của bạn không được gửi cho AI hay bất kỳ bên thứ ba nào. Khi bạn đăng nhập bằng Google, Google biết bạn
+        đã đăng nhập vào trò chơi; trò chơi không gửi dữ liệu chơi của bạn cho Google. Trò chơi không dùng cookie theo
+        dõi: cookie duy nhất là cookie phiên đăng nhập (chỉ khi bạn đăng nhập); số lượt xem trang đo bằng Cloudflare Web
+        Analytics, không dùng cookie.
       </p>
 
       <h2>Quyền của bạn</h2>
       <p>Mở mục “Dữ liệu của tôi” ở chân trang chủ để:</p>
       <ul>
-        <li>xem và tải về (xuất) toàn bộ dữ liệu gắn với UUID của bạn;</li>
+        <li>
+          xem và tải về (xuất) toàn bộ dữ liệu gắn với UUID của bạn, và khi đang đăng nhập thì cả thời điểm tạo tài
+          khoản, số phiên đang mở;
+        </li>
         <li>rút lại đồng ý - trò chơi ngừng gửi dữ liệu ngay;</li>
         <li>
           xóa dữ liệu - nickname, kết quả, streak, phiếu, sự kiện bị xóa; khám phá và báo cáo giữ lại nhưng không còn
-          gắn với bạn.
+          gắn với bạn. Nếu đang đăng nhập, tài khoản Google đã gắn (mã dạng băm, mọi phiên, nickname, kết quả, streak)
+          và dữ liệu của mọi máy đã đăng nhập tài khoản đó cũng bị xóa;
         </li>
+        <li>đăng xuất bất cứ lúc nào - phiên bị hủy ngay trên máy chủ.</li>
       </ul>
       <p>Bạn vẫn chơi ghép được mà không cần đồng ý.</p>
 
