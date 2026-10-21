@@ -4,7 +4,7 @@
 > Bối cảnh: Q15 và ADR 0007. Zone `dinoduct.fun` mua qua Cloudflare Registrar, lúc viết hướng dẫn **chưa có bản ghi DNS nào**.
 > Tài liệu Cloudflare thay đổi thường xuyên. Tên menu bên dưới đúng vào ngày viết (2026-10-20); nếu dashboard khác đi thì làm theo ý của bước, đừng làm theo chữ.
 
-Thứ tự nên làm: 1 → 3 → deploy staging (`/dk:ship staging`) → 2 → 4 → 5.
+Thứ tự nên làm: 1 → 3 → deploy staging (`/dk:ship staging`) → 2 → 4 → 5. Mục 6 (R2) làm trước khi build ART ở giai đoạn 2.
 
 ## 1. Bản ghi DNS cho host chỉ có Worker
 Route Worker chỉ chạy khi host phân giải **qua proxy Cloudflare** (đám mây cam). Game không có máy chủ gốc, nên dùng bản ghi "không origin": AAAA trỏ `100::`, dải IPv6 dùng để loại bỏ (RFC 6666), không bao giờ có máy chủ nào trả lời ở địa chỉ này.
@@ -159,3 +159,75 @@ Nếu bị chặn: ghi tên bộ lọc hoặc trang chặn, rồi gửi yêu c�
 - Thử cả `https://dinoduct.fun` (qua redirect 302) và `https://dinoduct.fun/lau-meme` (qua 301) để chắc trình thu thập theo được chuyển hướng.
 
 Staging làm tương tự với `https://staging.dinoduct.fun/lau-meme/`. Thẻ xem trước của staging vẫn trỏ canonical về production, như vậy là đúng.
+
+## 6. R2 - kho ảnh minh họa (giai đoạn 2)
+Dùng cho ART: pipeline lưu ảnh WebP 256x256 ở khóa `img/<sha256-12>.webp` (AC-ART-04), Worker phục vụ `/lau-meme/img/*` với cache `immutable` (AC-ART-05). Giai đoạn 1 chưa dùng.
+
+### 6.1. Bật R2
+Storage & Databases → R2 Object Storage → Purchase R2 Plan / Get started, trên đúng account chứa zone `dinoduct.fun`.
+- Ngày 2026-10-21, account này bật R2 **không bị đòi khai báo thẻ thanh toán** (trả lời câu hỏi mở 13).
+- Gói free mỗi tháng: 10 GB lưu trữ, 1 triệu thao tác loại A (ghi, liệt kê), 10 triệu thao tác loại B (đọc), egress miễn phí. Ảnh vài chục KB, đọc qua Cache API nên còn rất xa hạn mức.
+- R2 không có giới hạn chi tiêu cứng. Nếu sau này account có phương thức thanh toán thì đặt cảnh báo ở Manage Account → Billing → Notifications.
+
+### 6.2. Bucket
+Mỗi môi trường một bucket, vị trí gợi ý châu Á - Thái Bình Dương:
+```bash
+cd worker
+npx wrangler r2 bucket create lau-meme-img --location apac
+npx wrangler r2 bucket create lau-meme-img-staging --location apac
+npx wrangler r2 bucket list
+```
+- **Không bật Public access và không bật r2.dev.** Ảnh chỉ đi qua Worker: Worker kiểm định dạng khóa, đặt header cache và không phục vụ ảnh bị chặn (AC-ART-05/07).
+- Không cần CORS: ảnh cùng origin với game.
+- Tên bucket không phải bí mật.
+
+### 6.3. Token S3 cho pipeline
+Pipeline chạy trên GitHub Actions và ghi ảnh qua S3 API của R2.
+1. Trang R2 → Manage R2 API Tokens → **Create Account API Token**.
+2. Permissions: **Object Read & Write**. Scope: **Apply to specific buckets only**, chỉ chọn một bucket. Tạo hai token: một cho `lau-meme-img-staging`, một cho `lau-meme-img`.
+3. Màn hình kết quả hiện `Access Key ID`, `Secret Access Key` và endpoint S3 `https://<ACCOUNT_ID>.r2.cloudflarestorage.com` **một lần duy nhất**. Chép thẳng vào GitHub, không ghi vào file, issue, chat hay commit nào.
+4. GitHub → Settings → Environments, thêm vào từng environment (`staging`, `production`, `production-no-approval`; hai environment production dùng chung token của `lau-meme-img`):
+
+| Tên | Loại | Giá trị |
+|---|---|---|
+| `R2_ACCESS_KEY_ID` | Secret | Access Key ID của token |
+| `R2_SECRET_ACCESS_KEY` | Secret | Secret Access Key của token |
+| `R2_ENDPOINT` | Variable | `https://<ACCOUNT_ID>.r2.cloudflarestorage.com` |
+| `R2_BUCKET` | Variable | `lau-meme-img-staging` hoặc `lau-meme-img` |
+
+Ví dụ cho staging (secret thì dán khi được hỏi, để giá trị không nằm lại trong lịch sử shell):
+```bash
+gh secret set R2_ACCESS_KEY_ID --env staging
+gh secret set R2_SECRET_ACCESS_KEY --env staging
+gh variable set R2_ENDPOINT --env staging --body 'https://<ACCOUNT_ID>.r2.cloudflarestorage.com'
+gh variable set R2_BUCKET --env staging --body 'lau-meme-img-staging'
+```
+- Client S3 (vd boto3) dùng `endpoint_url=R2_ENDPOINT` và `region_name="auto"`.
+- Worker **không** cần token này: Worker đọc R2 qua binding (mục 6.4).
+- Đổi token (định kỳ hoặc khi nghi lộ): tạo token mới, cập nhật hai secret, rồi xóa token cũ trên dashboard.
+
+### 6.4. Binding cho Worker
+Làm cùng PR build ART, không làm trước. Thêm vào `worker/wrangler.jsonc` ở **cả** top-level lẫn `env.staging` (binding không kế thừa sang env):
+```jsonc
+// top-level (production)
+"r2_buckets": [{ "binding": "IMG", "bucket_name": "lau-meme-img" }],
+// env.staging
+"r2_buckets": [{ "binding": "IMG", "bucket_name": "lau-meme-img-staging" }],
+```
+Test local (Miniflare) tự giả lập R2, không cần tài khoản hay token.
+
+### 6.5. Kiểm tra
+Trên bucket staging:
+```bash
+cd worker
+printf test > /tmp/r2-test.txt
+npx wrangler r2 object put lau-meme-img-staging/img/r2-test.txt --file /tmp/r2-test.txt --remote --env staging
+npx wrangler r2 object get lau-meme-img-staging/img/r2-test.txt --remote --pipe --env staging   # in ra "test"
+npx wrangler r2 object delete lau-meme-img-staging/img/r2-test.txt --remote --env staging
+rm /tmp/r2-test.txt
+```
+Sau khi deploy bản có ART:
+```bash
+curl -s -o /dev/null -w '%{http_code}\n' https://staging.dinoduct.fun/lau-meme/img/000000000000.webp   # 404 (khóa không có)
+curl -s -o /dev/null -w '%{http_code}\n' https://staging.dinoduct.fun/lau-meme/img/abc.png            # 400 (sai định dạng)
+```
