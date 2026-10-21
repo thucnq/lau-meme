@@ -3,7 +3,7 @@
 from collections.abc import Collection, Mapping, Sequence
 from dataclasses import dataclass, field
 
-from lau_meme_pipeline.invariants import FIRST_TURNS, _Rng
+from lau_meme_pipeline.invariants import FIRST_TURNS, Rng
 from lau_meme_pipeline.text import fold
 
 # Pairs asked for supplementary recipes per batch (AC-PIPE-08; default - open question 30).
@@ -94,7 +94,7 @@ def simulate_plate(graph: Graph, *, games: int = 1000, turns: int = 100, seed: i
     starters = [s for s in graph.starters if s not in graph.inactive]
     if not starters or games <= 0 or turns <= 0:
         return Simulation({}, 0.0, 0.0)
-    rng = _Rng(seed)
+    rng = Rng(seed)
     presence: dict[str, int] = {}
     first_misses = misses = 0
     first = min(FIRST_TURNS, turns)

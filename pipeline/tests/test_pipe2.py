@@ -817,6 +817,7 @@ def test_ac_pipe_08_buoc_bo_sung_cap_hop_le_duoc_them_cap_khong_hop_vao_danh_sac
     assert sup["added"] == 1
     assert outcome.report["supplement_needed"] == sup["needed"]
     assert len(sup["miss_before"]) == 2 and len(sup["miss_after"]) == 2
+    assert sup["miss_after"] == outcome.report["miss_rate"]
     assert sup["miss_after"][0] <= sup["miss_before"][0]
 
 
@@ -940,10 +941,32 @@ def test_ac_pipe_08_payload_chi_gom_ten_va_tra_loi_khong_phai_danh_sach_thi_khon
     assert all(set(p) == {"a", "b"} and isinstance(p["a"], str) and isinstance(p["b"], str) for p in payload)
 
     assert not [r for r in outcome.store["recipes"] if r.get("supplement")]
-    ids = _id_by_name(outcome)
-    assert outcome.store["asked_pairs"] == sorted(sorted((ids[p["a"]], ids[p["b"]])) for p in payload)
+    assert outcome.store["asked_pairs"] == []  # no answer is not "không hợp": the pairs stay askable
     assert outcome.report["supplement"]["added"] == 0
-    assert outcome.report["supplement"]["asked"] == len(payload)
+    assert outcome.report["supplement"]["asked"] == 0
+
+
+def test_ac_pipe_08_cap_chua_duoc_tra_loi_khong_vao_danh_sach_da_hoi():
+    """AC-PIPE-08: danh sách rỗng hoặc bị cắt cụt: cặp không có câu trả lời không bị ghi "đã hỏi", cặp đã trả
+    "không hợp" thì có."""
+    from lau_meme_pipeline.full import run_full
+
+    empty = Recording(lambda items: [])
+    outcome = run_full(
+        real_core(), {}, crawl_of("Meme Thử Một"), make_llm(supplement_pair=empty), BATCH_AT, mod_lists()
+    )
+    assert empty.calls == 1 and empty.payloads[0]
+    assert outcome.store["asked_pairs"] == []
+    assert outcome.report["supplement"]["asked"] == 0
+
+    half = Recording(lambda items: _none_pairs(items[: len(items) // 2]))
+    outcome = run_full(real_core(), {}, crawl_of("Meme Thử Một"), make_llm(supplement_pair=half), BATCH_AT, mod_lists())
+    payload = half.payloads[0]
+    ids = _id_by_name(outcome)
+    answered = payload[: len(payload) // 2]
+    assert answered and len(answered) < len(payload)
+    assert outcome.store["asked_pairs"] == sorted(sorted((ids[p["a"]], ids[p["b"]])) for p in answered)
+    assert outcome.report["supplement"]["asked"] == len(answered)
 
 
 # ================================================================ AC-PIPE-09

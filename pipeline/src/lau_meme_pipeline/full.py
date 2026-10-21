@@ -263,13 +263,12 @@ def run_full(
             "score": r["score"],
             "supplement": True,
         }
-    after = simulate_plate(_graph(_combined(core, _store_of(trend, trend_recipes)), frozenset(blocked)))
     report["supplement"] = {
-        "needed": 0,  # filled in after BFS below
+        "needed": 0,  # needed and miss_after are filled in after BFS below
         "asked": supplemented.asked,
         "added": len(supplemented.kept),
         "miss_before": [before.first20, before.overall],
-        "miss_after": [after.first20, after.overall],
+        "miss_after": None,
     }
 
     # 6. Depth by BFS over everything; trend elements that lost every path are inactive (AC-INV-03).
@@ -291,6 +290,8 @@ def run_full(
         e["depth"] = depths.get(e["id"], 0)
     report["supplement_needed"] = len(needs_supplement(_graph(content, frozenset(blocked))))
     report["supplement"]["needed"] = report["supplement_needed"]
+    after = simulate_plate(_graph(content, frozenset(blocked)))  # same graph as the exported one (AC-INV-12)
+    report["supplement"]["miss_after"] = [after.first20, after.overall]
 
     # 7. Daily: core examples, plus trend elements with an approved hint that are not held.
     candidates_daily = []
@@ -332,7 +333,7 @@ def _store_of(trend: Mapping[str, dict], trend_recipes: Mapping[str, dict]) -> d
 class _Supplemented:
     kept: list[dict]
     rejected: set[tuple[str, str]]  # asked and not added: never asked again
-    asked: int  # pairs sent to the pair step
+    asked: int  # pairs the LLM answered (both steps)
 
 
 def _supplement(
@@ -344,13 +345,21 @@ def _supplement(
     proposed: dict[tuple[str, str], dict] = {}
     rejected: set[tuple[str, str]] = set()
 
+    asked: set[tuple[str, str]] = set()  # pairs the LLM actually answered this batch
+
     def propose(a: str, b: str, result_name: object, owner: str | None) -> None:
+        """Only an answered pair gets here. "Không hợp" (no result), a result that is not an active element and a
+        result that is one of the inputs are the LLM's verdict: recorded, never asked again. A pair that already
+        has a recipe or has an unusable input says nothing about the LLM's answer: skipped, not recorded."""
         pair = (a, b) if a <= b else (b, a)
-        if pair in proposed or pair in asked_before:
+        if pair in proposed or pair in asked_before or pair in asked:
             return
+        asked.add(pair)
         result_id = by_fold.get(fold(result_name)) if isinstance(result_name, str) else None
-        if result_id is None or not validate_links(result_id, [pair], graph).accepted:
+        if result_id is None or result_id in pair:
             rejected.add(pair)
+            return
+        if not validate_links(result_id, [pair], graph).accepted:
             return
         names = (graph.elements[pair[0]], graph.elements[pair[1]])
         proposed[pair] = {
@@ -390,7 +399,7 @@ def _supplement(
                     propose(owner, partner, r.get("result"), owner)
 
     # Step 2: pairs most often on the plate together that still have no recipe.
-    pairs = [p for p in supplement_pairs(graph, presence, asked=asked_before) if p not in proposed]
+    pairs = supplement_pairs(graph, presence, asked=asked_before | asked)
     if pairs:
         answers = ask("supplement_pair", [{"a": graph.elements[a], "b": graph.elements[b]} for a, b in pairs])
         result_of = {}
@@ -398,7 +407,9 @@ def _supplement(
             if isinstance(item, Mapping) and isinstance(item.get("a"), str) and isinstance(item.get("b"), str):
                 result_of[frozenset((fold(item["a"]), fold(item["b"])))] = item.get("result")
         for a, b in pairs:
-            propose(a, b, result_of.get(frozenset((fold(graph.elements[a]), fold(graph.elements[b])))), None)
+            key = frozenset((fold(graph.elements[a]), fold(graph.elements[b])))
+            if key in result_of:  # an unanswered pair (truncated or garbled answer) stays askable
+                propose(a, b, result_of[key], None)
 
     candidates_judged = list(proposed.values())
     scores = (
@@ -412,12 +423,14 @@ def _supplement(
         owner = r["owner"]
         if owner is not None:
             if need[owner] <= 0:
-                continue  # enough for this element; the pair stays askable later
+                # Enough for this element: neither kept nor recorded, so a later batch may ask the pair again
+                # (it was judged once already; the pair step skipped it this batch).
+                continue
             need[owner] -= 1
         kept.append(r)
     kept_pairs = {(r["a_id"], r["b_id"]) for r in kept}
     rejected |= {(r["a_id"], r["b_id"]) for r in candidates_judged if r["id"] in judged.rejected}
-    return _Supplemented(kept=kept, rejected=rejected - kept_pairs, asked=len(pairs))
+    return _Supplemented(kept=kept, rejected=rejected - kept_pairs, asked=len(asked))
 
 
 def _hint_valid(e: StoredElement, hint: str) -> bool:
