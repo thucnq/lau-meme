@@ -13,7 +13,7 @@ type Bucket = {
 const IMG = (env as unknown as { IMG: Bucket }).IMG
 
 const BASE = 'https://example.com/lau-meme'
-const KEY = 'abc123def456.webp'
+const IMAGE_NAME = 'abc123def456.webp'
 const URL_OF = (key: string) => `${BASE}/img/${key}`
 // A tiny WebP-looking payload; the Worker serves bytes as stored, it does not decode them.
 const WEBP = new Uint8Array([0x52, 0x49, 0x46, 0x46, 0x1a, 0, 0, 0, 0x57, 0x45, 0x42, 0x50, 0x56, 0x50, 0x38, 0x20, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
@@ -23,12 +23,12 @@ const edgeCache = () => (caches as unknown as { default: Cache }).default
 describe('art: GET /img/{key}', () => {
   // caches.default is not reset between tests: clear every key these tests use.
   beforeEach(async () => {
-    for (const k of [KEY, '0123456789ab.webp', 'ABC123DEF456.webp']) await edgeCache().delete(URL_OF(k))
+    for (const k of [IMAGE_NAME, '0123456789ab.webp', 'ABC123DEF456.webp']) await edgeCache().delete(URL_OF(k))
   })
 
   it('AC-ART-05: ảnh tồn tại trả 200 image/webp, đúng byte, Cache-Control public immutable một năm', async () => {
-    await IMG.put(`img/${KEY}`, WEBP)
-    const res = await SELF.fetch(URL_OF(KEY))
+    await IMG.put(`img/${IMAGE_NAME}`, WEBP)
+    const res = await SELF.fetch(URL_OF(IMAGE_NAME))
     expect(res.status).toBe(200)
     expect(res.headers.get('content-type')).toBe('image/webp')
     expect(res.headers.get('cache-control')).toBe('public, max-age=31536000, immutable')
@@ -36,21 +36,21 @@ describe('art: GET /img/{key}', () => {
   })
 
   it('AC-ART-05: lần đầu ảnh được đưa vào Cache API; lần sau vẫn 200 dù R2 đã mất đối tượng', async () => {
-    await IMG.put(`img/${KEY}`, WEBP)
-    expect(await edgeCache().match(URL_OF(KEY))).toBeUndefined()
+    await IMG.put(`img/${IMAGE_NAME}`, WEBP)
+    expect(await edgeCache().match(URL_OF(IMAGE_NAME))).toBeUndefined()
 
-    const first = await SELF.fetch(URL_OF(KEY))
+    const first = await SELF.fetch(URL_OF(IMAGE_NAME))
     expect(first.status).toBe(200)
     await first.arrayBuffer()
 
     await vi.waitFor(async () => {
-      const cached = await edgeCache().match(URL_OF(KEY))
+      const cached = await edgeCache().match(URL_OF(IMAGE_NAME))
       expect(cached).toBeDefined()
       expect(cached!.headers.get('cache-control')).toBe('public, max-age=31536000, immutable')
     })
 
-    await IMG.delete(`img/${KEY}`)
-    const again = await SELF.fetch(URL_OF(KEY))
+    await IMG.delete(`img/${IMAGE_NAME}`)
+    const again = await SELF.fetch(URL_OF(IMAGE_NAME))
     expect(again.status).toBe(200)
     expect(again.headers.get('content-type')).toBe('image/webp')
     expect(new Uint8Array(await again.arrayBuffer())).toEqual(WEBP)

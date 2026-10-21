@@ -1,0 +1,5 @@
+# Báo nhầm của gitleaks (generic-api-key): tên file ảnh mẫu trong test ART, ví dụ "abc123def456.webp", không phải bí mật.
+# Các commit dưới đã nằm trong lịch sử main nên chỉ bỏ qua đúng 3 chỗ này; test hiện tại đã đổi tên biến thành IMAGE_NAME.
+2da5c20d375c6d5669b86fe43f8f566fc91f82d7:pipeline/tests/test_art_adapters.py:generic-api-key:31
+37bdd3d86452fbbc0b78ab99766a5cd6eb562908:worker/test/art.test.ts:generic-api-key:26
+cf011a0d84841acb3d2270c080c0123ae325eeb8:worker/test/art.test.ts:generic-api-key:16
