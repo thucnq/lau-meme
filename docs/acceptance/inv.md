@@ -63,10 +63,10 @@
 - **Thì** món có depth trong [4, 8], tới được, đang hoạt động
 - Ưu tiên: Bắt buộc
 
-### AC-INV-11: Bảng xếp hạng chỉ có đường ghép hợp lệ
+### AC-INV-11: Bảng xếp hạng chỉ có kết quả hợp lệ (cập nhật 2026-10-21)
 - **Cho** mọi kết quả Daily đã lưu
-- **Khi** kiểm lại đường ghép với graph của version đó
-- **Thì** mọi đường đều hợp lệ theo AC-DAILY-06 và số bước lưu ≥ số bước của đường
+- **Khi** kiểm lại cặp đã ghép với graph của version đó
+- **Thì** mọi cặp (a, b) đều là công thức có thật ra đúng món đích theo AC-DAILY-06; mọi `solved_at` ≥ `batch_at` của mẻ và mỗi kết quả thuộc một tài khoản còn tồn tại
 - Ưu tiên: Bắt buộc
 
 ### AC-INV-12: Tỉ lệ ghép trượt khi chơi ngẫu nhiên

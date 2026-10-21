@@ -20,7 +20,8 @@
 ## 2. Người dùng và vai trò
 | Vai trò | Mô tả | Quyền chính |
 |---|---|---|
-| Thực khách (người chơi ẩn danh) | Định danh bằng UUID sinh trên trình duyệt; nickname tùy chọn | Chơi ghép, chơi Daily, gửi Công thức gia truyền, báo cáo, Ngon/Nhạt, xem/xuất/xóa dữ liệu của mình |
+| Thực khách (người chơi ẩn danh) | Định danh bằng UUID sinh trên trình duyệt; nickname tùy chọn | Chơi ghép, ghép ra Món đặc biệt, gửi Công thức gia truyền, báo cáo, Ngon/Nhạt, xem/xuất/xóa dữ liệu của mình |
+| Thực khách đã đăng nhập Google (thêm 2026-10-21) | Như trên + tài khoản định danh bằng băm HMAC mã `sub` của Google; phiên cookie HttpOnly | Thêm: nộp kết quả Món đặc biệt, có tên trên bảng xếp hạng mẻ/tuần/tháng/streak; nickname và streak theo tài khoản trên nhiều máy |
 | Quản trị (Thuc) | Một người, xác thực bằng 1 token lưu trong Cloudflare secret | Xem báo cáo, ẩn/hiện/chặn phần tử và công thức, xem nhật ký đợt và audit |
 | Pipeline (GitHub Actions) | Tác vụ máy, xác thực bằng token trong GitHub Secrets | Đọc nội dung, ghi nội dung + graph + manifest mới; không đọc dữ liệu người chơi |
 
@@ -33,7 +34,8 @@
 | PIPE | Pipeline Mẻ nhúng mới | Chế độ lõi (giai đoạn 1); crawl theo adapter, khử trùng, liên kết ngược + BFS, hàng chờ, công thức bổ sung, giám khảo, deploy; idempotent; gom lô Gemini; báo cáo đợt qua GitHub Issue (giai đoạn 2) | Bắt buộc | `docs/acceptance/pipe.md` |
 | MOD | Kiểm duyệt nội dung tự động | Từ cấm + LLM theo danh mục cấm; luật người thật dựa trên ngữ cảnh nguồn; danh sách chặn bí danh; không chắc thì loại; hoãn nội dung nóng 30 ngày (giai đoạn 2) | Bắt buộc | `docs/acceptance/mod.md` |
 | ART | Ảnh minh họa tự tạo | Workers AI vẽ khái niệm phong cách vẽ tay, Gemini kiểm duyệt ảnh, phóng lớn ảnh khi ghép ra món lần đầu, R2 + Cache API immutable, emoji dự phòng (giai đoạn 2) | Bắt buộc | `docs/acceptance/art.md` |
-| DAILY | Món đặc biệt hôm nay | 1 món/mẻ (độ sâu [4, 8]); emoji + gợi ý mờ; đếm mọi lượt ghép; bảng xếp hạng ít bước nhất (server kiểm đường); **streak**; đồng hồ theo manifest thật | Bắt buộc | `docs/acceptance/daily.md` |
+| DAILY | Món đặc biệt hôm nay | 1 món/mẻ (độ sâu [4, 8]); emoji + gợi ý mờ; ghép ra món ngay trên bàn lẩu là giải (không bàn thử thách, không đếm bước); thời gian giải = lúc server nhận − `batch_at`; bảng xếp hạng mẻ (ai nộp trước), tuần và tháng (số mẻ giải, rồi tổng thời gian); **streak**; chỉ tài khoản Google mới nộp; đồng hồ theo manifest thật | Bắt buộc | `docs/acceptance/daily.md` |
+| AUTH | Đăng nhập bằng Google (thêm 2026-10-21) | Google Identity Services, Worker kiểm ID token (JWKS); chỉ lưu băm HMAC của `sub`, không email/tên; phiên cookie HttpOnly 30 ngày; đăng xuất; xóa tài khoản; cùng tài khoản trên nhiều máy (không đồng bộ Đĩa) | Bắt buộc | `docs/acceptance/auth.md` |
 | DISC | Công thức gia truyền | UUID cục bộ + nickname tùy chọn (lọc từ cấm + bí danh); server kiểm công thức rồi ghi người đầu tiên; giới hạn tần suất theo UUID và IP băm | Bắt buộc | `docs/acceptance/disc.md` |
 | SHARE | Thẻ chia sẻ | Thẻ Daily kiểu Wordle (chữ + PNG) và thẻ Công thức gia truyền; sao chép / chia sẻ hệ thống; không lộ đáp án | Bắt buộc | `docs/acceptance/share.md` |
 | REPORT | Báo cáo + chặn nóng | Báo cáo phần tử và ảnh; 3 UUID khác nhau ⇒ tự ẩn; ảnh bị báo cáo về emoji; danh sách chặn nóng tải khi khởi động | Bắt buộc | `docs/acceptance/report.md` |
@@ -56,10 +58,10 @@
 
 ### 4.2 Món đặc biệt hôm nay (DAILY)
 1. Mỗi mẻ (00:00 và 12:00 GMT+7, theo giờ chạy thật) pipeline chọn 1 món, ghi vào manifest: emoji, gợi ý mờ, khóa băm của tên (không có tên đọc được).
-2. Thực khách bấm "Thử thách": bàn riêng bắt đầu từ 4 phần tử khởi đầu (mặc định - câu hỏi mở), bộ đếm bắt đầu; mọi lượt ghép, kể cả trượt, đều tính 1 bước.
-3. Ghép ra món: tên lộ ra, client gửi đường ghép + số bước lên server.
-4. Server kiểm đường ghép có thật và hợp lệ → ghi kết quả, cập nhật streak, trả hạng.
-5. Thực khách xem bảng xếp hạng đợt, streak, tạo thẻ chia sẻ (SHARE).
+2. Thực khách ghép trên bàn lẩu như thường (cập nhật 2026-10-21: bỏ bàn thử thách và đếm bước). Lượt ghép ra đúng món đích là giải: tên lộ ra.
+3. Đã đăng nhập Google thì client gửi cặp vừa ghép lên server; chưa đăng nhập thì thẻ mời đăng nhập, đăng nhập xong tự gửi.
+4. Server kiểm cặp là công thức có thật ra món đích → ghi kết quả với `solved_at` = lúc nhận, cập nhật streak, trả hạng.
+5. Thực khách xem bảng xếp hạng mẻ, tuần, tháng, streak, tạo thẻ chia sẻ (SHARE).
 - Ngoại lệ: mẻ đã qua → không nhận kết quả; cron trễ → đồng hồ hiện "Mẻ mới sắp lên" thay vì số âm.
 
 ### 4.3 Công thức gia truyền (DISC)
@@ -91,7 +93,9 @@
 | Câu Nồi trào (miss line) | id, nội dung | 40 câu lõi |
 | Mẻ (batch) | version, `batch_at` thật, chế độ (lõi/đầy đủ), trạng thái, số thêm/chặn/lỗi nguồn, quota dùng | Manifest + graph theo version; giữ 14 bản |
 | Món đặc biệt (daily) | version mẻ, phần tử đích, gợi ý | Mỗi mẻ 1 món |
-| Kết quả Daily | version mẻ, player, số bước, đường ghép, thời điểm nộp | 1 kết quả/player/mẻ |
+| Kết quả Daily | version mẻ, tài khoản, cặp đã ghép, `solved_at` (thời điểm server nhận), thời gian giải | 1 kết quả/tài khoản/mẻ |
+| Tài khoản (account) | băm HMAC của `sub` Google, nickname, thời điểm tạo; các UUID đã gắn | Không email, không tên Google |
+| Phiên (session) | băm mã phiên, tài khoản, thời điểm tạo/dùng gần nhất/hết hạn | Thu hồi khi đăng xuất hoặc xóa tài khoản |
 | Thực khách (player) | UUID, nickname (tùy chọn), thời điểm tạo | Không có email/mật khẩu |
 | Khám phá (discovery) | phần tử, player, công thức đã dùng, thời điểm | Duy nhất theo phần tử |
 | Báo cáo (report) | đích (phần tử/ảnh), player, lý do, thời điểm, trạng thái xử lý | Duy nhất theo (đích, player) |
@@ -109,13 +113,15 @@ Phân loại theo Luật BVDLCN 2025 + NĐ 356/2025: chỉ có **dữ liệu cá
 | Trường | Loại (cơ bản/nhạy cảm) | Mục đích xử lý | Thời gian lưu | Biện pháp bảo vệ |
 |---|---|---|---|---|
 | UUID thực khách | Cơ bản (định danh trực tuyến) | Ghi khám phá, kết quả Daily, streak, báo cáo, phiếu, đo chỉ số | Đến khi thực khách xóa | Không hiển thị công khai; mask trong log; xóa theo yêu cầu (AC-PRIV) |
+| Mã tài khoản Google (băm HMAC của `sub`) | Cơ bản (định danh trực tuyến) | Định danh trên bảng xếp hạng, gộp kết quả/streak qua nhiều máy | Đến khi thực khách xóa tài khoản | Không lưu `sub` thô, email, tên; khóa HMAC trong secret; không ghi vào log |
 | Nickname | Cơ bản | Hiển thị trên bảng xếp hạng và Công thức gia truyền | Đến khi thực khách đổi/xóa | Lọc từ cấm + bí danh; đồng ý trước khi lưu |
 | IP | Cơ bản | Giới hạn tần suất, chống gian lận | Chỉ lưu dạng băm HMAC (khóa trong secret); xóa sau 7 ngày | Không lưu IP thô; không ghi IP vào log |
 | Sự kiện chơi | Cơ bản (gắn UUID) | Đo D1/D7, chia sẻ, ghép trượt | 90 ngày | Không IP, không user agent; xóa theo UUID khi thực khách xóa dữ liệu |
 | Bằng chứng đồng ý | Cơ bản | Chứng minh đồng ý | Theo vòng đời player + 1 năm sau khi xóa (mặc định - câu hỏi mở) | Append-only |
 
 - **Không gửi dữ liệu người chơi cho LLM** hay bất kỳ dịch vụ bên thứ ba nào. Gemini và Workers AI chỉ nhận dữ liệu meme công khai ⇒ không phát sinh chuyển dữ liệu cá nhân ra nước ngoài.
-- Không dùng cookie theo dõi; Cloudflare Web Analytics không cookie.
+- Không dùng cookie theo dõi; Cloudflare Web Analytics không cookie. Cookie phiên đăng nhập (AUTH) là cookie cần thiết, chỉ đặt sau khi thực khách bấm đăng nhập.
+- Đăng nhập Google: Google biết tài khoản đã đăng nhập vào game (bản chất của đăng nhập bên thứ ba); game không nhận email/tên từ Google ngoài ID token dùng một lần để kiểm. Trang chính sách phải nêu điều này (AC-AUTH-06).
 
 ## 6. Tích hợp bên ngoài
 | Hệ thống | Chiều | Phương thức | Tần suất | Xử lý khi lỗi |
@@ -161,7 +167,7 @@ Stack là Cloudflare Worker + D1 + Python pipeline (không Docker/Postgres), nê
 - Cron GitHub Actions có thể trễ ⇒ mọi thứ phụ thuộc giờ mẻ dùng `batch_at` thật trong manifest.
 - Hạn mức Workers AI **cần kiểm tra** trước giai đoạn 2. R2 đã bật ngày 2026-10-21, không bị đòi thẻ thanh toán (câu hỏi mở 13, `docs/dev/huong-dan-tai-khoan.md` mục 6).
 - Graph mã hóa chống đọc trộm cả cây, **không** chống dò thử từng cặp - chấp nhận.
-- Không có đăng nhập ⇒ chấp nhận còn chút gian lận ở bảng xếp hạng và Công thức gia truyền.
+- Bảng xếp hạng chỉ nhận tài khoản Google ⇒ khó tạo nhiều danh tính hơn; vẫn chấp nhận gian lận kiểu chia sẻ đáp án (ai biết cặp ra món thì nộp được ngay). Công thức gia truyền vẫn theo UUID ẩn danh.
 
 ## 9. Lịch sử thay đổi
 | Ngày | Phiên bản | Nội dung | Người duyệt |
@@ -169,3 +175,4 @@ Stack là Cloudflare Worker + D1 + Python pipeline (không Docker/Postgres), nê
 | 2026-10-19 | 0.1 | Bản đầu từ phạm vi đã chốt (14 tính năng + bất biến); chia giai đoạn 1/2; thêm streak, bảng sự kiện D1 | - |
 | 2026-10-20 | 0.2 | AC-PIPE-08: thêm hạn mức 150 cặp/đợt chọn theo mức hay cùng nằm trên Đĩa (giảm ghép trượt, mô phỏng: +200 cặp đúng chỗ kéo 20 lượt đầu từ 41,5 % xuống 28 %); AC-ART-01 đổi phong cách sticker sang vẽ tay; thêm AC-ART-08 phóng lớn ảnh khi ghép ra món lần đầu | nguyenquythuc (chờ /dk:approve spec) |
 | 2026-10-21 | 0.4 | Thêm AC-DAILY-14: bấm món trên bàn thử thách thì đặt vào nồi lẩu, nồi sôi và câu Nồi trào như bàn lẩu (lần trượt liên tiếp vẫn thấy rõ); món thử thách không ghép lẫn với món Đĩa. (0.3 nằm ở PR #24) | nguyenquythuc (chờ /dk:approve spec) |
+| 2026-10-21 | 0.5 | DAILY: bỏ bàn thử thách và đếm bước, ghép ra món trên bàn lẩu là giải; xếp hạng mẻ theo thời điểm server nhận; thêm bảng tuần/tháng lịch GMT+7 (số mẻ giải, rồi tổng thời gian); chỉ tài khoản Google nộp được. Thêm AUTH (đăng nhập Google, chỉ băm `sub`). SHARE thẻ Daily hiện thời gian giải thay số bước. INV-11 theo cặp đã ghép. AC-GAME-18 nồi lẩu trong màn hình đầu tiên | nguyenquythuc (chờ /dk:approve spec) |

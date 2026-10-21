@@ -51,7 +51,7 @@
 
 ### AC-SUBPATH-08: Mọi khóa localStorage có tiền tố `laumeme:`
 - **Cho** localStorage trống
-- **Khi** mở game, ghép vài món, đổi giao diện sáng/tối, chơi thử thách Daily
+- **Khi** mở game, ghép vài món, đổi giao diện sáng/tối, ghép ra Món đặc biệt
 - **Thì** mọi khóa trong localStorage bắt đầu bằng `laumeme:`; khi localStorage ném lỗi ở mọi thao tác (bị chặn), game vẫn chạy và không ném lỗi ra ngoài
 - Ưu tiên: Bắt buộc
 
