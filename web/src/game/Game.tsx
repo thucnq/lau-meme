@@ -198,6 +198,13 @@ export function Game({ onDiscover, onItems, heirlooms = {}, onReport, blocklistR
 
   // Món đặc biệt board: same graph and block list; what it finds also lands on the main plate (AC-DAILY-04).
   // Stable callbacks reading the latest graph/block list when called (the board lives for the whole batch).
+  // A new batch remounts the board: an element of the old board must not stay waiting in the pot.
+  const dailyVersion = loaded?.manifest.version
+  const [slotsVersion, setSlotsVersion] = useState(dailyVersion)
+  if (slotsVersion !== dailyVersion) {
+    setSlotsVersion(dailyVersion)
+    setDailySlots([null, null])
+  }
   const dailyFound = useRef(new Map<string, GraphResult>())
   const loadedRef = useRef(loaded)
   useEffect(() => {
@@ -366,8 +373,7 @@ export function Game({ onDiscover, onItems, heirlooms = {}, onReport, blocklistR
 
   // The step runs once the pot has boiled, so the board and its step counter change with the pot, not before.
   const boilDaily = (a: ElementRef, b: ElementRef, run: PotCombine) => {
-    if (!loaded) return
-    const lines = loaded.manifest.miss_lines
+    const lines = loadedRef.current?.manifest.miss_lines ?? []
     const gen = generation.current
     boilingRef.current = true
     setBoiling(true)
