@@ -278,7 +278,7 @@ Client ID công khai nên để trong `worker/wrangler.jsonc` vars, mỗi môi t
 // env.staging
 "vars": { ..., "GOOGLE_CLIENT_ID": "<client ID của lau-meme-staging>" }
 ```
-Gửi hai client ID cho agent (dán vào chat được, vì không phải bí mật) để điền khi build AUTH.
+Đã tạo và điền ngày 2026-10-21: production `983893414114-5s71asl52rc0c5o5pffdnbfa1n0uc2r1.apps.googleusercontent.com`, staging `983893414114-4fqirgtmr60j2ae9mumhtuuthr31vl4c.apps.googleusercontent.com`.
 
 ### 7.5. Khóa băm mã tài khoản (secret)
 Worker lưu HMAC-SHA256(`sub`) chứ không lưu `sub` thô (AC-AUTH-01). Khóa HMAC là **bí mật**, mỗi môi trường một khóa, **không đổi** sau khi đã có người đăng nhập (đổi khóa thì mọi tài khoản cũ thành tài khoản mới trống).
