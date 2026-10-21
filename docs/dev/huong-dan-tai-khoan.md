@@ -207,7 +207,7 @@ gh variable set R2_BUCKET --env staging --body 'lau-meme-img-staging'
 - Đổi token (định kỳ hoặc khi nghi lộ): tạo token mới, cập nhật hai secret, rồi xóa token cũ trên dashboard.
 
 ### 6.4. Binding cho Worker
-Làm cùng PR build ART, không làm trước. Thêm vào `worker/wrangler.jsonc` ở **cả** top-level lẫn `env.staging` (binding không kế thừa sang env):
+Đã khai báo trong `worker/wrangler.jsonc` ngày 2026-10-21, ở **cả** top-level lẫn `env.staging` (binding không kế thừa sang env). Chỉ một binding `IMG` mỗi môi trường. Nếu `wrangler r2 bucket create` hỏi có thêm binding vào file cấu hình không thì chọn **không**: lệnh đó thêm binding vào top-level (tức production) với tên tự sinh và `"remote": true`, đồng thời định dạng lại cả file.
 ```jsonc
 // top-level (production)
 "r2_buckets": [{ "binding": "IMG", "bucket_name": "lau-meme-img" }],
