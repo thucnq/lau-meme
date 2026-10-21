@@ -297,7 +297,7 @@ Mẻ `full` crawl meme rồi gọi Gemini để khử trùng, mô tả, kiểm d
 1. **Khóa Gemini:** vào https://aistudio.google.com/apikey → Create API key (gói free). Khóa là bí mật: không dán vào chat, issue, commit.
 2. GitHub → Settings → Environments → `staging` (rồi lặp lại cho `production-no-approval`):
    - Secret `GEMINI_API_KEY` = khóa ở bước 1.
-   - Variable `GEMINI_MODEL` = `gemini-2.5-flash` (để trống cũng dùng giá trị này).
+   - Variable `GEMINI_MODEL` = `gemini-3.8-flash` (để trống cũng dùng giá trị này).
    - Variable `REDDIT_SUBREDDITS`, `RSS_FEEDS`: danh sách phân tách bằng dấu phẩy (câu hỏi mở 25). Để trống thì nguồn đó không thu gì; Know Your Meme và Google Trends VN chạy không cần cấu hình.
    - Secret `YOUTUBE_API_KEY` (tùy chọn): khóa YouTube Data API v3; không có thì nguồn YouTube báo lỗi trong báo cáo đợt, các nguồn khác vẫn chạy (AC-PIPE-03).
    - Variable `BATCH_MODE`: để trống (cron chạy `core`) cho tới khi chạy tay `full` ổn định, rồi đặt `full` để cron tự crawl.

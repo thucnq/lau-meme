@@ -6,7 +6,7 @@ Expected public surface:
     lau_meme_pipeline.workers_ai.WorkersAiImages(account_id, token, model="@cf/black-forest-labs/flux-1-schnell",
                                                  *, sleep)
         callable(prompt) -> image bytes; attribute calls (HTTP requests incl. retries)
-    lau_meme_pipeline.gemini.GeminiImageCheck(api_key, model="gemini-2.5-flash", *, sleep)
+    lau_meme_pipeline.gemini.GeminiImageCheck(api_key, model="gemini-3.8-flash", *, sleep)
         callable(image bytes) -> None (passes) | reason string
     lau_meme_pipeline.batch.HttpBatchClient(base_url, token).put_image(key, data) / .image_exists(key)
 
@@ -241,7 +241,7 @@ def test_ac_art_02_gemini_kiem_anh_goi_rest_khoa_o_header_va_gui_inline_data(mon
     req = seen[0]
     assert req["host"].startswith("generativelanguage.googleapis.com")
     assert req["method"] == "POST"
-    assert req["path"] == "/v1beta/models/gemini-2.5-flash:generateContent"
+    assert req["path"] == "/v1beta/models/gemini-3.8-flash:generateContent"
     assert lower(req["headers"])["x-goog-api-key"] == API_KEY
     assert API_KEY not in req["path"]
     assert API_KEY not in request_text(req)

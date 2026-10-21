@@ -4,7 +4,7 @@ AC-PIPE-13 (nothing but public meme data, no key leak).
 
 Expected public surface:
 
-    lau_meme_pipeline.gemini.GeminiSteps(api_key, model="gemini-2.5-flash", *, sleep, batch_size=10)
+    lau_meme_pipeline.gemini.GeminiSteps(api_key, model="gemini-3.8-flash", *, sleep, batch_size=10)
         Mapping step name -> callable(payload); steps: same, describe, classify, link, judge,
         supplement_element, supplement_pair. Attributes: calls (HTTP requests incl. retries), quota_hit.
     lau_meme_pipeline.llm.QuotaExhausted / LlmError
@@ -177,7 +177,7 @@ def test_ac_pipe_12_gemini_goi_rest_dung_duong_dan_header_va_json_mime(monkeypat
     req = seen[0]
     assert req["host"].startswith(HOST)
     assert req["method"] == "POST"
-    assert req["path"] == "/v1beta/models/gemini-2.5-flash:generateContent"
+    assert req["path"] == "/v1beta/models/gemini-3.8-flash:generateContent"
     headers = {k.lower(): v for k, v in req["headers"].items()}
     assert headers["x-goog-api-key"] == API_KEY
     body = json.loads(request_text(req))
@@ -310,6 +310,33 @@ def test_ac_pipe_12_moi_lo_deu_hong_thi_nem_llm_error(monkeypatch, script):
 
     with pytest.raises(LlmError):
         steps["classify"](concepts(20))
+
+
+@pytest.mark.parametrize(
+    ("script", "cause"),
+    [
+        ([400], "HTTP 400"),
+        ([("error", 403, {"error": {"message": API_KEY}})], "HTTP 403"),
+        ([("raw", "not json")], "không phải JSON"),
+        ([("raw", '{"same": [true]}')], "sai dạng"),
+    ],
+    ids=["http400", "http403", "not_json", "wrong_shape"],
+)
+def test_ac_pipe_12_moi_lo_deu_hong_thi_loi_ghi_nguyen_nhan(monkeypatch, script, cause):
+    """AC-PIPE-12: mọi lô đều hỏng thì LlmError ghi nguyên nhân của lô (loại lỗi, mã HTTP), không chỉ "đều lỗi",
+    để báo cáo đợt chỉ ra được sửa gì; vẫn không chứa khóa API (AC-PIPE-13)."""
+    from lau_meme_pipeline.llm import LlmError
+
+    server = FakeGemini(keys(3), script=script)
+    install(monkeypatch, server)
+    steps, _ = make_steps()
+
+    with pytest.raises(LlmError) as info:
+        steps["same"](concepts(3))
+
+    message = str(info.value)
+    assert cause in message
+    assert API_KEY not in message + repr(info.value)
 
 
 # ================================================================ AC-PIPE-09

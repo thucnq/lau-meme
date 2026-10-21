@@ -46,6 +46,12 @@ class BatchCalls:
     pending: list = field(default_factory=list)
     quota_hit: bool = False
     calls: int = 0
+    causes: list[str] = field(default_factory=list)  # why each failed batch failed, without the call's content
+
+
+def _cause(exc: Exception) -> str:
+    """Our own LlmError messages carry no secret (type and HTTP status only); any other error gives its type."""
+    return str(exc) if isinstance(exc, LlmError) and str(exc) else type(exc).__name__
 
 
 def call_in_batches(
@@ -69,14 +75,16 @@ def call_in_batches(
             except RateLimited:
                 if attempt == max_retries:
                     out.failed.extend(chunk)
+                    out.causes.append("quá giới hạn tần suất")
                 else:
                     sleep(base_delay * 2**attempt)
             except QuotaExhausted:
                 out.quota_hit = True
                 out.pending = [x for c in chunks[n:] for x in c]
                 return out
-            except Exception:
+            except Exception as exc:
                 out.failed.extend(chunk)
+                out.causes.append(_cause(exc))
                 break
     return out
 
