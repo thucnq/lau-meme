@@ -23,7 +23,7 @@
 
 ### AC-DAILY-04: Ghép ra Món đặc biệt trên bàn lẩu
 - **Cho** mẻ V có Món đặc biệt "Stonks" (manifest chỉ có khóa băm, AC-DAILY-03); thực khách chưa giải V
-- **Khi** thực khách ghép bằng nồi lẩu hoặc thả chồng trên bàn (AC-GAME-02/04) một cặp ra đúng phần tử có khóa băm của món đích; kể cả khi "Stonks" đã có sẵn trong Đĩa từ trước
+- **Khi** thực khách ghép bằng nồi lẩu hoặc thả chồng trên bàn (AC-GAME-02/04) một cặp ra đúng phần tử có khóa băm của món đích; kể cả khi "Stonks" đã có sẵn trong Đĩa từ trước (có sẵn mà không ghép lại trong mẻ thì chưa tính là giải - câu hỏi mở 36)
 - **Thì** lượt ghép đó được ghi nhận là đã giải V: thẻ Món đặc biệt lộ tên "Stonks" và hiện "Đã giải"; client gửi kết quả (AC-DAILY-06) nếu đã đăng nhập; không có bàn thử thách riêng, không đếm bước, ghép trượt không ảnh hưởng gì tới Món đặc biệt
 - Ưu tiên: Bắt buộc
 
@@ -83,7 +83,7 @@
 
 ### AC-DAILY-14: Bảng xếp hạng tuần và tháng (thêm 2026-10-21)
 - **Cho** tuần lịch GMT+7 (00:00 thứ Hai → 00:00 thứ Hai sau) có 14 mẻ; A giải 14 mẻ, tổng thời gian 30 giờ; B giải 14 mẻ, tổng 20 giờ; C giải 12 mẻ, tổng 5 giờ; D giải 14 mẻ, tổng 20 giờ nhưng có kết quả cuối nộp sau B
-- **Khi** gọi `GET` bảng xếp hạng tuần (hoặc tháng lịch GMT+7, 00:00 ngày 1 → 00:00 ngày 1 tháng sau) của kỳ hiện tại hoặc một kỳ đã qua
+- **Khi** gọi `GET` bảng xếp hạng tuần (hoặc tháng lịch GMT+7, 00:00 ngày 1 → 00:00 ngày 1 tháng sau) của kỳ hiện tại hoặc một kỳ đã qua (tham số kỳ `2026-W43` / `2026-10`, xem lùi tối đa 3 tháng, quá thì 400)
 - **Thì** mẻ thuộc kỳ theo `batch_at` (GMT+7); xếp theo số mẻ đã giải giảm dần, rồi tổng thời gian giải tăng dần, rồi ai có kết quả cuối nộp trước đứng trước ⇒ B, D, A, C; mẻ không giải không cộng thời gian; trả tối đa 20 dòng: hạng, nickname, số mẻ đã giải / số mẻ trong kỳ, tổng thời gian; có phiên thì kèm hạng của mình; kỳ chưa có kết quả trả danh sách rỗng; kỳ mới bắt đầu là bảng mới
 - Ưu tiên: Bắt buộc
 

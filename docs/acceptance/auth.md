@@ -11,8 +11,8 @@
 
 ### AC-AUTH-02: Phiên đăng nhập
 - **Cho** thực khách đã đăng nhập
-- **Khi** tải lại trang; gọi API cần phiên (nộp Daily, streak của mình, đặt nickname); và sau 30 ngày không dùng
-- **Thì** phiên còn hiệu lực qua tải lại; mã phiên ngẫu nhiên ≥ 128 bit, chỉ lưu dạng băm trong D1, gửi bằng cookie `HttpOnly; Secure; SameSite=Lax; Path=/lau-meme` (JavaScript không đọc được); hết 30 ngày không dùng thì phiên hết hạn và API cần phiên trả 401 (thời hạn - câu hỏi mở)
+- **Khi** tải lại trang; gọi API cần phiên (nộp Daily, streak của mình, đặt nickname); và sau 90 ngày không dùng
+- **Thì** phiên còn hiệu lực qua tải lại; mã phiên ngẫu nhiên ≥ 128 bit, chỉ lưu dạng băm trong D1, gửi bằng cookie `HttpOnly; Secure; SameSite=Lax; Path=/lau-meme` (JavaScript không đọc được); mỗi lần dùng thì gia hạn; hết 90 ngày không dùng thì phiên hết hạn và API cần phiên trả 401 (câu hỏi mở 32)
 - Ưu tiên: Bắt buộc
 
 ### AC-AUTH-03: ID token không hợp lệ

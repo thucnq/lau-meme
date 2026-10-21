@@ -35,7 +35,7 @@
 | MOD | Kiểm duyệt nội dung tự động | Từ cấm + LLM theo danh mục cấm; luật người thật dựa trên ngữ cảnh nguồn; danh sách chặn bí danh; không chắc thì loại; hoãn nội dung nóng 30 ngày (giai đoạn 2) | Bắt buộc | `docs/acceptance/mod.md` |
 | ART | Ảnh minh họa tự tạo | Workers AI vẽ khái niệm phong cách vẽ tay, Gemini kiểm duyệt ảnh, phóng lớn ảnh khi ghép ra món lần đầu, R2 + Cache API immutable, emoji dự phòng (giai đoạn 2) | Bắt buộc | `docs/acceptance/art.md` |
 | DAILY | Món đặc biệt hôm nay | 1 món/mẻ (độ sâu [4, 8]); emoji + gợi ý mờ; ghép ra món ngay trên bàn lẩu là giải (không bàn thử thách, không đếm bước); thời gian giải = lúc server nhận − `batch_at`; bảng xếp hạng mẻ (ai nộp trước), tuần và tháng (số mẻ giải, rồi tổng thời gian); **streak**; chỉ tài khoản Google mới nộp; đồng hồ theo manifest thật | Bắt buộc | `docs/acceptance/daily.md` |
-| AUTH | Đăng nhập bằng Google (thêm 2026-10-21) | Google Identity Services, Worker kiểm ID token (JWKS); chỉ lưu băm HMAC của `sub`, không email/tên; phiên cookie HttpOnly 30 ngày; đăng xuất; xóa tài khoản; cùng tài khoản trên nhiều máy (không đồng bộ Đĩa) | Bắt buộc | `docs/acceptance/auth.md` |
+| AUTH | Đăng nhập bằng Google (thêm 2026-10-21) | Google Identity Services, Worker kiểm ID token (JWKS); chỉ lưu băm HMAC của `sub`, không email/tên; phiên cookie HttpOnly 90 ngày không dùng thì hết hạn; đăng xuất; xóa tài khoản; cùng tài khoản trên nhiều máy (không đồng bộ Đĩa) | Bắt buộc | `docs/acceptance/auth.md` |
 | DISC | Công thức gia truyền | UUID cục bộ + nickname tùy chọn (lọc từ cấm + bí danh); server kiểm công thức rồi ghi người đầu tiên; giới hạn tần suất theo UUID và IP băm | Bắt buộc | `docs/acceptance/disc.md` |
 | SHARE | Thẻ chia sẻ | Thẻ Daily kiểu Wordle (chữ + PNG) và thẻ Công thức gia truyền; sao chép / chia sẻ hệ thống; không lộ đáp án | Bắt buộc | `docs/acceptance/share.md` |
 | REPORT | Báo cáo + chặn nóng | Báo cáo phần tử và ảnh; 3 UUID khác nhau ⇒ tự ẩn; ảnh bị báo cáo về emoji; danh sách chặn nóng tải khi khởi động | Bắt buộc | `docs/acceptance/report.md` |
@@ -155,7 +155,7 @@ Stack là Cloudflare Worker + D1 + Python pipeline (không Docker/Postgres), nê
 | Dữ liệu cá nhân | Như 5.2: IP băm 7 ngày, sự kiện 90 ngày, xem/xuất/xóa theo UUID, đồng ý trước khi gửi dữ liệu | AC-PRIV |
 | Quan sát | Log JSON không chứa UUID thô, IP, nickname; báo cáo đợt qua GitHub Issue | AC-PRIV-07, AC-PIPE-14 |
 | Khả năng bảo trì | Pipeline: logic thuần (không mạng/đồng hồ/ngẫu nhiên), adapter mạng tách riêng và mock trong test; độ phủ theo cấu hình CI | `pytest`, `vitest` coverage trong CI |
-| Tương thích | Màn hình ≥ 375 px; Chrome/Safari di động và Chrome/Edge/Safari máy tính 2 bản gần nhất; chuột + cảm ứng (Pointer Events) | Kiểm thủ công trên 2–3 điện thoại trước go-live; Playwright smoke (tùy chọn) |
+| Tương thích | Màn hình ≥ 375 px; Chrome/Safari di động và Chrome/Edge/Safari máy tính 2 bản gần nhất; chuột + cảm ứng (Pointer Events) | Kiểm thủ công trên 2–3 điện thoại trước go-live; Playwright đo bố cục ở 5 khung nhìn (AC-GAME-18) |
 | Ngôn ngữ | Chỉ tiếng Việt; tìm kiếm không dấu | AC-GAME-07 |
 | Chi phí | Vận hành $0 (không tính domain) | Chỉ dùng gói free: Workers, D1, R2, Workers AI, Gemini free, GitHub Actions (repo public) |
 
