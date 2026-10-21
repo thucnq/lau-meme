@@ -143,7 +143,7 @@ paths:
       tags: [auth]
       summary: Đăng nhập bằng ID token của Google Identity Services
       description: |
-        Kiểm chữ ký ID token theo JWKS của Google (cache theo `Cache-Control` của Google), `iss` là
+        Kiểm chữ ký ID token theo JWKS của Google (cache 10 phút trong isolate, `kid` lạ thì tải lại), `iss` là
         `accounts.google.com` hoặc `https://accounts.google.com`, `aud` = `GOOGLE_CLIENT_ID`, `exp` chưa qua (lệch
         đồng hồ cho phép 60 s). Hợp lệ thì tìm/tạo tài khoản theo HMAC-SHA256(`ACCOUNT_HASH_KEY`, `sub`), gắn UUID
         `X-Player-Id` vào tài khoản (UUID đang gắn tài khoản khác thì chuyển sang tài khoản này), mở phiên mới và
@@ -280,6 +280,9 @@ paths:
       operationId: getMyStreak
       tags: [player]
       summary: Streak của tài khoản đang đăng nhập
+      description: |
+        Có cookie (kể cả hết hạn) hoặc không có `X-Player-Id` → theo phiên, không có phiên hợp lệ → 401. Tạm thời
+        (deprecated, bỏ khi làm lại DAILY): chỉ có `X-Player-Id` mà không có cookie thì trả streak cũ theo UUID.
       security: [{ Session: [] }]
       x-ac: [AC-DAILY-10, AC-AUTH-02, AC-AUTH-04]
       responses:

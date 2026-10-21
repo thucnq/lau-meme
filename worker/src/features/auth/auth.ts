@@ -1,5 +1,6 @@
 import { createRemoteJWKSet, jwtVerify } from 'jose'
 import { HttpError, ResponseError, json, readJson } from '../../http'
+import { maskId } from '../../log'
 import { playerId } from '../../player'
 import { rateCounters, type Limit } from '../../ratelimit'
 import {
@@ -19,7 +20,7 @@ import { type ConsentRow, playConsentStatement, requirePlayConsent } from '../pl
  * account key is HMAC-SHA256(ACCOUNT_HASH_KEY, sub) - the raw sub, the token, email, name and picture are never
  * stored or logged.
  */
-const SIGNIN_LIMIT: Limit = { scope: 'auth', windowMs: 60_000, perPlayer: 30, perIp: 10 } // AC-AUTH-07: 10/min per IP
+const SIGNIN_LIMIT: Limit = { scope: 'auth', windowMs: 60_000, perPlayer: 30, perIp: 10 } // AC-AUTH-07: 10/min per IP; per UUID looser (shared NAT)
 const GOOGLE_JWKS = createRemoteJWKSet(new URL('https://www.googleapis.com/oauth2/v3/certs'))
 const GOOGLE_ISSUERS = ['accounts.google.com', 'https://accounts.google.com']
 const MAX_CREDENTIAL = 4096
@@ -29,6 +30,8 @@ const unauthorized = () => new HttpError(401, 'Đăng nhập Google không hợp
 
 /** The Google `sub` of a valid ID token for this game; every failure (JWKS fetch included) is the same 401. */
 async function googleSub(credential: string, env: Env): Promise<string> {
+  // jose skips the audience check when it is empty: a missing client ID would accept any app's tokens
+  if (!env.GOOGLE_CLIENT_ID) throw new Error('GOOGLE_CLIENT_ID is not configured') // fail closed
   try {
     const { payload } = await jwtVerify(credential, GOOGLE_JWKS, {
       issuer: GOOGLE_ISSUERS,
@@ -75,10 +78,21 @@ export async function signInWithGoogle(req: Request, env: Env): Promise<Response
   if (over) throw new ResponseError(over)
   requirePlayConsent(env, results[limit.statements.length]?.results[0] as ConsentRow | undefined)
 
-  const hash = await subHash(env, await googleSub(credential, env))
+  let sub: string
+  try {
+    sub = await googleSub(credential, env)
+  } catch (err) {
+    console.warn('auth.signin.rejected', maskId(player)) // counter-style trail: never the token or sub (AC-AUTH-03)
+    throw err
+  }
+  const hash = await subHash(env, sub)
   const now = Date.now()
   const token = newSessionToken()
-  const [, , , account] = await db.batch([
+  // A session this browser still holds (maybe of another account) ends here, so `open_sessions` stays true.
+  const previous = sessionToken(req)
+  const revoke = previous ? [db.prepare('DELETE FROM session WHERE token_hash = ?').bind(await tokenHash(previous))] : []
+  const written = await db.batch([
+    ...revoke,
     db
       .prepare('INSERT INTO account (id, sub_hash, created_at, updated_at) VALUES (?, ?, ?, ?) ON CONFLICT (sub_hash) DO NOTHING')
       .bind(uuidv7(now), hash, now, now),
@@ -97,7 +111,7 @@ export async function signInWithGoogle(req: Request, env: Env): Promise<Response
       .bind(await tokenHash(token), now, now, now + SESSION_TTL_MS, hash),
     db.prepare('SELECT id, nickname, created_at FROM account WHERE sub_hash = ?').bind(hash),
   ])
-  const row = account?.results[0] as AccountRow | undefined
+  const row = written.at(-1)?.results[0] as AccountRow | undefined
   if (!row) throw new Error('account missing after upsert')
   return json(
     { nickname: row.nickname, created_at: iso(row.created_at) },

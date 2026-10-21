@@ -47,10 +47,15 @@ export async function createConsent(req: Request, env: Env): Promise<Response> {
        VALUES (?, ?, ?, ?, ?, ?, 'web', ?)`,
     ).bind(uuidv7(now), player, purpose, action, version, await ipHash(req, env), now),
   ]
-  // Withdrawing the display consent takes the nickname off every public list at once.
+  // Withdrawing the display consent takes the nickname off every public list at once - the UUID's and that of the
+  // account it is linked to, from whichever device (AC-PRIV-03, AC-AUTH-04).
   if (purpose === 'nickname' && action === 'withdraw')
     writes.push(
       env.DB.prepare('UPDATE player SET nickname = NULL, nickname_fold = NULL, updated_at = ? WHERE id = ?').bind(now, player),
+      env.DB.prepare(
+        `UPDATE account SET nickname = NULL, nickname_fold = NULL, updated_at = ?
+         WHERE id IN (SELECT account_id FROM account_player WHERE player_id = ?)`,
+      ).bind(now, player),
     )
   await env.DB.batch(writes)
   return json({ purpose, action, policy_version: version, created_at: iso(now) }, { status: 201 })
@@ -169,7 +174,8 @@ export async function getMyData(req: Request, env: Env): Promise<Response> {
   const accountStreak = { current: liveCurrent(accRow, now), longest: accRow?.longest ?? 0 }
   const s = rows<StreakRow>(streak)[0]
   const myStreak = { current: s?.current ?? 0, longest: s?.longest ?? 0 }
-  return json({
+  return json(
+    {
     nickname: rows<{ nickname: string | null }>(nick)[0]?.nickname ?? null,
     discoveries: rows<{ element_id: string; discovered_at: number }>(discoveries).map((r) => ({
       element_id: r.element_id,
@@ -215,7 +221,9 @@ export async function getMyData(req: Request, env: Env): Promise<Response> {
             streak: accountStreak,
           }
         : null,
-  })
+    },
+    { headers: session ? { 'Set-Cookie': sessionCookie(env, session.token) } : {} },
+  )
 }
 
 /** AC-PRIV-05 erasure of one UUID: personal rows go, discoveries/reports lose the UUID, consent gets `erase`. */
