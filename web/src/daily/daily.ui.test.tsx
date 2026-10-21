@@ -155,7 +155,8 @@ async function mix(a: string, b: string): Promise<void> {
   fireEvent.click(el(NAMES[a]!))
   fireEvent.click(el(NAMES[b]!))
   stepsDone += 1
-  await waitFor(() => counter(stepsDone))
+  // AC-DAILY-14: trong <Game /> bước thử thách đi qua nồi lẩu, bộ đếm chỉ đổi sau BOIL_MS = 1000 ms
+  await waitFor(() => counter(stepsDone), { timeout: 3000 })
 }
 async function openBoard(): Promise<void> {
   stepsDone = 0
