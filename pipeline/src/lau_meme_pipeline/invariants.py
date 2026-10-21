@@ -182,7 +182,7 @@ def check_all(graph: Mapping, manifest: Mapping, store: ContentStore, lists: Mod
         raise InvariantError(violations)
 
 
-class _Rng:
+class Rng:
     """SplitMix64: fixed-seed and identical on every Python version (no `random`, AC-INV-05)."""
 
     def __init__(self, seed: int) -> None:
@@ -201,7 +201,7 @@ def simulate_miss_rate(
 ) -> tuple[float, float]:
     """AC-INV-12: random play - each turn picks 2 elements of the plate (the same one may come twice) and drops
     them in the pot; a miss is a pair with no recipe. Returns (miss rate of the first 20 turns, of the whole game)."""
-    rng = _Rng(seed)
+    rng = Rng(seed)
     looked_up: dict[tuple[str, str], str | None] = {}
 
     def result(a: str, b: str) -> str | None:

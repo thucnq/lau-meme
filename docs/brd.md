@@ -159,7 +159,7 @@ Stack là Cloudflare Worker + D1 + Python pipeline (không Docker/Postgres), nê
 - Nội dung lõi: `noi-dung-loi.json` là nguồn chuẩn; sửa qua `noi_dung.py` rồi sinh lại, không sửa tay.
 - Lõi có 40 phần tử độ sâu 4–8 ⇒ ở nhịp 2 món/ngày, giai đoạn 1 dùng hết món chưa lặp sau ~20 ngày (cách lặp: câu hỏi mở).
 - Cron GitHub Actions có thể trễ ⇒ mọi thứ phụ thuộc giờ mẻ dùng `batch_at` thật trong manifest.
-- Hạn mức Workers AI và việc R2 có đòi thẻ thanh toán **cần kiểm tra** trước giai đoạn 2.
+- Hạn mức Workers AI **cần kiểm tra** trước giai đoạn 2. R2 đã bật ngày 2026-10-21, không bị đòi thẻ thanh toán (câu hỏi mở 13, `docs/dev/huong-dan-tai-khoan.md` mục 6).
 - Graph mã hóa chống đọc trộm cả cây, **không** chống dò thử từng cặp - chấp nhận.
 - Không có đăng nhập ⇒ chấp nhận còn chút gian lận ở bảng xếp hạng và Công thức gia truyền.
 
@@ -168,3 +168,4 @@ Stack là Cloudflare Worker + D1 + Python pipeline (không Docker/Postgres), nê
 |---|---|---|---|
 | 2026-10-19 | 0.1 | Bản đầu từ phạm vi đã chốt (14 tính năng + bất biến); chia giai đoạn 1/2; thêm streak, bảng sự kiện D1 | - |
 | 2026-10-20 | 0.2 | AC-PIPE-08: thêm hạn mức 150 cặp/đợt chọn theo mức hay cùng nằm trên Đĩa (giảm ghép trượt, mô phỏng: +200 cặp đúng chỗ kéo 20 lượt đầu từ 41,5 % xuống 28 %); AC-ART-01 đổi phong cách sticker sang vẽ tay; thêm AC-ART-08 phóng lớn ảnh khi ghép ra món lần đầu | nguyenquythuc (chờ /dk:approve spec) |
+| 2026-10-21 | 0.3 | Mục 8: R2 đã bật, không bị đòi thẻ thanh toán (câu hỏi mở 13); còn hạn mức Workers AI cần kiểm tra | - |

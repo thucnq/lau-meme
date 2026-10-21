@@ -1,7 +1,7 @@
 # Tiêu chí nghiệm thu - Ảnh minh họa tự tạo (ART)
 
 > Giai đoạn 2 (giai đoạn 1 chỉ emoji - trả lời câu hỏi phạm vi 2). Component: pipeline (vẽ + kiểm duyệt ảnh, adapter Workers AI / Gemini mock), worker (phục vụ `/img/*`), web (hiện ảnh).
-> Cần kiểm tra trước khi làm: hạn mức Workers AI gói free; R2 có đòi thẻ thanh toán không (dự phòng: kho ảnh đóng gói làm static assets).
+> Cần kiểm tra trước khi làm: hạn mức Workers AI gói free. R2 đã bật ngày 2026-10-21, không bị đòi thẻ thanh toán (câu hỏi mở 13); bucket `lau-meme-img` / `lau-meme-img-staging`, binding `IMG` (`docs/dev/huong-dan-tai-khoan.md` mục 6).
 
 ### AC-ART-01: Prompt vẽ khái niệm, không người thật
 - **Cho** phần tử mới có gợi ý ảnh "con ốc sên đội tờ lịch, bò chậm rãi"

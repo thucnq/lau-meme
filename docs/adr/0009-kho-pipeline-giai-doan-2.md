@@ -37,4 +37,4 @@ GitHub Actions không giữ file giữa các lần chạy. Repo có thể công 
 - **Commit kho vào nhánh git riêng:** repo có thể công khai, nên lộ công thức đọc được.
 - **Cache/artifact của GitHub Actions:** hết hạn (artifact 90 ngày, cache bị dọn khi không dùng), không nguyên tử với mẻ đăng.
 - **Bảng D1 chuẩn hóa** (hàng chờ, cache LLM, cờ phần tử thành nhiều bảng): Worker phải hiểu từng trường mà không dùng tới, và mỗi đổi kho lại thêm migration. Có thể làm sau, khi admin cần xem hàng chờ.
-- **Lưu ở R2:** chưa chốt thẻ thanh toán (câu hỏi mở 13), và không nguyên tử với D1.
+- **Lưu ở R2:** không nguyên tử với D1: kho và `batch_content` phải ghi cùng một `DB.batch` (AC-PIPE-11, AC-INV-06), ghi R2 rồi ghi D1 thì lỗi giữa chừng để lại kho lệch mẻ. (Cập nhật 2026-10-21: lý do "chưa chốt thẻ thanh toán" không còn, câu hỏi mở 13 đã trả lời là bật R2 không bị đòi thẻ. R2 vẫn dùng cho ảnh ART.)
