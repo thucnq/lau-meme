@@ -85,5 +85,11 @@
 - **Cho** bàn thử thách đang mở với 4 phần tử khởi đầu; graph có Cay + Deadline = Tới Công Chuyện và không có công thức Cay + Cười
 - **Khi** bấm Cay rồi Cười trên bàn thử thách; bấm Cay rồi Cười lần nữa; rồi bấm Cay rồi Deadline
 - **Thì** mỗi món bấm được đặt vào chỗ thả trống tiếp theo của nồi lẩu trên mặt bàn (món đầu chỗ 1, món sau chỗ 2; nồi đang ngoài màn hình thì được cuộn vào tầm nhìn); đủ 2 món thì nồi sôi như AC-GAME-02 (tối đa 1,2 s, bấm trong lúc sôi bị bỏ qua) rồi 2 chỗ thả trống lại; trượt thì hiện câu Nồi trào theo cặp (AC-GAME-05) ở nồi, không kèm gợi ý; câu bị ẩn trong lúc nồi sôi nên lần trượt liên tiếp thứ 2 cũng hiện lại câu (kèm hiệu ứng như bàn lẩu); ghép được thì món mới hiện trên bàn thử thách và vào Đĩa chính (AC-DAILY-04); bộ đếm hiện 3 bước. Mặt bàn chính, Đĩa (ngoài món mới) và bộ đếm trượt của AC-GAME-06 không đổi
-- **Và** nồi đang chờ 1 món thử thách mà thả vào một món từ Đĩa nhúng hoặc mặt bàn (hoặc nồi đang chờ món Đĩa mà bấm món thử thách) thì món đang chờ bị bỏ ra, nồi chỉ còn món vừa thả; món thử thách không bao giờ được ghép với món Đĩa
+- **Và** (cập nhật 2026-10-21) bấm món thử thách hay thả món từ Đĩa nhúng/mặt bàn đều chỉ điền vào chỗ thả trống của nồi, không bỏ món đang chờ ở chỗ kia (kể cả khi khác loại). Nồi có 1 món thử thách + 1 món Đĩa (cặp trộn) thì sôi và ghép như bàn lẩu (AC-GAME-02/05): ghép được thì món mới vào Đĩa chính, trượt thì hiện câu Nồi trào như bàn lẩu; cặp trộn tính +1 bước thử thách nhưng không thêm món vào bàn thử thách và không vào đường ghép gửi lên server (AC-DAILY-06 cho phép số bước khai báo lớn hơn số bước của đường), nên món ghép ngoài bàn thử thách không dùng được để giải thử thách
+- Ưu tiên: Bắt buộc
+
+### AC-DAILY-15: Đồng ý sau khi giải xong thì kết quả vẫn lên bảng xếp hạng (thêm 2026-10-21)
+- **Cho** thực khách chưa đồng ý gửi dữ liệu (AC-PRIV-02) giải xong thử thách của version hiện hành, bàn thử thách hiện lời mời đồng ý
+- **Khi** thực khách bấm đồng ý; rồi mở Bảng xếp hạng
+- **Thì** kết quả tự được gửi ngay sau khi đồng ý (không cần bấm "Gửi lại kết quả") và hiện "Hạng #… · Streak …"; bảng xếp hạng có dòng của thực khách. Bảng xếp hạng rỗng thì hiện "Chưa có ai hoàn thành món này", không để trống; thực khách chưa đồng ý mở bảng xếp hạng thì thấy thêm dòng nhắc "Đồng ý gửi dữ liệu để kết quả của bạn lên bảng"
 - Ưu tiên: Bắt buộc
