@@ -2,7 +2,15 @@ import { HttpError, json, problem, readJson } from '../../http'
 import { elementId, recipeId } from '../../ids'
 import { ANONYMOUS, playerId } from '../../player'
 import { rateCounters, type Limit } from '../../ratelimit'
-import { readSession, requireSession, sessionCookie, type Session } from '../../session'
+import {
+  mustHave,
+  peekSession,
+  requireSession,
+  sessionCookie,
+  sessionFrom,
+  sessionStatement,
+  type Session,
+} from '../../session'
 import { dayGmt7 } from '../../uuid'
 import { fail, obj } from '../../validate'
 import { versionParam } from '../content/content'
@@ -110,8 +118,8 @@ const alreadySubmitted = (result: ReturnType<typeof dailyResult>) =>
   problem(409, 'Đã nộp kết quả cho mẻ này', undefined, { result })
 
 /**
- * POST /api/daily/{version}/results - two D1 round trips: counters + every read in one batch, then the entry, the
- * streak and the new rank in one transactional batch. Writes with the session cookie must be JSON (ADR 0010).
+ * POST /api/daily/{version}/results - three D1 round trips: the IP counter + session renewal, then the account
+ * counter + every read in one batch, then the entry, the streak and the new rank in one transactional batch. Writes with the session cookie must be JSON (ADR 0010).
  */
 export async function submitDailyResult(
   req: Request,
@@ -124,12 +132,18 @@ export async function submitDailyResult(
     throw new HttpError(415, 'Cần Content-Type application/json')
   const body = obj(await readJson(req), 'body', ['a', 'b'])
   const [a, b] = [name(body.a, 'a'), name(body.b, 'b')]
-  const session = await requireSession(req, env)
   const player = playerId(req)
-  const account = session.accountId
   const db = env.DB
+  // The IP counter runs before the session lookup, so forged or replayed cookies are throttled too.
+  const byIp = await rateCounters(req, env, SUBMIT_LIMIT, '', 'ip')
+  const lookup = await sessionStatement(req, env)
+  const checked = await db.batch([...byIp.statements, ...(lookup ? [lookup.statement] : [])])
+  const ipLimited = byIp.verdict(checked)
+  if (ipLimited) return ipLimited
+  const session = mustHave(lookup && sessionFrom(lookup.token, checked[byIp.statements.length]))
+  const account = session.accountId
   const now = Date.now()
-  const limit = await rateCounters(req, env, SUBMIT_LIMIT, account)
+  const limit = await rateCounters(req, env, SUBMIT_LIMIT, account, 'player')
   const n = limit.statements.length
   const reads = await db.batch([
     ...limit.statements,
@@ -207,7 +221,7 @@ export async function getDailyLeaderboard(
   params: string[],
 ): Promise<Response> {
   const version = versionParam(params[0])
-  const session = await readSession(req, env)
+  const session = await peekSession(req, env)
   const db = env.DB
   const [published, top, mineResult] = await db.batch([
     publishedStatement(db, version),
@@ -235,7 +249,7 @@ export async function getDailyLeaderboard(
   }))
   const mine = first<BoardRow & { rank: number }>(mineResult)
   const me = mine ? { rank: mine.rank, nickname: mine.nickname ?? ANONYMOUS, value: mine.solve_ms } : null
-  return json({ version, rows, me }, { headers: renewed(env, session) })
+  return json({ version, rows, me })
 }
 
 const renewed = (env: Env, session: Session | null): Record<string, string> =>
@@ -308,7 +322,7 @@ type PeriodRow = { rnk: number; nickname: string | null; solved: number; total: 
 export async function getDailyPeriodLeaderboard(req: Request, env: Env): Promise<Response> {
   const now = Date.now()
   const p = parsePeriod(new URL(req.url).searchParams.get('period'), now)
-  const session = await readSession(req, env)
+  const session = await peekSession(req, env)
   const db = env.DB
   const [ranked, batches] = await db.batch([
     db
@@ -334,17 +348,14 @@ export async function getDailyPeriodLeaderboard(req: Request, env: Env): Promise
   const all = (ranked?.results ?? []) as PeriodRow[]
   const row = (r: PeriodRow) => ({ rank: r.rnk, nickname: r.nickname ?? ANONYMOUS, solved: r.solved, total_ms: r.total })
   const mine = all.find((r) => r.mine === 1)
-  return json(
-    {
-      period: p.key,
-      starts_at: new Date(p.startsAt).toISOString(),
-      ends_at: new Date(p.endsAt).toISOString(),
-      batches: first<{ n: number }>(batches)?.n ?? 0,
-      rows: all.filter((r) => r.rnk <= TOP).map(row),
-      me: mine ? row(mine) : null,
-    },
-    { headers: renewed(env, session) },
-  )
+  return json({
+    period: p.key,
+    starts_at: new Date(p.startsAt).toISOString(),
+    ends_at: new Date(p.endsAt).toISOString(),
+    batches: first<{ n: number }>(batches)?.n ?? 0,
+    rows: all.filter((r) => r.rnk <= TOP).map(row),
+    me: mine ? row(mine) : null,
+  })
 }
 
 /** GET /api/streaks/leaderboard - live account streaks only (last day today or yesterday, GMT+7). */

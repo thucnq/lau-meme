@@ -2,8 +2,9 @@ import { HttpError } from './http'
 
 /**
  * Sign-in session (ADR 0010, AC-AUTH-02): 32 random bytes as base64url in the `laumeme_sid` cookie (HttpOnly, so
- * page scripts never see it); D1 keeps only SHA-256 of it. Sliding expiry: every use moves `expires_at` to
- * now + 90 days and sets the cookie again.
+ * page scripts never see it); D1 keeps only SHA-256 of it. Sliding expiry: every use by an endpoint that needs or
+ * manages the session moves `expires_at` to now + 90 days and sets the cookie again; public leaderboard reads only
+ * peek.
  */
 export const SESSION_COOKIE = 'laumeme_sid'
 export const SESSION_TTL_MS = 90 * 86_400_000
@@ -63,22 +64,55 @@ function csrfSafe(req: Request): boolean {
   return (req.headers.get('Content-Type') ?? '').toLowerCase().startsWith('application/json')
 }
 
-/** Checks and renews the request's session in one statement; null when absent, unknown or expired. */
-export async function readSession(req: Request, env: Env): Promise<Session | null> {
+/**
+ * The statement that checks and renews the request's session, for the caller's D1 batch; null when the request
+ * carries no usable session token. Read the result with `sessionFrom`.
+ */
+export async function sessionStatement(
+  req: Request,
+  env: Env,
+): Promise<{ token: string; statement: D1PreparedStatement } | null> {
   const token = sessionToken(req)
   if (!token || !csrfSafe(req)) return null
   const now = Date.now()
-  const row = await env.DB.prepare(
+  const statement = env.DB.prepare(
     `UPDATE session SET last_used_at = ?, expires_at = ? WHERE token_hash = ? AND expires_at > ? RETURNING account_id`,
-  )
-    .bind(now, now + SESSION_TTL_MS, await tokenHash(token), now)
+  ).bind(now, now + SESSION_TTL_MS, await tokenHash(token), now)
+  return { token, statement }
+}
+
+export function sessionFrom(token: string, result: D1Result | undefined): Session | null {
+  const row = result?.results[0] as { account_id: string } | undefined
+  return row ? { token, accountId: row.account_id } : null
+}
+
+/** Checks and renews the request's session in one statement; null when absent, unknown or expired. */
+export async function readSession(req: Request, env: Env): Promise<Session | null> {
+  const lookup = await sessionStatement(req, env)
+  if (!lookup) return null
+  const [result] = await env.DB.batch([lookup.statement])
+  return sessionFrom(lookup.token, result)
+}
+
+/**
+ * Checks the session without renewing it, for public reads that only mark "me" (Daily leaderboards): they have no
+ * rate limit, so they must not write D1 on every request. Renewal stays with the endpoints that need a session.
+ */
+export async function peekSession(req: Request, env: Env): Promise<Session | null> {
+  const token = sessionToken(req)
+  if (!token || !csrfSafe(req)) return null
+  const row = await env.DB.prepare('SELECT account_id FROM session WHERE token_hash = ? AND expires_at > ?')
+    .bind(await tokenHash(token), Date.now())
     .first<{ account_id: string }>()
   return row ? { token, accountId: row.account_id } : null
 }
 
 /** For endpoints that need a session: 401 when there is none (missing, expired, signed out). */
 export async function requireSession(req: Request, env: Env): Promise<Session> {
-  const session = await readSession(req, env)
+  return mustHave(await readSession(req, env))
+}
+
+export function mustHave(session: Session | null): Session {
   if (!session) throw new HttpError(401, 'Chưa đăng nhập', 'Phiên đăng nhập không có hoặc đã hết hạn.')
   return session
 }

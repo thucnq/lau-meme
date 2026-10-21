@@ -372,7 +372,8 @@ paths:
         hành (version cũ → 410). Cặp (a, b) phải là công thức đang hoạt động của version đó và ra đúng Món đặc biệt
         (sai → 422, không ghi gì). `solved_at` = thời điểm server nhận, `solve_ms` = `solved_at` − `batch_at`.
         Lưu 1 lần cho (tài khoản, version); cập nhật streak tài khoản theo ngày GMT+7 của `batch_at`. Giới hạn 10
-        yêu cầu/phút theo tài khoản và theo IP băm (AC-DAILY-13).
+        yêu cầu/phút theo tài khoản và theo IP băm (AC-DAILY-13); bộ đếm IP chạy trước khi tra phiên nên cookie giả
+        cũng bị chặn. Thân không phải `application/json` → 415 (quy tắc CSRF của ADR 0010).
       security: [{ PlayerId: [], Session: [] }]
       x-ac: [AC-DAILY-06, AC-DAILY-07, AC-DAILY-08, AC-DAILY-10, AC-DAILY-13, AC-INV-10, AC-INV-11, AC-REPORT-09, AC-PRIV-02, AC-AUTH-02, AC-AUTH-04]
       parameters:
@@ -403,6 +404,7 @@ paths:
                     properties:
                       result: { $ref: '#/components/schemas/DailyResult' }
         '410': { $ref: '#/components/responses/Gone' }
+        '415': { $ref: '#/components/responses/UnsupportedMediaType' }
         '422': { $ref: '#/components/responses/Unprocessable' }
         '429': { $ref: '#/components/responses/TooManyRequests' }
         default: { $ref: '#/components/responses/Problem' }
@@ -414,6 +416,7 @@ paths:
       description: |
         Xếp theo `solved_at` tăng dần, hòa tới ms thì theo thứ tự ghi. `value` = `solve_ms`. Phiên tùy chọn - có thì
         `me` là hạng của tài khoản kể cả ngoài top 20 (chưa nộp → null). Không có id tài khoản/UUID trong phản hồi.
+        Chỉ đọc phiên, không gia hạn và không đặt lại cookie (đọc công khai, không giới hạn tần suất).
       security: [{}, { Session: [] }]
       x-ac: [AC-DAILY-09, AC-DAILY-15]
       parameters:
@@ -435,7 +438,8 @@ paths:
       description: |
         Mẻ thuộc kỳ theo ngày GMT+7 của `batch_at`. Xếp theo số mẻ đã giải giảm dần, rồi tổng `solve_ms` tăng dần,
         rồi `solved_at` của kết quả cuối cùng trong kỳ tăng dần. `period` vắng thì là tuần hiện tại; kỳ trong tương
-        lai hoặc bắt đầu trước hôm nay quá 3 tháng → 400. Phiên tùy chọn - có thì kèm hạng của mình.
+        lai hoặc bắt đầu trước hôm nay quá 3 tháng → 400. Phiên tùy chọn - có thì kèm hạng của mình; chỉ đọc phiên,
+        không gia hạn và không đặt lại cookie.
       security: [{}, { Session: [] }]
       x-ac: [AC-DAILY-14, AC-DAILY-15]
       parameters:
@@ -908,7 +912,8 @@ components:
       name: laumeme_sid
       description: |
         Mã phiên ngẫu nhiên 256 bit (base64url), D1 chỉ lưu SHA-256. Cookie `HttpOnly; Secure; SameSite=Lax;
-        Path=/lau-meme`; hết hạn sau 90 ngày không dùng, mỗi lần dùng gia hạn (ADR 0010). Thiếu/hết hạn/đã thu hồi
+        Path=/lau-meme`; hết hạn sau 90 ngày không dùng, mỗi lần dùng ở endpoint cần phiên gia hạn (bảng xếp hạng
+        công khai chỉ đọc, không gia hạn - ADR 0010). Thiếu/hết hạn/đã thu hồi
         → 401. Yêu cầu ghi có cookie phải là `application/json` (chặn form chéo trang).
     AdminToken:
       type: http
@@ -982,6 +987,11 @@ components:
           schema: { $ref: '#/components/schemas/Problem' }
     Gone:
       description: Mẻ đã qua
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    UnsupportedMediaType:
+      description: Thân yêu cầu không phải application/json
       content:
         application/problem+json:
           schema: { $ref: '#/components/schemas/Problem' }
