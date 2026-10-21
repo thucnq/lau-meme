@@ -777,6 +777,36 @@ paths:
         '401': { $ref: '#/components/responses/Unauthorized' }
         '404': { $ref: '#/components/responses/NotFound' }
         default: { $ref: '#/components/responses/Problem' }
+  /pipeline/images/{key}:
+    put:
+      operationId: putPipelineImage
+      tags: [pipeline]
+      summary: Tải một ảnh minh họa đã qua kiểm duyệt lên R2 (ADR 0012)
+      description: |
+        Thân là ảnh WebP 256×256 đã qua kiểm duyệt (AC-ART-02, AC-ART-04). Worker kiểm `key` đúng bằng 12 ký tự hex
+        đầu của SHA-256 thân và thân bắt đầu bằng chữ ký WebP (`RIFF....WEBP`), rồi ghi object `img/<key>` qua binding
+        `IMG`. Khóa theo nội dung nên đã có thì không ghi lại, vẫn trả 204 (idempotent). Ảnh tải lên trước khi đăng mẻ;
+        mẻ lỗi thì ảnh mồ côi vô hại (không ai tham chiếu). Không có dữ liệu người chơi.
+      security: [{ PipelineToken: [] }]
+      x-ac: [AC-ART-04]
+      parameters:
+        - name: key
+          in: path
+          required: true
+          schema: { type: string, pattern: '^[0-9a-f]{12}\.webp$' }
+      requestBody:
+        required: true
+        content:
+          image/webp:
+            schema: { type: string, format: binary, maxLength: 524288 }
+      responses:
+        '204': { description: Đã lưu (hoặc đã có sẵn) }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '413': { $ref: '#/components/responses/PayloadTooLarge' }
+        '415': { $ref: '#/components/responses/UnsupportedMediaType' }
+        '422': { $ref: '#/components/responses/Unprocessable' }
+        default: { $ref: '#/components/responses/Problem' }
   /pipeline/banned-terms/{source}:
     put:
       operationId: putBannedTerms
@@ -1694,6 +1724,10 @@ components:
           type: object
           description: Phản hồi LLM của mẻ ghi, khóa = sha256(bước + payload) (AC-PIPE-10)
           additionalProperties: true
+        art_pending:
+          type: array
+          description: Id phần tử "chờ vẽ" (hết hạn mức hoặc vượt 20 ảnh/đợt), đợt sau vẽ trước phần tử mới (AC-ART-03)
+          items: { $ref: '#/components/schemas/ElementId' }
     PublishBatchRequest:
       oneOf:
         - type: object

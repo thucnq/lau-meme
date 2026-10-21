@@ -1,0 +1,49 @@
+# 0012 - Ảnh minh họa: vẽ bằng Workers AI qua REST, kiểm bằng Gemini, tải lên R2 qua Worker
+
+- Trạng thái: Đề xuất (chờ duyệt cùng cổng contract)
+- Ngày: 2026-10-21
+- Nguồn: ART (AC-ART-01..04), ADR 0009 (kho pipeline), ADR 0011 (Gemini qua REST), câu hỏi mở 13
+
+## Bối cảnh
+PR #35 đã có logic thuần của ART (`pipeline/src/lau_meme_pipeline/art.py`: prompt, vẽ lại một lần, chờ vẽ, WebP theo băm), Worker phục vụ `/img/{key}` từ R2 và web hiện ảnh. Còn thiếu ba adapter để mẻ `full` có ảnh thật:
+- vẽ ảnh,
+- kiểm ảnh,
+- đưa ảnh lên R2.
+
+Ngoài ra kho pipeline phải nhớ phần tử "chờ vẽ" qua các đợt.
+
+Pipeline chạy trên GitHub Actions, gói Cloudflare free. Hạn mức Workers AI gói free chưa kiểm (câu hỏi mở 13), và đợt phải xong trong 15 phút.
+
+## Quyết định
+- **Vẽ:** Workers AI qua REST `POST https://api.cloudflare.com/client/v4/accounts/<CLOUDFLARE_ACCOUNT_ID>/ai/run/<model>`.
+  - Model mặc định `@cf/black-forest-labs/flux-1-schnell`, đổi bằng variable `WORKERS_AI_MODEL`.
+  - Gọi bằng `http.client`, cùng kiểu adapter với ADR 0011.
+  - Khóa là GitHub Environment secret `WORKERS_AI_TOKEN`: API token chỉ có quyền **Workers AI** (Read + Edit) trên account này, khác `CLOUDFLARE_API_TOKEN` dùng để deploy.
+  - Ánh xạ lỗi: HTTP 429 hoặc lỗi hết phân bổ ngày → `QuotaExhausted`, và phần còn lại vào "chờ vẽ" (AC-ART-03). 5xx → thử lại theo backoff. Lỗi khác → lần vẽ đó hỏng.
+- **Kiểm ảnh:** Gemini (ADR 0011, cùng khóa `GEMINI_API_KEY`), bước mới `check_image`.
+  - Gửi ảnh dạng `inline_data` và nhận `{ok, reason}`.
+  - `reason` thuộc 5 lý do của AC-ART-02. Lý do lạ được quy về `banned_category`.
+  - Ảnh do máy vẽ, không phải dữ liệu người chơi (AC-PIPE-13).
+- **Giải mã ảnh không tin cậy:** Pillow với `Image.MAX_IMAGE_PIXELS = 4096²` (vượt thì ném lỗi), chỉ nhận định dạng PNG/JPEG/WEBP, đầu vào tối đa 8 MB. Ảnh không giải mã được tính là một lần vẽ hỏng.
+- **Tải lên:** endpoint mới `PUT /api/pipeline/images/{key}` dùng `PIPELINE_TOKEN`.
+  - Thân `image/webp`, tối đa 512 KB.
+  - Worker kiểm `key` = 12 hex đầu SHA-256 của thân và chữ ký `RIFF....WEBP`, rồi ghi `img/<key>` qua binding `IMG`.
+  - Object đã có thì không ghi lại.
+  - Pipeline tải ảnh trước khi đăng mẻ. Mẻ lỗi thì ảnh mồ côi vô hại, vì khóa theo nội dung và không ai tham chiếu.
+- **Thiếu `WORKERS_AI_TOKEN` hoặc `CLOUDFLARE_ACCOUNT_ID`:** mẻ `full` vẫn chạy, bỏ bước vẽ, phần tử mới vào "chờ vẽ" và báo cáo đợt ghi cảnh báo. Khác `GEMINI_API_KEY`: thiếu khóa Gemini thì đợt `full` thất bại (ADR 0011), vì không kiểm duyệt được meme.
+- **Giới hạn:** tối đa **20 ảnh mỗi đợt** (người chọn 2026-10-21). Phần vượt vào "chờ vẽ" và được vẽ trước ở đợt sau. Mỗi ảnh tối đa 2 lần vẽ (AC-ART-02).
+- **Kho:** `PipelineStore.art_pending` (id phần tử chờ vẽ). Phần tử trend trong kho giữ `image_key`.
+  - Worker nhận thêm khóa `art_pending` (danh sách khóa hợp lệ của `store`).
+  - Không cần migration, vì kho là JSON (ADR 0009).
+- **Báo cáo đợt:** số ảnh đã vẽ, số bị loại theo lý do, số chờ vẽ, số lượt gọi Workers AI. Chỉ ghi trong Issue, không đổi `BatchStats`.
+
+## Hệ quả
+- Thêm một endpoint, một khóa trong `PipelineStore`, hai cấu hình GitHub (`WORKERS_AI_TOKEN` secret; `CLOUDFLARE_ACCOUNT_ID`, `WORKERS_AI_MODEL` variable). Không thêm thư viện ngoài Pillow (đã có từ PR #35).
+- Không cần token S3 của R2. Mục 6.3 của hướng dẫn tài khoản bỏ; token đã tạo thì xóa trên dashboard.
+- Worker kiểm nội dung trước khi ghi R2, nên token pipeline bị lộ cũng chỉ ghi được ảnh WebP đúng khóa băm, không ghi đè ảnh có sẵn.
+- Ảnh đã phục vụ là bất biến một năm. Gỡ ảnh xấu đã lên = chặn ảnh (client không tải, AC-ART-07), xóa object R2 và purge URL (runbook).
+
+## Phương án đã loại
+- **S3 API của R2 từ pipeline:** cần thêm 2 secret và tự ký SigV4 (hoặc thêm boto3). R2 cũng nhận bất kỳ nội dung nào mà không có lớp kiểm.
+- **Gemini tạo ảnh:** gói free của Gemini API không gồm tạo ảnh.
+- **Vẽ trong Worker (binding `AI`):** request tới Worker có giới hạn thời gian và CPU, và vẽ không gắn với mẻ. Vẽ trong pipeline giữ đúng thứ tự kiểm duyệt rồi đăng (AC-PIPE-11).

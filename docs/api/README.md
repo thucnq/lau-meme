@@ -58,6 +58,7 @@ Mọi lỗi là RFC 9457 `application/problem+json` (`type`, `title`, `status`, 
 |---|---|---|---|---|
 | GET | `/pipeline/state` | Trạng thái cần cho mẻ mới (thêm `admin_blocked`) | PipelineToken | AC-PIPE-13, AC-DAILY-01 |
 | GET | `/pipeline/store` | Kho pipeline giai đoạn 2 của version hiện hành hoặc `?version=` (ADR 0009) | PipelineToken | AC-PIPE-07, AC-PIPE-10 |
+| PUT | `/pipeline/images/{key}` | Tải ảnh WebP đã kiểm duyệt lên R2; Worker kiểm khóa = sha256 nội dung (ADR 0012) | PipelineToken | AC-ART-04 |
 | PUT | `/pipeline/banned-terms/{source}` | Thay toàn bộ từ cấm của một nguồn (`wordlist`, `mod`) | PipelineToken | AC-DISC-03, AC-MOD-06 |
 | POST | `/pipeline/batches` | Đăng một version mới (nguyên tử, mẻ `full` kèm `store`) hoặc ghi đợt lỗi | PipelineToken | AC-PIPE-01, AC-PIPE-11, AC-GRAPH-05 |
 | PATCH | `/pipeline/batches/{id}` | Gắn link GitHub Issue báo cáo đợt | PipelineToken | AC-PIPE-14 |
