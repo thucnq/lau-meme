@@ -1,79 +1,48 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
+import { useSession } from '../auth/session'
 import { SendError } from '../disc/api'
 import type { Manifest } from '../game/engine'
-import type { GraphResult } from '../graph/crypto'
 import { ConsentRequiredError } from '../privacy/client'
 import { ConsentPrompt } from '../privacy/ConsentPrompt'
-import { storageKey } from '../storage'
-import { getDailyLeaderboard, submitDailyResult, type DailyLeaderboard, type DailyResult } from './api'
-import { openChallenge, type Challenge, type ChallengeState, type ElementRef } from './challenge'
+import {
+  getDailyLeaderboard,
+  getPeriodLeaderboard,
+  submitDailyResult,
+  type DailyLeaderboard,
+  type DailyResult,
+  type PeriodLeaderboard,
+} from './api'
 import { getCountdown } from './countdown'
 import { DailyCard } from './DailyCard'
+import { currentPeriods, formatSolveTime } from './period'
+import type { SolvedDaily } from './solved'
 
-type Props = {
-  manifest: Manifest
-  lookup: (a: string, b: string) => Promise<GraphResult | null>
-  onDiscover: (el: ElementRef) => void
-  storage: Storage | null
-  /** Hands a picked element to the page's hot pot, which runs `combine` on this board once it boils (AC-DAILY-14). */
-  onPick?: (el: ElementRef, combine: PotCombine) => void
-}
-/** One step on the challenge board; resolves to whether the pair had a recipe. */
-export type PotCombine = (a: ElementRef, b: ElementRef) => Promise<boolean>
+type Props = { manifest: Manifest; storage: Storage | null; solved: SolvedDaily | null }
 type Sent = { kind: 'result'; result: DailyResult } | { kind: 'consent' } | { kind: 'error'; text: string }
+type Tab = 'batch' | 'week' | 'month'
+type Board = { tab: 'batch'; data: DailyLeaderboard } | { tab: 'week' | 'month'; data: PeriodLeaderboard }
 
-/** Version whose board the player opened, so a reload goes straight back to it (AC-DAILY-05). */
-const OPEN_KEY = storageKey('daily-open')
+const INVITE = 'Đăng nhập bằng Google để lên bảng xếp hạng'
+const BOARD_INVITE = 'Đăng nhập bằng Google để có tên trên bảng xếp hạng'
+const TABS: Array<[Tab, string]> = [
+  ['batch', 'Mẻ này'],
+  ['week', 'Tuần'],
+  ['month', 'Tháng'],
+]
 
-function openedVersion(storage: Storage | null): number | null {
-  try {
-    const v = Number(storage?.getItem(OPEN_KEY))
-    return Number.isInteger(v) && v > 0 ? v : null
-  } catch {
-    return null
-  }
-}
-
-/** `lookup` and `onDiscover` must stay valid for the whole batch: the page passes stable callbacks. */
-function startChallenge(
-  manifest: Manifest,
-  storage: Storage | null,
-  lookup: Props['lookup'],
-  onDiscover: Props['onDiscover'],
-): Challenge {
-  const challenge = openChallenge({
-    version: manifest.version,
-    daily: manifest.daily,
-    starters: manifest.starters,
-    lookup,
-    onDiscover,
-    storage: storage ?? undefined,
-  })
-  try {
-    storage?.setItem(OPEN_KEY, String(manifest.version))
-  } catch {
-    // storage blocked: the board just does not reopen by itself
-  }
-  return challenge
-}
-
-/** Món đặc biệt: card, countdown, challenge board, result and leaderboard (AC-DAILY-03..06, 08, 09, 12). */
-export function DailyPanel({ manifest, lookup, onDiscover, storage, onPick }: Props) {
+/**
+ * Món đặc biệt (AC-DAILY-03..06, 08, 09, 12..15): card, countdown, the result of a signed-in account and the
+ * leaderboards. Solving happens on the normal board (Game passes `solved`); the result goes out by itself once the
+ * player is signed in - right away, or as soon as they sign in. The page remounts this panel per batch.
+ */
+export function DailyPanel({ manifest, storage, solved }: Props) {
   const { version, daily } = manifest
   const policyVersion = manifest.policy_version
-  // The page remounts this panel per batch (key = version): reopen the board the player had open (AC-DAILY-05).
-  const [initial] = useState(() =>
-    openedVersion(storage) === version ? startChallenge(manifest, storage, lookup, onDiscover) : null,
-  )
-  const challengeRef = useRef<Challenge | null>(initial)
-  const [state, setState] = useState<ChallengeState | null>(() => initial?.getState() ?? null)
-  const [picked, setPicked] = useState<ElementRef | null>(null)
-  const [missed, setMissed] = useState(false)
-  const [busy, setBusy] = useState(false)
+  const session = useSession()
   const [sent, setSent] = useState<Sent | null>(null)
-  const [board, setBoard] = useState<DailyLeaderboard | null>(null)
+  const [tab, setTab] = useState<Tab | null>(null)
+  const [board, setBoard] = useState<Board | null>(null)
   const [boardError, setBoardError] = useState(false)
-  const [broken, setBroken] = useState(false)
   const [now, setNow] = useState(() => new Date())
 
   useEffect(() => {
@@ -81,132 +50,121 @@ export function DailyPanel({ manifest, lookup, onDiscover, storage, onPick }: Pr
     return () => window.clearInterval(timer)
   }, [])
 
-  const open = () => {
-    if (challengeRef.current) return
-    const challenge = startChallenge(manifest, storage, lookup, onDiscover)
-    challengeRef.current = challenge
-    setState(challenge.getState())
-  }
-
   // Safe to repeat: a result already stored comes back as 409 with that result (AC-DAILY-08).
-  const submit = useCallback(
-    (challenge: Challenge) => {
-      submitDailyResult(version, challenge.submission(), { storage, policyVersion }).then(
-        ({ result }) => setSent({ kind: 'result', result }),
-        (err: unknown) => {
-          if (err instanceof ConsentRequiredError) return setSent({ kind: 'consent' })
-          const text =
-            err instanceof SendError && err.status === 429
-              ? 'Gửi quá nhanh, thử lại sau.'
-              : 'Không gửi được kết quả, thử lại sau.'
-          setSent({ kind: 'error', text })
-        },
-      )
-    },
-    [version, storage, policyVersion],
-  )
-
-  // A board restored already solved (reload after a failed or not-yet-allowed send): send it now (AC-DAILY-05/06).
+  const signedIn = session !== null
   useEffect(() => {
-    if (initial?.getState().solved) submit(initial)
-  }, [initial, submit])
-
-  const pick = (el: ElementRef) => {
-    const challenge = challengeRef.current
-    if (!challenge || busy || challenge.getState().solved) return
-    if (onPick) {
-      // the pot shows the boil and the miss line; this board only counts the step and shows what came out
-      return onPick(el, (a, b) =>
-        challenge.combine(a, b).then((out) => {
-          setState(challenge.getState())
-          if (out.solved) submit(challenge)
-          return out.ok
-        }),
-      )
+    if (!solved || !signedIn) return
+    let live = true
+    submitDailyResult(version, { a: solved.a, b: solved.b }, { storage, policyVersion }).then(
+      ({ result }) => live && setSent({ kind: 'result', result }),
+      (err: unknown) => {
+        if (!live) return
+        if (err instanceof ConsentRequiredError) return setSent({ kind: 'consent' })
+        const text =
+          err instanceof SendError && err.status === 429
+            ? 'Gửi quá nhanh, thử lại sau.'
+            : 'Không gửi được kết quả, thử lại sau.'
+        setSent({ kind: 'error', text })
+      },
+    )
+    return () => {
+      live = false
     }
-    if (!picked) return setPicked(el)
-    setPicked(null)
-    setBusy(true)
-    setBroken(false)
-    challenge
-      .combine(picked, el)
-      .then((out) => {
-        setMissed(!out.ok)
-        setState(challenge.getState())
-        if (out.solved) submit(challenge)
-      })
-      .catch(() => setBroken(true)) // the step was not counted (challenge.ts)
-      .finally(() => setBusy(false))
-  }
+  }, [solved, signedIn, version, storage, policyVersion])
 
-  const showBoard = () => {
-    setBoardError(false)
-    getDailyLeaderboard(version, { storage, policyVersion }).then(setBoard, () => setBoardError(true))
-  }
+  // The open tab reloads when it changes and after a sign-in/out (the own row comes with the cookie).
+  useEffect(() => {
+    if (tab === null) return
+    let live = true
+    const periods = currentPeriods(new Date())
+    const load: Promise<Board> =
+      tab === 'batch'
+        ? getDailyLeaderboard(version).then((data) => ({ tab, data }))
+        : getPeriodLeaderboard(periods[tab]).then((data) => ({ tab, data }))
+    load.then(
+      (b) => {
+        if (!live) return
+        setBoard(b)
+        setBoardError(false)
+      },
+      () => live && setBoardError(true),
+    )
+    return () => {
+      live = false
+    }
+  }, [tab, version, signedIn])
 
+  const countdown = getCountdown(manifest.batch_at, now)
   return (
     <div className="daily">
-      <DailyCard daily={daily} solvedName={state?.solved ? state.targetLabel : null} onStart={open} />
-      <p className="daily-countdown">
-        {(() => {
-          const c = getCountdown(manifest.batch_at, now)
-          return c.kind === 'imminent' ? c.text : `Mẻ mới sau ${c.text}`
-        })()}
-      </p>
+      <DailyCard daily={daily} solvedName={solved?.name ?? null} />
+      <p className="daily-countdown">{countdown.kind === 'imminent' ? countdown.text : `Mẻ mới sau ${countdown.text}`}</p>
 
-      {state && (
-        <section className="daily-board" aria-label="Bàn thử thách">
-          <p>Bước: {state.steps}</p>
-          <div className="daily-items">
-            {state.board.map((el) => (
+      {solved && !signedIn && <p className="daily-invite">{INVITE}</p>}
+      {solved && signedIn && sent?.kind === 'result' && (
+        <p role="status">
+          Hạng #{sent.result.rank} · Streak {sent.result.streak.current}
+        </p>
+      )}
+      {solved && signedIn && sent?.kind === 'consent' && <ConsentPrompt />}
+      {solved && signedIn && sent?.kind === 'error' && <p role="status">{sent.text}</p>}
+
+      <button type="button" onClick={() => setTab((t) => t ?? 'batch')} aria-expanded={tab !== null}>
+        Bảng xếp hạng
+      </button>
+      {tab !== null && (
+        <section className="daily-boards" aria-label="Bảng xếp hạng">
+          <div role="tablist">
+            {TABS.map(([key, label]) => (
               <button
-                key={el.id}
+                key={key}
                 type="button"
-                aria-pressed={picked?.id === el.id}
-                disabled={busy || state.solved}
-                onClick={() => pick(el)}
+                role="tab"
+                aria-selected={tab === key}
+                onClick={() => {
+                  setBoard(null)
+                  setTab(key)
+                }}
               >
-                {el.emoji} {el.name}
+                {label}
               </button>
             ))}
           </div>
-          {missed && !state.solved && <p role="status">💨 Trượt rồi</p>}
-          {broken && <p role="status">Nồi trục trặc, thử lại nhé.</p>}
-          {state.solved && <p>Xong sau {state.steps} bước</p>}
-          {sent?.kind === 'result' && (
-            <p role="status">
-              Hạng #{sent.result.rank} · Streak {sent.result.streak.current} ngày
-            </p>
-          )}
-          {sent?.kind === 'consent' && <ConsentPrompt />}
-          {sent?.kind === 'error' && <p role="status">{sent.text}</p>}
-          {state.solved && sent !== null && sent.kind !== 'result' && (
-            <button type="button" onClick={() => challengeRef.current && submit(challengeRef.current)}>
-              Gửi lại kết quả
-            </button>
-          )}
+          {!signedIn && <p>{BOARD_INVITE}</p>}
+          {boardError && <p role="status">Không tải được bảng xếp hạng</p>}
+          {board?.tab === tab && <BoardList board={board} />}
         </section>
       )}
-
-      <button type="button" onClick={showBoard}>
-        Bảng xếp hạng
-      </button>
-      {boardError && <p role="status">Không tải được bảng xếp hạng</p>}
-      {board && (
-        <ol aria-label="Bảng xếp hạng">
-          {board.rows.map((r) => (
-            <li key={r.rank}>
-              #{r.rank} {r.nickname} - {r.value} bước
-            </li>
-          ))}
-          {/* my own rank even outside the top 20 (AC-DAILY-09) */}
-          {board.me && !board.rows.some((r) => r.rank === board.me?.rank) && (
-            <li>
-              Bạn: #{board.me.rank} - {board.me.value} bước
-            </li>
-          )}
-        </ol>
-      )}
     </div>
+  )
+}
+
+function BoardList({ board }: { board: Board }) {
+  if (board.tab === 'batch') {
+    const { rows, me } = board.data
+    if (rows.length === 0 && !me) return <p>Chưa có ai giải món này</p>
+    return (
+      <ol role="tabpanel">
+        {rows.map((r) => (
+          <li key={r.rank}>{`#${r.rank} ${r.nickname} - ${formatSolveTime(r.value)}`}</li>
+        ))}
+        {/* my own rank even outside the top 20 (AC-DAILY-09) */}
+        {me && !rows.some((r) => r.rank === me.rank) && (
+          <li>{`Bạn: #${me.rank} ${me.nickname} - ${formatSolveTime(me.value)}`}</li>
+        )}
+      </ol>
+    )
+  }
+  const { rows, me, batches } = board.data
+  if (rows.length === 0 && !me) return <p>Chưa có ai giải món nào trong kỳ</p>
+  const line = (r: { rank: number; nickname: string; solved: number; total_ms: number }) =>
+    `#${r.rank} ${r.nickname} - ${r.solved}/${batches} mẻ - ${formatSolveTime(r.total_ms)}`
+  return (
+    <ol role="tabpanel">
+      {rows.map((r) => (
+        <li key={r.rank}>{line(r)}</li>
+      ))}
+      {me && !rows.some((r) => r.rank === me.rank) && <li>{`Bạn: ${line(me)}`}</li>}
+    </ol>
   )
 }

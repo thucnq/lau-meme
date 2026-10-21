@@ -3,6 +3,7 @@ import { ConsentPrompt } from '../privacy/ConsentPrompt'
 import { canSend } from '../privacy/consent'
 import { getSession, signIn, signOut, type SessionInfo } from './api'
 import { GOOGLE_CLIENT_ID } from './config'
+import { setCurrentSession } from './session'
 
 /** The part of Google Identity Services (https://accounts.google.com/gsi/client) this bar uses. */
 type GoogleId = {
@@ -54,6 +55,11 @@ export function AuthBar({ policyVersion, storage, onChange }: Props) {
     changed.current = onChange
   }, [onChange])
   const consented = canSend(storage, policyVersion)
+
+  // the rest of the page (Món đặc biệt) follows the sign-in state from here
+  useEffect(() => {
+    if (state.kind !== 'loading') setCurrentSession(state.kind === 'in' ? state.session : null)
+  }, [state])
 
   useEffect(() => {
     let live = true

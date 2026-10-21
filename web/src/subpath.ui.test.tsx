@@ -15,7 +15,7 @@ import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-libra
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import { getBlocklist, getGraph, getHealth, getManifest } from './api'
 import { SITE_URL, shareUrl, withBase } from './base'
-import { openChallenge } from './daily/challenge'
+import { loadSolved, saveSolved } from './daily/solved'
 import { fold } from './graph/crypto'
 import type { Graph, GraphResult } from './graph/crypto'
 import { Game } from './game/Game'
@@ -249,23 +249,10 @@ describe('subpath: khóa localStorage', () => {
     for (const k of keys) expect(k.startsWith('laumeme:'), k).toBe(true)
   })
 
-  it('AC-SUBPATH-08: thử thách Daily chỉ ghi khóa bắt đầu bằng laumeme:', async () => {
-    const lookup = async (a: string, b: string) =>
-      [fold(a), fold(b)].sort().join('|') === ['cay', 'cuoi'].join('|')
-        ? { id: eid('Tới Công Chuyện'), name: 'Tới Công Chuyện', emoji: '🔥', depth: 1, added_version: 0, image_key: null }
-        : null
-    const c = openChallenge({
-      version: VERSION,
-      daily: manifest().daily,
-      starters: STARTERS,
-      lookup,
-      onDiscover: () => {},
-      storage: localStorage,
-    })
-    const [cay, cuoi] = c.getState().board
-    await c.combine(cay!, cuoi!)
+  it('AC-SUBPATH-08: lưu trạng thái đã giải Daily chỉ ghi khóa bắt đầu bằng laumeme:', () => {
+    saveSolved(localStorage, VERSION, { a: 'Hết Cứu', b: 'Cay', name: 'Stonks' })
     const keys = storageKeys()
-    expect(keys).toContain('laumeme:daily-challenge')
+    expect(keys).toContain('laumeme:daily-solved')
     for (const k of keys) expect(k.startsWith('laumeme:'), k).toBe(true)
   })
 
@@ -283,16 +270,9 @@ describe('subpath: khóa localStorage', () => {
   it('AC-SUBPATH-08: Daily và migrateLegacyKeys không ném lỗi khi Storage bị chặn', async () => {
     const blocked = blockedStorage()
     expect(() => migrateLegacyKeys(blocked)).not.toThrow()
-    const c = openChallenge({
-      version: VERSION,
-      daily: manifest().daily,
-      starters: STARTERS,
-      lookup: async () => null,
-      onDiscover: () => {},
-      storage: blocked,
-    })
-    const [a, b] = c.getState().board
-    await expect(c.combine(a!, b!)).resolves.toMatchObject({ ok: false })
+    expect(() => saveSolved(blocked, VERSION, { a: 'Hết Cứu', b: 'Cay', name: 'Stonks' })).not.toThrow()
+    expect(() => loadSolved(blocked, VERSION)).not.toThrow()
+    expect(loadSolved(blocked, VERSION)).toBeNull()
   })
 })
 

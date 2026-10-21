@@ -40,13 +40,15 @@ export async function ipHash(req: Request, env: Env): Promise<string | null> {
 
 /**
  * Counter statements for this request, to run in the caller's D1 batch (one round trip), and the verdict on
- * their results: a 429 problem with Retry-After when a counter is over its limit, otherwise null.
+ * their results: a 429 problem with Retry-After when a counter is over its limit, otherwise null. `only` keeps
+ * one of the two counters, for callers that must throttle by IP before they know the player (or account).
  */
 export async function rateCounters(
   req: Request,
   env: Env,
   limit: Limit,
   player: string,
+  only?: 'player' | 'ip',
 ): Promise<{
   statements: D1PreparedStatement[]
   verdict: (results: D1Result[]) => Response | null
@@ -54,10 +56,9 @@ export async function rateCounters(
   const now = Date.now()
   const windowStart = now - (now % limit.windowMs)
   const expiresAt = windowStart + limit.windowMs
-  const keys: Array<[string, number]> = [
-    [`${limit.scope}:u:${await sha256hex16(player)}:${windowStart}`, limit.perPlayer],
-  ]
-  const ip = await ipHash(req, env)
+  const keys: Array<[string, number]> = []
+  if (only !== 'ip') keys.push([`${limit.scope}:u:${await sha256hex16(player)}:${windowStart}`, limit.perPlayer])
+  const ip = only === 'player' ? null : await ipHash(req, env)
   if (ip !== null) keys.push([`${limit.scope}:i:${await sha256hex16(ip)}:${windowStart}`, limit.perIp])
   const statements = keys.map(([bucket]) =>
     env.DB.prepare(

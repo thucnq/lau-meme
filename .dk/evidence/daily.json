@@ -1,73 +1,73 @@
 {
  "red": {
-  "ts": "2026-10-21T02:45:57+00:00",
-  "commit": "61d28c5",
+  "ts": "2026-10-21T05:53:23+00:00",
+  "commit": "79059cf",
   "results": {
    "AC-DAILY-01": {
-    "status": "PASS",
-    "test": "test_daily#test_ac_daily_01_chi_chon_ung_vien_thoa_moi_dieu_kien"
+    "status": "FAIL",
+    "test": "(không biên dịch)"
    },
    "AC-DAILY-02": {
-    "status": "PASS",
-    "test": "test_daily#test_ac_daily_02_khong_co_ung_vien_nao_thi_bao_loi_ro_rang"
+    "status": "FAIL",
+    "test": "(không biên dịch)"
    },
    "AC-DAILY-03": {
-    "status": "PASS",
-    "test": "test_daily#test_ac_daily_03_khoi_daily_chi_co_khoa_bam_emoji_goi_y_depth"
+    "status": "FAIL",
+    "test": "(không biên dịch)"
    },
    "AC-DAILY-04": {
-    "status": "PASS",
-    "test": "challenge.test.ts#challenge > AC-DAILY-04: bàn bắt đầu từ 4 phần tử khởi đầu, 7 lượt "
+    "status": "FAIL",
+    "test": "(không biên dịch)"
    },
    "AC-DAILY-05": {
-    "status": "PASS",
-    "test": "challenge.test.ts#challenge > AC-DAILY-05: tải lại trong cùng mẻ khôi phục bàn, phần tử đã có và bộ đếm 4 bước; chơi tiếp được"
+    "status": "FAIL",
+    "test": "(không biên dịch)"
    },
    "AC-DAILY-06": {
-    "status": "PASS",
-    "test": "daily.ui.test.tsx#daily ui: nộp kết quả > AC-DAILY-06: đã đồng ý, giải xong thì POST /daily/{version}/results {steps, path} kèm X-Player-Id và hiện hạng + streak"
+    "status": "FAIL",
+    "test": "(không biên dịch)"
    },
    "AC-DAILY-07": {
-    "status": "PASS",
-    "test": "daily.test.ts#daily > AC-DAILY-07: mọi dạng đường ghép không hợp lệ trả 422 problem+json, không ghi gì, không đổi streak"
+    "status": "FAIL",
+    "test": "(không biên dịch)"
    },
    "AC-DAILY-08": {
-    "status": "PASS",
-    "test": "daily.ui.test.tsx#daily ui: nộp kết quả > AC-DAILY-08: máy chủ trả 409 thì hiện hạng + streak từ kết quả đã lưu"
+    "status": "FAIL",
+    "test": "(không biên dịch)"
    },
    "AC-DAILY-09": {
-    "status": "PASS",
-    "test": "daily.ui.test.tsx#daily ui: bảng xếp hạng > AC-DAILY-09: nút \"Bảng xếp hạng\" tải GET /daily/{version}/leaderboard và liệt kê \"#1 Bếp Trưởng - 5 bước\""
+    "status": "FAIL",
+    "test": "(không biên dịch)"
    },
    "AC-DAILY-10": {
-    "status": "PASS",
-    "test": "daily.test.ts#daily > AC-DAILY-10: streak đếm theo ngày GMT+7 của batch_at: 20,21,22 => 3; bỏ 23, làm 24 => 1; dài nhất 3; hai món một ngày tính 1"
+    "status": "FAIL",
+    "test": "(không biên dịch)"
    },
    "AC-DAILY-11": {
-    "status": "PASS",
-    "test": "daily.test.ts#daily > AC-DAILY-11: bảng xếp hạng streak tối đa 20 dòng, giảm dần, hòa thì ai đạt trước đứng trước, ẩn danh khi không nickname"
+    "status": "FAIL",
+    "test": "(không biên dịch)"
    },
    "AC-DAILY-12": {
-    "status": "PASS",
-    "test": "countdown.test.ts#countdown > AC-DAILY-12: lúc 17:30 UTC đếm tới mốc 05:00 UTC kế tiếp sau batch_at "
+    "status": "FAIL",
+    "test": "(không biên dịch)"
    },
    "AC-DAILY-13": {
-    "status": "PASS",
-    "test": "daily.test.ts#daily > AC-DAILY-13: yêu cầu nộp thứ 11 trong một phút của cùng UUID trả 429 problem+json có Retry-After"
+    "status": "FAIL",
+    "test": "(không biên dịch)"
    },
    "AC-DAILY-14": {
     "status": "FAIL",
-    "test": "pot.ui.test.tsx#daily pot: ghép thử thách qua nồi lẩu > AC-DAILY-14: nồi chung - phần tử thử thách rồi nhấn Enter ở phần tử Đĩa thì nồi chỉ còn phần tử Đĩa, không sôi, bộ đếm giữ nguyên"
+    "test": "(không biên dịch)"
    },
-   "AC-DAILY-ABUSE": {
-    "status": "PASS",
-    "test": "daily.test.ts#daily > AC-DAILY-ABUSE: đầu vào độc hại "
+   "AC-DAILY-15": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
    }
   }
  },
  "green": {
-  "ts": "2026-10-21T02:47:39+00:00",
-  "commit": "99a8861",
+  "ts": "2026-10-21T06:15:05+00:00",
+  "commit": "732bb73",
   "results": {
    "AC-DAILY-01": {
     "status": "PASS",
@@ -83,35 +83,35 @@
    },
    "AC-DAILY-04": {
     "status": "PASS",
-    "test": "challenge.test.ts#challenge > AC-DAILY-04: bàn bắt đầu từ 4 phần tử khởi đầu, 7 lượt "
+    "test": "daily.ui.test.tsx#daily ui: thẻ Món đặc biệt và đồng hồ > AC-DAILY-04: khi đã giải thẻ lộ tên \"Stonks\" và hiện \"Đã giải\", không còn \"???\""
    },
    "AC-DAILY-05": {
     "status": "PASS",
-    "test": "challenge.test.ts#challenge > AC-DAILY-05: tải lại trong cùng mẻ khôi phục bàn, phần tử đã có và bộ đếm 4 bước; chơi tiếp được"
+    "test": "daily.ui.test.tsx#daily ui: gửi kết quả > AC-DAILY-05: thẻ vẫn \"Đã giải\" kèm tên khi chưa gửi được; dựng lại ở mẻ khác "
    },
    "AC-DAILY-06": {
     "status": "PASS",
-    "test": "daily.ui.test.tsx#daily ui: nộp kết quả > AC-DAILY-06: đã đồng ý, giải xong thì POST /daily/{version}/results {steps, path} kèm X-Player-Id và hiện hạng + streak"
+    "test": "api.test.ts#submitDailyResult > AC-DAILY-06: 201 trả { result, already: false }; POST đúng đường dẫn, JSON { a, b } và X-Player-Id"
    },
    "AC-DAILY-07": {
     "status": "PASS",
-    "test": "daily.test.ts#daily > AC-DAILY-07: mọi dạng đường ghép không hợp lệ trả 422 problem+json, không ghi gì, không đổi streak"
+    "test": "daily.test.ts#daily > AC-DAILY-07: cặp không phải công thức, ra món khác món đích, hoặc tên không tồn tại thì 422 problem+json, không ghi gì, không đổi streak"
    },
    "AC-DAILY-08": {
     "status": "PASS",
-    "test": "daily.ui.test.tsx#daily ui: nộp kết quả > AC-DAILY-08: máy chủ trả 409 thì hiện hạng + streak từ kết quả đã lưu"
+    "test": "api.test.ts#submitDailyResult > AC-DAILY-08: 409 trả { result: kết quả đã lưu, already: true }"
    },
    "AC-DAILY-09": {
     "status": "PASS",
-    "test": "daily.ui.test.tsx#daily ui: bảng xếp hạng > AC-DAILY-09: nút \"Bảng xếp hạng\" tải GET /daily/{version}/leaderboard và liệt kê \"#1 Bếp Trưởng - 5 bước\""
+    "test": "api.test.ts#leaderboards "
    },
    "AC-DAILY-10": {
     "status": "PASS",
-    "test": "daily.test.ts#daily > AC-DAILY-10: streak đếm theo ngày GMT+7 của batch_at: 20,21,22 => 3; bỏ 23, làm 24 => 1; dài nhất 3; hai món một ngày tính 1"
+    "test": "daily.test.ts#daily > AC-DAILY-10: streak theo ngày GMT+7 của batch_at: 20,21,22 => 3; hai mẻ một ngày tính 1; bỏ 23, làm 24 => 1; dài nhất 3; máy khác thấy cùng streak"
    },
    "AC-DAILY-11": {
     "status": "PASS",
-    "test": "daily.test.ts#daily > AC-DAILY-11: bảng xếp hạng streak tối đa 20 dòng, giảm dần, hòa thì ai đạt trước đứng trước, ẩn danh khi không nickname"
+    "test": "daily.test.ts#daily > AC-DAILY-11: bảng streak tối đa 20 dòng, giảm dần, hòa thì ai đạt trước đứng trước, ẩn danh khi không nickname, không lộ mã tài khoản"
    },
    "AC-DAILY-12": {
     "status": "PASS",
@@ -119,15 +119,23 @@
    },
    "AC-DAILY-13": {
     "status": "PASS",
-    "test": "daily.test.ts#daily > AC-DAILY-13: yêu cầu nộp thứ 11 trong một phút của cùng UUID trả 429 problem+json có Retry-After"
+    "test": "daily.ui.test.tsx#daily ui: gửi kết quả > AC-DAILY-13: máy chủ trả 429 thì hiện \"Gửi quá nhanh, thử lại sau.\" và không hiện hạng"
    },
    "AC-DAILY-14": {
     "status": "PASS",
-    "test": "pot.ui.test.tsx#daily pot: ghép thử thách qua nồi lẩu > AC-DAILY-14: bấm phần tử thử thách đặt vào nồi "
+    "test": "api.test.ts#leaderboards "
    },
-   "AC-DAILY-ABUSE": {
+   "AC-DAILY-15": {
     "status": "PASS",
-    "test": "daily.test.ts#daily > AC-DAILY-ABUSE: đầu vào độc hại "
+    "test": "daily.ui.test.tsx#daily ui: gửi kết quả > AC-DAILY-15: giải khi chưa đăng nhập thì hiện lời mời đăng nhập, không gửi gì; đăng nhập xong tự gửi ngay "
+   },
+   "AC-DAILY-TENANT": {
+    "status": "PASS",
+    "test": "daily.test.ts#daily > AC-DAILY-TENANT: kết quả, streak và hạng của tài khoản A không hiện ở tài khoản B; header UUID của A kèm cookie của B không ghi vào A"
+   },
+   "AC-DAILY-VALIDATION": {
+    "status": "PASS",
+    "test": "daily.test.ts#daily > AC-DAILY-VALIDATION: tên quá dài, script, SQL, kiểu sai, trường thừa "
    }
   }
  }
