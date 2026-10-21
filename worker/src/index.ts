@@ -3,7 +3,7 @@ import { adminOnly, listAudit, listBatches, listElements, listRecipes, listRepor
 import { getGraph, getManifest } from './features/content/content'
 import { createDiscovery, listDiscoveries, putBannedTerms } from './features/disc/disc'
 import { getSession, signInWithGoogle, signOut } from './features/auth/auth'
-import { getDailyLeaderboard, getMyStreak, getStreakLeaderboard, submitDailyResult } from './features/daily/daily'
+import { getDailyLeaderboard, getDailyPeriodLeaderboard, getMyStreak, getStreakLeaderboard, submitDailyResult } from './features/daily/daily'
 import { getPipelineState, patchBatchRun, publishBatch, rollbackBatch } from './features/pipeline/batches'
 import { cleanup } from './features/player/cleanup'
 import { createConsent, deleteMyData, getMyData, putNickname } from './features/player/me'
@@ -38,6 +38,7 @@ const routes: Route[] = [
   { pattern: /^\/api\/graph\/([^/]+)$/, methods: { GET: getGraph } },
   { pattern: /^\/api\/daily\/([^/]+)\/results$/, methods: { POST: submitDailyResult } },
   { pattern: /^\/api\/daily\/([^/]+)\/leaderboard$/, methods: { GET: getDailyLeaderboard } },
+  { pattern: /^\/api\/daily\/leaderboard$/, methods: { GET: getDailyPeriodLeaderboard } },
   { pattern: /^\/api\/streaks\/leaderboard$/, methods: { GET: getStreakLeaderboard } },
   { pattern: /^\/api\/blocklist$/, methods: { GET: getBlocklist } },
   { pattern: /^\/api\/reports$/, methods: { POST: createReport } },

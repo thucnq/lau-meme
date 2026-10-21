@@ -280,9 +280,7 @@ paths:
       operationId: getMyStreak
       tags: [player]
       summary: Streak của tài khoản đang đăng nhập
-      description: |
-        Có cookie (kể cả hết hạn) hoặc không có `X-Player-Id` → theo phiên, không có phiên hợp lệ → 401. Tạm thời
-        (deprecated, bỏ khi làm lại DAILY): chỉ có `X-Player-Id` mà không có cookie thì trả streak cũ theo UUID.
+      description: Cần phiên hợp lệ trong mọi trường hợp (chỉ có `X-Player-Id` cũng là 401). Mọi máy đã đăng nhập cùng tài khoản thấy cùng streak.
       security: [{ Session: [] }]
       x-ac: [AC-DAILY-10, AC-AUTH-02, AC-AUTH-04]
       responses:

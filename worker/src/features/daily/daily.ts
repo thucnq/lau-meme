@@ -1,25 +1,29 @@
 import { HttpError, json, problem, readJson } from '../../http'
 import { elementId, recipeId } from '../../ids'
-import { ANONYMOUS, optionalPlayerId, playerId } from '../../player'
+import { ANONYMOUS, playerId } from '../../player'
 import { rateCounters, type Limit } from '../../ratelimit'
-import { hasSessionCookie, requireSession, sessionCookie } from '../../session'
+import { readSession, requireSession, sessionCookie, type Session } from '../../session'
 import { dayGmt7 } from '../../uuid'
-import { arr, fail, int, obj, str } from '../../validate'
+import { fail, obj } from '../../validate'
 import { versionParam } from '../content/content'
 import { playConsentStatement, requirePlayConsent } from '../player/consent'
 
-/** Món đặc biệt: submit a path, per-batch leaderboard, streaks by GMT+7 day (AC-DAILY-06..11, 13). */
+/**
+ * Món đặc biệt by account (ADR 0010, AC-DAILY-06..15): a signed-in account sends the pair it combined into the
+ * target; the time is the server's receive time minus the batch's batch_at. Streaks and week/month periods follow
+ * the GMT+7 day of batch_at.
+ */
 const SUBMIT_LIMIT: Limit = {
   scope: 'daily',
   windowMs: 60_000,
-  perPlayer: 10,
+  perPlayer: 10, // per account (the key passed below)
   perIp: 10,
 } // open question #10
-const MAX_STEPS = 200
 const TOP = 20
 const DAY_MS = 86_400_000
+const GMT7_MS = 7 * 3_600_000
+const MAX_NAME = 100
 
-type Step = { a: string; b: string; result: string }
 type BlockRow = { kind: string; target_id: string }
 type StreakRow = {
   current: number
@@ -32,6 +36,7 @@ type ServerContent = {
   daily_element_id: string
   recipes: Array<[id: string, a: string, b: string, result: string]>
 }
+type EntryRow = { solve_ms: number; solved_at: number; rank: number }
 
 function addDays(day: string, n: number): string {
   return new Date(Date.parse(`${day}T00:00:00Z`) + n * DAY_MS).toISOString().slice(0, 10)
@@ -55,89 +60,58 @@ function nextStreak(prev: StreakRow | null, day: string, now: number): StreakRow
   }
 }
 
-function parseBody(body: Record<string, unknown>): {
-  steps: number
-  path: Step[]
-} {
-  const b = obj(body, 'body', ['steps', 'path'])
-  const steps = int(b.steps, 'steps', 1, MAX_STEPS)
-  const path = arr(b.path, 'path', MAX_STEPS, 1).map((v, i) => {
-    const s = obj(v, `path[${i}]`, ['a', 'b', 'result'])
-    return {
-      a: str(s.a, `path[${i}].a`, 100),
-      b: str(s.b, `path[${i}].b`, 100),
-      result: str(s.result, `path[${i}].result`, 100),
-    }
-  })
-  return { steps, path }
+function name(value: unknown, path: string): string {
+  if (typeof value !== 'string' || value.length > MAX_NAME || value.trim() === '') fail(`${path}: tên 1–${MAX_NAME} ký tự`)
+  return value as string
 }
 
-/** Replays the path on the version's active recipes; the first broken step is the 422 (AC-DAILY-07). */
-async function verifyPath(content: ServerContent, blocked: BlockRow[], steps: number, path: Step[]): Promise<void> {
+/** The pair must be an active recipe of the batch whose result is the batch's Món đặc biệt (AC-DAILY-07). */
+async function verifyPair(content: ServerContent, blocked: BlockRow[], a: string, b: string): Promise<[string, string]> {
   const off = new Set(blocked.map((r) => `${r.kind}:${r.target_id}`))
-  const recipes = new Map(content.recipes.map(([id, a, b, result]) => [id, { a, b, result }]))
-  const have = new Set(content.starters.filter((id) => !off.has(`element:${id}`)))
-  let last = ''
-  for (const [i, step] of path.entries()) {
-    const [a, b, result, rid] = await Promise.all([
-      elementId(step.a),
-      elementId(step.b),
-      elementId(step.result),
-      recipeId(step.a, step.b),
-    ])
-    if (!have.has(a)) fail(`path[${i}].a: phần tử chưa có ở bước này`)
-    if (!have.has(b)) fail(`path[${i}].b: phần tử chưa có ở bước này`)
-    const recipe = recipes.get(rid)
-    const active = recipe && !off.has(`recipe:${rid}`) && !off.has(`element:${recipe.result}`)
-    if (!active || recipe.result !== result) fail(`path[${i}]: không phải công thức có thật của mẻ này`)
-    have.add(result)
-    last = result
-  }
-  if (last !== content.daily_element_id) fail('path: bước cuối không ra Món đặc biệt')
-  if (steps < path.length) fail('steps: nhỏ hơn số bước của đường ghép')
+  const rid = await recipeId(a, b)
+  const recipe = content.recipes.find(([id]) => id === rid)
+  const active = recipe && !off.has(`recipe:${rid}`) && !off.has(`element:${recipe[3]}`)
+  if (!active || recipe[3] !== content.daily_element_id) fail('Cặp này không ra Món đặc biệt của mẻ')
+  const ids = await Promise.all([elementId(a), elementId(b)])
+  return ids.sort() as [string, string]
 }
 
-const streakStatement = (db: D1Database, player: string) =>
-  db.prepare('SELECT current, longest, last_day, reached_at FROM streak WHERE player_id = ?').bind(player)
+export function accountStreakStatement(db: D1Database, accountId: string): D1PreparedStatement {
+  return db.prepare('SELECT current, longest, last_day, reached_at FROM account_streak WHERE account_id = ?').bind(accountId)
+}
 
-/** Position in the batch: fewer steps first, ties by submission time (then insertion order). */
-const rankStatement = (db: D1Database, version: number, player: string) =>
+/** The account's entry of a batch with its live rank: solved_at ascending, ties at the same ms by write order. */
+const entryStatement = (db: D1Database, version: number, accountId: string) =>
   db
     .prepare(
-      `SELECT COUNT(*) + 1 AS rank FROM daily_result d, daily_result me
-       WHERE me.version = ?1 AND me.player_id = ?2 AND d.version = ?1
-         AND (d.steps < me.steps OR (d.steps = me.steps AND (d.submitted_at < me.submitted_at
-              OR (d.submitted_at = me.submitted_at AND d.rowid < me.rowid))))`,
+      `SELECT me.solve_ms, me.solved_at,
+         (SELECT COUNT(*) + 1 FROM daily_entry d WHERE d.version = me.version
+            AND (d.solved_at < me.solved_at OR (d.solved_at = me.solved_at AND d.seq < me.seq))) AS rank
+       FROM daily_entry me WHERE me.version = ? AND me.account_id = ?`,
     )
-    .bind(version, player)
+    .bind(version, accountId)
 
 const publishedStatement = (db: D1Database, version: number) =>
   db.prepare("SELECT 1 AS x FROM batch_run WHERE version = ? AND status = 'success'").bind(version)
 
 const first = <T>(r: D1Result | undefined) => r?.results[0] as T | undefined
 
-function dailyResult(
-  version: number,
-  stored: { steps: number; submitted_at: number },
-  rank: number,
-  streak: StreakRow | undefined,
-  now: number,
-) {
+function dailyResult(version: number, entry: EntryRow, streak: StreakRow | undefined, now: number) {
   return {
     version,
-    steps: stored.steps,
-    rank,
-    streak: {
-      current: liveCurrent(streak ?? null, now),
-      longest: streak?.longest ?? 0,
-    },
-    submitted_at: new Date(stored.submitted_at).toISOString(),
+    solve_ms: entry.solve_ms,
+    rank: entry.rank,
+    streak: { current: liveCurrent(streak ?? null, now), longest: streak?.longest ?? 0 },
+    solved_at: new Date(entry.solved_at).toISOString(),
   }
 }
 
+const alreadySubmitted = (result: ReturnType<typeof dailyResult>) =>
+  problem(409, 'Đã nộp kết quả cho mẻ này', undefined, { result })
+
 /**
- * POST /api/daily/{version}/results - two D1 round trips: counters + every read in one batch, then the
- * result row, the streak and the new rank in one transactional batch.
+ * POST /api/daily/{version}/results - two D1 round trips: counters + every read in one batch, then the entry, the
+ * streak and the new rank in one transactional batch. Writes with the session cookie must be JSON (ADR 0010).
  */
 export async function submitDailyResult(
   req: Request,
@@ -146,28 +120,30 @@ export async function submitDailyResult(
   params: string[],
 ): Promise<Response> {
   const version = versionParam(params[0])
+  if (!(req.headers.get('Content-Type') ?? '').toLowerCase().startsWith('application/json'))
+    throw new HttpError(415, 'Cần Content-Type application/json')
+  const body = obj(await readJson(req), 'body', ['a', 'b'])
+  const [a, b] = [name(body.a, 'a'), name(body.b, 'b')]
+  const session = await requireSession(req, env)
   const player = playerId(req)
-  const { steps, path } = parseBody(await readJson(req))
+  const account = session.accountId
   const db = env.DB
   const now = Date.now()
-  const limit = await rateCounters(req, env, SUBMIT_LIMIT, player)
+  const limit = await rateCounters(req, env, SUBMIT_LIMIT, account)
   const n = limit.statements.length
   const reads = await db.batch([
     ...limit.statements,
     playConsentStatement(db, player),
     db.prepare("SELECT value FROM app_meta WHERE key = 'current_version'"),
     publishedStatement(db, version),
-    db
-      .prepare('SELECT steps, submitted_at FROM daily_result WHERE version = ? AND player_id = ?')
-      .bind(version, player),
-    rankStatement(db, version, player),
-    streakStatement(db, player),
+    entryStatement(db, version, account),
+    accountStreakStatement(db, account),
     db.prepare('SELECT batch_at, server_json FROM batch_content WHERE version = ?').bind(version),
     db.prepare("SELECT kind, target_id FROM block WHERE kind IN ('element', 'recipe')"),
   ])
   const limited = limit.verdict(reads)
   if (limited) return limited
-  const [consent, current, published, stored, rank, streakRow, batch, blocked] = reads.slice(n)
+  const [consent, current, published, stored, streakRow, batch, blocked] = reads.slice(n)
   requirePlayConsent(env, first(consent))
 
   if (version !== Number(first<{ value: string }>(current)?.value ?? NaN)) {
@@ -175,72 +151,55 @@ export async function submitDailyResult(
     return problem(404, 'Không có mẻ này')
   }
   const prevStreak = first<StreakRow>(streakRow)
-  const existing = first<{ steps: number; submitted_at: number }>(stored)
-  if (existing) {
-    const result = dailyResult(version, existing, first<{ rank: number }>(rank)?.rank ?? 1, prevStreak, now)
-    return problem(409, 'Đã nộp kết quả cho mẻ này', undefined, { result })
-  }
+  const existing = first<EntryRow>(stored)
+  if (existing) return alreadySubmitted(dailyResult(version, existing, prevStreak, now))
   const content = first<{ batch_at: number; server_json: string }>(batch)
   if (!content) throw new HttpError(404, 'Không có mẻ này')
-  await verifyPath(
+  const [aId, bId] = await verifyPair(
     JSON.parse(content.server_json) as ServerContent,
     (blocked?.results ?? []) as BlockRow[],
-    steps,
-    path,
+    a,
+    b,
   )
 
   const day = dayGmt7(content.batch_at)
+  const solveMs = Math.max(0, now - content.batch_at)
   const streak = nextStreak(prevStreak ?? null, day, now)
   let written: D1Result[]
   try {
     written = await db.batch([
       db
         .prepare(
-          'INSERT INTO daily_result (version, player_id, day, steps, path_json, submitted_at) VALUES (?, ?, ?, ?, ?, ?)',
+          'INSERT INTO daily_entry (version, account_id, day, a_id, b_id, solved_at, solve_ms) VALUES (?, ?, ?, ?, ?, ?, ?)',
         )
-        .bind(version, player, day, steps, JSON.stringify(path), now),
+        .bind(version, account, day, aId, bId, now, solveMs),
       db
         .prepare(
-          `INSERT INTO streak (player_id, current, longest, last_day, reached_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)
-           ON CONFLICT (player_id) DO UPDATE SET current = excluded.current, longest = excluded.longest,
+          `INSERT INTO account_streak (account_id, current, longest, last_day, reached_at, updated_at)
+           VALUES (?, ?, ?, ?, ?, ?)
+           ON CONFLICT (account_id) DO UPDATE SET current = excluded.current, longest = excluded.longest,
              last_day = excluded.last_day, reached_at = excluded.reached_at, updated_at = excluded.updated_at`,
         )
-        .bind(player, streak.current, streak.longest, streak.last_day, streak.reached_at, now),
-      rankStatement(db, version, player),
+        .bind(account, streak.current, streak.longest, streak.last_day, streak.reached_at, now),
+      entryStatement(db, version, account),
     ])
   } catch (err) {
-    // A concurrent submit for the same (version, player) won the primary key: answer like a resubmission.
-    const [raced, racedRank, racedStreak] = await db.batch([
-      db
-        .prepare('SELECT steps, submitted_at FROM daily_result WHERE version = ? AND player_id = ?')
-        .bind(version, player),
-      rankStatement(db, version, player),
-      streakStatement(db, player),
-    ])
-    const row = first<{ steps: number; submitted_at: number }>(raced)
+    // A concurrent submit of the same account (another device) won the unique key: answer like a resubmission.
+    const [raced, racedStreak] = await db.batch([entryStatement(db, version, account), accountStreakStatement(db, account)])
+    const row = first<EntryRow>(raced)
     if (!row) throw err
-    const result = dailyResult(
-      version,
-      row,
-      first<{ rank: number }>(racedRank)?.rank ?? 1,
-      first<StreakRow>(racedStreak),
-      now,
-    )
-    return problem(409, 'Đã nộp kết quả cho mẻ này', undefined, { result })
+    return alreadySubmitted(dailyResult(version, row, first<StreakRow>(racedStreak), now))
   }
-  const result = dailyResult(
-    version,
-    { steps, submitted_at: now },
-    first<{ rank: number }>(written[2])?.rank ?? 1,
-    streak,
-    now,
-  )
-  return json(result, { status: 201 })
+  const entry = first<EntryRow>(written[2]) ?? { solve_ms: solveMs, solved_at: now, rank: 1 }
+  return json(dailyResult(version, entry, streak, now), {
+    status: 201,
+    headers: { 'Set-Cookie': sessionCookie(env, session.token) },
+  })
 }
 
-type BoardRow = { steps: number; nickname: string | null }
+type BoardRow = { solve_ms: number; nickname: string | null }
 
-/** GET /api/daily/{version}/leaderboard - top 20, never a UUID; `me` even outside the top 20. */
+/** GET /api/daily/{version}/leaderboard - top 20, never an account id or UUID; `me` even outside the top 20. */
 export async function getDailyLeaderboard(
   req: Request,
   env: Env,
@@ -248,49 +207,152 @@ export async function getDailyLeaderboard(
   params: string[],
 ): Promise<Response> {
   const version = versionParam(params[0])
-  const player = optionalPlayerId(req)
+  const session = await readSession(req, env)
   const db = env.DB
-  // One round trip: published check, top 20 and (optionally) my row with its rank.
-  const statements = [
+  const [published, top, mineResult] = await db.batch([
     publishedStatement(db, version),
     db
       .prepare(
-        `SELECT d.steps, p.nickname FROM daily_result d LEFT JOIN player p ON p.id = d.player_id
-         WHERE d.version = ? ORDER BY d.steps, d.submitted_at, d.rowid LIMIT ?`,
+        `SELECT d.solve_ms, a.nickname FROM daily_entry d JOIN account a ON a.id = d.account_id
+         WHERE d.version = ? ORDER BY d.solved_at, d.seq LIMIT ?`,
       )
       .bind(version, TOP),
-  ]
-  if (player !== null)
-    statements.push(
-      db
-        .prepare(
-          `SELECT me.steps, p.nickname,
-             (SELECT COUNT(*) + 1 FROM daily_result d WHERE d.version = me.version
-                AND (d.steps < me.steps OR (d.steps = me.steps AND (d.submitted_at < me.submitted_at
-                     OR (d.submitted_at = me.submitted_at AND d.rowid < me.rowid))))) AS rank
-           FROM daily_result me LEFT JOIN player p ON p.id = me.player_id
-           WHERE me.version = ? AND me.player_id = ?`,
-        )
-        .bind(version, player),
-    )
-  const [published, top, mineResult] = await db.batch(statements)
+    db
+      .prepare(
+        `SELECT me.solve_ms, a.nickname,
+           (SELECT COUNT(*) + 1 FROM daily_entry d WHERE d.version = me.version
+              AND (d.solved_at < me.solved_at OR (d.solved_at = me.solved_at AND d.seq < me.seq))) AS rank
+         FROM daily_entry me JOIN account a ON a.id = me.account_id
+         WHERE me.version = ? AND me.account_id = ?`,
+      )
+      .bind(version, session?.accountId ?? ''),
+  ])
   if (!first(published)) return problem(404, 'Không có mẻ này')
   const rows = ((top?.results ?? []) as BoardRow[]).map((r, i) => ({
     rank: i + 1,
     nickname: r.nickname ?? ANONYMOUS,
-    value: r.steps,
+    value: r.solve_ms,
   }))
   const mine = first<BoardRow & { rank: number }>(mineResult)
-  const me = mine ? { rank: mine.rank, nickname: mine.nickname ?? ANONYMOUS, value: mine.steps } : null
-  return json({ version, rows, me })
+  const me = mine ? { rank: mine.rank, nickname: mine.nickname ?? ANONYMOUS, value: mine.solve_ms } : null
+  return json({ version, rows, me }, { headers: renewed(env, session) })
 }
 
-/** GET /api/streaks/leaderboard - live streaks only (last day today or yesterday, GMT+7). */
+const renewed = (env: Env, session: Session | null): Record<string, string> =>
+  session ? { 'Set-Cookie': sessionCookie(env, session.token) } : {}
+
+// ---------------------------------------------------------------------------------------------- week / month
+
+type Period = { key: string; startDay: string; endDay: string; startsAt: number; endsAt: number }
+
+const isoDay = (utcMidnight: number) => new Date(utcMidnight).toISOString().slice(0, 10)
+
+/** UTC midnight of the Monday of ISO week 1 of `year` (the week holding 4 January). */
+function isoWeekOne(year: number): number {
+  const jan4 = Date.UTC(year, 0, 4)
+  return jan4 - ((new Date(jan4).getUTCDay() + 6) % 7) * DAY_MS
+}
+
+/** A calendar period in GMT+7: local dates [startDay, endDay) and the instants they start and end at. */
+function period(key: string, startLocal: number, endLocal: number): Period {
+  return {
+    key,
+    startDay: isoDay(startLocal),
+    endDay: isoDay(endLocal),
+    startsAt: startLocal - GMT7_MS,
+    endsAt: endLocal - GMT7_MS,
+  }
+}
+
+function currentWeek(now: number): Period {
+  const local = Date.parse(`${dayGmt7(now)}T00:00:00Z`)
+  const monday = local - ((new Date(local).getUTCDay() + 6) % 7) * DAY_MS
+  const year = new Date(monday + 3 * DAY_MS).getUTCFullYear() // the ISO year is that of the week's Thursday
+  const week = Math.floor((monday - isoWeekOne(year)) / (7 * DAY_MS)) + 1
+  return period(`${year}-W${String(week).padStart(2, '0')}`, monday, monday + 7 * DAY_MS)
+}
+
+const PERIOD = /^(\d{4})-(?:W(\d{2})|(\d{2}))$/
+
+/**
+ * `2026-W43` (ISO week) or `2026-10` (month), absent = this week; a period in the future or starting more than
+ * 3 months before today (GMT+7) is a 400 (AC-DAILY-14).
+ */
+function parsePeriod(raw: string | null, now: number): Period {
+  if (raw === null) return currentWeek(now)
+  const bad = () => new HttpError(400, 'Kỳ không hợp lệ', 'Dùng tuần dạng 2026-W43 hoặc tháng dạng 2026-10.')
+  const m = PERIOD.exec(raw)
+  if (!m) throw bad()
+  const year = Number(m[1])
+  let p: Period
+  if (m[2] !== undefined) {
+    const week = Number(m[2])
+    const weeks = (isoWeekOne(year + 1) - isoWeekOne(year)) / (7 * DAY_MS)
+    if (week < 1 || week > weeks) throw bad()
+    const start = isoWeekOne(year) + (week - 1) * 7 * DAY_MS
+    p = period(raw, start, start + 7 * DAY_MS)
+  } else {
+    const month = Number(m[3])
+    if (month < 1 || month > 12) throw bad()
+    p = period(raw, Date.UTC(year, month - 1, 1), Date.UTC(year, month, 1))
+  }
+  const today = new Date(`${dayGmt7(now)}T00:00:00Z`)
+  const earliest = isoDay(Date.UTC(today.getUTCFullYear(), today.getUTCMonth() - 3, today.getUTCDate()))
+  if (p.startsAt > now || p.startDay < earliest) throw bad()
+  return p
+}
+
+type PeriodRow = { rnk: number; nickname: string | null; solved: number; total: number; mine: number }
+
+/** GET /api/daily/leaderboard?period= - solved batches desc, total time asc, last result earlier first. */
+export async function getDailyPeriodLeaderboard(req: Request, env: Env): Promise<Response> {
+  const now = Date.now()
+  const p = parsePeriod(new URL(req.url).searchParams.get('period'), now)
+  const session = await readSession(req, env)
+  const db = env.DB
+  const [ranked, batches] = await db.batch([
+    db
+      .prepare(
+        `WITH agg AS (
+           SELECT account_id, COUNT(*) AS solved, SUM(solve_ms) AS total, MAX(solved_at) AS last, MAX(seq) AS last_seq
+           FROM daily_entry WHERE day >= ? AND day < ? GROUP BY account_id
+         ), ranked AS (
+           SELECT agg.*, ROW_NUMBER() OVER (ORDER BY solved DESC, total, last, last_seq) AS rnk FROM agg
+         )
+         SELECT r.rnk, a.nickname, r.solved, r.total, r.account_id = ? AS mine
+         FROM ranked r JOIN account a ON a.id = r.account_id
+         WHERE r.rnk <= ? OR r.account_id = ? ORDER BY r.rnk`,
+      )
+      .bind(p.startDay, p.endDay, session?.accountId ?? '', TOP, session?.accountId ?? ''),
+    db
+      .prepare(
+        `SELECT COUNT(*) AS n FROM batch_run r JOIN batch_content c ON c.version = r.version
+         WHERE r.status = 'success' AND c.day >= ? AND c.day < ? AND c.batch_at <= ?`,
+      )
+      .bind(p.startDay, p.endDay, now),
+  ])
+  const all = (ranked?.results ?? []) as PeriodRow[]
+  const row = (r: PeriodRow) => ({ rank: r.rnk, nickname: r.nickname ?? ANONYMOUS, solved: r.solved, total_ms: r.total })
+  const mine = all.find((r) => r.mine === 1)
+  return json(
+    {
+      period: p.key,
+      starts_at: new Date(p.startsAt).toISOString(),
+      ends_at: new Date(p.endsAt).toISOString(),
+      batches: first<{ n: number }>(batches)?.n ?? 0,
+      rows: all.filter((r) => r.rnk <= TOP).map(row),
+      me: mine ? row(mine) : null,
+    },
+    { headers: renewed(env, session) },
+  )
+}
+
+/** GET /api/streaks/leaderboard - live account streaks only (last day today or yesterday, GMT+7). */
 export async function getStreakLeaderboard(_req: Request, env: Env): Promise<Response> {
   const yesterday = addDays(dayGmt7(Date.now()), -1)
   const top = await env.DB.prepare(
-    `SELECT s.current, p.nickname FROM streak s LEFT JOIN player p ON p.id = s.player_id
-     WHERE s.current > 0 AND s.last_day >= ? ORDER BY s.current DESC, s.reached_at, s.player_id LIMIT ?`,
+    `SELECT s.current, a.nickname FROM account_streak s JOIN account a ON a.id = s.account_id
+     WHERE s.current > 0 AND s.last_day >= ? ORDER BY s.current DESC, s.reached_at, s.account_id LIMIT ?`,
   )
     .bind(yesterday, TOP)
     .all<{ current: number; nickname: string | null }>()
@@ -303,27 +365,12 @@ export async function getStreakLeaderboard(_req: Request, env: Env): Promise<Res
   })
 }
 
-/**
- * GET /api/me/streak - the signed-in account's streak (AC-AUTH-02/04): a cookie that is not a live session is a
- * 401, and so is a request with neither cookie nor UUID. Until the DAILY rework moves submissions to accounts, a
- * request with only `X-Player-Id` still reads the old per-UUID streak.
- */
+/** GET /api/me/streak - the signed-in account's streak, every device alike (AC-DAILY-10, AC-AUTH-04). */
 export async function getMyStreak(req: Request, env: Env): Promise<Response> {
-  if (hasSessionCookie(req) || req.headers.get('X-Player-Id') === null) {
-    const session = await requireSession(req, env)
-    const row = await accountStreakStatement(env.DB, session.accountId).first<StreakRow>()
-    return json(
-      { current: liveCurrent(row, Date.now()), longest: row?.longest ?? 0 },
-      { headers: { 'Set-Cookie': sessionCookie(env, session.token) } },
-    )
-  }
-  const row = await streakStatement(env.DB, playerId(req)).first<StreakRow>()
-  return json({
-    current: liveCurrent(row, Date.now()),
-    longest: row?.longest ?? 0,
-  })
-}
-
-export function accountStreakStatement(db: D1Database, accountId: string): D1PreparedStatement {
-  return db.prepare('SELECT current, longest, last_day, reached_at FROM account_streak WHERE account_id = ?').bind(accountId)
+  const session = await requireSession(req, env)
+  const row = await accountStreakStatement(env.DB, session.accountId).first<StreakRow>()
+  return json(
+    { current: liveCurrent(row, Date.now()), longest: row?.longest ?? 0 },
+    { headers: renewed(env, session) },
+  )
 }
