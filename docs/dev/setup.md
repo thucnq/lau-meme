@@ -26,6 +26,12 @@ API_BASE_URL=http://localhost:8787/lau-meme PIPELINE_TOKEN=<token-local> \
 ```
 Không đặt `GITHUB_REPOSITORY` thì pipeline không tạo GitHub Issue, chỉ in báo cáo đợt ra màn hình. Mỗi lần xóa `worker/.wrangler/state` phải đăng lại.
 
+Lỗi hay gặp khi đăng mẻ cục bộ:
+- `ValueError: URL phải có dạng https://<host>`: bản pipeline cũ chỉ nhận `https`. Cập nhật code (từ 2026-10-21 pipeline nhận `http` cho `localhost`, `127.0.0.1`, `::1`). Mọi tên miền khác vẫn bắt buộc `https` để token không đi qua mạng dạng rõ.
+- `HTTP 401`: `PIPELINE_TOKEN` trên dòng lệnh khác giá trị trong `worker/.dev.vars`. Sửa `.dev.vars` xong phải khởi động lại `wrangler dev`.
+- `HTTP 404`: `API_BASE_URL` thiếu tiền tố `/lau-meme`.
+- `ConnectionRefusedError`: `npm --prefix worker run dev` chưa chạy, hoặc chạy ở cổng khác 8787.
+
 Kiểm tra như CI: `bash <plugin>/scripts/dk-check.sh quick` (dk tự chạy khi review).
 
 npm ≥ 11 chặn script cài đặt mặc định: cảnh báo `install-scripts` cho `workerd`/`esbuild` không làm hỏng test. Nếu `wrangler dev` báo thiếu binary, chạy `npm --prefix worker install-scripts approve workerd esbuild` (kiểm tra cú pháp với bản npm đang dùng).

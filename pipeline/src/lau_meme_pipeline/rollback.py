@@ -5,15 +5,13 @@ this module only reports.
 """
 
 import argparse
-import http.client
 import json
 import os
 import sys
 from dataclasses import dataclass
 from typing import Protocol
-from urllib.parse import urlsplit
 
-TIMEOUT_SECONDS = 30
+from lau_meme_pipeline.batch import open_connection, parse_api_url
 
 
 @dataclass(frozen=True)
@@ -28,20 +26,15 @@ class RollbackClient(Protocol):
 
 
 class HttpRollbackClient:
-    """Network adapter: the Worker API over HTTPS with the pipeline token (GitHub Secret)."""
+    """Network adapter: the Worker API over HTTPS (http only to localhost) with the pipeline token (GitHub Secret)."""
 
     def __init__(self, base_url: str, token: str) -> None:
-        parts = urlsplit(base_url)
-        if parts.scheme != "https" or not parts.hostname:
-            raise ValueError("API_BASE_URL phải có dạng https://<host>[/<tiền tố>]")
-        self.host = parts.hostname
-        self.port = parts.port
-        self.prefix = parts.path.rstrip("/")  # e.g. "/lau-meme" (ADR 0007)
+        self.tls, self.host, self.port, self.prefix = parse_api_url(base_url)  # prefix e.g. "/lau-meme" (ADR 0007)
         self.token = token
 
     def post_rollback(self, version: int | None) -> tuple[int, dict]:
         body = json.dumps({} if version is None else {"version": version})
-        conn = http.client.HTTPSConnection(self.host, self.port, timeout=TIMEOUT_SECONDS)
+        conn = open_connection(self.tls, self.host, self.port)
         try:
             conn.request(
                 "POST",
