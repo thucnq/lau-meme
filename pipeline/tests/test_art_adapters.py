@@ -28,7 +28,7 @@ API_KEY = "AIza-test-key-not-a-secret-123"
 MODEL = "@cf/black-forest-labs/flux-1-schnell"
 BASE_URL = "https://dinoduct.fun/lau-meme"
 FAKE_PIPE_BEARER = "pipe-test-token-not-a-secret"
-KEY = "abc123def456.webp"
+IMAGE_NAME = "abc123def456.webp"
 PROMPT = "con ốc sên đội tờ lịch, vẽ tay bằng bút mực"
 IMAGE = b"\x89PNG-fake-image-bytes\x00\x01\x02"
 WEBP = b"RIFF\x1a\x00\x00\x00WEBPVP8 \x01\x02\x03\x04\x05"
@@ -340,14 +340,14 @@ def test_ac_art_04_put_image_gui_put_dung_duong_dan_header_va_byte_tho(monkeypat
     server = Server((204, ""))
     seen = install(monkeypatch, server)
 
-    out = HttpBatchClient(BASE_URL, FAKE_PIPE_BEARER).put_image(KEY, WEBP)
+    out = HttpBatchClient(BASE_URL, FAKE_PIPE_BEARER).put_image(IMAGE_NAME, WEBP)
 
     assert out is None
     assert len(seen) == 1
     req = seen[0]
     assert req["host"].startswith("dinoduct.fun")
     assert req["method"] == "PUT"
-    assert req["path"] == f"/lau-meme/api/pipeline/images/{KEY}"
+    assert req["path"] == f"/lau-meme/api/pipeline/images/{IMAGE_NAME}"
     headers = lower(req["headers"])
     assert headers["content-type"] == "image/webp"
     assert headers["authorization"] == f"Bearer {FAKE_PIPE_BEARER}"
@@ -367,7 +367,7 @@ def test_ac_art_04_put_image_khong_phai_2xx_thi_nem_loi(monkeypatch, status):
 
     raised = None
     try:
-        HttpBatchClient(BASE_URL, FAKE_PIPE_BEARER).put_image(KEY, WEBP)
+        HttpBatchClient(BASE_URL, FAKE_PIPE_BEARER).put_image(IMAGE_NAME, WEBP)
     except Exception as exc:  # the error class is the adapter's choice
         raised = exc
 
@@ -384,10 +384,10 @@ def test_ac_art_04_image_exists_dung_head_tren_duong_dan_img(monkeypatch, status
     server = Server((200, ""), script=[(status, "")])
     seen = install(monkeypatch, server)
 
-    got = HttpBatchClient(BASE_URL, FAKE_PIPE_BEARER).image_exists(KEY)
+    got = HttpBatchClient(BASE_URL, FAKE_PIPE_BEARER).image_exists(IMAGE_NAME)
 
     assert got is expected
-    assert [(r["method"], r["path"]) for r in seen] == [("HEAD", f"/lau-meme/img/{KEY}")]
+    assert [(r["method"], r["path"]) for r in seen] == [("HEAD", f"/lau-meme/img/{IMAGE_NAME}")]
     assert seen[0]["host"].startswith("dinoduct.fun")
 
 
