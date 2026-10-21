@@ -328,6 +328,9 @@ describe('art: ảnh bị chặn không được tải', () => {
 
 // ================================================================ AC-ART-08
 describe('art: phóng lớn khi ghép ra món lần đầu', () => {
+  // tutorial_seen = true, chỉ có món khởi đầu; test nào cần Đĩa khác thì gọi ownedC() (ghi đè)
+  beforeEach(() => seed())
+
   it('AC-ART-08: ghép ra phần tử chưa có thì lớp phủ hiện tên, emoji (ảnh chưa tải) và hiệu ứng bật ra', async () => {
     await mountGame()
     await potCombine('Cay', 'Cười')

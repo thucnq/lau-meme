@@ -3,7 +3,7 @@
 // Interface assumptions: R2 binding `IMG` (bucket lau-meme-img), object key `img/<12 hex>.webp`,
 // route `/lau-meme/img/<12 hex>.webp`, Cache API (`caches.default`) keyed by the request URL.
 import { SELF, env } from 'cloudflare:test'
-import { describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 type Bucket = {
   put(key: string, value: ArrayBuffer | Uint8Array): Promise<unknown>
@@ -21,6 +21,11 @@ const WEBP = new Uint8Array([0x52, 0x49, 0x46, 0x46, 0x1a, 0, 0, 0, 0x57, 0x45, 
 const edgeCache = () => (caches as unknown as { default: Cache }).default
 
 describe('art: GET /img/{key}', () => {
+  // caches.default is not reset between tests: clear every key these tests use.
+  beforeEach(async () => {
+    for (const k of [KEY, '0123456789ab.webp', 'ABC123DEF456.webp']) await edgeCache().delete(URL_OF(k))
+  })
+
   it('AC-ART-05: ảnh tồn tại trả 200 image/webp, đúng byte, Cache-Control public immutable một năm', async () => {
     await IMG.put(`img/${KEY}`, WEBP)
     const res = await SELF.fetch(URL_OF(KEY))
