@@ -539,7 +539,7 @@ describe('daily', () => {
       expect(row.value, `streak dòng ${i}`).toBe(want.current)
       expect(row.nickname, `nickname dòng ${i}`).toBe(want.nick ?? 'Thực khách ẩn danh')
     })
-  })
+  }, 60_000)
 
   it('AC-DAILY-11: streak 0 và streak đã đứt (ngày gần nhất cách hôm nay quá 1 ngày) không xuất hiện', async () => {
     vi.setSystemTime(new Date('2026-10-24T03:00:00.000Z'))

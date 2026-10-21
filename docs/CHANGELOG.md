@@ -7,3 +7,5 @@
 - Quản trị: thêm fold vào bí danh bị chặn vĩnh viễn; phần tử đã chặn trả 409; gỡ chặn phải làm tường minh.
 - Quản trị: danh sách báo cáo gom theo đích, không lộ UUID người báo cáo; báo cáo chỉ gỡ ẩn tự động bị bỏ qua và đếm lại từ 0.
 - Quản trị: mỗi lệnh ghi thành công ghi 1 dòng audit, kèm dấu vân 8 ký tự của token.
+- Giao diện game: chuyển sang một bảng màu xanh lá (màu rau) cho cả chế độ sáng và tối; nút và chip bo tròn hơn, có hiệu ứng khi di chuột và nhấn (tắt khi người dùng bật giảm chuyển động). Thanh địa chỉ trình duyệt đổi màu theo chế độ sáng/tối.
+- Chữ hiển thị trên giao diện, tài liệu và mã nguồn: dấu gạch dài thay bằng dấu gạch ngang "-". Không đổi hành vi.

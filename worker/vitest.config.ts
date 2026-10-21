@@ -13,6 +13,8 @@ export default defineConfig(async () => {
     ],
     test: {
       setupFiles: ['./test/apply-migrations.ts'],
+      // Miniflare D1 costs ~66 ms per query on WSL2, so heavy tests outrun the default 5 s.
+      testTimeout: 30_000,
       coverage: { provider: 'istanbul' as const, include: ['src/**'], thresholds: { lines: 80 } },
     },
   }
