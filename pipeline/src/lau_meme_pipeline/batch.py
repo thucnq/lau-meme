@@ -38,6 +38,7 @@ ALLOWED_LLM_FIELDS = frozenset(
     | {"existing", "candidates", "need", "id", "a", "b", "result"}
 )
 MAX_TERM = 100  # banned_term.term_fold limit in D1
+MAX_STORE_BYTES = 1_900_000  # the Worker refuses a bigger pipeline store (one D1 row, ADR 0009)
 
 
 def version_for(batch_at: datetime) -> int:
@@ -51,9 +52,17 @@ def build_llm_payload(items: Sequence[Mapping]) -> list[dict]:
     """Every LLM payload (phase 2) goes through here; any field outside the allow-list is refused."""
     out: list[dict] = []
     for item in items:
+        if not isinstance(item, Mapping):
+            raise ValueError("Mỗi mục gửi LLM phải là object")
         extra = sorted(set(item) - ALLOWED_LLM_FIELDS)
         if extra:
             raise ValueError(f"Trường không được gửi cho LLM: {', '.join(extra)}")
+        for field, value in item.items():  # flat values only: a nested object could carry any field
+            if field == "candidates":
+                if not (isinstance(value, list) and all(isinstance(v, str) for v in value)):
+                    raise ValueError("Trường candidates gửi LLM phải là danh sách chuỗi")
+            elif not (isinstance(value, str | int | float | bool) or value is None):
+                raise ValueError(f"Trường {field} gửi LLM phải là giá trị đơn")
         out.append(dict(item))
     return out
 
@@ -187,6 +196,7 @@ def _render_report(
     banned_count: int | None = None,
     miss: tuple[float, float] | None = None,
     quota_hit: bool = False,
+    store_bytes: int | None = None,
 ) -> tuple[str, str]:
     """Title shows the dish's emoji only, never its name (AC-PIPE-14)."""
     status = "error" if failed_step else "success"
@@ -211,6 +221,11 @@ def _render_report(
         "- Lỗi nguồn: " + (", ".join(f"{e.get('source')}: lỗi {e.get('error')}" for e in errors) or "không có"),
         f"- quota: {stats.get('quota_used', 0)} lượt gọi Gemini",
         *(["- ⚠️ Gemini hết quota: phần chưa xử lý nằm trong hàng chờ, đợt sau làm tiếp"] if quota_hit else []),
+        *(
+            [f"- Kho pipeline: {store_bytes // 1024} KB / {MAX_STORE_BYTES // 1024} KB"]
+            if store_bytes is not None
+            else []
+        ),
         f"- Món đặc biệt: {emoji or '-'}",
     ]
     # Only the count: the words themselves are secret (ADR 0005).
@@ -256,6 +271,20 @@ class _CountedLlm(Mapping[str, Callable]):
         return calls if isinstance(calls, int) else self.n
 
 
+def _send_aliases(client: BatchClient, state: Mapping, new_aliases: frozenset[str], log: Callable[[str], None]) -> None:
+    """AC-MOD-06, after a successful publish only: a discarded batch never changes the alias list. The `mod` source
+    is replaced whole, so the old aliases go with the new. A failure is logged; the next full batch sends them
+    again, if it crawls them again (the classify answer is cached)."""
+    if not new_aliases:
+        return
+    admin = set(state.get("admin_blocked", []))
+    mod = {t for t in state["banned_aliases"] if t not in admin} | set(new_aliases)
+    try:
+        client.put_banned_terms("mod", sorted(t for t in mod if len(t) <= MAX_TERM))
+    except Exception as exc:
+        log(f"Không gửi được bí danh MOD: {type(exc).__name__}")
+
+
 def run_batch(
     *,
     mode: str,
@@ -277,6 +306,7 @@ def run_batch(
     quota_hit = False
     store_out: dict | None = None
     new_aliases: frozenset[str] = frozenset()
+    store_bytes: int | None = None
     version: int | None = None
     emoji: str | None = None
     run_id: str | None = None
@@ -348,10 +378,11 @@ def run_batch(
         if terms:  # an empty secret never wipes the list already in D1
             client.put_banned_terms("wordlist", terms)
         banned_count = len(terms)
-        if new_aliases:  # AC-MOD-06: the `mod` source is replaced whole, so send the old aliases with the new
-            admin = set(state.get("admin_blocked", []))
-            mod = {t for t in state["banned_aliases"] if t not in admin} | set(new_aliases)
-            client.put_banned_terms("mod", sorted(t for t in mod if len(t) <= MAX_TERM))
+        if store_out is not None:
+            step = "store_size"
+            store_bytes = len(json.dumps(store_out, ensure_ascii=False, separators=(",", ":")).encode("utf-8"))
+            if store_bytes > MAX_STORE_BYTES:  # caught here with a clear step, not as a 413 at publish
+                raise ValueError(f"kho pipeline {store_bytes // 1024} KB vượt giới hạn {MAX_STORE_BYTES // 1024} KB")
         step = "publish"
         body = {
             "status": "success",
@@ -367,10 +398,25 @@ def run_batch(
             body["store"] = store_out
         stats["quota_used"] = counted.used(llm if mode == "full" else None)
         run_id = client.post_batch(body).get("id")
+        _send_aliases(client, state, new_aliases, log)
     except Exception as exc:  # every failure ends the same way: current version kept (AC-PIPE-11)
         if step == "publish" and version is not None and _published(client, version, log):
+            _send_aliases(client, state, new_aliases, log)
             return _finish(
-                reporter, client, None, version, batch_at, mode, None, stats, emoji, log, banned_count, miss, quota_hit
+                reporter,
+                client,
+                None,
+                version,
+                batch_at,
+                mode,
+                None,
+                stats,
+                emoji,
+                log,
+                banned_count,
+                miss,
+                quota_hit,
+                store_bytes,
             )
         failed_step, version = step, None
         # Network errors may carry the API host: the public workflow log only gets their type.
@@ -391,7 +437,20 @@ def run_batch(
             log(f"Không ghi được nhật ký đợt lỗi: {type(post_exc).__name__}")
 
     return _finish(
-        reporter, client, run_id, version, batch_at, mode, failed_step, stats, emoji, log, banned_count, miss, quota_hit
+        reporter,
+        client,
+        run_id,
+        version,
+        batch_at,
+        mode,
+        failed_step,
+        stats,
+        emoji,
+        log,
+        banned_count,
+        miss,
+        quota_hit,
+        store_bytes,
     )
 
 
@@ -421,6 +480,7 @@ def _finish(
     banned_count: int | None = None,
     miss: tuple[float, float] | None = None,
     quota_hit: bool = False,
+    store_bytes: int | None = None,
 ) -> BatchOutcome:
     title, report = _render_report(
         version=version,
@@ -432,6 +492,7 @@ def _finish(
         banned_count=banned_count,
         miss=miss,
         quota_hit=quota_hit,
+        store_bytes=store_bytes,
     )
     return BatchOutcome(
         ok=failed_step is None,

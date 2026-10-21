@@ -200,19 +200,21 @@ def test_ac_pipe_12_model_la_tham_so(monkeypatch):
 def test_ac_pipe_12_vi_du_25_khai_niem_429_hai_lan_roi_het_quota_o_lo_3(monkeypatch):
     """AC-PIPE-12: 25 khái niệm, lô 10: lô 1 gặp 429 (theo phút) hai lần rồi thành công, lô 3 hết quota theo ngày.
     Có 5 lời gọi (10, 10, 10, 10, 5), chờ 2.0 rồi 4.0, trả 20 kết quả, quota_hit; lời gọi sau không gửi thêm gì."""
-    from lau_meme_pipeline.llm import QuotaExhausted
+    from lau_meme_pipeline.llm import PartialAnswer, QuotaExhausted
 
     server = FakeGemini(keys(25), script=[QUOTA_PER_MINUTE, QUOTA_PER_MINUTE, None, None, QUOTA_PER_DAY])
     seen = install(monkeypatch, server)
     steps, sleeps = make_steps(batch_size=10)
 
-    out = steps["classify"](concepts(25))
+    with pytest.raises(PartialAnswer) as info:
+        steps["classify"](concepts(25))
 
     assert [len(server.items_in(r)) for r in seen] == [10, 10, 10, 10, 5]
     assert server.items_in(seen[0]) == server.items_in(seen[1]) == server.items_in(seen[2]) == keys(10)
     assert steps.calls == 5
     assert sleeps == [2.0, 4.0]
-    assert answered_keys(out) == keys(20)
+    assert answered_keys(info.value.answer) == keys(20)
+    assert info.value.quota is True
     assert steps.quota_hit is True
 
     before = len(seen)
@@ -241,44 +243,56 @@ def test_ac_pipe_12_het_quota_ngay_o_lo_dau_thi_nem_quota_exhausted(monkeypatch)
 def test_ac_pipe_12_429_theo_phut_retry_toi_da_3_lan_roi_lo_do_that_bai(monkeypatch):
     """AC-PIPE-12: 429 không phải theo ngày (và 5xx) được retry với backoff 2.0, 4.0, 8.0 (tối đa 3 lần); hết lượt
     thì lô đó bị bỏ, lô sau vẫn chạy và không bị coi là hết quota."""
+    from lau_meme_pipeline.llm import PartialAnswer
+
     server = FakeGemini(keys(15), script=[QUOTA_PER_MINUTE, 503, QUOTA_PER_MINUTE, 500])
     seen = install(monkeypatch, server)
     steps, sleeps = make_steps(batch_size=10)
 
-    out = steps["classify"](concepts(15))
+    with pytest.raises(PartialAnswer) as info:
+        steps["classify"](concepts(15))
 
     assert sleeps == [2.0, 4.0, 8.0]
     assert len(seen) == 5  # chunk 1: 1 + 3 retries, chunk 2: 1
     assert steps.calls == 5
-    assert answered_keys(out) == keys(15)[10:]
+    assert answered_keys(info.value.answer) == keys(15)[10:]
+    assert info.value.quota is False
     assert steps.quota_hit is False
 
 
 def test_ac_pipe_12_lo_loi_http_400_bi_bo_qua_cac_lo_khac_van_tra_ve(monkeypatch):
     """AC-PIPE-12: lô trả HTTP 400 không retry, bị bỏ; kết quả các lô còn lại vẫn được trả theo thứ tự."""
+    from lau_meme_pipeline.llm import PartialAnswer
+
     server = FakeGemini(keys(25), script=[None, 400, None])
     seen = install(monkeypatch, server)
     steps, sleeps = make_steps(batch_size=10)
 
-    out = steps["classify"](concepts(25))
+    with pytest.raises(PartialAnswer) as info:
+        steps["classify"](concepts(25))
 
     assert len(seen) == 3
     assert sleeps == []
-    assert answered_keys(out) == keys(10) + keys(25)[20:]
+    assert answered_keys(info.value.answer) == keys(10) + keys(25)[20:]
+    assert info.value.quota is False
     assert steps.quota_hit is False
 
 
 def test_ac_pipe_12_lo_tra_loi_khong_phai_json_bi_bo_qua(monkeypatch):
     """AC-PIPE-12: lô có câu trả lời không phải JSON bị bỏ qua (không retry); lô khác vẫn trả."""
+    from lau_meme_pipeline.llm import PartialAnswer
+
     server = FakeGemini(keys(20), script=[("raw", "đây không phải JSON {"), None])
     seen = install(monkeypatch, server)
     steps, sleeps = make_steps(batch_size=10)
 
-    out = steps["describe"](concepts(20))
+    with pytest.raises(PartialAnswer) as info:
+        steps["describe"](concepts(20))
 
     assert len(seen) == 2
     assert sleeps == []
-    assert answered_keys(out) == keys(20)[10:]
+    assert answered_keys(info.value.answer) == keys(20)[10:]
+    assert info.value.quota is False
 
 
 @pytest.mark.parametrize(
@@ -379,6 +393,71 @@ def test_ac_pipe_13_truong_ngoai_danh_sach_cho_phep_bi_tu_choi_truoc_khi_gui(mon
 
     with pytest.raises(ValueError):
         steps["classify"](items)
+
+    assert seen == []
+    assert steps.calls == 0
+
+
+def test_ac_pipe_10_lo_hong_va_lo_tot_thi_nem_partial_answer_de_khong_bi_cache(monkeypatch):
+    """AC-PIPE-10: một lô HTTP 400 và một lô tốt: bước ném PartialAnswer mang câu trả lời của lô tốt (không trả về
+    như câu trả lời đầy đủ, để lớp cache không lưu)."""
+    from lau_meme_pipeline.llm import PartialAnswer
+
+    server = FakeGemini(keys(20), script=[None, 400])
+    install(monkeypatch, server)
+    steps, _ = make_steps(batch_size=10)
+
+    with pytest.raises(PartialAnswer) as info:
+        steps["classify"](concepts(20))
+
+    assert answered_keys(info.value.answer) == keys(10)
+    assert info.value.quota is False
+
+
+def test_ac_pipe_10_het_quota_sau_mot_lo_tot_cung_nem_partial_answer(monkeypatch):
+    """AC-PIPE-10: hết quota sau một lô tốt: PartialAnswer với phần đã xong, quota True, quota_hit True."""
+    from lau_meme_pipeline.llm import PartialAnswer
+
+    server = FakeGemini(keys(20), script=[None, QUOTA_PER_DAY])
+    install(monkeypatch, server)
+    steps, _ = make_steps(batch_size=10)
+
+    with pytest.raises(PartialAnswer) as info:
+        steps["classify"](concepts(20))
+
+    assert answered_keys(info.value.answer) == keys(10)
+    assert info.value.quota is True
+    assert steps.quota_hit is True
+
+
+@pytest.mark.parametrize("payload", ["Còn Cái Nịt", {"key": "item00", "name": "Meme 00"}], ids=["str", "dict"])
+def test_ac_pipe_13_payload_khong_phai_danh_sach_bi_tu_choi_truoc_khi_gui(monkeypatch, payload):
+    """AC-PIPE-13: payload không phải danh sách (chuỗi hoặc dict) bị ValueError, không có lời gọi nào."""
+    server = FakeGemini(keys(1))
+    seen = install(monkeypatch, server)
+    steps, _ = make_steps()
+
+    with pytest.raises(ValueError):
+        steps["classify"](payload)
+
+    assert seen == []
+    assert steps.calls == 0
+
+
+@pytest.mark.parametrize(
+    "candidates",
+    [[{"player_id": 1}], "Cay", [1, 2], {"a": "b"}],
+    ids=["dict_items", "str", "ints", "dict"],
+)
+def test_ac_pipe_13_candidates_phai_la_danh_sach_chuoi(monkeypatch, candidates):
+    """AC-PIPE-13: trường candidates không phải danh sách chuỗi (có thể giấu dữ liệu lạ) bị ValueError trước khi gửi."""
+    server = FakeGemini(["item00"])
+    seen = install(monkeypatch, server)
+    steps, _ = make_steps()
+    items = [{"key": "item00", "name": "Meme 00", "candidates": candidates}]
+
+    with pytest.raises(ValueError):
+        steps["link"](items)
 
     assert seen == []
     assert steps.calls == 0

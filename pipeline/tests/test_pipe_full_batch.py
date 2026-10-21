@@ -579,3 +579,143 @@ def test_ac_pipe_13_danh_sach_truong_llm_cho_phep_sau_adr_0009():
         assert forbidden not in ALLOWED_LLM_FIELDS
         with pytest.raises(ValueError):
             build_llm_payload([{"name": "Meme", forbidden: "x"}])
+
+
+# ================================================================ review fixes
+
+
+def published_names(body) -> set[str]:
+    names = {e["name"] for e in body["content"]["elements"]}
+    names |= {e["name"] for e in body["store"]["elements"]}
+    names |= {i["concept"]["name"] for i in body["store"]["queue"]}
+    return names
+
+
+def test_ac_pipe_04_ten_dai_150_ky_tu_bi_loai_meme_thuong_van_dang():
+    """AC-PIPE-04: khái niệm có tên 150 ký tự (Worker giới hạn 100) không vào content, store hay hàng chờ; meme
+    thường cùng đợt vẫn được đăng; mẻ vẫn success (AC-PIPE-11)."""
+    long_name = "Meme Dài " + "d" * 141
+    assert len(long_name) == 150
+    client, reporter = FakeClient(), FakeReporter()
+    outcome = run_full_batch(client, reporter, [FakeAdapter("RSS", [long_name, MEME])], make_llm())
+
+    assert outcome.ok is True and outcome.status == "success"
+    (body,) = client.success_posts
+    assert long_name not in published_names(body)
+    assert not [n for n in published_names(body) if len(n) > 100]
+    assert MEME in {e["name"] for e in body["content"]["elements"]}
+    assert all(len(e["name"]) <= 100 and len(e["fold"]) <= 100 for e in body["content"]["elements"])
+
+
+def test_ac_pipe_11_emoji_qua_16_ky_tu_thi_meme_vao_hang_cho_khong_vao_content():
+    """AC-PIPE-11: bước describe trả emoji dài 20 ký tự (Worker giới hạn 16): mẻ vẫn success, meme KHÔNG vào
+    content, vào store.queue để thử lại sau."""
+
+    def long_emoji(items):
+        return [{**d, "emoji": "🔥" * 20} for d in _describe(items)]
+
+    client, reporter = FakeClient(), FakeReporter()
+    outcome = run_full_batch(client, reporter, [FakeAdapter("RSS", [MEME])], make_llm(describe=long_emoji))
+
+    assert outcome.ok is True and outcome.status == "success"
+    (body,) = client.success_posts
+    assert MEME not in {e["name"] for e in body["content"]["elements"]}
+    assert MEME not in {e["name"] for e in body["store"]["elements"]}
+    assert [i["concept"]["name"] for i in body["store"]["queue"]] == [MEME]
+    assert all(len(e["emoji"]) <= 16 for e in body["content"]["elements"])
+
+
+def test_ac_pipe_05_gan_trung_ma_buoc_same_het_quota_thi_khong_dang_ban_gan_trung():
+    """AC-PIPE-05: khái niệm gần giống phần tử lõi "Còn Cái Nịt" (không trùng fold) mà bước same hết quota: mẻ vẫn
+    success và bản gần giống KHÔNG được đăng (không vào content, không vào store.elements)."""
+    from lau_meme_pipeline.llm import QuotaExhausted
+
+    variant = "Còn Cái Nịt Nè"
+    client, reporter = FakeClient(), FakeReporter()
+    outcome = run_full_batch(client, reporter, [FakeAdapter("RSS", [variant])], make_llm(same=_raise(QuotaExhausted())))
+
+    assert outcome.ok is True and outcome.status == "success"
+    (body,) = client.success_posts
+    assert variant not in {e["name"] for e in body["content"]["elements"]}
+    assert variant not in {e["name"] for e in body["store"]["elements"]}
+
+
+def test_ac_pipe_10_cau_tra_loi_mot_phan_khong_duoc_cache_nen_chay_lai_van_goi_llm():
+    """AC-PIPE-10: describe ném PartialAnswer (chỉ trả lời meme đầu) thì phản hồi đó không vào llm_cache của kho; chạy
+    lại với llm_cache đã lưu thì describe VẪN được gọi lại."""
+    from lau_meme_pipeline.llm import PartialAnswer
+
+    def partial_describe(items):
+        raise PartialAnswer(_describe(items[:1]))
+
+    names = [MEME, "Meme Thử Hai"]
+    first_client = FakeClient()
+    run_full_batch(first_client, FakeReporter(), [FakeAdapter("RSS", names)], make_llm(describe=partial_describe))
+    assert len(first_client.success_posts) == 1
+    first_store = first_client.success_posts[0]["store"]
+
+    describe = Recording(_describe)
+    second_client = FakeClient(store={"llm_cache": first_store["llm_cache"]})
+    run_full_batch(second_client, FakeReporter(), [FakeAdapter("RSS", names)], make_llm(describe=describe))
+
+    assert describe.calls >= 1
+
+
+def test_ac_pipe_11_bi_danh_chi_gui_sau_khi_dang_thanh_cong():
+    """AC-MOD-06: kiểm duyệt đánh dấu cáo buộc kèm bí danh "Nguyen Van Abc": put_banned_terms("mod", ...) được gọi
+    SAU post_batch và chứa "nguyen van abc"."""
+
+    def accusation(items):
+        out = _classify(items)
+        for d in out:
+            d["accusation"] = True
+            d["person"] = {"targets": True, "name": "Nguyen Van Abc", "aliases": ["Nguyen Van Abc"]}
+        return out
+
+    client, reporter = FakeClient(), FakeReporter()
+    outcome = run_full_batch(client, reporter, [FakeAdapter("RSS", [MEME])], make_llm(classify=accusation))
+
+    assert outcome.ok is True
+    mod_terms = [terms for source, terms in client.banned if source == "mod"]
+    assert len(mod_terms) == 1
+    assert "nguyen van abc" in mod_terms[0]
+    assert client.calls.index("post_batch") < client.calls.index("put_banned_terms")
+
+
+def test_ac_pipe_11_dang_loi_thi_khong_gui_bi_danh_mod():
+    """AC-PIPE-11: post_batch(success) ném lỗi thì put_banned_terms KHÔNG bao giờ được gọi với nguồn "mod"."""
+
+    def accusation(items):
+        out = _classify(items)
+        for d in out:
+            d["accusation"] = True
+            d["person"] = {"targets": True, "name": "Nguyen Van Abc", "aliases": ["Nguyen Van Abc"]}
+        return out
+
+    client, reporter = FakeClient(fail_success=True), FakeReporter()
+    outcome = run_full_batch(client, reporter, [FakeAdapter("RSS", [MEME])], make_llm(classify=accusation))
+
+    assert outcome.ok is False
+    assert client.success_posts == []
+    assert [source for source, _ in client.banned if source == "mod"] == []
+
+
+def test_ac_pipe_11_kho_dau_vao_qua_lon_thi_loi_o_buoc_store_size():
+    """AC-PIPE-11: kho đọc về có asked_pairs làm JSON vượt 1.900.000 byte: không đăng success, failed_step
+    "store_size", Issue nêu kích thước kho."""
+    pairs = [[f"{i:043d}", f"{i + 1:043d}"] for i in range(25000)]
+    assert len(json.dumps({"asked_pairs": pairs})) > 1_900_000
+    client, reporter = FakeClient(store={"asked_pairs": pairs}), FakeReporter()
+    outcome = run_full_batch(client, reporter, [FakeAdapter("RSS", [MEME])], make_llm())
+
+    assert_no_success(outcome, client, "store_size")
+    assert len(reporter.issues) == 1
+    assert re.search(r"\d+\s*KB", reporter.issues[0][1])
+
+
+def test_ac_pipe_14_issue_thanh_cong_ghi_kich_thuoc_kho_theo_kb():
+    """AC-PIPE-14: Issue của mẻ full thành công có dòng kích thước kho tính bằng KB."""
+    client, reporter = FakeClient(), FakeReporter()
+    run_full_batch(client, reporter, [FakeAdapter("RSS", [MEME])], make_llm())
+
+    assert re.search(r"[Kk]ho[^\n]*\d+\s*KB", reporter.issues[0][1])

@@ -31,6 +31,8 @@ from lau_meme_pipeline.seed import ACTIVE, CLASSIC, ContentStore, StoredElement,
 from lau_meme_pipeline.text import fold
 
 GMT7 = timezone(timedelta(hours=7))
+MAX_NAME = 100  # D1/Worker limit of element name and fold (UTF-16 units, as the Worker counts)
+MAX_EMOJI = 16
 TREND = "trend"
 INACTIVE = "inactive"
 # Where a source's memes come from (D1 element.origin).
@@ -46,6 +48,11 @@ class FullOutcome:
     content: ContentStore | None = None  # what was exported, for the publish body (batch._content)
     daily_element_id: str | None = None
     new_aliases: frozenset[str] = frozenset()  # MOD aliases found this batch (AC-MOD-06)
+
+
+def _units(text: str) -> int:
+    """Length as JavaScript counts it (UTF-16 code units): the Worker validates with `.length`."""
+    return len(text.encode("utf-16-le")) // 2
 
 
 def _version(batch_at: datetime) -> int:
@@ -124,7 +131,10 @@ def run_full(
             # Any other step: no answer, never cached; what it would have added waits in the queue.
             quota["hit"] = True
             return {} if step == "judge" else []
-        used[CachedLlm.key(step, payload)] = answer  # the new store keeps only this batch's answers
+        quota["hit"] = quota["hit"] or cache.quota_hit
+        key = CachedLlm.key(step, payload)
+        if key in cache.cache:  # a partial answer is not cached, so the next batch asks again
+            used[key] = answer  # the new store keeps only this batch's answers
         return answer
 
     content = _combined(core, store)
@@ -136,7 +146,10 @@ def run_full(
     queue = [dict(q) for q in store.get("queue", [])]
     known_names = [e.name for e in content.elements.values()] + [q["concept"]["name"] for q in queue]
     deduped = dedupe(crawl_result.concepts, known_names, lambda items: ask("same", items))
-    report["dedupe"] = {"kept": len(deduped.kept), "dropped": len(deduped.dropped)}
+    too_long = [c for c in deduped.kept if _units(c.name) > MAX_NAME or _units(fold(c.name)) > MAX_NAME]
+    report["dedupe"] = {"kept": len(deduped.kept) - len(too_long), "dropped": len(deduped.dropped)}
+    if too_long:  # the Worker would refuse the whole batch for one long title (AC-PIPE-11)
+        report["dedupe"]["too_long"] = len(too_long)
     new_items = [
         {
             "key": dedupe_key(c.name),
@@ -149,6 +162,7 @@ def run_full(
             },
         }
         for c in deduped.kept
+        if c not in too_long
     ]
     queued_keys = {q["key"] for q in queue}
     items = [*queue, *[i for i in new_items if i["key"] not in queued_keys]]  # AC-PIPE-07: queue first
@@ -163,11 +177,10 @@ def run_full(
         answers = ask("describe", payload)
         by_key = {a.get("key"): a for a in answers if isinstance(a, Mapping)} if isinstance(answers, list) else {}
         for i in to_describe:
-            if not isinstance(by_key.get(i["key"]), Mapping):
-                continue  # no answer (quota, truncated): described again next batch, from the queue
-            i["described"] = {
-                k: str(by_key[i["key"]].get(k, "")) for k in ("emoji", "description", "daily_hint", "image_hint")
-            }
+            answer = by_key.get(i["key"])
+            if not isinstance(answer, Mapping) or not 1 <= _units(str(answer.get("emoji", ""))) <= MAX_EMOJI:
+                continue  # no usable answer (quota, truncated, bad emoji): described again next batch, from the queue
+            i["described"] = {k: str(answer.get(k, "")) for k in ("emoji", "description", "daily_hint", "image_hint")}
 
     # 3. Moderate.
     concepts = [_concept_from(i, i.get("described", {})) for i in items]

@@ -8,10 +8,10 @@ AC-PIPE-13 allow-list first. Errors carry only their type and HTTP status, never
 import http.client
 import json
 import time
-from collections.abc import Callable, Iterator, Mapping, Sequence
+from collections.abc import Callable, Iterator, Mapping
 
 from lau_meme_pipeline.batch import TIMEOUT_SECONDS, build_llm_payload
-from lau_meme_pipeline.llm import LlmError, QuotaExhausted, RateLimited, call_in_batches
+from lau_meme_pipeline.llm import LlmError, PartialAnswer, QuotaExhausted, RateLimited, call_in_batches
 from lau_meme_pipeline.moderation import CATEGORIES
 
 HOST = "generativelanguage.googleapis.com"
@@ -126,7 +126,9 @@ class GeminiSteps(Mapping[str, Callable[[object], object]]):
         return len(PROMPTS)
 
     def _run(self, step: str, payload: object) -> object:
-        items = build_llm_payload(payload if isinstance(payload, Sequence) else [])
+        if not isinstance(payload, list):
+            raise ValueError("payload gửi LLM phải là danh sách")
+        items = build_llm_payload(payload)
         if self.quota_hit:
             raise QuotaExhausted()
         merged_dict = step == "judge"
@@ -150,7 +152,11 @@ class GeminiSteps(Mapping[str, Callable[[object], object]]):
         elif items and not out.results:
             raise LlmError(f"Gemini: cả {len(items)} mục của bước {step} đều lỗi")
         if merged_dict:
-            return {k: v for part in out.results for k, v in part.items()}
-        if step == "same" and out.failed:
-            return []  # answers are positional: a missing middle chunk would shift them, so trust none
-        return out.results
+            answer: object = {k: v for part in out.results for k, v in part.items()}
+        elif step == "same" and out.failed:
+            answer = []  # answers are positional: a missing middle chunk would shift them, so trust none
+        else:
+            answer = out.results
+        if out.failed or out.pending:
+            raise PartialAnswer(answer, quota=out.quota_hit)  # usable now, never cached (AC-PIPE-10)
+        return answer

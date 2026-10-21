@@ -42,6 +42,14 @@ class NotText(Exception):
     """The URL or the response is media (image/video) or not a text format."""
 
 
+class Redirect(Exception):
+    """A 3xx answer: `Http` follows it itself, so robots.txt is checked on every hop."""
+
+    def __init__(self, location: str) -> None:
+        super().__init__("redirect")
+        self.location = location
+
+
 class HttpStatus(Exception):
     """Non-2xx answer; the network `get` raises it so robots.txt can tell "absent" from "failing"."""
 
@@ -51,6 +59,7 @@ class HttpStatus(Exception):
 
 
 ROBOTS_ABSENT = (404, 410)  # RFC 9309 §2.3.1.3: only an unavailable robots.txt allows everything
+MAX_REDIRECTS = 3
 
 
 class Http:
@@ -67,7 +76,7 @@ class Http:
         if parser is None:
             parser = RobotFileParser()
             try:
-                _, body = self._get(base + "/robots.txt")
+                _, body = self._follow(base + "/robots.txt", check_robots=False)
                 parser.parse(body.splitlines())
             except HttpStatus as exc:
                 parser.parse([] if exc.status in ROBOTS_ABSENT else ["User-agent: *", "Disallow: /"])
@@ -76,14 +85,26 @@ class Http:
             self._robots[base] = parser
         return parser.can_fetch(USER_AGENT, url)
 
+    def _follow(self, url: str, *, check_robots: bool) -> tuple[str, str]:
+        """GET with up to MAX_REDIRECTS https hops; every hop is checked like the first (media path, robots.txt).
+        Exceptions carry no URL: a query may hold an API key (crawl errors are reported by type only anyway)."""
+        for _ in range(MAX_REDIRECTS + 1):
+            if urlsplit(url).scheme != "https":
+                raise NotText()
+            if urlsplit(url).path.lower().endswith(MEDIA):
+                raise NotText()
+            if check_robots and not self._allowed(url):
+                raise RobotsDenied()
+            try:
+                return self._get(url)
+            except Redirect as hop:
+                url = urljoin(url, hop.location)
+        raise HttpStatus(310)  # too many redirects
+
     def text(self, url: str) -> str:
-        if urlsplit(url).path.lower().endswith(MEDIA):
-            raise NotText(url)
-        if not self._allowed(url):
-            raise RobotsDenied(url)
-        content_type, body = self._get(url)
+        content_type, body = self._follow(url, check_robots=True)
         if not content_type.lower().startswith(TEXT_TYPES):
-            raise NotText(url)
+            raise NotText()
         return body
 
 
@@ -192,38 +213,37 @@ def default_adapters(env: Mapping[str, str]) -> list:
     ]
 
 
-MAX_REDIRECTS = 3
-
-
 def http_get(url: str) -> tuple[str, str]:
-    """Network adapter of `Http`: https GET with a timeout, a size cap and a few https-only redirects; a non-2xx
-    answer raises HttpStatus (robots.txt tells "absent" from "failing" by it)."""
-    for _ in range(MAX_REDIRECTS + 1):
-        parts = urlsplit(url)
-        if parts.scheme != "https" or not parts.hostname:
-            raise ValueError("chỉ crawl qua https")
-        path = (parts.path or "/") + (f"?{parts.query}" if parts.query else "")
-        conn = http.client.HTTPSConnection(parts.hostname, parts.port, timeout=GET_TIMEOUT_SECONDS)
-        try:
-            conn.request("GET", path, headers={"User-Agent": USER_AGENT, "Accept": "text/*, application/*"})
-            res = conn.getresponse()
+    """Network adapter of `Http`, one hop: https GET with a timeout. The body is read only for a 2xx text answer and
+    only up to MAX_BODY_BYTES, so no media file is ever downloaded (AC-PIPE-04); 3xx raises Redirect, other non-2xx
+    HttpStatus (robots.txt tells "absent" from "failing" by it)."""
+    parts = urlsplit(url)
+    if parts.scheme != "https" or not parts.hostname:
+        raise ValueError("chỉ crawl qua https")
+    path = (parts.path or "/") + (f"?{parts.query}" if parts.query else "")
+    conn = http.client.HTTPSConnection(parts.hostname, parts.port, timeout=GET_TIMEOUT_SECONDS)
+    try:
+        conn.request("GET", path, headers={"User-Agent": USER_AGENT, "Accept": "text/*, application/*"})
+        res = conn.getresponse()
+        if res.status in (301, 302, 303, 307, 308):
             location = res.getheader("Location")
-            content_type = res.getheader("Content-Type", "")
-            raw = res.read(MAX_BODY_BYTES)
-        finally:
-            conn.close()
-        if res.status in (301, 302, 303, 307, 308) and location:
-            url = urljoin(url, location)
-            continue
+            if not location:
+                raise HttpStatus(res.status)
+            raise Redirect(urljoin(url, location))
         if not 200 <= res.status < 300:
             raise HttpStatus(res.status)
-        match = re.search(r"charset=([\w-]+)", content_type)
-        charset = match.group(1) if match else "utf-8"
-        try:
-            return content_type, raw.decode(charset, errors="replace")
-        except LookupError:  # unknown charset name in the header
-            return content_type, raw.decode("utf-8", errors="replace")
-    raise HttpStatus(310)  # too many redirects
+        content_type = res.getheader("Content-Type", "") or ""
+        if not content_type.lower().startswith(TEXT_TYPES):
+            raise NotText()
+        raw = res.read(MAX_BODY_BYTES)
+    finally:
+        conn.close()
+    match = re.search(r"charset=([\w-]+)", content_type)
+    charset = match.group(1) if match else "utf-8"
+    try:
+        return content_type, raw.decode(charset, errors="replace")
+    except LookupError:  # unknown charset name in the header
+        return content_type, raw.decode("utf-8", errors="replace")
 
 
 @dataclass

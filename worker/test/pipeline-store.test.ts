@@ -225,3 +225,28 @@ describe('pipeline state admin_blocked', () => {
     expect(state.admin_blocked).toEqual([])
   })
 })
+
+describe('pipeline store atomic publish', () => {
+  it('AC-PIPE-11: version đã có dòng pipeline_store thì đăng mẻ full lỗi, không đổi version, batch_content, kho cũ', async () => {
+    const existing = JSON.stringify({ queue: [], asked_pairs: [], llm_cache: { pre: 'existing' } })
+    await env.DB.prepare('INSERT INTO pipeline_store (version, store_json, created_at) VALUES (?, ?, ?)')
+      .bind(61, existing, Date.now())
+      .run()
+
+    const res = await publish(61, 'full', sampleStore('clash'))
+    expect(res.status).toBeGreaterThanOrEqual(400)
+
+    const state = (await (await call(`${BASE}/state`)).json()) as { current_version: number | null }
+    expect(state.current_version).toBeNull()
+    const content = await env.DB.prepare('SELECT COUNT(*) AS n FROM batch_content WHERE version = ?')
+      .bind(61)
+      .first<{ n: number }>()
+    expect(content?.n).toBe(0)
+    const row = await env.DB.prepare('SELECT store_json FROM pipeline_store WHERE version = ?')
+      .bind(61)
+      .first<{ store_json: string }>()
+    expect(JSON.parse(row!.store_json)).toEqual(JSON.parse(existing))
+    const rows = await env.DB.prepare('SELECT COUNT(*) AS n FROM pipeline_store').first<{ n: number }>()
+    expect(rows?.n).toBe(1)
+  })
+})

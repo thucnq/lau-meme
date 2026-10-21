@@ -17,6 +17,15 @@ class LlmError(Exception):
     """A call still failed after its retries: the items of that call are treated as not safe."""
 
 
+class PartialAnswer(Exception):
+    """Some chunks were answered, others failed or hit the quota: usable now, never cached (AC-PIPE-10)."""
+
+    def __init__(self, answer: object, *, quota: bool = False) -> None:
+        super().__init__("partial answer")
+        self.answer = answer
+        self.quota = quota  # the missing part hit the quota (reported as "hết quota")
+
+
 class RateLimited(Exception):
     """A temporary 429: the same call is retried after an exponential backoff."""
 
@@ -69,6 +78,7 @@ class CachedLlm:
     def __init__(self, call: Callable[[str, object], object], cache: dict) -> None:
         self._call = call
         self.cache = cache
+        self.quota_hit = False
 
     @staticmethod
     def key(step: str, payload: object) -> str:
@@ -76,7 +86,12 @@ class CachedLlm:
         return hashlib.sha256(text.encode("utf-8")).hexdigest()
 
     def ask(self, step: str, payload: object) -> object:
+        """A partial answer is returned but not cached: the next batch asks again for what is missing."""
         k = self.key(step, payload)
         if k not in self.cache:
-            self.cache[k] = self._call(step, payload)
+            try:
+                self.cache[k] = self._call(step, payload)
+            except PartialAnswer as partial:
+                self.quota_hit = self.quota_hit or partial.quota
+                return partial.answer
         return self.cache[k]
