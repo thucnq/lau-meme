@@ -46,8 +46,8 @@
   }
  },
  "green": {
-  "ts": "2026-10-21T11:21:31+00:00",
-  "commit": "34d224b",
+  "ts": "2026-10-21T13:06:29+00:00",
+  "commit": "2da5c20",
   "results": {
    "AC-ART-01": {
     "status": "PASS",
@@ -80,6 +80,14 @@
    "AC-ART-08": {
     "status": "PASS",
     "test": "art.ui.test.tsx#art: phóng lớn khi ghép ra món lần đầu > AC-ART-08: ghép ra phần tử chưa có thì lớp phủ hiện tên, emoji "
+   },
+   "AC-ART-VALIDATION": {
+    "status": "PASS",
+    "test": "art-upload.test.ts#art: PipelineStore.art_pending > AC-ART-VALIDATION: art_pending sai dạng "
+   },
+   "AC-ART-ABUSE": {
+    "status": "PASS",
+    "test": "art-upload.test.ts#art: PUT /pipeline/images/{key} > AC-ART-ABUSE: token pipeline bị lộ cũng không ghi đè được ảnh có sẵn bằng nội dung khác hay ghi khóa giả"
    }
   }
  }

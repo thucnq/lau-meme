@@ -14,6 +14,7 @@ No network, no sleeping, no real clock. Imports of production names happen insid
 
 import hashlib
 import io
+import itertools
 import re
 
 import pytest
@@ -24,6 +25,8 @@ MEME2 = "Meme Thử Hai"
 HINT = "con ốc sên đội tờ lịch"
 HINT2 = "chú mèo ôm cái laptop"
 HINTS = {MEME: HINT, MEME2: HINT2}
+MANY_NAMES = [f"Meme Ảnh {n:02d}" for n in range(22)]
+ALL_NAMES = [MEME, MEME2, *MANY_NAMES]
 KEY_RE = re.compile(r"^[0-9a-f]{12}\.webp$")
 
 
@@ -50,11 +53,13 @@ class ArtClient(FakeClient):
         return self.exists or any(k == key for k, _ in self.puts)
 
 
-def png_64() -> bytes:
+def png_64(prompt: str = "") -> bytes:
+    """A 64x64 PNG whose colour comes from sha256(prompt): same prompt, same image; other prompt, other image."""
     from PIL import Image
 
+    r, g, b = hashlib.sha256(prompt.encode("utf-8")).digest()[:3]
     out = io.BytesIO()
-    Image.new("RGB", (64, 64), (30, 140, 90)).save(out, format="PNG")
+    Image.new("RGB", (64, 64), (r, g, b)).save(out, format="PNG")
     return out.getvalue()
 
 
@@ -69,7 +74,7 @@ class Draw:
         self.prompts.append(prompt)
         if self.exc is not None:
             raise self.exc
-        return png_64()
+        return png_64(prompt)
 
 
 class Check:
@@ -91,7 +96,20 @@ def llm_with_hints():
             d["image_hint"] = HINTS.get(item["name"], f"hình {item['name']}")
         return out
 
-    return make_llm(describe=describe)
+    def link(items):
+        # A pair makes one result only (AC-INV-02): give each meme its own pair, stable across batches.
+        out = []
+        for item in items:
+            cands = item.get("candidates") or []
+            k = ALL_NAMES.index(item["name"]) if item["name"] in ALL_NAMES else len(ALL_NAMES)
+            if len(cands) >= 2 * k + 2:
+                pairs = [[cands[2 * k], cands[2 * k + 1]]]
+            else:
+                pairs = [list(p) for p in itertools.islice(itertools.combinations(cands, 2), k, k + 1)]
+            out.append({"key": item["key"], "pairs": pairs})
+        return out
+
+    return make_llm(describe=describe, link=link)
 
 
 def run(client, reporter, names, art, batch_at=T):
@@ -277,7 +295,7 @@ def test_ac_art_03_khong_co_adapter_ve_thi_meme_vao_cho_ve_va_issue_canh_bao_wor
 
 def test_ac_art_03_vuot_20_anh_moi_dot_thi_phan_du_cho_ve():
     """AC-ART-03: 22 meme mới trong một đợt: đúng 20 lần vẽ và tải lên, 2 meme còn lại vào art_pending."""
-    names = [f"Meme Ảnh {n:02d}" for n in range(22)]
+    names = MANY_NAMES
     client, draw = ArtClient(), Draw()
     outcome = run(client, FakeReporter(), names, art_adapters(draw, Check()))
 

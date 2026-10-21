@@ -5,6 +5,7 @@ import { createDiscovery, listDiscoveries, putBannedTerms } from './features/dis
 import { getSession, signInWithGoogle, signOut } from './features/auth/auth'
 import { getDailyLeaderboard, getDailyPeriodLeaderboard, getMyStreak, getStreakLeaderboard, submitDailyResult } from './features/daily/daily'
 import { getPipelineState, getPipelineStore, patchBatchRun, publishBatch, rollbackBatch } from './features/pipeline/batches'
+import { putPipelineImage } from './features/pipeline/images'
 import { cleanup } from './features/player/cleanup'
 import { createConsent, deleteMyData, getMyData, putNickname } from './features/player/me'
 import { createReport, getBlocklist } from './features/report/report'
@@ -53,6 +54,7 @@ const routes: Route[] = [
   { pattern: /^\/api\/pipeline\/batches\/([^/]+)$/, methods: { PATCH: pipelineOnly(patchBatchRun) } },
   { pattern: /^\/api\/pipeline\/rollback$/, methods: { POST: pipelineOnly(rollbackBatch) } },
   { pattern: /^\/api\/pipeline\/banned-terms\/([^/]+)$/, methods: { PUT: pipelineOnly(putBannedTerms) } },
+  { pattern: /^\/api\/pipeline\/images\/([^/]+)$/, methods: { PUT: pipelineOnly(putPipelineImage) } },
   { pattern: /^\/api\/pipeline\/state$/, methods: { GET: pipelineOnly(getPipelineState) } },
   { pattern: /^\/api\/pipeline\/store$/, methods: { GET: pipelineOnly(getPipelineStore) } },
 ]

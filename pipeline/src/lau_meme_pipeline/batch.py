@@ -17,6 +17,7 @@ from pathlib import Path
 from typing import Protocol
 from urllib.parse import urlsplit
 
+from lau_meme_pipeline.art import ArtAdapters, ArtItem, ArtResult, UploadFailed, draw_images, image_key, to_webp_256
 from lau_meme_pipeline.crawl import Http, crawl
 from lau_meme_pipeline.daily import build_daily_block, select_daily
 from lau_meme_pipeline.full import run_full
@@ -147,6 +148,7 @@ def _content(store: ContentStore, daily_id: str) -> dict:
     return {
         "elements": [
             {"id": e.id, "name": e.name, "fold": e.fold, "emoji": e.emoji, "depth": e.depth, "origin": e.origin}
+            | ({"image_key": e.image_key} if e.image_key else {})
             for e in elements
         ],
         "recipes": [{"id": r.id, "a": r.a, "b": r.b, "result": r.result} for r in recipes],
@@ -197,6 +199,7 @@ def _render_report(
     miss: tuple[float, float] | None = None,
     quota_hit: bool = False,
     store_bytes: int | None = None,
+    art_report: Mapping | None = None,
 ) -> tuple[str, str]:
     """Title shows the dish's emoji only, never its name (AC-PIPE-14)."""
     status = "error" if failed_step else "success"
@@ -226,6 +229,7 @@ def _render_report(
             if store_bytes is not None
             else []
         ),
+        *_art_lines(art_report),
         f"- Món đặc biệt: {emoji or '-'}",
     ]
     # Only the count: the words themselves are secret (ADR 0005).
@@ -271,6 +275,45 @@ class _CountedLlm(Mapping[str, Callable]):
         return calls if isinstance(calls, int) else self.n
 
 
+def _art_lines(report: Mapping | None) -> list[str]:
+    """AC-ART-02/03: drawn, emoji fallbacks, waiting, rejections by reason (ADR 0012)."""
+    if report is None:
+        return []
+    calls = f" · {report['calls']} lượt gọi Workers AI" if report.get("calls") is not None else ""
+    lines = [
+        f"- Ảnh: vẽ được {report['drawn']} · về emoji {report['fallback']} · chờ vẽ {report['pending']}"
+        f" · {report['draws']} lần vẽ{calls}"
+    ]
+    if report.get("rejections"):
+        lines.append("- Ảnh bị loại: " + ", ".join(f"{k} {v}" for k, v in report["rejections"].items()))
+    if report.get("errors"):
+        lines.append("- Ảnh lỗi: " + ", ".join(f"{k} {v}" for k, v in report["errors"].items()))
+    if report.get("missing"):
+        lines.append("- ⚠️ Chưa vẽ ảnh: thiếu WORKERS_AI_TOKEN / CLOUDFLARE_ACCOUNT_ID (ADR 0012), phần tử mới chờ vẽ")
+    return lines
+
+
+def _drawer(art: ArtAdapters | None, client: BatchClient) -> Callable[[list[ArtItem]], ArtResult]:
+    """The `draw` of run_full (ADR 0012). Without adapters nothing is drawn and every element with a hint waits."""
+
+    def save(image: bytes) -> str:
+        webp = to_webp_256(image)  # decode errors count as a failed draw (art.draw_images)
+        key = image_key(webp)
+        try:
+            if not client.image_exists(key):
+                client.put_image(key, webp)
+        except Exception as exc:
+            raise UploadFailed(type(exc).__name__) from None
+        return key
+
+    if art is None:
+        return lambda items: ArtResult(
+            fallback=[i.id for i in items if not i.image_hint.strip()],
+            pending=[i.id for i in items if i.image_hint.strip()],
+        )
+    return lambda items: draw_images(items, art.generate, art.check, save)
+
+
 def _send_aliases(client: BatchClient, state: Mapping, new_aliases: frozenset[str], log: Callable[[str], None]) -> None:
     """AC-MOD-06, after a successful publish only: a discarded batch never changes the alias list. The `mod` source
     is replaced whole, so the old aliases go with the new. A failure is logged; the next full batch sends them
@@ -297,6 +340,7 @@ def run_batch(
     llm: Mapping[str, Callable] | None = None,
     log: Callable[[str], None] = print,
     banned_words: Sequence[str] = (),
+    art: ArtAdapters | None = None,
 ) -> BatchOutcome:
     """Run one batch. Never raises: a failure posts an error run, keeps the current version and is reported.
     The core mode never touches `adapters`, `crawl_http` or `llm` (AC-PIPE-01); the full mode (ADR 0009) crawls,
@@ -307,6 +351,7 @@ def run_batch(
     store_out: dict | None = None
     new_aliases: frozenset[str] = frozenset()
     store_bytes: int | None = None
+    art_report: dict | None = None
     version: int | None = None
     emoji: str | None = None
     run_id: str | None = None
@@ -344,11 +389,19 @@ def run_batch(
                 lists,
                 blocked=frozenset(state["blocklist"]["elements"]),
                 daily_history=state.get("daily_history", []),
+                draw=_drawer(art, client),
             )
             store = full.content
             graph, manifest, store_out = full.graph, full.manifest, full.store
             emoji = manifest["daily"]["emoji"]
             quota_hit = bool(full.report.get("quota"))
+            art_report = full.report.get("art")
+            if art_report is not None:
+                art_report = {
+                    **art_report,
+                    "missing": art is None,
+                    "calls": getattr(art and art.generate, "calls", None),
+                }
             new_aliases = full.new_aliases
             stats["added"] = sum(1 for e in store_out["elements"] if e.get("added_version") == version)
             stats["queued"] = len(store_out.get("queue", []))
@@ -417,6 +470,7 @@ def run_batch(
                 miss,
                 quota_hit,
                 store_bytes,
+                art_report,
             )
         failed_step, version = step, None
         # Network errors may carry the API host: the public workflow log only gets their type.
@@ -451,6 +505,7 @@ def run_batch(
         miss,
         quota_hit,
         store_bytes,
+        art_report,
     )
 
 
@@ -481,6 +536,7 @@ def _finish(
     miss: tuple[float, float] | None = None,
     quota_hit: bool = False,
     store_bytes: int | None = None,
+    art_report: Mapping | None = None,
 ) -> BatchOutcome:
     title, report = _render_report(
         version=version,
@@ -493,6 +549,7 @@ def _finish(
         miss=miss,
         quota_hit=quota_hit,
         store_bytes=store_bytes,
+        art_report=art_report,
     )
     return BatchOutcome(
         ok=failed_step is None,
@@ -545,6 +602,17 @@ class _Https:
         self.tls, self.host, self.port, self.prefix = parse_api_url(base_url)
         self.headers = {"User-Agent": "lau-meme-pipeline", "Content-Type": "application/json", **headers}
 
+    def send(self, method: str, path: str, body: bytes | None, headers: Mapping[str, str]) -> int:
+        """Raw request (images): only the status matters; the body is read and dropped."""
+        conn = open_connection(self.tls, self.host, self.port)
+        try:
+            conn.request(method, self.prefix + path, body=body, headers={**self.headers, **headers})
+            res = conn.getresponse()
+            res.read()
+            return res.status
+        finally:
+            conn.close()
+
     def request(self, method: str, path: str, body: Mapping | None = None) -> dict:
         conn = open_connection(self.tls, self.host, self.port)
         try:
@@ -580,6 +648,15 @@ class HttpBatchClient:
 
     def put_banned_terms(self, source: str, terms: list[str]) -> None:
         self.http.request("PUT", f"/api/pipeline/banned-terms/{source}", {"terms": terms})
+
+    def put_image(self, key: str, data: bytes) -> None:
+        """ADR 0012: the Worker checks the key against the content hash before writing R2."""
+        status = self.http.send("PUT", f"/api/pipeline/images/{key}", bytes(data), {"Content-Type": "image/webp"})
+        if not 200 <= status < 300:
+            raise RuntimeError(f"PUT ảnh: HTTP {status}")
+
+    def image_exists(self, key: str) -> bool:
+        return self.http.send("HEAD", f"/img/{key}", None, {}) == 200
 
 
 class GitHubIssues:
@@ -620,6 +697,7 @@ def main(argv: list[str], *, client=None, reporter=None, now: Callable[[], datet
     adapters: list = []
     crawl_http: Http | None = None
     llm = None
+    art: ArtAdapters | None = None
     if args.mode == "full":  # ADR 0009/0011; without the key run_batch fails at step "llm" before any network call
         from lau_meme_pipeline.crawl import default_adapters, http_get
         from lau_meme_pipeline.gemini import GeminiSteps
@@ -628,6 +706,15 @@ def main(argv: list[str], *, client=None, reporter=None, now: Callable[[], datet
         crawl_http = Http(http_get)
         key = os.environ.get("GEMINI_API_KEY", "")
         llm = GeminiSteps(key, os.environ.get("GEMINI_MODEL", "")) if key else None
+        ai_token, account = os.environ.get("WORKERS_AI_TOKEN", ""), os.environ.get("CLOUDFLARE_ACCOUNT_ID", "")
+        if key and ai_token and account:  # ADR 0012; without them the batch runs and new elements wait
+            from lau_meme_pipeline.gemini import GeminiImageCheck
+            from lau_meme_pipeline.workers_ai import WorkersAiImages
+
+            art = ArtAdapters(
+                generate=WorkersAiImages(account, ai_token, os.environ.get("WORKERS_AI_MODEL", "")),
+                check=GeminiImageCheck(key, os.environ.get("GEMINI_MODEL", "")),
+            )
     outcome = run_batch(
         mode=args.mode,
         batch_at=batch_at,
@@ -638,6 +725,7 @@ def main(argv: list[str], *, client=None, reporter=None, now: Callable[[], datet
         crawl_http=crawl_http,
         llm=llm,
         banned_words=banned_words,
+        art=art,
     )
     print(outcome.report_title)
     print(outcome.report_body, end="")

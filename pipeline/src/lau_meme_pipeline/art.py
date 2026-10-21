@@ -24,8 +24,25 @@ STYLE_PROMPT = (
 )
 REJECT_REASONS = ("real_face", "logo", "copyright", "text", "banned_category")
 MAX_DRAWS = 2  # one draw + one redraw, then the emoji (AC-ART-02)
+MAX_PER_BATCH = 20  # chosen 2026-10-21 (ADR 0012): the rest waits for the next batch
 SIZE = 256
 R2_PREFIX = "img/"
+# Untrusted bytes from the model (ADR 0012): bounded before and while decoding.
+MAX_INPUT_BYTES = 8 * 1024 * 1024
+MAX_PIXELS = 4096 * 4096
+INPUT_FORMATS = ("PNG", "JPEG", "WEBP")
+
+
+class UploadFailed(Exception):
+    """Saving a passed image failed for a reason outside the image (network, R2): retry the element next batch."""
+
+
+@dataclass(frozen=True)
+class ArtAdapters:
+    """The network side of drawing (ADR 0012): Workers AI `generate(prompt) -> bytes`, the Gemini image `check`."""
+
+    generate: Callable[[str], bytes]
+    check: Callable[[bytes], str | None]
 
 
 @dataclass(frozen=True)
@@ -41,6 +58,7 @@ class ArtResult:
     fallback: list[str] = field(default_factory=list)
     pending: list[str] = field(default_factory=list)
     rejections: dict[str, int] = field(default_factory=dict)
+    errors: dict[str, int] = field(default_factory=dict)
     draws: int = 0
 
 
@@ -70,27 +88,50 @@ def draw_images(
     generate: Callable[[str], bytes],
     check: Callable[[bytes], str | None],
     save: Callable[[bytes], str],
+    *,
+    limit: int = MAX_PER_BATCH,
 ) -> ArtResult:
-    """Draw, redraw once on a violation, else fall back to the emoji; on quota the rest wait (AC-ART-02/03)."""
+    """Draw, redraw once on a violation, else fall back to the emoji (AC-ART-02). Quota, the per-batch limit and
+    errors outside the image (network, upload) leave the element waiting for the next batch (AC-ART-03); an image
+    that cannot be decoded counts as a failed draw. Never raises for one element."""
     result = ArtResult()
     rejections: Counter[str] = Counter()
+    errors: Counter[str] = Counter()
+    drawn_items = 0
     for index, art in enumerate(items):
+        if not art.image_hint.strip():
+            result.fallback.append(art.id)  # no approved hint: a generic picture would mislead (AC-ART-01)
+            continue
+        if drawn_items >= limit:
+            result.pending.append(art.id)
+            continue
+        drawn_items += 1
         prompt = build_prompt(art.image_hint, art.name)
         try:
             for _ in range(MAX_DRAWS):
                 image = generate(prompt)
                 result.draws += 1
                 reason = check(image)
-                if reason is None:
+                if reason is not None:
+                    rejections[reason if reason in REJECT_REASONS else "banned_category"] += 1
+                    continue
+                try:
                     result.images[art.id] = save(image)
                     break
-                rejections[reason] += 1
+                except UploadFailed:
+                    raise
+                except Exception:  # corrupt or oversized model output (Pillow): a failed draw
+                    errors["decode_error"] += 1
             else:
                 result.fallback.append(art.id)
         except QuotaExhausted:
-            result.pending.extend(i.id for i in items[index:])
+            result.pending.extend(i.id for i in items[index:] if i.image_hint.strip())
+            result.fallback.extend(i.id for i in items[index + 1 :] if not i.image_hint.strip())
             break
+        except Exception:  # Workers AI / check / upload error for this element: try again next batch
+            result.pending.append(art.id)
     result.rejections = dict(rejections)
+    result.errors = dict(errors)
     return result
 
 
@@ -106,8 +147,14 @@ def order_for_drawing(pending: Iterable[ArtItem], new: Iterable[ArtItem]) -> lis
 
 
 def to_webp_256(data: bytes) -> bytes:
-    """Center-crop to a square and encode as a 256x256 WebP (AC-ART-04)."""
-    with Image.open(io.BytesIO(data)) as source:
+    """Center-crop to a square and encode as a 256x256 WebP (AC-ART-04). The input is untrusted: size, format and
+    pixel count are bounded (Pillow raises DecompressionBombError above MAX_PIXELS)."""
+    if len(data) > MAX_INPUT_BYTES:
+        raise ValueError("ảnh đầu vào quá lớn")
+    Image.MAX_IMAGE_PIXELS = MAX_PIXELS
+    with Image.open(io.BytesIO(data), formats=INPUT_FORMATS) as source:
+        if source.width * source.height > MAX_PIXELS:
+            raise ValueError("ảnh quá nhiều điểm ảnh")
         image = ImageOps.fit(source.convert("RGBA"), (SIZE, SIZE), Image.Resampling.LANCZOS)
     out = io.BytesIO()
     image.save(out, format="WEBP", quality=85, method=6)
