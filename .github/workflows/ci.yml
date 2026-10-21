@@ -86,6 +86,9 @@ jobs:
       - uses: actions/setup-node@v5
         with: { node-version: '22' }
       - run: npm --prefix web ci && npm --prefix worker ci
+      - name: Chromium for web browser tests (AC-GAME-18)
+        working-directory: web
+        run: npx playwright install --with-deps --only-shell chromium
       - name: Web
         working-directory: web
         run: npm run typecheck && npm run lint && npx vitest run --coverage && npm run build

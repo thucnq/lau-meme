@@ -54,12 +54,27 @@ function readTheme(): 'light' | 'dark' {
 
 const newUid = (): string => crypto.randomUUID()
 
-/** Where the n-th item lands when it comes out of the pot. */
-function slotPosition(n: number): { x: number; y: number } {
-  return { x: 24 + (n % 5) * 96, y: 24 + (Math.floor(n / 5) % 5) * 72 }
+const CHIP_HALF = { x: 40, y: 16 } // drop point is the chip centre, like the drag ghost
+const SLOT = { x: 24, y: 24, dx: 96, dy: 72 }
+
+type SlotGrid = { cols: number; rows: number }
+
+/** Landing spots that fit on the table above the pot; 5 × 5 while the table has no layout (jsdom). */
+function slotGrid(table: HTMLElement | null, pot: HTMLElement | null): SlotGrid {
+  const [width, height] = [table?.clientWidth ?? 0, pot?.offsetTop ?? 0]
+  if (!width || !height) return { cols: 5, rows: 5 }
+  const fit = (room: number, start: number, chip: number, step: number) =>
+    Math.max(1, Math.floor((room - start - chip) / step) + 1)
+  return {
+    cols: fit(width, SLOT.x, 2 * CHIP_HALF.x, SLOT.dx),
+    rows: fit(height, SLOT.y, 2 * CHIP_HALF.y, SLOT.dy),
+  }
 }
 
-const CHIP_HALF = { x: 40, y: 16 } // drop point is the chip centre, like the drag ghost
+/** Where the n-th item lands when it comes out of the pot. */
+function slotPosition(n: number, grid: SlotGrid): { x: number; y: number } {
+  return { x: SLOT.x + (n % grid.cols) * SLOT.dx, y: SLOT.y + (Math.floor(n / grid.cols) % grid.rows) * SLOT.dy }
+}
 
 function onTable(item: Item, x: number, y: number): TableItem {
   return { uid: newUid(), id: item.id, name: item.name, emoji: item.emoji, x: Math.round(x), y: Math.round(y) }
@@ -98,6 +113,7 @@ export function Game({ onDiscover, onItems, heirlooms = {}, onReport, blocklistR
   const [loadError, setLoadError] = useState(false)
   const [reloadKey, setReloadKey] = useState(0)
   const [slots, setSlots] = useState<[Item | null, Item | null]>([null, null])
+  const tableRef = useRef<HTMLElement>(null)
   const potRef = useRef<HTMLDivElement>(null)
   const [boiling, setBoiling] = useState(false)
   const boilingRef = useRef(false)
@@ -219,7 +235,8 @@ export function Game({ onDiscover, onItems, heirlooms = {}, onReport, blocklistR
     setBoiling(true)
     setMiss(null)
     const outcome = combine(ctx, p, a.name, b.name)
-    const [pa, pb] = [slotPosition(p.table.length), slotPosition(p.table.length + 1)]
+    const grid = slotGrid(tableRef.current, potRef.current)
+    const [pa, pb] = [slotPosition(p.table.length, grid), slotPosition(p.table.length + 1, grid)]
     later(() => {
       outcome
         .then((out) => {
@@ -419,13 +436,13 @@ export function Game({ onDiscover, onItems, heirlooms = {}, onReport, blocklistR
             Dọn bàn
           </button>
           <button type="button" onClick={() => setConfirmReset(true)}>
-            Chơi lại từ đầu
+            Chơi lại <span className="wide-only">từ đầu</span>
           </button>
           <button type="button" onClick={() => setTutorialOpen(true)} title="Hướng dẫn">
             ?
           </button>
-          <button type="button" onClick={toggleTheme} aria-label="Chuyển chế độ sáng/tối">
-            {theme === 'dark' ? '☀️' : '🌙'}
+          <button type="button" className="icon-button" onClick={toggleTheme} aria-label="Chuyển chế độ sáng/tối">
+            <ThemeIcon dark={theme === 'dark'} />
           </button>
         </div>
       </header>
@@ -449,7 +466,7 @@ export function Game({ onDiscover, onItems, heirlooms = {}, onReport, blocklistR
       )}
 
       <div className="game-board">
-        <section className="game-table" data-testid="table" aria-label="Mặt bàn">
+        <section ref={tableRef} className="game-table" data-testid="table" aria-label="Mặt bàn">
           {table.map((t) => (
             <div
               key={t.uid}
@@ -547,7 +564,7 @@ export function Game({ onDiscover, onItems, heirlooms = {}, onReport, blocklistR
                     onKeyDown={(e) => e.stopPropagation()}
                     onClick={() => onReport({ id: it.id, name: it.name, image_key: it.image_key })}
                   >
-                    ⚑
+                    <FlagIcon />
                   </button>
                 )}
               </li>
@@ -598,5 +615,49 @@ export function Game({ onDiscover, onItems, heirlooms = {}, onReport, blocklistR
         </div>
       )}
     </div>
+  )
+}
+
+/** Outline sun (switch to light) or moon (switch to dark), drawn in the text colour. */
+function ThemeIcon({ dark }: { dark: boolean }) {
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      aria-hidden="true"
+    >
+      {dark ? (
+        <>
+          <circle cx="12" cy="12" r="4" />
+          <path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" />
+        </>
+      ) : (
+        <path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z" />
+      )}
+    </svg>
+  )
+}
+
+/** Outline flag for the "Báo cáo" button on plate items. */
+function FlagIcon() {
+  return (
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M5 21V4M5 4h11l-2 4 2 4H5" />
+    </svg>
   )
 }

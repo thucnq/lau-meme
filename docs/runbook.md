@@ -8,10 +8,13 @@ Không bí mật nào nằm trong repo (repo có thể public).
 | `ADMIN_TOKEN` | Cloudflare secret của Worker (mỗi môi trường một giá trị) + trình quản lý mật khẩu của người quản trị | `docs/dev/huong-dan-tai-khoan.md` mục 4.2 |
 | `PIPELINE_TOKEN` | Cloudflare secret của Worker **và** GitHub Environment secret (`staging`, `production`, `production-no-approval`) - hai nơi phải cùng giá trị | `docs/dev/huong-dan-tai-khoan.md` mục 4.2 |
 | `IP_HASH_KEY` | Cloudflare secret của Worker (mỗi môi trường một giá trị) | `docs/dev/huong-dan-tai-khoan.md` mục 4.2 |
+| `ACCOUNT_HASH_KEY` | Cloudflare secret của Worker (mỗi môi trường một giá trị), băm `sub` Google thành `account.sub_hash` (ADR 0010) | `docs/dev/huong-dan-tai-khoan.md` mục 4.2 |
 | `API_BASE_URL`, `BANNED_WORDS` | GitHub Environment secret | `docs/dev/huong-dan-tai-khoan.md` mục 4.3 |
 | `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID` | GitHub Secrets | Settings → Secrets and variables → Actions |
 | Khóa API của pipeline (LLM, nguồn dữ liệu) | GitHub Secrets | như trên |
 | Biến chạy cục bộ | `worker/.dev.vars` (gitignore) | chép từ `worker/.dev.vars.example` |
+
+`GOOGLE_CLIENT_ID` không phải bí mật: là biến thường trong `worker/wrangler.jsonc` (`vars`), mỗi môi trường một Client ID. Đăng nhập Google dùng Client ID này để kiểm ID token.
 
 ## Môi trường
 Game chạy dưới đường dẫn con (ADR 0007). Tiền tố nằm ở `base-path.json`.
@@ -41,6 +44,7 @@ Cấu hình tài khoản lần đầu (DNS, Redirect Rule, SSL, deploy productio
 - Xem dữ liệu: `npx wrangler d1 execute DB --env staging --remote --command "select count(*) from app_meta"`.
 - Dọn dữ liệu cá nhân (AC-PRIV-06): Cron Trigger của Worker `0 20 * * *` (03:00 GMT+7), khai báo cả production lẫn `env.staging` trong `worker/wrangler.jsonc`. Mỗi lần chạy ghi 1 dòng log `cleanup {...}` chỉ có số dòng (IP băm > 7 ngày đặt NULL, sự kiện > 90 ngày, bộ đếm hết hạn, audit > 12 tháng, đồng ý của UUID đã xóa > 1 năm).
 - Từ cấm cho nickname (ADR 0005, AC-DISC-03): mỗi mẻ, pipeline đọc GitHub Secret `BANNED_WORDS` (mỗi dòng một từ) và thay toàn bộ nguồn `wordlist` trong D1; secret rỗng thì giữ nguyên danh sách cũ. Workflow `batch.yml` phải truyền `BANNED_WORDS: ${{ secrets.BANNED_WORDS }}` vào bước "Mẻ nhúng" (người sửa - workflow được guard bảo vệ). Log và báo cáo đợt không bao giờ in từ cấm.
+- Phiên đăng nhập (ADR 0010): phiên hết hạn sau 90 ngày không dùng; cùng Cron `0 20 * * *` xóa các dòng `session` đã hết hạn. Bảng xếp hạng chỉ đọc phiên, không gia hạn.
 - Đổi nội dung chính sách (`web/src/privacy/PolicyPage.tsx`): tăng `POLICY_VERSION` trong `worker/wrangler.jsonc` (cả staging) và `POLICY.version` trên trang ⇒ mọi người chơi được hỏi đồng ý lại (AC-PRIV-09).
 
 ## Sự cố thường gặp
@@ -56,3 +60,5 @@ Cấu hình tài khoản lần đầu (DNS, Redirect Rule, SSL, deploy productio
 | Trang quản trị báo "Thiếu hoặc sai token" dù dán đúng | Chưa đặt `ADMIN_TOKEN` cho môi trường đó, hoặc dán token của môi trường khác | `npx wrangler secret list [--env staging]` phải có `ADMIN_TOKEN`; đặt lại theo mục 4.2 |
 | Trang quản trị trả 429 "Thử sai quá nhiều lần" | 5 lần sai trong 1 phút từ cùng IP ⇒ khóa 15 phút, kể cả token đúng (AC-ADMIN-02) | Chờ hết `Retry-After`. Không có lệnh gỡ khóa; xóa dòng `admin-lock:%` trong `rate_counter` chỉ khi chắc không phải bị dò |
 | Pipeline báo `HTTP 404` khi đăng mẻ / rollback | Secret `API_BASE_URL` thiếu tiền tố | Đặt `https://dinoduct.fun/lau-meme` (staging: `https://staging.dinoduct.fun/lau-meme`) |
+| Đăng nhập Google trả 500, log có `ACCOUNT_HASH_KEY is not configured` hoặc `GOOGLE_CLIENT_ID is not configured` | Chưa đặt secret `ACCOUNT_HASH_KEY` hoặc biến `GOOGLE_CLIENT_ID` cho môi trường đó (Worker đóng, không mở phiên) | `npx wrangler secret list [--env staging]` phải có `ACCOUNT_HASH_KEY`; đặt theo `docs/dev/huong-dan-tai-khoan.md` mục 4.2; kiểm `vars` trong `worker/wrangler.jsonc` |
+| Đăng nhập Google luôn trả 401 | Client ID trên web khác `GOOGLE_CLIENT_ID` của Worker (sai `audience`), hoặc tên miền chưa có trong Authorized JavaScript origins của Google | Đối chiếu Client ID hai bên; thêm origin staging/production trong Google Cloud Console |

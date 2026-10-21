@@ -31,3 +31,5 @@ htmlcov/
 # raw inputs that must not be published
 docs/input/client-data/
 pipeline/data/
+# vitest browser mode failure screenshots
+.vitest/
