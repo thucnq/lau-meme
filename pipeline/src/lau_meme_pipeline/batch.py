@@ -32,6 +32,7 @@ from lau_meme_pipeline.text import fold
 STEPS = ("state", "seed", "daily", "export", "check", "invariants", "banned", "publish", "report")
 GMT7 = timezone(timedelta(hours=7))
 TIMEOUT_SECONDS = 30
+GEMINI_RETRIES = 5  # backoff 2+4+...+32 s: about a minute, enough for a short Gemini overload (503)
 # AC-PIPE-13: public meme data only - never anything about players. ADR 0009 adds the fields moderation needs; the
 # rest are the structure of the steps (element names, recipe ids, counts - ADR 0011).
 ALLOWED_LLM_FIELDS = frozenset(
@@ -718,7 +719,7 @@ def main(argv: list[str], *, client=None, reporter=None, now: Callable[[], datet
         adapters = default_adapters(os.environ)
         crawl_http = Http(http_get)
         key = os.environ.get("GEMINI_API_KEY", "")
-        llm = GeminiSteps(key, os.environ.get("GEMINI_MODEL", "")) if key else None
+        llm = GeminiSteps(key, os.environ.get("GEMINI_MODEL", ""), max_retries=GEMINI_RETRIES) if key else None
         ai_token, account = os.environ.get("WORKERS_AI_TOKEN", ""), os.environ.get("CLOUDFLARE_ACCOUNT_ID", "")
         if key and ai_token and account:  # ADR 0012; without them the batch runs and new elements wait
             from lau_meme_pipeline.gemini import GeminiImageCheck
@@ -726,7 +727,7 @@ def main(argv: list[str], *, client=None, reporter=None, now: Callable[[], datet
 
             art = ArtAdapters(
                 generate=WorkersAiImages(account, ai_token, os.environ.get("WORKERS_AI_MODEL", "")),
-                check=GeminiImageCheck(key, os.environ.get("GEMINI_MODEL", "")),
+                check=GeminiImageCheck(key, os.environ.get("GEMINI_MODEL", ""), max_retries=GEMINI_RETRIES),
             )
     outcome = run_batch(
         mode=args.mode,

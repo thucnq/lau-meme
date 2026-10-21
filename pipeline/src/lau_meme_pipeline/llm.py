@@ -36,7 +36,23 @@ class PartialAnswer(Exception):
 
 
 class RateLimited(Exception):
-    """A temporary 429: the same call is retried after an exponential backoff."""
+    """A temporary failure (429 per minute, 5xx, timeout): the same call is retried after an exponential backoff.
+
+    `cause` names it for the batch report (HTTP status or error type, never the call's content); `retry_after` is
+    the wait the server asked for, in seconds, used when longer than the backoff."""
+
+    def __init__(self, cause: str = "quá giới hạn tần suất", retry_after: float | None = None) -> None:
+        super().__init__(cause)
+        self.cause = cause
+        self.retry_after = retry_after
+
+
+MAX_RETRY_AFTER = 60.0  # a server hint beyond this would stall the whole batch
+
+
+def retry_delay(exc: RateLimited, backoff: float) -> float:
+    """The longer of the backoff and the server's hint, the hint capped at MAX_RETRY_AFTER."""
+    return max(backoff, min(exc.retry_after or 0.0, MAX_RETRY_AFTER))
 
 
 @dataclass
@@ -72,12 +88,12 @@ def call_in_batches(
             try:
                 out.results.extend(call(chunk))
                 break
-            except RateLimited:
+            except RateLimited as exc:
                 if attempt == max_retries:
                     out.failed.extend(chunk)
-                    out.causes.append("quá giới hạn tần suất")
+                    out.causes.append(exc.cause)
                 else:
-                    sleep(base_delay * 2**attempt)
+                    sleep(retry_delay(exc, base_delay * 2**attempt))
             except QuotaExhausted:
                 out.quota_hit = True
                 out.pending = [x for c in chunks[n:] for x in c]
