@@ -15,3 +15,5 @@
 - Bảng xếp hạng Daily theo tuần và theo tháng (`GET /daily/leaderboard?period=...`, top 20). Xem bảng xếp hạng chỉ đọc phiên, không gia hạn phiên.
 - Streak của tài khoản: `GET /me/streak`; bảng xếp hạng streak (`GET /streaks/leaderboard`) xếp theo streak hiện tại.
 - Kết quả Daily ghi theo UUID trước đây không còn được ghi thêm; dữ liệu cũ chỉ có trên staging và không chuyển sang tài khoản.
+- Bàn chơi vừa màn hình: chiều cao bàn theo khung nhìn, nồi lẩu nằm trọn trong màn hình đầu tiên (AC-GAME-18); vật phẩm rơi vào vùng bàn phía trên nồi. Trên điện thoại, thanh công cụ gom một hàng (nhãn "Chơi lại từ đầu" rút ngắn), tiêu đề một dòng, bỏ gradient tiêu đề và hiệu ứng phát sáng quanh nồi; hộp xác nhận hiện ở đầu màn hình.
+- Đăng nhập Google trên staging: web chọn Client ID theo tên miền, `staging.dinoduct.fun` dùng client staging. Sửa lỗi `origin_mismatch` và sai `audience` trên staging. Production không đổi.

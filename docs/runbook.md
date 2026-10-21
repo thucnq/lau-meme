@@ -14,7 +14,10 @@ Không bí mật nào nằm trong repo (repo có thể public).
 | Khóa API của pipeline (LLM, nguồn dữ liệu) | GitHub Secrets | như trên |
 | Biến chạy cục bộ | `worker/.dev.vars` (gitignore) | chép từ `worker/.dev.vars.example` |
 
-`GOOGLE_CLIENT_ID` không phải bí mật: là biến thường trong `worker/wrangler.jsonc` (`vars`), mỗi môi trường một Client ID. Đăng nhập Google dùng Client ID này để kiểm ID token.
+`GOOGLE_CLIENT_ID` không phải bí mật: là biến thường trong `worker/wrangler.jsonc` (`vars`), mỗi môi trường một Client ID. Worker dùng Client ID này để kiểm `aud` của ID token.
+
+Web không đọc Client ID từ Worker. `web/src/auth/config.ts` giữ hai Client ID và chọn theo tên miền: `staging.dinoduct.fun` dùng Client ID staging, mọi tên miền khác dùng Client ID production. Biến build `VITE_GOOGLE_CLIENT_ID` (nếu đặt khi build) ghi đè cả hai. Đổi Client ID thì phải sửa đồng thời `wrangler.jsonc` và `web/src/auth/config.ts`.
+> TODO(doc): `localhost` (origin đã khai trên client staging theo `docs/dev/huong-dan-tai-khoan.md` mục 7.3) rơi vào nhánh production của `clientIdFor`. Cần xác nhận cách chạy đăng nhập Google trên máy local (đặt `VITE_GOOGLE_CLIENT_ID` khi build?).
 
 ## Môi trường
 Game chạy dưới đường dẫn con (ADR 0007). Tiền tố nằm ở `base-path.json`.
@@ -61,4 +64,5 @@ Cấu hình tài khoản lần đầu (DNS, Redirect Rule, SSL, deploy productio
 | Trang quản trị trả 429 "Thử sai quá nhiều lần" | 5 lần sai trong 1 phút từ cùng IP ⇒ khóa 15 phút, kể cả token đúng (AC-ADMIN-02) | Chờ hết `Retry-After`. Không có lệnh gỡ khóa; xóa dòng `admin-lock:%` trong `rate_counter` chỉ khi chắc không phải bị dò |
 | Pipeline báo `HTTP 404` khi đăng mẻ / rollback | Secret `API_BASE_URL` thiếu tiền tố | Đặt `https://dinoduct.fun/lau-meme` (staging: `https://staging.dinoduct.fun/lau-meme`) |
 | Đăng nhập Google trả 500, log có `ACCOUNT_HASH_KEY is not configured` hoặc `GOOGLE_CLIENT_ID is not configured` | Chưa đặt secret `ACCOUNT_HASH_KEY` hoặc biến `GOOGLE_CLIENT_ID` cho môi trường đó (Worker đóng, không mở phiên) | `npx wrangler secret list [--env staging]` phải có `ACCOUNT_HASH_KEY`; đặt theo `docs/dev/huong-dan-tai-khoan.md` mục 4.2; kiểm `vars` trong `worker/wrangler.jsonc` |
-| Đăng nhập Google luôn trả 401 | Client ID trên web khác `GOOGLE_CLIENT_ID` của Worker (sai `audience`), hoặc tên miền chưa có trong Authorized JavaScript origins của Google | Đối chiếu Client ID hai bên; thêm origin staging/production trong Google Cloud Console |
+| Đăng nhập Google luôn trả 401 | `GOOGLE_CLIENT_ID` của Worker khác Client ID mà web chọn cho tên miền đó trong `web/src/auth/config.ts` (sai `audience`) | Đối chiếu `vars.GOOGLE_CLIENT_ID` của môi trường (`wrangler.jsonc`) với Client ID trong `web/src/auth/config.ts`; staging phải dùng Client ID staging, production dùng Client ID production |
+| Nút Google báo `origin_mismatch` hoặc `The given origin is not allowed` | Origin của tên miền chưa có trong Authorized JavaScript origins của Client ID mà web chọn theo host (staging: client staging; còn lại: client production), hoặc origin mới chưa có hiệu lực | Thêm origin (chỉ scheme + host, không có `/lau-meme`) vào đúng client trong Google Cloud Console; đợi 5 phút tới vài giờ rồi thử lại (`huong-dan-tai-khoan.md` mục 7.3) |

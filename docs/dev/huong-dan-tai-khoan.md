@@ -271,7 +271,7 @@ Tạo **hai** client: một cho production, một cho staging và máy local. T�
 7. Origin mới có thể mất 5 phút tới vài giờ mới có hiệu lực. Nếu nút báo `origin_mismatch` hoặc `The given origin is not allowed` thì đợi rồi thử lại.
 
 ### 7.4. Đưa client ID vào cấu hình
-Client ID công khai nên để trong `worker/wrangler.jsonc` vars, mỗi môi trường một giá trị; web lấy từ Worker. Tên biến và cách web nhận do `/dk:design` chốt (ADR đăng nhập Google), dự kiến:
+Client ID công khai nên để trong `worker/wrangler.jsonc` vars (Worker kiểm `aud`), mỗi môi trường một giá trị. Web không lấy từ Worker: `web/src/auth/config.ts` giữ Client ID staging và production, chọn theo tên miền (`staging.dinoduct.fun` dùng staging, còn lại dùng production). Khi đổi Client ID, sửa cả hai nơi. Cấu hình `vars` của Worker:
 ```jsonc
 // top-level (production)
 "vars": { ..., "GOOGLE_CLIENT_ID": "<client ID của lau-meme-production>" },
