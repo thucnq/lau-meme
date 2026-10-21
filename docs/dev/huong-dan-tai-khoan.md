@@ -115,8 +115,8 @@ Rồi mở `https://laumeme-admin-staging.dinoduct.fun/`, dán `ADMIN_TOKEN`, th
 
 ### 4.3. GitHub Environments
 GitHub → Settings → Environments:
-- `production` (bật Required reviewers) và `production-no-approval` (không duyệt, cho cron mẻ nhúng): secret `API_BASE_URL` = `https://dinoduct.fun/lau-meme` (**có tiền tố**, không có `/` cuối), `PIPELINE_TOKEN` = giá trị production ở mục 4.2, `BANNED_WORDS` = danh sách từ cấm (mỗi dòng một từ).
-- `staging`: `API_BASE_URL` = `https://staging.dinoduct.fun/lau-meme`, `PIPELINE_TOKEN` = giá trị staging, `BANNED_WORDS`.
+- `production` (bật Required reviewers) và `production-no-approval` (không duyệt, cho cron mẻ nhúng): variable (Environment variables, không phải secret) `API_BASE_URL` = `https://dinoduct.fun/lau-meme` (**có tiền tố**, không có `/` cuối); secret `PIPELINE_TOKEN` = giá trị production ở mục 4.2, `BANNED_WORDS` = danh sách từ cấm (mỗi dòng một từ).
+- `staging`: variable `API_BASE_URL` = `https://staging.dinoduct.fun/lau-meme`; secret `PIPELINE_TOKEN` = giá trị staging, `BANNED_WORDS`.
 - `ADMIN_TOKEN` và `IP_HASH_KEY` **không** đặt ở GitHub: không workflow nào cần.
 
 Deploy (trên `main` đã merge, máy sạch):
