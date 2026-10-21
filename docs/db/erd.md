@@ -55,6 +55,11 @@ erDiagram
     TEXT server_json
     INTEGER created_at
   }
+  pipeline_store {
+    INTEGER version PK
+    TEXT store_json
+    INTEGER created_at
+  }
   block {
     TEXT kind PK
     TEXT target_id PK
@@ -199,6 +204,7 @@ erDiagram
 
   element ||--o{ recipe : "a / b / result"
   batch_content ||--|| batch_run : "version"
+  batch_content ||--o| pipeline_store : "version (mẻ full, ADR 0009)"
   element ||--o| discovery : "element_id"
   player ||--o{ consent : "player_id (giữ sau khi xóa)"
   player ||--o{ daily_result : "player_id (không ghi nữa, câu hỏi mở 34)"
@@ -219,4 +225,4 @@ erDiagram
 ## Ghi chú
 - Dữ liệu cá nhân: `player`, `consent`, `discovery.player_id`, `daily_result`, `streak`, `report.player_id`, `vote`, `event` (BRD 5.2). Xóa theo UUID: AC-PRIV-05.
 - Tài khoản Google (ADR 0010): `account`, `account_player`, `session`, `daily_entry`, `account_streak`; xóa `account` thì `ON DELETE CASCADE` xóa phần còn lại (AC-AUTH-06). Kết quả Daily, streak và nickname trên bảng xếp hạng thuộc tài khoản; `daily_result`/`streak` theo UUID cũ không còn được ghi.
-- Giữ dữ liệu (Cron Trigger hằng ngày, ADR 0004): `event` 90 ngày; `consent.ip_hash` 7 ngày; `admin_audit` 12 tháng; `consent` 1 năm sau dòng `erase`; `session` hết hạn (90 ngày không dùng); `batch_content` 14 version mới nhất.
+- Giữ dữ liệu (Cron Trigger hằng ngày, ADR 0004): `event` 90 ngày; `consent.ip_hash` 7 ngày; `admin_audit` 12 tháng; `consent` 1 năm sau dòng `erase`; `session` hết hạn (90 ngày không dùng); `batch_content` và `pipeline_store` 14 version mới nhất.

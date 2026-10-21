@@ -751,6 +751,32 @@ paths:
               schema: { $ref: '#/components/schemas/PipelineState' }
         '401': { $ref: '#/components/responses/Unauthorized' }
         default: { $ref: '#/components/responses/Problem' }
+  /pipeline/store:
+    get:
+      operationId: getPipelineStore
+      tags: [pipeline]
+      summary: Kho pipeline giai đoạn 2 của version hiện hành (hoặc version chỉ định)
+      description: |
+        Trả nguyên `store_json` mà mẻ `full` đã ghi cùng version đó (ADR 0009). Không có `version` thì là version
+        hiện hành; sau rollback là kho của version đã quay về. Version hiện hành chưa có kho (mẻ `core`, hoặc chưa
+        đăng mẻ nào) → `{}`. `version` chỉ định mà không còn lưu (ngoài 14 bản) → 404. Không có dữ liệu người chơi.
+      security: [{ PipelineToken: [] }]
+      x-ac: [AC-PIPE-07, AC-PIPE-10, AC-PIPE-13, AC-INV-05]
+      parameters:
+        - name: version
+          in: query
+          required: false
+          schema: { type: integer, minimum: 1 }
+      responses:
+        '200':
+          description: Kho (có thể rỗng)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PipelineStore' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        default: { $ref: '#/components/responses/Problem' }
   /pipeline/banned-terms/{source}:
     put:
       operationId: putBannedTerms
@@ -789,11 +815,13 @@ paths:
       summary: Đăng một version mới (nguyên tử) hoặc ghi một đợt lỗi
       description: |
         `status = success`: ghi danh mục phần tử/công thức, nội dung version, chuyển `current_version` và xóa
-        version ngoài 14 bản mới nhất - tất cả trong một `DB.batch` (lỗi ⇒ không đổi gì, AC-PIPE-11).
+        version ngoài 14 bản mới nhất - tất cả trong một `DB.batch` (lỗi ⇒ không đổi gì, AC-PIPE-11). Mẻ `full`
+        gửi kèm `store` (ADR 0009), ghi vào `pipeline_store` trong cùng `DB.batch` và xóa cùng 14 bản; mẻ `core`
+        không gửi `store`. Thân quá 5 MB, hoặc `store` dạng JSON quá 1,9 MB (D1 giới hạn 2 MB mỗi dòng) → 413.
         `version` phải lớn hơn mọi version đã đăng (409). `status = error`: chỉ ghi nhật ký đợt, không đổi bản
         đang chạy.
       security: [{ PipelineToken: [] }]
-      x-ac: [AC-PIPE-01, AC-PIPE-11, AC-GRAPH-04, AC-GRAPH-05, AC-SEED-01, AC-SEED-08, AC-DAILY-01, AC-DAILY-02, AC-INV-06]
+      x-ac: [AC-PIPE-01, AC-PIPE-10, AC-PIPE-11, AC-GRAPH-04, AC-GRAPH-05, AC-SEED-01, AC-SEED-08, AC-DAILY-01, AC-DAILY-02, AC-INV-06]
       requestBody:
         required: true
         content:
@@ -1601,13 +1629,17 @@ components:
     PipelineState:
       type: object
       additionalProperties: false
-      required: [current_version, blocklist, banned_aliases, daily_history, feedback]
+      required: [current_version, blocklist, banned_aliases, admin_blocked, daily_history, feedback]
       properties:
         current_version: { type: [integer, 'null'] }
         blocklist: { $ref: '#/components/schemas/Blocklist' }
         banned_aliases:
           type: array
           description: '`fold` do MOD sinh hoặc quản trị chặn (không gồm wordlist - pipeline đã có từ secret)'
+          items: { type: string }
+        admin_blocked:
+          type: array
+          description: Chỉ `fold` do quản trị chặn (nguồn `admin`), để báo cáo đợt đếm "đã bị chặn" (AC-MOD-10, ADR 0009)
           items: { type: string }
         daily_history:
           type: array
@@ -1631,6 +1663,37 @@ components:
               votes: { type: integer, minimum: 0 }
               nhat: { type: integer, minimum: 0 }
 
+    PipelineStore:
+      type: object
+      description: |
+        Kho pipeline giai đoạn 2 (ADR 0009). Worker chỉ lưu và trả lại, không đọc trường bên trong; chỉ pipeline
+        hiểu chi tiết. Chỉ dữ liệu meme công khai, không có dữ liệu người chơi (AC-PIPE-13).
+      additionalProperties: false
+      properties:
+        elements:
+          type: array
+          description: Phần tử trend (id, tên, emoji, mô tả, gợi ý, `hint_ok`, `image_hint_ok`, `held_until`, nguồn, `added_version`, `depth`)
+          items: { type: object }
+        recipes:
+          type: array
+          description: Công thức trend và bổ sung (id, a, b, result, score)
+          items: { type: object }
+        queue:
+          type: array
+          description: Meme chưa nối được hoặc dừng vì hết quota (khái niệm, `attempts`, `reason`)
+          items: { type: object }
+        asked_pairs:
+          type: array
+          description: Cặp đã hỏi LLM và bị loại, không hỏi lại (AC-PIPE-08)
+          items:
+            type: array
+            minItems: 2
+            maxItems: 2
+            items: { type: string }
+        llm_cache:
+          type: object
+          description: Phản hồi LLM của mẻ ghi, khóa = sha256(bước + payload) (AC-PIPE-10)
+          additionalProperties: true
     PublishBatchRequest:
       oneOf:
         - type: object
@@ -1647,6 +1710,7 @@ components:
             graph: { $ref: '#/components/schemas/Graph' }
             content: { $ref: '#/components/schemas/BatchContent' }
             stats: { $ref: '#/components/schemas/BatchStats' }
+            store: { $ref: '#/components/schemas/PipelineStore' }
         - type: object
           additionalProperties: false
           required: [status, batch_at, mode, failed_step, stats]
