@@ -1,0 +1,78 @@
+{
+ "red": {
+  "ts": "2026-10-21T03:21:19+00:00",
+  "commit": "ad12b84",
+  "results": {
+   "AC-ART-01": {
+    "status": "FAIL",
+    "test": "test_art#test_ac_art_01_ten_nam_trong_danh_sach_chan_bi_danh_khong_vao_prompt[\\xe1bc xyz]"
+   },
+   "AC-ART-02": {
+    "status": "FAIL",
+    "test": "test_art#test_ac_art_02_prompt_gui_ve_chua_goi_y_anh_va_phong_cach"
+   },
+   "AC-ART-03": {
+    "status": "FAIL",
+    "test": "test_art#test_ac_art_03_dot_sau_ve_bu_cac_phan_tu_cho_ve_va_het_cho"
+   },
+   "AC-ART-04": {
+    "status": "FAIL",
+    "test": "test_art#test_ac_art_04_phan_tu_luu_khoa_anh_va_graph_chua_khoa_trong_ket_qua_ma_hoa"
+   },
+   "AC-ART-05": {
+    "status": "FAIL",
+    "test": "art.test.ts#art: GET /img/{key} > AC-ART-05: khóa sai định dạng không chạm tới R2 và không vào cache "
+   },
+   "AC-ART-06": {
+    "status": "FAIL",
+    "test": "art.ui.test.tsx#art: emoji trước, ảnh sau > AC-ART-06: phần tử khởi đầu "
+   },
+   "AC-ART-07": {
+    "status": "FAIL",
+    "test": "art.ui.test.tsx#art: ảnh bị chặn không được tải > AC-ART-07: chỉ ảnh của P bị chặn; phần tử khác có ảnh vẫn tải bình thường; phần tử P vẫn ở trên Đĩa "
+   },
+   "AC-ART-08": {
+    "status": "FAIL",
+    "test": "art.ui.test.tsx#art: phóng lớn khi ghép ra món lần đầu > AC-ART-08: chế độ Thử thách "
+   }
+  }
+ },
+ "green": {
+  "ts": "2026-10-21T11:21:31+00:00",
+  "commit": "34d224b",
+  "results": {
+   "AC-ART-01": {
+    "status": "PASS",
+    "test": "test_art#test_ac_art_01_prompt_la_goi_y_anh_cong_doan_phong_cach_chung"
+   },
+   "AC-ART-02": {
+    "status": "PASS",
+    "test": "test_art#test_ac_art_02_hai_lan_vi_pham_thi_ve_dung_hai_lan_roi_ve_emoji_va_dem_ly_do"
+   },
+   "AC-ART-03": {
+    "status": "PASS",
+    "test": "test_art#test_ac_art_03_het_han_muc_sau_5_trong_12_thi_7_con_lai_cho_ve"
+   },
+   "AC-ART-04": {
+    "status": "PASS",
+    "test": "test_art#test_ac_art_04_chuyen_webp_256x256"
+   },
+   "AC-ART-05": {
+    "status": "PASS",
+    "test": "art.test.ts#art: GET /img/{key} > AC-ART-05: ảnh tồn tại trả 200 image/webp, đúng byte, Cache-Control public immutable một năm"
+   },
+   "AC-ART-06": {
+    "status": "PASS",
+    "test": "art.ui.test.tsx#art: emoji trước, ảnh sau > AC-ART-06: phần tử có khóa ảnh hiện emoji ngay, kèm <img> trỏ tới /lau-meme/img/<khóa>"
+   },
+   "AC-ART-07": {
+    "status": "PASS",
+    "test": "art.ui.test.tsx#art: ảnh bị chặn không được tải > AC-ART-07: id phần tử có trong images của danh sách chặn thì chỉ hiện emoji, không <img>, không yêu cầu /img/..."
+   },
+   "AC-ART-08": {
+    "status": "PASS",
+    "test": "art.ui.test.tsx#art: phóng lớn khi ghép ra món lần đầu > AC-ART-08: ghép ra phần tử chưa có thì lớp phủ hiện tên, emoji "
+   }
+  }
+ }
+}

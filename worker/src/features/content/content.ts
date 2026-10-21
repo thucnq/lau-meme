@@ -53,3 +53,20 @@ export async function getGraph(req: Request, env: Env, ctx: ExecutionContext, pa
   ctx.waitUntil(cache.put(cacheKey, res.clone()))
   return res
 }
+
+const IMAGE_KEY = /^[0-9a-f]{12}\.webp$/
+
+/** GET /img/{key} - AC-ART-05: R2 object `img/<key>`, immutable (content-addressed), put into the Cache API. */
+export async function getImage(req: Request, env: Env, ctx: ExecutionContext, key: string): Promise<Response> {
+  if (!IMAGE_KEY.test(key)) return problem(400, 'Khóa ảnh không hợp lệ')
+  const url = new URL(req.url)
+  const cacheKey = new Request(url.origin + url.pathname, { method: 'GET' })
+  const cache = caches.default
+  const hit = await cache.match(cacheKey)
+  if (hit) return hit
+  const object = await env.IMG.get(`img/${key}`)
+  if (!object) return problem(404, 'Không tìm thấy ảnh')
+  const res = new Response(object.body, { headers: { 'content-type': 'image/webp', 'cache-control': IMMUTABLE } })
+  ctx.waitUntil(cache.put(cacheKey, res.clone()))
+  return res
+}

@@ -48,5 +48,5 @@
 ### AC-ART-08: Phóng lớn bất ngờ khi ghép ra món lần đầu (thêm 2026-10-20)
 - **Cho** thực khách ghép ra phần tử P chưa từng có trong Đĩa của mình (lần khám phá đầu tiên)
 - **Khi** kết quả hiện ra; rồi thực khách bấm vào lớp phủ, nhấn Esc, hoặc chờ đủ 2,5 s
-- **Thì** ảnh vẽ tay của P (hoặc emoji của P nếu P không có ảnh, ảnh bị chặn hay ảnh chưa tải xong - AC-ART-06/07) hiện phóng lớn giữa bàn với tên P, kèm hiệu ứng bật ra; lớp phủ tự thu nhỏ về chỗ món trên bàn sau 2,5 s hoặc khi bấm/Esc; không chặn thao tác kéo thả tiếp; ghép lại ra món đã có trong Đĩa thì không phóng lớn; có `prefers-reduced-motion` thì hiện tĩnh không có hiệu ứng; tên P được đọc qua `aria-live` (thời lượng và hành vi ở chế độ Thử thách - câu hỏi mở 31)
+- **Thì** ảnh vẽ tay của P (hoặc emoji của P nếu P không có ảnh, ảnh bị chặn hay ảnh chưa tải xong - AC-ART-06/07) hiện phóng lớn giữa bàn với tên P, kèm hiệu ứng bật ra; lớp phủ tự thu nhỏ về chỗ món trên bàn sau 2,5 s hoặc khi bấm/Esc; không chặn thao tác kéo thả tiếp; ghép lại ra món đã có trong Đĩa thì không phóng lớn; có `prefers-reduced-motion` thì hiện tĩnh không có hiệu ứng; tên P được đọc qua `aria-live`; ghép ra Món đặc biệt lần đầu trên bàn/nồi chính cũng phóng lớn như mọi món mới (chế độ Thử thách đã bỏ khi làm lại DAILY, cập nhật 2026-10-21 - câu hỏi mở 31)
 - Ưu tiên: Bắt buộc

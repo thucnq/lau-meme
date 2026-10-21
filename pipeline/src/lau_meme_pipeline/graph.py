@@ -57,7 +57,7 @@ def _plaintext(element: StoredElement) -> dict:
         "emoji": element.emoji,
         "depth": element.depth,
         "added_version": _added_version(element.batch),
-        "image_key": None,
+        "image_key": element.image_key,
     }
 
 

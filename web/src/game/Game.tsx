@@ -3,9 +3,11 @@
  * Drag and drop uses Pointer Events; the drop target is found with document.elementFromPoint.
  * Progress lives only in localStorage - this screen never sends a write request.
  */
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import type { PointerEvent as ReactPointerEvent } from 'react'
 import { getGraph, getManifest } from '../api'
+import { DiscoveryZoom } from '../art/DiscoveryZoom'
+import { ElementIcon } from '../art/ElementIcon'
 import { startManifestWatch } from '../daily/countdown'
 import { DailyPanel } from '../daily/DailyPanel'
 import { loadSolved, saveSolved, type SolvedDaily } from '../daily/solved'
@@ -118,6 +120,10 @@ export function Game({ onDiscover, onItems, heirlooms = {}, onReport, blocklistR
   const [boiling, setBoiling] = useState(false)
   const boilingRef = useRef(false)
   const [miss, setMiss] = useState<Miss | null>(null)
+  // First discovery shown large (AC-ART-08); `seq` remounts the overlay so each discovery gets its full 2,5 s.
+  const [zoom, setZoom] = useState<{ item: Item; seq: number } | null>(null)
+  const showZoom = useCallback((item: Item) => setZoom((z) => ({ item, seq: (z?.seq ?? 0) + 1 })), [])
+  const closeZoom = useCallback(() => setZoom(null), [])
   const [steam, setSteam] = useState<{ x: number; y: number } | null>(null)
   const [query, setQuery] = useState('')
   const [confirmReset, setConfirmReset] = useState(false)
@@ -246,7 +252,10 @@ export function Game({ onDiscover, onItems, heirlooms = {}, onReport, blocklistR
             const item = out.progress.items.find((i) => i.id === out.result.id)!
             commit({ ...out.progress, table: [...table, onTable(item, pa.x, pa.y)] })
             checkDaily(a.name, b.name, item)
-            if (out.isNew) onDiscoverRef.current?.({ a: a.name, b: b.name, result: item.name, id: item.id })
+            if (out.isNew) {
+              onDiscoverRef.current?.({ a: a.name, b: b.name, result: item.name, id: item.id })
+              showZoom(item)
+            }
           } else {
             commit({ ...out.progress, table: [...table, onTable(a, pa.x, pa.y), onTable(b, pb.x, pb.y)] })
             setMiss({ line: out.line, hint: out.hint })
@@ -279,8 +288,10 @@ export function Game({ onDiscover, onItems, heirlooms = {}, onReport, blocklistR
         const rest = table.filter((t) => t.uid !== target.uid)
         commit({ ...out.progress, table: [...rest, onTable(item, target.x, target.y)] })
         checkDaily(source.item.name, target.name, item)
-        if (out.isNew)
+        if (out.isNew) {
           onDiscoverRef.current?.({ a: source.item.name, b: target.name, result: item.name, id: item.id })
+          showZoom(item)
+        }
         setSteam({ x: target.x, y: target.y })
         later(() => setSteam(null), STEAM_MS)
       } else {
@@ -387,6 +398,7 @@ export function Game({ onDiscover, onItems, heirlooms = {}, onReport, blocklistR
     setBoiling(false)
     setSteam(null)
     setMiss(null)
+    setZoom(null)
     if (loaded) commit({ ...initialProgress(loaded.manifest, new Date()), tutorial_seen: true })
     else {
       progressRef.current = null
@@ -425,6 +437,9 @@ export function Game({ onDiscover, onItems, heirlooms = {}, onReport, blocklistR
   const plate = sortItems(filterItems(items, query), progress?.sort ?? 'newest')
   const table = progress ? visibleTable(progress, blocklist) : []
   const potState = !ready ? 'disabled' : boiling ? 'boiling' : 'idle'
+  // No image request before the block list is known, nor for a blocked image (AC-ART-07).
+  const imageOf = (item: Item | undefined): string | null =>
+    loaded && item?.image_key && !blocklist.images.includes(item.id) ? item.image_key : null
   const badge = (item: Item | undefined) => (item && isNew(item, version, blocklist) ? <span className="badge">MỚI</span> : null)
 
   return (
@@ -482,7 +497,7 @@ export function Game({ onDiscover, onItems, heirlooms = {}, onReport, blocklistR
                 uid: t.uid,
               })}
             >
-              <span aria-hidden="true">{t.emoji}</span> {t.name}
+              <ElementIcon emoji={t.emoji} imageKey={imageOf(byId.get(t.id))} /> {t.name}
               {badge(byId.get(t.id))}
             </div>
           ))}
@@ -510,6 +525,18 @@ export function Game({ onDiscover, onItems, heirlooms = {}, onReport, blocklistR
             </div>
             <span className="pot-body" aria-hidden="true" />
             <span className="pot-burner" aria-hidden="true" />
+          </div>
+          {zoom && (
+            <DiscoveryZoom
+              key={zoom.seq}
+              name={zoom.item.name}
+              emoji={zoom.item.emoji}
+              imageKey={imageOf(zoom.item)}
+              onClose={closeZoom}
+            />
+          )}
+          <div className="sr-only" aria-live="polite">
+            {zoom ? `Món mới: ${zoom.item.name}` : ''}
           </div>
           <div className="miss" aria-live="polite">
             {miss && <p data-testid="miss-line">{miss.line}</p>}
@@ -551,7 +578,7 @@ export function Game({ onDiscover, onItems, heirlooms = {}, onReport, blocklistR
                 }}
                 {...dragHandlers({ item: it, uid: null })}
               >
-                <span aria-hidden="true">{it.emoji}</span> {it.name}
+                <ElementIcon emoji={it.emoji} imageKey={imageOf(it)} /> {it.name}
                 {badge(it)}
                 {onReport && (
                   <button
