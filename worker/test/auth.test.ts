@@ -90,14 +90,19 @@ const b64 = (b: Uint8Array) => btoa(String.fromCharCode(...b))
 const b64url = (b: Uint8Array) => b64(b).replaceAll('+', '-').replaceAll('/', '_').replace(/=+$/, '')
 
 // ---------------------------------------------------------------------------- HTTP helpers
-async function raw(path: string, init: RequestInit, headers: Record<string, string>): Promise<Response> {
+async function raw(
+  path: string,
+  init: RequestInit,
+  headers: Record<string, string>,
+  envOverride: Record<string, unknown> = {},
+): Promise<Response> {
   const h = new Headers(init.headers)
   for (const [k, v] of Object.entries(headers)) h.set(k, v)
   if (init.body && !h.has('Content-Type')) h.set('Content-Type', 'application/json')
   const ctx = createExecutionContext()
   const res = await (worker as unknown as Handler).fetch(
     new Request(`https://example.com${path}`, { ...init, headers: h }),
-    { ...env, ACCOUNT_HASH_KEY: HASH_KEY, IP_HASH_KEY: IP_KEY, GOOGLE_CLIENT_ID: CLIENT_ID },
+    { ...env, ACCOUNT_HASH_KEY: HASH_KEY, IP_HASH_KEY: IP_KEY, GOOGLE_CLIENT_ID: CLIENT_ID, ...envOverride },
     ctx,
   )
   await waitOnExecutionContext(ctx)
@@ -467,6 +472,58 @@ describe('auth', () => {
     expect(await accountIdOf(P2)).toBe(accountId)
     expect(await accountIdOf(P1)).toBe(accountId)
     expect(await count('account_player')).toBe(2)
+  })
+
+  it('AC-AUTH-04: rút đồng ý nickname ở bất kỳ máy nào xóa nickname của tài khoản khỏi mọi nơi', async () => {
+    const sub = newSub()
+    const P1 = newPlayer()
+    const P2 = newPlayer()
+    const d1 = await login(sub, P1)
+    await login(sub, P2)
+    await grant(P1, 'nickname')
+    const nick = await raw(
+      api('/me/nickname'),
+      { method: 'PUT', body: JSON.stringify({ nickname: 'Lẩu Thủ' }) },
+      as(P1, undefined, d1.cookie),
+    )
+    expect(nick.status).toBe(200)
+
+    const withdraw = await raw(
+      api('/consents'),
+      { method: 'POST', body: JSON.stringify({ purpose: 'nickname', action: 'withdraw', policy_version: POLICY_VERSION }) },
+      as(P2),
+    )
+    expect(withdraw.status).toBe(201)
+
+    const row = await env.DB.prepare('SELECT nickname, nickname_fold FROM account').first<{
+      nickname: string | null
+      nickname_fold: string | null
+    }>()
+    expect(row!.nickname).toBeNull()
+    expect(row!.nickname_fold).toBeNull()
+    const s = await getSession(d1.cookie)
+    expect(s.status).toBe(200)
+    expect(((await s.json()) as SessionInfo).nickname).toBeNull()
+  })
+
+  it('AC-AUTH-03: thiếu GOOGLE_CLIENT_ID thì từ chối mọi ID token (đóng khi lỗi cấu hình)', async () => {
+    const p1 = newPlayer()
+    await grant(p1)
+    const tokens = [await makeToken({ aud: CLIENT_ID }), await makeToken({ aud: 'other-app' })]
+    let ip = 0
+    for (const t of tokens) {
+      const res = await raw(
+        api('/auth/google'),
+        { method: 'POST', body: JSON.stringify({ credential: t }) },
+        as(p1, `10.6.6.${++ip}`),
+        { GOOGLE_CLIENT_ID: '' },
+      )
+      expect(res.status).not.toBe(200)
+      expect([401, 500]).toContain(res.status)
+      expect(res.headers.get('set-cookie')).toBeNull()
+    }
+    expect(await count('account')).toBe(0)
+    expect(await count('session')).toBe(0)
   })
 
   // ------------------------------------------------------------------------ AC-AUTH-05
