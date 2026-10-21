@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { getManifest } from './api'
+import { AuthBar } from './auth/AuthBar'
 import { App } from './App'
 import { withBase } from './base'
 import { SendError, heirloomLine, listDiscoveries, submitDiscovery } from './disc/api'
@@ -112,6 +113,7 @@ function Home() {
         <MyDataPanel policyVersion={policyVersion} storage={storage} onErased={() => setBannerKey((k) => k + 1)} />
       )}
       <nav className="site-links">
+        {policyVersion !== null && <AuthBar policyVersion={policyVersion} storage={storage} />}
         <a href={withBase('chinh-sach')}>Chính sách quyền riêng tư</a>
         <button type="button" onClick={() => setMyDataOpen((open) => !open)} aria-expanded={myDataOpen}>
           Dữ liệu của tôi

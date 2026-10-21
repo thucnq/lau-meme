@@ -2,8 +2,10 @@ import { HttpError, ResponseError, json, readJson } from '../../http'
 import { fold } from '../../ids'
 import { playerId } from '../../player'
 import { ipHash, rateCounters, type Limit } from '../../ratelimit'
+import { clearedCookie, hasSessionCookie, readSession, sessionCookie } from '../../session'
 import { uuidv7 } from '../../uuid'
 import { fail, int, obj, oneOf } from '../../validate'
+import { accountStreakStatement, liveCurrent } from '../daily/daily'
 import { bannedKey } from '../disc/disc'
 import { policyVersion } from '../content/content'
 import {
@@ -83,20 +85,40 @@ export async function putNickname(req: Request, env: Env): Promise<Response> {
     if (term !== '' && key.includes(term)) throw new HttpError(422, INVALID_NICKNAME)
   }
   const now = Date.now()
+  const nickFold = fold(nickname)
+  // Signed in: the account's nickname (leaderboards, every device - AC-AUTH-04); otherwise the UUID's. A fold is
+  // taken when another account or a UUID not linked to the same account holds it (checked in the write itself).
+  const session = await readSession(req, env)
+  const write = session
+    ? db
+        .prepare(
+          `UPDATE account SET nickname = ?, nickname_fold = ?, updated_at = ? WHERE id = ? AND NOT EXISTS (
+             SELECT 1 FROM player p WHERE p.nickname_fold = ?
+               AND p.id NOT IN (SELECT player_id FROM account_player WHERE account_id = ?))
+           RETURNING id`,
+        )
+        .bind(nickname, nickFold, now, session.accountId, nickFold, session.accountId)
+    : db
+        .prepare(
+          `INSERT INTO player (id, nickname, nickname_fold, created_at, updated_at)
+           SELECT ?, ?, ?, ?, ? WHERE NOT EXISTS (
+             SELECT 1 FROM account a WHERE a.nickname_fold = ?
+               AND a.id NOT IN (SELECT account_id FROM account_player WHERE player_id = ?))
+           ON CONFLICT (id) DO UPDATE SET nickname = excluded.nickname, nickname_fold = excluded.nickname_fold,
+             updated_at = excluded.updated_at
+           RETURNING id`,
+        )
+        .bind(player, nickname, nickFold, now, now, nickFold, player)
+  let written: { id: string } | null
   try {
-    await db
-      .prepare(
-        `INSERT INTO player (id, nickname, nickname_fold, created_at, updated_at) VALUES (?, ?, ?, ?, ?)
-         ON CONFLICT (id) DO UPDATE SET nickname = excluded.nickname, nickname_fold = excluded.nickname_fold,
-           updated_at = excluded.updated_at`,
-      )
-      .bind(player, nickname, fold(nickname), now, now)
-      .run()
+    written = await write.first<{ id: string }>()
   } catch (err) {
     if (err instanceof Error && err.message.includes('UNIQUE')) throw new HttpError(409, 'Nickname đã có người dùng')
     throw err
   }
-  return json({ nickname })
+  if (!written) throw new HttpError(409, 'Nickname đã có người dùng')
+  const headers: Record<string, string> = session ? { 'Set-Cookie': sessionCookie(env, session.token) } : {}
+  return json({ nickname }, { headers })
 }
 
 type DailyRow = { version: number; steps: number; submitted_at: number; rank: number }
@@ -106,7 +128,11 @@ type StreakRow = { current: number; longest: number; last_day: string }
 export async function getMyData(req: Request, env: Env): Promise<Response> {
   const player = playerId(req)
   const db = env.DB
-  const [nick, discoveries, daily, streak, reports, votes, consents, events] = await limited(req, env, player, [
+  const session = await readSession(req, env)
+  const accountId = session?.accountId ?? ''
+  const now = Date.now()
+  const [nick, discoveries, daily, streak, reports, votes, consents, events, account, sessions, entries, accStreak] =
+    await limited(req, env, player, [
     db.prepare('SELECT nickname FROM player WHERE id = ?').bind(player),
     db.prepare('SELECT element_id, discovered_at FROM discovery WHERE player_id = ? ORDER BY discovered_at').bind(player),
     db
@@ -125,7 +151,22 @@ export async function getMyData(req: Request, env: Env): Promise<Response> {
       .prepare('SELECT purpose, action, policy_version, created_at FROM consent WHERE player_id = ? ORDER BY created_at, id')
       .bind(player),
     db.prepare('SELECT type, COUNT(*) AS n FROM event WHERE player_id = ? GROUP BY type').bind(player),
+    // the signed-in account (AC-AUTH-06): never its sub hash
+    db.prepare('SELECT nickname, created_at FROM account WHERE id = ?').bind(accountId),
+    db.prepare('SELECT COUNT(*) AS n FROM session WHERE account_id = ? AND expires_at > ?').bind(accountId, now),
+    db
+      .prepare(
+        `SELECT me.version, me.solve_ms, me.solved_at,
+           (SELECT COUNT(*) + 1 FROM daily_entry d WHERE d.version = me.version
+              AND (d.solved_at < me.solved_at OR (d.solved_at = me.solved_at AND d.seq < me.seq))) AS rank
+         FROM daily_entry me WHERE me.account_id = ? ORDER BY me.version`,
+      )
+      .bind(accountId),
+    accountStreakStatement(db, accountId),
   ])
+  const acc = rows<{ nickname: string | null; created_at: number }>(account)[0]
+  const accRow = rows<StreakRow & { reached_at: number }>(accStreak)[0] ?? null
+  const accountStreak = { current: liveCurrent(accRow, now), longest: accRow?.longest ?? 0 }
   const s = rows<StreakRow>(streak)[0]
   const myStreak = { current: s?.current ?? 0, longest: s?.longest ?? 0 }
   return json({
@@ -156,24 +197,36 @@ export async function getMyData(req: Request, env: Env): Promise<Response> {
       (r) => ({ ...r, created_at: iso(r.created_at) }),
     ),
     event_counts: Object.fromEntries(rows<{ type: string; n: number }>(events).map((r) => [r.type, r.n])),
+    account:
+      session && acc
+        ? {
+            created_at: iso(acc.created_at),
+            open_sessions: rows<{ n: number }>(sessions)[0]?.n ?? 0,
+            nickname: acc.nickname,
+            daily_results: rows<{ version: number; solve_ms: number; solved_at: number; rank: number }>(entries).map(
+              (r) => ({
+                version: r.version,
+                solve_ms: r.solve_ms,
+                rank: r.rank,
+                streak: accountStreak,
+                solved_at: iso(r.solved_at),
+              }),
+            ),
+            streak: accountStreak,
+          }
+        : null,
   })
 }
 
-/**
- * DELETE /api/me - idempotent erasure (AC-PRIV-05): personal rows go; discoveries and reports stay without the
- * UUID (reports still count); consent evidence stays and gets an `erase` row (kept 1 year, cleanup.ts).
- */
-export async function deleteMyData(req: Request, env: Env): Promise<Response> {
-  const player = playerId(req)
-  const db = env.DB
-  await limited(req, env, player)
-  const now = Date.now()
-  await db.batch([
+/** AC-PRIV-05 erasure of one UUID: personal rows go, discoveries/reports lose the UUID, consent gets `erase`. */
+function eraseStatements(db: D1Database, player: string, version: number, ip: string | null, now: number): D1PreparedStatement[] {
+  return [
     db.prepare('DELETE FROM player WHERE id = ?').bind(player),
     db.prepare('DELETE FROM daily_result WHERE player_id = ?').bind(player),
     db.prepare('DELETE FROM streak WHERE player_id = ?').bind(player),
     db.prepare('DELETE FROM vote WHERE player_id = ?').bind(player),
     db.prepare('DELETE FROM event WHERE player_id = ?').bind(player),
+    db.prepare('DELETE FROM account_player WHERE player_id = ?').bind(player),
     db.prepare('UPDATE discovery SET player_id = NULL WHERE player_id = ?').bind(player),
     db.prepare('UPDATE report SET player_id = NULL WHERE player_id = ?').bind(player),
     db
@@ -181,7 +234,43 @@ export async function deleteMyData(req: Request, env: Env): Promise<Response> {
         `INSERT INTO consent (id, player_id, purpose, action, policy_version, ip_hash, channel, created_at)
          VALUES (?, ?, 'all', 'erase', ?, ?, 'web', ?)`,
       )
-      .bind(uuidv7(now), player, policyVersion(env), await ipHash(req, env), now),
-  ])
-  return new Response(null, { status: 204 })
+      .bind(uuidv7(now), player, version, ip, now),
+  ]
 }
+
+/**
+ * DELETE /api/me - idempotent erasure (AC-PRIV-05): personal rows go; discoveries and reports stay without the
+ * UUID (reports still count); consent evidence stays and gets an `erase` row (kept 1 year, cleanup.ts). Signed in,
+ * the account goes too (AC-AUTH-06): sub hash, sessions, nickname, Daily results, streak, and every linked UUID is
+ * erased the same way.
+ */
+export async function deleteMyData(req: Request, env: Env): Promise<Response> {
+  const player = playerId(req)
+  const db = env.DB
+  await limited(req, env, player)
+  const session = await readSession(req, env)
+  const linked = session
+    ? rows<{ player_id: string }>(
+        await db.prepare('SELECT player_id FROM account_player WHERE account_id = ?').bind(session.accountId).all(),
+      ).map((r) => r.player_id)
+    : []
+  const now = Date.now()
+  const ip = await ipHash(req, env)
+  const statements = [...new Set([player, ...linked])].flatMap((p) => eraseStatements(db, p, policyVersion(env), ip, now))
+  if (session) {
+    const id = session.accountId
+    for (const table of ['session', 'account_player', 'daily_entry', 'account_streak'] as const)
+      statements.push(db.prepare(ACCOUNT_DELETES[table]).bind(id))
+    statements.push(db.prepare('DELETE FROM account WHERE id = ?').bind(id))
+  }
+  await db.batch(statements)
+  const headers: Record<string, string> = hasSessionCookie(req) ? { 'Set-Cookie': clearedCookie(env) } : {}
+  return new Response(null, { status: 204, headers })
+}
+
+const ACCOUNT_DELETES = {
+  session: 'DELETE FROM session WHERE account_id = ?',
+  account_player: 'DELETE FROM account_player WHERE account_id = ?',
+  daily_entry: 'DELETE FROM daily_entry WHERE account_id = ?',
+  account_streak: 'DELETE FROM account_streak WHERE account_id = ?',
+} as const

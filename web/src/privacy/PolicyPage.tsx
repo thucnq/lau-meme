@@ -12,8 +12,8 @@ export function PolicyPage() {
       </p>
       <h1>Chính sách quyền riêng tư</h1>
       <p>
-        Phiên bản {POLICY.version}, hiệu lực từ {POLICY.effective}. Lẩu Meme không cần đăng ký tài khoản và không thu
-        tên thật, email, số điện thoại hay tuổi. Trò chơi dành cho người từ 16 tuổi trở lên.
+        Phiên bản {POLICY.version}, hiệu lực từ {POLICY.effective}. Lẩu Meme không bắt buộc đăng ký tài khoản và không
+        thu tên thật, email, số điện thoại hay tuổi. Trò chơi dành cho người từ 16 tuổi trở lên.
       </p>
 
       <h2>Dữ liệu thu và mục đích</h2>
@@ -25,6 +25,12 @@ export function PolicyPage() {
         </li>
         <li>
           <strong>Nickname</strong> (nếu bạn đặt và đồng ý riêng): hiện trên bảng xếp hạng và Công thức gia truyền.
+        </li>
+        <li>
+          <strong>Mã tài khoản Google dạng băm</strong> (chỉ khi bạn bấm “Đăng nhập bằng Google”): mã định danh Google
+          được băm một chiều bằng khóa bí mật - không lưu email, tên hay ảnh đại diện. Mục đích: định danh trên bảng xếp
+          hạng, để kết quả Món đặc biệt, streak và nickname theo bạn trên mọi máy đã đăng nhập. Google biết bạn đã đăng
+          nhập vào trò chơi. Phiên đăng nhập dùng một cookie bắt buộc (không theo dõi), hết hạn sau 90 ngày không dùng.
         </li>
         <li>
           <strong>IP dạng băm</strong> - địa chỉ IP được băm một chiều bằng khóa bí mật, không lưu IP gốc: để giới hạn
@@ -41,6 +47,7 @@ export function PolicyPage() {
         <li>IP dạng băm: 7 ngày.</li>
         <li>Sự kiện chơi: 90 ngày.</li>
         <li>Nickname, khám phá, kết quả Món đặc biệt, streak, phiếu: đến khi bạn xóa.</li>
+        <li>Mã tài khoản Google dạng băm: đến khi xóa (xóa dữ liệu khi đang đăng nhập là xóa luôn tài khoản).</li>
         <li>Bằng chứng đồng ý: đến 1 năm sau khi bạn xóa dữ liệu.</li>
       </ul>
 

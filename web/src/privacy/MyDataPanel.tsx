@@ -65,6 +65,12 @@ export function MyDataPanel({ policyVersion, storage, onErased }: Props) {
           <li>Phiếu Ngon/Nhạt: {data.votes.length}</li>
           <li>Bản ghi đồng ý: {data.consents.length}</li>
           <li>Sự kiện: {Object.values(data.event_counts).reduce((a, b) => a + b, 0)}</li>
+          {data.account && (
+            <li>
+              Tài khoản Google: tạo lúc {new Date(data.account.created_at).toLocaleString('vi-VN')},{' '}
+              {data.account.open_sessions} phiên đang mở
+            </li>
+          )}
         </ul>
       ) : (
         !error && <p>Đang tải…</p>
