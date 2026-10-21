@@ -8,7 +8,7 @@ import type { PointerEvent as ReactPointerEvent } from 'react'
 import { getGraph, getManifest } from '../api'
 import type { ElementRef } from '../daily/challenge'
 import { startManifestWatch } from '../daily/countdown'
-import { DailyPanel } from '../daily/DailyPanel'
+import { DailyPanel, type PotCombine } from '../daily/DailyPanel'
 import { BLOCKLIST_POLL_MS, loadBlocklist } from '../report/blocklist'
 import type { Graph, GraphResult } from '../graph/crypto'
 import { localStore as storage, migrateLegacyKeys } from '../storage'
@@ -22,6 +22,7 @@ import {
   lookupRecipe,
   loadProgress,
   migrateProgress,
+  missLine,
   resetProgress,
   resolveTheme,
   saveProgress,
@@ -99,6 +100,9 @@ export function Game({ onDiscover, onItems, heirlooms = {}, onReport, blocklistR
   const [loadError, setLoadError] = useState(false)
   const [reloadKey, setReloadKey] = useState(0)
   const [slots, setSlots] = useState<[Item | null, Item | null]>([null, null])
+  // Challenge elements waiting in the pot (AC-DAILY-14): never mixed with plate items in `slots`.
+  const [dailySlots, setDailySlots] = useState<[ElementRef | null, ElementRef | null]>([null, null])
+  const potRef = useRef<HTMLDivElement>(null)
   const [boiling, setBoiling] = useState(false)
   const boilingRef = useRef(false)
   const [miss, setMiss] = useState<Miss | null>(null)
@@ -194,6 +198,13 @@ export function Game({ onDiscover, onItems, heirlooms = {}, onReport, blocklistR
 
   // Món đặc biệt board: same graph and block list; what it finds also lands on the main plate (AC-DAILY-04).
   // Stable callbacks reading the latest graph/block list when called (the board lives for the whole batch).
+  // A new batch remounts the board: an element of the old board must not stay waiting in the pot.
+  const dailyVersion = loaded?.manifest.version
+  const [slotsVersion, setSlotsVersion] = useState(dailyVersion)
+  if (slotsVersion !== dailyVersion) {
+    setSlotsVersion(dailyVersion)
+    setDailySlots([null, null])
+  }
   const dailyFound = useRef(new Map<string, GraphResult>())
   const loadedRef = useRef(loaded)
   useEffect(() => {
@@ -290,7 +301,8 @@ export function Game({ onDiscover, onItems, heirlooms = {}, onReport, blocklistR
     if (slotEl) {
       if (!ready) return
       const n = Number(slotEl.getAttribute('data-slot')) === 2 ? 1 : 0
-      const next: [Item | null, Item | null] = [...slots]
+      const next: [Item | null, Item | null] = dailySlots[0] ? [null, null] : [...slots]
+      setDailySlots([null, null])
       next[n] = source.item
       if (source.uid) commit({ ...p, table: p.table.filter((t) => t.uid !== source.uid) })
       setSlots(next)
@@ -341,9 +353,47 @@ export function Game({ onDiscover, onItems, heirlooms = {}, onReport, blocklistR
   /** Keyboard path (Enter/Space on a plate item): put it in the next free pot slot. */
   const toPot = (item: Item) => {
     if (!ready || boilingRef.current || busyRef.current) return
-    const next: [Item | null, Item | null] = slots[0] ? [slots[0], item] : [item, slots[1]]
+    const base: [Item | null, Item | null] = dailySlots[0] ? [null, null] : slots
+    const next: [Item | null, Item | null] = base[0] ? [base[0], item] : [item, base[1]]
+    setDailySlots([null, null])
     setSlots(next)
     if (next[0] && next[1]) boil(next[0], next[1])
+  }
+
+  /** A click on the challenge board: the element goes into the pot, which boils like the table's (AC-DAILY-14). */
+  const toPotDaily = (el: ElementRef, run: PotCombine) => {
+    if (!ready || boilingRef.current || busyRef.current) return
+    const next: [ElementRef | null, ElementRef | null] = dailySlots[0] ? [dailySlots[0], el] : [el, null]
+    setSlots([null, null]) // plate items waiting in the pot are dropped
+    setDailySlots(next)
+    const pot = potRef.current
+    if (pot && typeof pot.scrollIntoView === 'function') pot.scrollIntoView({ block: 'nearest' })
+    if (next[0] && next[1]) boilDaily(next[0], next[1], run)
+  }
+
+  // The step runs once the pot has boiled, so the board and its step counter change with the pot, not before.
+  const boilDaily = (a: ElementRef, b: ElementRef, run: PotCombine) => {
+    const lines = loadedRef.current?.manifest.miss_lines ?? []
+    const gen = generation.current
+    boilingRef.current = true
+    setBoiling(true)
+    setMiss(null)
+    later(() => {
+      run(a, b)
+        .then((ok) => {
+          // no hint and no miss streak: the challenge must not help or count against the table (AC-GAME-06)
+          if (gen === generation.current && !ok) setMiss({ line: missLine(lines, a.name, b.name), hint: null })
+        })
+        .catch(() => {
+          if (gen === generation.current) setMiss({ line: 'Nồi trục trặc, nhúng lại nhé.', hint: null })
+        })
+        .finally(() => {
+          if (gen !== generation.current) return
+          setDailySlots([null, null])
+          boilingRef.current = false
+          setBoiling(false)
+        })
+    }, BOIL_MS)
   }
 
   // ---------------------------------------------------------------- toolbar
@@ -370,6 +420,7 @@ export function Game({ onDiscover, onItems, heirlooms = {}, onReport, blocklistR
       // storage blocked: in-memory progress is reset below
     }
     setSlots([null, null])
+    setDailySlots([null, null])
     boilingRef.current = false
     busyRef.current = false
     setBoiling(false)
@@ -451,6 +502,7 @@ export function Game({ onDiscover, onItems, heirlooms = {}, onReport, blocklistR
           lookup={dailyLookup}
           onDiscover={dailyDiscover}
           storage={storage()}
+          onPick={toPotDaily}
         />
       )}
 
@@ -481,7 +533,7 @@ export function Game({ onDiscover, onItems, heirlooms = {}, onReport, blocklistR
             </div>
           )}
           {/* Drawn as a two-broth hot pot (lẩu uyên ương): one slot per broth, steam above, burner below. */}
-          <div className="pot" data-testid="pot" data-state={potState} aria-label="Nồi lẩu">
+          <div ref={potRef} className="pot" data-testid="pot" data-state={potState} aria-label="Nồi lẩu">
             <span className="pot-steam" aria-hidden="true">
               <i />
               <i />
@@ -489,7 +541,7 @@ export function Game({ onDiscover, onItems, heirlooms = {}, onReport, blocklistR
             </span>
             <div className="pot-rim">
               {([1, 2] as const).map((n) => {
-                const it = slots[n - 1]
+                const it = dailySlots[n - 1] ?? slots[n - 1]
                 return (
                   <div key={n} className="pot-slot" data-testid={`pot-slot-${n}`} data-slot={n}>
                     {it ? `${it.emoji} ${it.name}` : ''}

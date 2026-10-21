@@ -15,7 +15,11 @@ type Props = {
   lookup: (a: string, b: string) => Promise<GraphResult | null>
   onDiscover: (el: ElementRef) => void
   storage: Storage | null
+  /** Hands a picked element to the page's hot pot, which runs `combine` on this board once it boils (AC-DAILY-14). */
+  onPick?: (el: ElementRef, combine: PotCombine) => void
 }
+/** One step on the challenge board; resolves to whether the pair had a recipe. */
+export type PotCombine = (a: ElementRef, b: ElementRef) => Promise<boolean>
 type Sent = { kind: 'result'; result: DailyResult } | { kind: 'consent' } | { kind: 'error'; text: string }
 
 /** Version whose board the player opened, so a reload goes straight back to it (AC-DAILY-05). */
@@ -54,7 +58,7 @@ function startChallenge(
 }
 
 /** Món đặc biệt: card, countdown, challenge board, result and leaderboard (AC-DAILY-03..06, 08, 09, 12). */
-export function DailyPanel({ manifest, lookup, onDiscover, storage }: Props) {
+export function DailyPanel({ manifest, lookup, onDiscover, storage, onPick }: Props) {
   const { version, daily } = manifest
   const policyVersion = manifest.policy_version
   // The page remounts this panel per batch (key = version): reopen the board the player had open (AC-DAILY-05).
@@ -110,6 +114,16 @@ export function DailyPanel({ manifest, lookup, onDiscover, storage }: Props) {
   const pick = (el: ElementRef) => {
     const challenge = challengeRef.current
     if (!challenge || busy || challenge.getState().solved) return
+    if (onPick) {
+      // the pot shows the boil and the miss line; this board only counts the step and shows what came out
+      return onPick(el, (a, b) =>
+        challenge.combine(a, b).then((out) => {
+          setState(challenge.getState())
+          if (out.solved) submit(challenge)
+          return out.ok
+        }),
+      )
+    }
     if (!picked) return setPicked(el)
     setPicked(null)
     setBusy(true)

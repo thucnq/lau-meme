@@ -80,3 +80,10 @@
 - **Khi** gửi yêu cầu thứ 11 trong phút
 - **Thì** trả 429 problem+json có `Retry-After`
 - Ưu tiên: Bắt buộc
+
+### AC-DAILY-14: Ghép thử thách qua nồi lẩu
+- **Cho** bàn thử thách đang mở với 4 phần tử khởi đầu; graph có Cay + Deadline = Tới Công Chuyện và không có công thức Cay + Cười
+- **Khi** bấm Cay rồi Cười trên bàn thử thách; bấm Cay rồi Cười lần nữa; rồi bấm Cay rồi Deadline
+- **Thì** mỗi món bấm được đặt vào chỗ thả trống tiếp theo của nồi lẩu trên mặt bàn (món đầu chỗ 1, món sau chỗ 2; nồi đang ngoài màn hình thì được cuộn vào tầm nhìn); đủ 2 món thì nồi sôi như AC-GAME-02 (tối đa 1,2 s, bấm trong lúc sôi bị bỏ qua) rồi 2 chỗ thả trống lại; trượt thì hiện câu Nồi trào theo cặp (AC-GAME-05) ở nồi, không kèm gợi ý; câu bị ẩn trong lúc nồi sôi nên lần trượt liên tiếp thứ 2 cũng hiện lại câu (kèm hiệu ứng như bàn lẩu); ghép được thì món mới hiện trên bàn thử thách và vào Đĩa chính (AC-DAILY-04); bộ đếm hiện 3 bước. Mặt bàn chính, Đĩa (ngoài món mới) và bộ đếm trượt của AC-GAME-06 không đổi
+- **Và** nồi đang chờ 1 món thử thách mà thả vào một món từ Đĩa nhúng hoặc mặt bàn (hoặc nồi đang chờ món Đĩa mà bấm món thử thách) thì món đang chờ bị bỏ ra, nồi chỉ còn món vừa thả; món thử thách không bao giờ được ghép với món Đĩa
+- Ưu tiên: Bắt buộc

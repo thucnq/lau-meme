@@ -168,4 +168,4 @@ Stack là Cloudflare Worker + D1 + Python pipeline (không Docker/Postgres), nê
 |---|---|---|---|
 | 2026-10-19 | 0.1 | Bản đầu từ phạm vi đã chốt (14 tính năng + bất biến); chia giai đoạn 1/2; thêm streak, bảng sự kiện D1 | - |
 | 2026-10-20 | 0.2 | AC-PIPE-08: thêm hạn mức 150 cặp/đợt chọn theo mức hay cùng nằm trên Đĩa (giảm ghép trượt, mô phỏng: +200 cặp đúng chỗ kéo 20 lượt đầu từ 41,5 % xuống 28 %); AC-ART-01 đổi phong cách sticker sang vẽ tay; thêm AC-ART-08 phóng lớn ảnh khi ghép ra món lần đầu | nguyenquythuc (chờ /dk:approve spec) |
-| 2026-10-21 | 0.3 | Mục 8: R2 đã bật, không bị đòi thẻ thanh toán (câu hỏi mở 13); còn hạn mức Workers AI cần kiểm tra | - |
+| 2026-10-21 | 0.4 | Thêm AC-DAILY-14: bấm món trên bàn thử thách thì đặt vào nồi lẩu, nồi sôi và câu Nồi trào như bàn lẩu (lần trượt liên tiếp vẫn thấy rõ); món thử thách không ghép lẫn với món Đĩa. (0.3 nằm ở PR #24) | nguyenquythuc (chờ /dk:approve spec) |
