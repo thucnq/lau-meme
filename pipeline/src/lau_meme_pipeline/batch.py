@@ -423,6 +423,13 @@ class GitHubIssues:
         return str(res["html_url"])
 
 
+class NoIssues:
+    """Local runs (no GITHUB_REPOSITORY): no Issue is created; the report is only printed by main."""
+
+    def create_issue(self, title: str, body: str) -> str:
+        raise LookupError("GITHUB_REPOSITORY is not set")
+
+
 def main(argv: list[str], *, client=None, reporter=None, now: Callable[[], datetime] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="python -m lau_meme_pipeline.batch", description="Chạy một mẻ nhúng")
     parser.add_argument("--mode", choices=["core", "full"], default="core")
@@ -432,7 +439,8 @@ def main(argv: list[str], *, client=None, reporter=None, now: Callable[[], datet
     if client is None:
         client = HttpBatchClient(os.environ["API_BASE_URL"], os.environ["PIPELINE_TOKEN"])
     if reporter is None:
-        reporter = GitHubIssues(os.environ["GITHUB_REPOSITORY"], os.environ["GITHUB_TOKEN"])
+        repository = os.environ.get("GITHUB_REPOSITORY")
+        reporter = GitHubIssues(repository, os.environ["GITHUB_TOKEN"]) if repository else NoIssues()
     batch_at = (now or (lambda: datetime.now(UTC)))().replace(microsecond=0)
     banned_words = os.environ.get("BANNED_WORDS", "").splitlines()  # GitHub Secret, one word per line
     outcome = run_batch(

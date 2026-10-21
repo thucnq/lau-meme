@@ -600,6 +600,19 @@ def test_ac_pipe_14_loi_tao_issue_chi_ghi_log_khong_lam_dot_that_bai():
     assert any("github down" in m or "issue" in m.lower() for m in logs)
 
 
+def test_ac_pipe_14_chay_local_khong_co_github_repository_van_dang_me(monkeypatch, capsys):
+    """AC-PIPE-14: chạy local (không có GITHUB_REPOSITORY) ⇒ không tạo Issue, mẻ vẫn đăng, báo cáo in ra màn hình."""
+    from lau_meme_pipeline.batch import main
+
+    monkeypatch.delenv("GITHUB_REPOSITORY", raising=False)
+    monkeypatch.delenv("GITHUB_TOKEN", raising=False)
+    client = FakeClient()
+    assert main(["--mode", "core", "--core", str(CORE_PATH)], client=client, now=lambda: T) == 0
+    assert len(client.success_posts) == 1
+    assert "patch_batch" not in client.calls
+    assert capsys.readouterr().out.strip() != ""
+
+
 def test_ac_pipe_14_bao_cao_dot_loi_ghi_trang_thai_va_buoc_loi():
     """AC-PIPE-14: đợt lỗi vẫn có Issue với trạng thái error và bước lỗi trong tiêu đề hoặc nội dung."""
     client, reporter = FakeClient(fail_success=True), FakeReporter()
