@@ -9,6 +9,7 @@ Không bí mật nào nằm trong repo (repo có thể public).
 | `PIPELINE_TOKEN` | Cloudflare secret của Worker **và** GitHub Environment secret (`staging`, `production`, `production-no-approval`) - hai nơi phải cùng giá trị | `docs/dev/huong-dan-tai-khoan.md` mục 4.2 |
 | `IP_HASH_KEY` | Cloudflare secret của Worker (mỗi môi trường một giá trị) | `docs/dev/huong-dan-tai-khoan.md` mục 4.2 |
 | `ACCOUNT_HASH_KEY` | Cloudflare secret của Worker (mỗi môi trường một giá trị), băm `sub` Google thành `account.sub_hash` (ADR 0010) | `docs/dev/huong-dan-tai-khoan.md` mục 4.2 |
+| `IP_HASH_KEY`, `ACCOUNT_HASH_KEY` của preview | Secret riêng của Worker Previews (`npx wrangler preview base-config secret put <KEY>`), không dùng chung với staging. Preview không cần `ADMIN_TOKEN` và `PIPELINE_TOKEN` | `docs/dev/huong-dan-tai-khoan.md` mục 4.4 |
 | `API_BASE_URL`, `BANNED_WORDS` | GitHub Environment secret | `docs/dev/huong-dan-tai-khoan.md` mục 4.3 |
 | `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID` | GitHub Secrets | Settings → Secrets and variables → Actions |
 | Khóa API của pipeline (LLM, nguồn dữ liệu) | GitHub Secrets | như trên |
@@ -35,7 +36,9 @@ Gốc `https://dinoduct.fun/` được Redirect Rule (không có trong code) chu
 Cấu hình tài khoản lần đầu (DNS, Redirect Rule, SSL, deploy production đầu tiên, kiểm tra nhà mạng và xem trước link) xem `docs/dev/huong-dan-tai-khoan.md`.
 
 - `staging`: `wrangler.jsonc` → `env.staging`. Agent được deploy bằng `/dk:ship staging`.
-- Production: cấu hình top-level. **Chỉ người làm**: `npx wrangler d1 migrations apply DB --remote` rồi `npx wrangler deploy` (trong `worker/`, sau khi `npm --prefix web run build`), hoặc workflow `deploy` với environment `production` có người duyệt.
+- Production: cấu hình top-level. **Chỉ người làm**: `npx wrangler d1 migrations apply DB --remote` rồi `npx wrangler deploy` (trong `worker/`, sau khi `npm --prefix web run build`), hoặc workflow `deploy` với environment `production` có người duyệt. Workers Builds chạy production nên dùng lệnh `npx wrangler versions upload` (không `wrangler deploy`) để production vẫn do người làm kích hoạt.
+- Preview (Workers Builds, nhánh không phải production): lệnh `npx wrangler preview`, khối `previews` trong `wrangler.jsonc`. Bind D1 `lau-meme-staging` và R2 `lau-meme-img-staging` (không kế thừa từ top-level hay `env.staging`), `APP_ENV=preview`, không có `ADMIN_HOST` nên trang quản trị tắt. Preview dùng chung dữ liệu staging và không áp migration mới. Đăng nhập Google thường không chạy trên URL preview vì origin chưa được đăng ký; kiểm đăng nhập trên staging.
+> TODO(doc): Địa chỉ URL của preview có dạng nào (theo nhánh, do Workers Builds cấp)? Chưa có trong repo.
 
 ## Triển khai và quay lại
 - Staging: `/dk:ship staging` (build web, migrate D1, deploy, kiểm tra `/lau-meme/api/health`, tự rollback khi lỗi).
@@ -66,6 +69,7 @@ Cấu hình tài khoản lần đầu (DNS, Redirect Rule, SSL, deploy productio
 | Trang quản trị trả 429 "Thử sai quá nhiều lần" | 5 lần sai trong 1 phút từ cùng IP ⇒ khóa 15 phút, kể cả token đúng (AC-ADMIN-02) | Chờ hết `Retry-After`. Không có lệnh gỡ khóa; xóa dòng `admin-lock:%` trong `rate_counter` chỉ khi chắc không phải bị dò |
 | Pipeline báo `HTTP 404` khi đăng mẻ / rollback | Secret `API_BASE_URL` thiếu tiền tố | Đặt `https://dinoduct.fun/lau-meme` (staging: `https://staging.dinoduct.fun/lau-meme`) |
 | Pipeline báo `URL phải có dạng https://<host>...` | `API_BASE_URL` dùng `http` cho tên miền thật (chỉ `localhost` được `http`) | Đổi sang `https://...`; chạy cục bộ xem `docs/dev/setup.md` |
+| Trên URL preview: ghi đồng ý trả 500 (log `IP_HASH_KEY is not configured`), hoặc đăng nhập Google trả 500 (`ACCOUNT_HASH_KEY is not configured`) | Chưa đặt secret của preview; secret staging và production không áp dụng cho preview | `npx wrangler preview base-config secret put IP_HASH_KEY` và `ACCOUNT_HASH_KEY`, theo `docs/dev/huong-dan-tai-khoan.md` mục 4.4 |
 | Đăng nhập Google trả 500, log có `ACCOUNT_HASH_KEY is not configured` hoặc `GOOGLE_CLIENT_ID is not configured` | Chưa đặt secret `ACCOUNT_HASH_KEY` hoặc biến `GOOGLE_CLIENT_ID` cho môi trường đó (Worker đóng, không mở phiên) | `npx wrangler secret list [--env staging]` phải có `ACCOUNT_HASH_KEY`; đặt theo `docs/dev/huong-dan-tai-khoan.md` mục 4.2; kiểm `vars` trong `worker/wrangler.jsonc` |
 | Đăng nhập Google luôn trả 401 | `GOOGLE_CLIENT_ID` của Worker khác Client ID mà web chọn cho tên miền đó trong `web/src/auth/config.ts` (sai `audience`) | Đối chiếu `vars.GOOGLE_CLIENT_ID` của môi trường (`wrangler.jsonc`) với Client ID trong `web/src/auth/config.ts`; staging phải dùng Client ID staging, production dùng Client ID production |
 | Log pipeline `Gemini: cả N mục của bước <step> đều lỗi (HTTP 503)` (hoặc `HTTP 429 theo phút`, `TimeoutError`) | Gemini tạm quá tải, giới hạn theo phút hoặc mạng chậm. Mỗi lô đã tự thử lại 5 lần (backoff 2 → 32 s, dùng `retryDelay` của Google nếu lâu hơn, tối đa 60 s) rồi mới báo lỗi; đợt vẫn đăng | Thường tự hết ở đợt sau. Nếu lặp lại nhiều đợt, xem log để biết mã lỗi. Báo "hết quota" là chuyện khác (hạn mức theo ngày) |

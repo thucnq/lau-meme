@@ -141,6 +141,20 @@ Trên trình duyệt: mở game, F5 ở mọi màn hình không ra 404. DevTools
 
 Quay lại khi lỗi: `npx wrangler rollback` (chỉ code, không quay lại dữ liệu D1, xem runbook).
 
+### 4.4. Preview (Workers Builds)
+Nhánh không phải production được Workers Builds chạy `npx wrangler preview`. Preview có bộ secret riêng, không dùng chung với staging hay production:
+- Chỉ cần `IP_HASH_KEY` và `ACCOUNT_HASH_KEY`. Không cần `ADMIN_TOKEN` (trang quản trị tắt trên preview) và `PIPELINE_TOKEN` (preview không chạy pipeline).
+- Mỗi secret một giá trị mới, sinh bằng `openssl rand -base64 32`, đặt một lần:
+```bash
+cd worker
+openssl rand -base64 32 | tr -d '\n' | npx wrangler preview base-config secret put IP_HASH_KEY
+openssl rand -base64 32 | tr -d '\n' | npx wrangler preview base-config secret put ACCOUNT_HASH_KEY
+```
+- Preview dùng chung D1 `lau-meme-staging` và bucket R2 `lau-meme-img-staging`, và không tự áp migration. Migration mới phải áp cho staging trước (mục 4.1 và runbook).
+- Lệnh build/deploy production trong Workers Builds nên là `npx wrangler versions upload`, không phải `npx wrangler deploy`, để production vẫn do người làm kích hoạt.
+- Đăng nhập Google thường không chạy trên URL preview vì origin chưa được đăng ký với Client ID. Kiểm đăng nhập trên `staging.dinoduct.fun` (mục 7.6).
+> TODO(doc): Comment trong `worker/wrangler.jsonc` (khối `previews`) ghi `wrangler preview secret`, còn tài liệu này ghi `wrangler preview base-config secret put`. Cần xác nhận lệnh đúng rồi sửa comment hoặc tài liệu cho khớp.
+
 ## 5. Kiểm tra mạng và xem trước link
 **Nhà mạng và bộ lọc.** Một số bộ lọc doanh nghiệp, DNS gia đình và trình chặn quảng cáo xếp đuôi `.fun` vào nhóm rủi ro. Mở `https://dinoduct.fun/lau-meme/` và chơi thử một ván trên từng mạng, ghi kết quả (mở được / bị chặn / chậm):
 
