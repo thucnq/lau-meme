@@ -10,6 +10,8 @@
   --surface: #ffffff;
   --line: #d3e6da;
   --pot: #dff5e8;
+  /* Hot pot drawing: two broths (spicy, herb), steel body, burner flame. */
+  --broth-a: #e0533b; --broth-b: #e9c75a; --metal: #c9d3cf; --metal-dark: #7d8a85; --flame: #3b82f6;
   --glow: rgb(10 138 67 / 0.18);
   --shadow: 0 0.25rem 1rem rgb(12 21 17 / 0.08);
   font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
@@ -20,6 +22,7 @@
     color-scheme: dark;
     --bg: #060a08; --fg: #eaf5ee; --muted: #8aa094; --accent: #2ee07f; --accent-2: #a6f26e; --on-accent: #04140b;
     --surface: #0f1612; --line: #1f2c25; --pot: #0f2a1c; --glow: rgb(46 224 127 / 0.25);
+    --broth-a: #b8402c; --broth-b: #b8973a; --metal: #5d6964; --metal-dark: #2e3733; --flame: #60a5fa;
     --shadow: 0 0.25rem 1.25rem rgb(0 0 0 / 0.5);
   }
 }
@@ -27,6 +30,7 @@
   color-scheme: dark;
   --bg: #060a08; --fg: #eaf5ee; --muted: #8aa094; --accent: #2ee07f; --accent-2: #a6f26e; --on-accent: #04140b;
   --surface: #0f1612; --line: #1f2c25; --pot: #0f2a1c; --glow: rgb(46 224 127 / 0.25);
+    --broth-a: #b8402c; --broth-b: #b8973a; --metal: #5d6964; --metal-dark: #2e3733; --flame: #60a5fa;
   --shadow: 0 0.25rem 1.25rem rgb(0 0 0 / 0.5);
 }
 body { margin: 0; background: var(--bg); color: var(--fg); -webkit-font-smoothing: antialiased; }
@@ -59,18 +63,65 @@ a { color: var(--accent-2); }
   background-image: radial-gradient(var(--line) 1px, transparent 1px); background-size: 1.25rem 1.25rem;
 }
 .pot {
-  position: absolute; left: 50%; bottom: 1rem; transform: translateX(-50%);
-  display: flex; gap: 0.5rem; padding: 0.75rem 1rem; border-radius: 999px; background: var(--pot);
-  border: 2px solid var(--accent); box-shadow: 0 0 1.5rem var(--glow);
+  position: absolute; left: 50%; bottom: 1.1rem; transform: translateX(-50%);
+  width: min(19rem, calc(100% - 2rem)); display: flex; flex-direction: column; align-items: center;
 }
 .pot[data-state='disabled'] { opacity: 0.5; }
 .pot[data-state='boiling'] { animation: boil 0.25s ease-in-out infinite alternate; }
 @keyframes boil { to { transform: translateX(-50%) scale(1.06); } }
-.pot-slot {
-  min-width: 6.5rem; min-height: 2.2rem; display: flex; align-items: center; justify-content: center;
-  border: 2px dashed var(--accent); border-radius: 999px; padding: 0 0.4rem; background: var(--surface);
+/* Top of the pot seen at an angle: an oval of broth split down the middle, one broth per slot. */
+.pot-rim {
+  position: relative; z-index: 1; width: 100%; box-sizing: border-box; display: flex; gap: 0.35rem;
+  padding: 0.85rem 1.1rem; border-radius: 50%; border: 0.3rem solid var(--metal);
+  background: linear-gradient(90deg, var(--broth-a) 50%, var(--broth-b) 50%);
+  box-shadow: inset 0 0.35rem 0.6rem rgb(0 0 0 / 0.25), 0 0 1.5rem var(--glow);
 }
-.miss { position: absolute; left: 0; right: 0; bottom: 5.5rem; text-align: center; color: var(--muted); }
+.pot-rim::after { /* the divider between the two broths */
+  content: ''; position: absolute; top: 0.2rem; bottom: 0.2rem; left: calc(50% - 0.1rem); width: 0.2rem;
+  background: var(--metal); border-radius: 999px;
+}
+.pot-slot {
+  flex: 1; min-width: 0; min-height: 2.2rem; display: flex; align-items: center; justify-content: center;
+  border: 2px dashed rgb(255 255 255 / 0.85); border-radius: 999px; padding: 0 0.4rem;
+  background: color-mix(in srgb, var(--surface) 85%, transparent); text-align: center; font-weight: 500;
+}
+.pot-slot:empty { background: rgb(255 255 255 / 0.18); }
+/* Steel body with two handles. */
+.pot-body {
+  position: relative; width: 90%; height: 3.4rem; margin-top: -1.8rem;
+  border-radius: 0 0 1.6rem 1.6rem / 0 0 1.2rem 1.2rem;
+  background: linear-gradient(90deg, var(--metal-dark), var(--metal) 35%, var(--metal) 60%, var(--metal-dark));
+}
+.pot-body::before, .pot-body::after {
+  content: ''; position: absolute; top: 1.7rem; width: 1.3rem; height: 0.9rem;
+  border: 0.3rem solid var(--metal-dark); border-radius: 0.5rem;
+}
+.pot-body::before { left: -1.45rem; border-right: none; border-radius: 0.5rem 0 0 0.5rem; }
+.pot-body::after { right: -1.45rem; border-left: none; border-radius: 0 0.5rem 0.5rem 0; }
+/* Burner: a row of small flames under the pot. */
+.pot-burner {
+  width: 50%; height: 0.6rem; margin-top: 0.2rem; opacity: 0.9;
+  background: radial-gradient(ellipse 0.22rem 0.55rem at 50% 100%, var(--flame) 90%, transparent 100%) 0 0 / 1rem 100%;
+}
+.pot-steam {
+  position: absolute; bottom: 100%; left: 0; right: 0; height: 2rem; display: flex; justify-content: center;
+  gap: 1.6rem; pointer-events: none;
+}
+.pot-steam i {
+  width: 0.7rem; height: 1.6rem; border-radius: 999px; background: var(--muted); opacity: 0;
+  filter: blur(3px); animation: wisp 2.4s ease-in-out infinite;
+}
+.pot-steam i:nth-child(2) { animation-delay: 0.8s; }
+.pot-steam i:nth-child(3) { animation-delay: 1.6s; }
+.pot[data-state='boiling'] .pot-steam i { animation-duration: 0.8s; }
+.pot[data-state='disabled'] .pot-steam i { animation: none; }
+@keyframes wisp {
+  0% { opacity: 0; transform: translateY(0.6rem) scaleY(0.6); }
+  40% { opacity: 0.35; }
+  100% { opacity: 0; transform: translateY(-0.8rem) translateX(0.3rem) scaleY(1.1); }
+}
+@media (prefers-reduced-motion: reduce) { .pot-steam i { animation: none; opacity: 0.25; } }
+.miss { position: absolute; left: 0; right: 0; bottom: 9.5rem; text-align: center; color: var(--muted); }
 .miss p { margin: 0.2rem; }
 .steam { position: absolute; pointer-events: none; font-size: 1.6rem; animation: steam 0.5s ease-out forwards; }
 @keyframes steam { to { opacity: 0; transform: translateY(-1.2rem); } }
