@@ -1,6 +1,6 @@
 # 0012 - Ảnh minh họa: vẽ bằng Workers AI qua REST, kiểm bằng Gemini, tải lên R2 qua Worker
 
-- Trạng thái: Đề xuất (chờ duyệt cùng cổng contract)
+- Trạng thái: Đã chấp nhận (2026-10-21, cổng contract duyệt tại 02bca48)
 - Ngày: 2026-10-21
 - Nguồn: ART (AC-ART-01..04), ADR 0009 (kho pipeline), ADR 0011 (Gemini qua REST), câu hỏi mở 13
 
