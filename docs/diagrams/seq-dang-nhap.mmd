@@ -1,0 +1,21 @@
+%% Đăng nhập Google và nộp Daily (ADR 0010, AC-AUTH-01/02, AC-DAILY-06/15)
+sequenceDiagram
+  autonumber
+  actor P as Thực khách (trình duyệt)
+  participant G as Google Identity Services
+  participant W as Worker /lau-meme/api
+  participant D as D1
+
+  P->>G: bấm "Đăng nhập bằng Google", chọn tài khoản
+  G-->>P: ID token (JWT)
+  P->>W: POST /auth/google {credential} + X-Player-Id
+  W->>D: rate_counter (IP băm), consent play của UUID
+  W->>G: JWKS (chỉ khi cache hết hạn)
+  W->>W: jwtVerify: chữ ký, iss, aud = GOOGLE_CLIENT_ID, exp
+  W->>D: account theo HMAC(sub) (tạo nếu chưa có), account_player, session (SHA-256 mã phiên)
+  W-->>P: 200 {nickname} + Set-Cookie laumeme_sid (HttpOnly, Secure, SameSite=Lax)
+  Note over P: đã giải Món đặc biệt khi chưa đăng nhập ⇒ tự gửi ngay
+  P->>W: POST /daily/{v}/results {a, b} + cookie
+  W->>D: session còn hạn ⇒ gia hạn 90 ngày; kiểm công thức ra món đích
+  W->>D: daily_entry (solved_at = lúc nhận), account_streak
+  W-->>P: 201 {solve_ms, rank, streak}
