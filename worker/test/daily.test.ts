@@ -374,7 +374,7 @@ describe('daily', () => {
     }
     expect(await count('daily_result')).toBe(0)
     const streakRes = await raw('/lau-meme/api/me/streak', {}, {})
-    expect(streakRes.status).toBe(400)
+    expect(streakRes.status).toBe(401)
   })
 
   // ------------------------------------------------------------------------ AC-DAILY-09

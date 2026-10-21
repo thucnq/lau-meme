@@ -67,4 +67,12 @@ export type MyData = {
   votes: Array<{ recipe_id: string; value: string; updated_at: string }>
   consents: Array<{ purpose: string; action: string; policy_version: number; created_at: string }>
   event_counts: Record<string, number>
+  /** Only with a valid sign-in session (AC-AUTH-06); never the Google sub hash. */
+  account?: {
+    created_at: string
+    open_sessions: number
+    nickname: string | null
+    daily_results: Array<{ version: number; solve_ms: number; rank: number; solved_at: string }>
+    streak: { current: number; longest: number }
+  } | null
 }

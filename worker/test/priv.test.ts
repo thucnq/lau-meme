@@ -486,6 +486,7 @@ describe('priv', () => {
     expect(res.status).toBe(200)
     expect(await res.json()).toEqual({
       nickname: null,
+      account: null,
       discoveries: [],
       daily_results: [],
       streak: { current: 0, longest: 0 },

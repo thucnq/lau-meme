@@ -10,6 +10,7 @@ export async function cleanup(db: D1Database, now: number): Promise<Record<strin
     db.prepare('UPDATE consent SET ip_hash = NULL WHERE ip_hash IS NOT NULL AND created_at < ?').bind(now - 7 * DAY_MS),
     db.prepare('DELETE FROM event WHERE received_at < ?').bind(now - 90 * DAY_MS),
     db.prepare('DELETE FROM rate_counter WHERE expires_at <= ?').bind(now),
+    db.prepare('DELETE FROM session WHERE expires_at <= ?').bind(now), // 90 days unused (ADR 0010)
     db.prepare('DELETE FROM admin_audit WHERE created_at < ?').bind(now - 365 * DAY_MS),
     // only when the erase is the player's newest row (a re-used UUID that consented again keeps its evidence)
     db

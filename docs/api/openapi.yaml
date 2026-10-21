@@ -1,10 +1,11 @@
 openapi: 3.1.0
 info:
   title: lau-meme API
-  version: 0.2.0
+  version: 0.3.0
   description: |
-    API của Worker Lẩu Meme. Ba chủ thể (BRD mục 2): thực khách ẩn danh (header `X-Player-Id` = UUID v4
-    sinh trên trình duyệt), quản trị (`Authorization: Bearer <ADMIN_TOKEN>`), pipeline
+    API của Worker Lẩu Meme. Bốn chủ thể (BRD mục 2): thực khách ẩn danh (header `X-Player-Id` = UUID v4
+    sinh trên trình duyệt), thực khách đã đăng nhập Google (cookie phiên `laumeme_sid`, ADR 0010 - kết quả Daily,
+    streak và nickname trên bảng xếp hạng thuộc tài khoản), quản trị (`Authorization: Bearer <ADMIN_TOKEN>`), pipeline
     (`Authorization: Bearer <PIPELINE_TOKEN>`). Mọi lỗi là `application/problem+json` (RFC 9457), `title`
     tiếng Việt. Mọi endpoint ghi của thực khách cần bản ghi đồng ý mục đích `play` cho version chính sách
     hiện hành (AC-PRIV-02/09) - thiếu thì 403; và bị giới hạn tần suất theo UUID và IP băm - vượt thì 429
@@ -18,6 +19,8 @@ tags:
     description: Manifest, graph, danh sách chặn (GRAPH, REPORT)
   - name: player
     description: Đồng ý, nickname, dữ liệu của tôi (PRIV, DISC)
+  - name: auth
+    description: Đăng nhập Google, phiên, đăng xuất (AUTH, ADR 0010)
   - name: play
     description: Khám phá, Daily, báo cáo, phiếu, sự kiện
   - name: admin
@@ -134,14 +137,82 @@ paths:
         '422': { $ref: '#/components/responses/Unprocessable' }
         '429': { $ref: '#/components/responses/TooManyRequests' }
         default: { $ref: '#/components/responses/Problem' }
+  /auth/google:
+    post:
+      operationId: signInWithGoogle
+      tags: [auth]
+      summary: Đăng nhập bằng ID token của Google Identity Services
+      description: |
+        Kiểm chữ ký ID token theo JWKS của Google (cache 10 phút trong isolate, `kid` lạ thì tải lại), `iss` là
+        `accounts.google.com` hoặc `https://accounts.google.com`, `aud` = `GOOGLE_CLIENT_ID`, `exp` chưa qua (lệch
+        đồng hồ cho phép 60 s). Hợp lệ thì tìm/tạo tài khoản theo HMAC-SHA256(`ACCOUNT_HASH_KEY`, `sub`), gắn UUID
+        `X-Player-Id` vào tài khoản (UUID đang gắn tài khoản khác thì chuyển sang tài khoản này), mở phiên mới và
+        đặt cookie `laumeme_sid` (`HttpOnly; Secure; SameSite=Lax; Path=/lau-meme; Max-Age=7776000`). Cần đồng ý
+        mục đích `play` của UUID (thiếu → 403). Mọi lỗi của token (thiếu, sai định dạng, sai chữ ký/`aud`/`iss`,
+        hết hạn, JWKS không tải được) → 401, không tạo tài khoản, không mở phiên; token và `sub` không vào log.
+        Giới hạn 10 yêu cầu/phút theo IP băm (AC-AUTH-07).
+      security: [{ PlayerId: [] }]
+      x-ac: [AC-AUTH-01, AC-AUTH-03, AC-AUTH-04, AC-AUTH-07, AC-PRIV-02]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/GoogleSignInRequest' }
+      responses:
+        '200':
+          description: Đã đăng nhập; tài khoản mới hoặc có sẵn
+          headers:
+            Set-Cookie: { $ref: '#/components/headers/SetSessionCookie' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SessionInfo' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        default: { $ref: '#/components/responses/Problem' }
+  /auth/session:
+    get:
+      operationId: getSession
+      tags: [auth]
+      summary: Phiên hiện tại (sau khi tải lại trang)
+      description: Phiên hợp lệ thì gia hạn (90 ngày kể từ lần dùng này) và đặt lại cookie; không có hoặc hết hạn → 401.
+      security: [{ Session: [] }]
+      x-ac: [AC-AUTH-02, AC-AUTH-04]
+      responses:
+        '200':
+          description: Đang đăng nhập
+          headers:
+            Set-Cookie: { $ref: '#/components/headers/SetSessionCookie' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SessionInfo' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        default: { $ref: '#/components/responses/Problem' }
+    delete:
+      operationId: signOut
+      tags: [auth]
+      summary: Đăng xuất (idempotent)
+      description: Xóa phiên trong D1 (cookie cũ dùng lại → 401) và trả cookie `laumeme_sid` rỗng `Max-Age=0`. Không có phiên vẫn 204.
+      security: [{}, { Session: [] }]
+      x-ac: [AC-AUTH-05]
+      responses:
+        '204':
+          description: Đã đăng xuất
+          headers:
+            Set-Cookie: { $ref: '#/components/headers/ClearSessionCookie' }
+        default: { $ref: '#/components/responses/Problem' }
   /me:
     get:
       operationId: getMyData
       tags: [player]
       summary: Xem / xuất dữ liệu của tôi
-      description: UUID chưa có dữ liệu trả cấu trúc rỗng, không bao giờ dữ liệu của người khác. Không cần đồng ý.
-      security: [{ PlayerId: [] }]
-      x-ac: [AC-PRIV-08]
+      description: |
+        UUID chưa có dữ liệu trả cấu trúc rỗng, không bao giờ dữ liệu của người khác. Không cần đồng ý. Có phiên hợp
+        lệ thì thêm `account` (thời điểm tạo, số phiên đang mở, nickname, kết quả Daily và streak của tài khoản);
+        không bao giờ có băm `sub` (AC-AUTH-06).
+      security: [{ PlayerId: [] }, { PlayerId: [], Session: [] }]
+      x-ac: [AC-PRIV-08, AC-AUTH-06]
       responses:
         '200':
           description: Dữ liệu của UUID gửi lên
@@ -157,11 +228,16 @@ paths:
       summary: Xóa dữ liệu của tôi (idempotent)
       description: |
         Xóa nickname, kết quả Daily, streak, phiếu, sự kiện; khám phá và báo cáo giữ nhưng bỏ UUID; đồng ý giữ
-        và thêm dòng `erase` (xóa hẳn sau 1 năm). Không cần đồng ý.
-      security: [{ PlayerId: [] }]
-      x-ac: [AC-PRIV-05]
+        và thêm dòng `erase` (xóa hẳn sau 1 năm). Không cần đồng ý. UUID được bỏ gắn khỏi tài khoản.
+        Có phiên hợp lệ thì xóa luôn tài khoản: băm `sub`, mọi phiên, nickname, kết quả Daily, streak; mọi UUID
+        đã gắn tài khoản được xóa như trên; cookie bị xóa. Đăng nhập lại bằng cùng Google tạo tài khoản mới trống.
+      security: [{ PlayerId: [] }, { PlayerId: [], Session: [] }]
+      x-ac: [AC-PRIV-05, AC-AUTH-06]
       responses:
-        '204': { description: Đã xóa (hoặc không có gì để xóa) }
+        '204':
+          description: Đã xóa (hoặc không có gì để xóa)
+          headers:
+            Set-Cookie: { $ref: '#/components/headers/ClearSessionCookie' }
         '400': { $ref: '#/components/responses/BadRequest' }
         '429': { $ref: '#/components/responses/TooManyRequests' }
         default: { $ref: '#/components/responses/Problem' }
@@ -170,9 +246,13 @@ paths:
       operationId: putNickname
       tags: [player]
       summary: Đặt / đổi nickname
-      description: Cần đồng ý mục đích `nickname` (thiếu → 403). Lọc từ cấm + bí danh trên dạng `fold`.
-      security: [{ PlayerId: [] }]
-      x-ac: [AC-DISC-02, AC-DISC-03, AC-DISC-04, AC-DISC-12, AC-PRIV-03, AC-MOD-06, AC-ADMIN-05]
+      description: |
+        Cần đồng ý mục đích `nickname` của UUID (thiếu → 403). Lọc từ cấm + bí danh trên dạng `fold`. Có phiên hợp
+        lệ thì đặt nickname của **tài khoản** (hiện trên bảng xếp hạng, mọi máy đã đăng nhập - AC-AUTH-04), không thì
+        của UUID (Công thức gia truyền). Trùng (409) khi `fold` đã thuộc tài khoản khác hoặc UUID không gắn tài
+        khoản này.
+      security: [{ PlayerId: [] }, { PlayerId: [], Session: [] }]
+      x-ac: [AC-DISC-02, AC-DISC-03, AC-DISC-04, AC-DISC-12, AC-PRIV-03, AC-MOD-06, AC-ADMIN-05, AC-AUTH-04]
       requestBody:
         required: true
         content:
@@ -199,16 +279,19 @@ paths:
     get:
       operationId: getMyStreak
       tags: [player]
-      summary: Streak của tôi
-      security: [{ PlayerId: [] }]
-      x-ac: [AC-DAILY-10]
+      summary: Streak của tài khoản đang đăng nhập
+      description: |
+        Có cookie (kể cả hết hạn) hoặc không có `X-Player-Id` → theo phiên, không có phiên hợp lệ → 401. Tạm thời
+        (deprecated, bỏ khi làm lại DAILY): chỉ có `X-Player-Id` mà không có cookie thì trả streak cũ theo UUID.
+      security: [{ Session: [] }]
+      x-ac: [AC-DAILY-10, AC-AUTH-02, AC-AUTH-04]
       responses:
         '200':
           description: Streak hiện tại (0 nếu đã đứt) và dài nhất
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Streak' }
-        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         default: { $ref: '#/components/responses/Problem' }
 
   # ---------------------------------------------------------------- play
@@ -287,10 +370,13 @@ paths:
       tags: [play]
       summary: Nộp kết quả Món đặc biệt
       description: |
-        Chỉ nhận cho version hiện hành (version cũ → 410). Đường ghép được kiểm lại từng bước theo graph của
-        version đó (AC-DAILY-06/07). Lưu 1 lần cho (UUID, version); cập nhật streak theo ngày GMT+7 của `batch_at`.
-      security: [{ PlayerId: [] }]
-      x-ac: [AC-DAILY-06, AC-DAILY-07, AC-DAILY-08, AC-DAILY-10, AC-DAILY-13, AC-INV-11, AC-REPORT-09, AC-PRIV-02]
+        Cần phiên hợp lệ (thiếu/hết hạn → 401) và đồng ý `play` của UUID (thiếu → 403). Chỉ nhận cho version hiện
+        hành (version cũ → 410). Cặp (a, b) phải là công thức đang hoạt động của version đó và ra đúng Món đặc biệt
+        (sai → 422, không ghi gì). `solved_at` = thời điểm server nhận, `solve_ms` = `solved_at` − `batch_at`.
+        Lưu 1 lần cho (tài khoản, version); cập nhật streak tài khoản theo ngày GMT+7 của `batch_at`. Giới hạn 10
+        yêu cầu/phút theo tài khoản và theo IP băm (AC-DAILY-13).
+      security: [{ PlayerId: [], Session: [] }]
+      x-ac: [AC-DAILY-06, AC-DAILY-07, AC-DAILY-08, AC-DAILY-10, AC-DAILY-13, AC-INV-10, AC-INV-11, AC-REPORT-09, AC-PRIV-02, AC-AUTH-02, AC-AUTH-04]
       parameters:
         - $ref: '#/components/parameters/Version'
       requestBody:
@@ -305,6 +391,7 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/DailyResult' }
         '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
         '409':
           description: Đã nộp cho version này - kèm kết quả đã lưu, không ghi đè
@@ -325,10 +412,12 @@ paths:
     get:
       operationId: getDailyLeaderboard
       tags: [play]
-      summary: Bảng xếp hạng đợt (top 20 cố định theo AC, không phân trang)
-      description: '`X-Player-Id` tùy chọn - có thì kèm hạng của mình kể cả ngoài top 20.'
-      security: [{}, { PlayerId: [] }]
-      x-ac: [AC-DAILY-09]
+      summary: Bảng xếp hạng mẻ (top 20 cố định theo AC, không phân trang)
+      description: |
+        Xếp theo `solved_at` tăng dần, hòa tới ms thì theo thứ tự ghi. `value` = `solve_ms`. Phiên tùy chọn - có thì
+        `me` là hạng của tài khoản kể cả ngoài top 20 (chưa nộp → null). Không có id tài khoản/UUID trong phản hồi.
+      security: [{}, { Session: [] }]
+      x-ac: [AC-DAILY-09, AC-DAILY-15]
       parameters:
         - $ref: '#/components/parameters/Version'
       responses:
@@ -340,11 +429,36 @@ paths:
         '400': { $ref: '#/components/responses/BadRequest' }
         '404': { $ref: '#/components/responses/NotFound' }
         default: { $ref: '#/components/responses/Problem' }
+  /daily/leaderboard:
+    get:
+      operationId: getDailyPeriodLeaderboard
+      tags: [play]
+      summary: Bảng xếp hạng tuần / tháng lịch GMT+7 (top 20 cố định theo AC, không phân trang)
+      description: |
+        Mẻ thuộc kỳ theo ngày GMT+7 của `batch_at`. Xếp theo số mẻ đã giải giảm dần, rồi tổng `solve_ms` tăng dần,
+        rồi `solved_at` của kết quả cuối cùng trong kỳ tăng dần. `period` vắng thì là tuần hiện tại; kỳ trong tương
+        lai hoặc bắt đầu trước hôm nay quá 3 tháng → 400. Phiên tùy chọn - có thì kèm hạng của mình.
+      security: [{}, { Session: [] }]
+      x-ac: [AC-DAILY-14, AC-DAILY-15]
+      parameters:
+        - name: period
+          in: query
+          required: false
+          description: Tuần ISO `2026-W43` hoặc tháng `2026-10`
+          schema: { type: string, pattern: '^[0-9]{4}-(W(0[1-9]|[1-4][0-9]|5[0-3])|(0[1-9]|1[0-2]))$' }
+      responses:
+        '200':
+          description: Bảng xếp hạng kỳ (rỗng nếu chưa có kết quả)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PeriodLeaderboard' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        default: { $ref: '#/components/responses/Problem' }
   /streaks/leaderboard:
     get:
       operationId: getStreakLeaderboard
       tags: [play]
-      summary: Bảng xếp hạng streak (top 20 cố định theo AC, không phân trang)
+      summary: Bảng xếp hạng streak theo tài khoản (top 20 cố định theo AC, không phân trang)
       security: []
       x-ac: [AC-DAILY-11]
       responses:
@@ -790,6 +904,14 @@ components:
       in: header
       name: X-Player-Id
       description: UUID v4 sinh bằng `crypto.randomUUID()` (định danh ẩn danh, không phải xác thực). Sai định dạng → 400.
+    Session:
+      type: apiKey
+      in: cookie
+      name: laumeme_sid
+      description: |
+        Mã phiên ngẫu nhiên 256 bit (base64url), D1 chỉ lưu SHA-256. Cookie `HttpOnly; Secure; SameSite=Lax;
+        Path=/lau-meme`; hết hạn sau 90 ngày không dùng, mỗi lần dùng gia hạn (ADR 0010). Thiếu/hết hạn/đã thu hồi
+        → 401. Yêu cầu ghi có cookie phải là `application/json` (chặn form chéo trang).
     AdminToken:
       type: http
       scheme: bearer
@@ -819,6 +941,12 @@ components:
       schema: { type: string, example: 'public, max-age=60' }
     CacheImmutable:
       schema: { type: string, example: 'public, max-age=31536000, immutable' }
+    SetSessionCookie:
+      description: '`laumeme_sid=<mã>; Path=/lau-meme; Max-Age=7776000; HttpOnly; Secure; SameSite=Lax`'
+      schema: { type: string }
+    ClearSessionCookie:
+      description: '`laumeme_sid=; Path=/lau-meme; Max-Age=0; HttpOnly; Secure; SameSite=Lax`'
+      schema: { type: string }
     RetryAfter:
       description: Số giây chờ trước khi thử lại
       schema: { type: integer, minimum: 1 }
@@ -835,7 +963,7 @@ components:
         application/problem+json:
           schema: { $ref: '#/components/schemas/Problem' }
     Unauthorized:
-      description: Thiếu hoặc sai token
+      description: Thiếu hoặc sai token; phiên thiếu, hết hạn hoặc đã thu hồi; ID token Google không hợp lệ
       content:
         application/problem+json:
           schema: { $ref: '#/components/schemas/Problem' }
@@ -1024,12 +1152,40 @@ components:
       properties:
         current: { type: integer, minimum: 0 }
         longest: { type: integer, minimum: 0 }
+    GoogleSignInRequest:
+      type: object
+      additionalProperties: false
+      required: [credential]
+      properties:
+        credential: { type: string, maxLength: 4096, description: ID token (JWT) từ Google Identity Services }
+    SessionInfo:
+      type: object
+      additionalProperties: false
+      required: [nickname, created_at]
+      properties:
+        nickname: { type: [string, 'null'], description: 'Nickname của tài khoản; null → client hiện "Thực khách ẩn danh"' }
+        created_at: { $ref: '#/components/schemas/Instant' }
     MyData:
       type: object
       additionalProperties: false
-      required: [nickname, discoveries, daily_results, streak, reports, votes, consents, event_counts]
+      required: [nickname, discoveries, daily_results, streak, reports, votes, consents, event_counts, account]
       properties:
         nickname: { type: [string, 'null'] }
+        account:
+          description: Chỉ khi có phiên hợp lệ; không có băm `sub`
+          oneOf:
+            - type: 'null'
+            - type: object
+              additionalProperties: false
+              required: [created_at, open_sessions, nickname, daily_results, streak]
+              properties:
+                created_at: { $ref: '#/components/schemas/Instant' }
+                open_sessions: { type: integer, minimum: 1 }
+                nickname: { type: [string, 'null'] }
+                daily_results:
+                  type: array
+                  items: { $ref: '#/components/schemas/DailyResult' }
+                streak: { $ref: '#/components/schemas/Streak' }
         discoveries:
           type: array
           items:
@@ -1088,24 +1244,20 @@ components:
     DailyResultRequest:
       type: object
       additionalProperties: false
-      required: [steps, path]
+      required: [a, b]
       properties:
-        steps: { type: integer, minimum: 1, maximum: 200, description: Số lượt ghép kể cả trượt }
-        path:
-          type: array
-          minItems: 1
-          maxItems: 200
-          items: { $ref: '#/components/schemas/Combination' }
+        a: { $ref: '#/components/schemas/Name' }
+        b: { $ref: '#/components/schemas/Name' }
     DailyResult:
       type: object
       additionalProperties: false
-      required: [version, steps, rank, streak, submitted_at]
+      required: [version, solve_ms, rank, streak, solved_at]
       properties:
         version: { type: integer }
-        steps: { type: integer }
-        rank: { type: integer, minimum: 1 }
+        solve_ms: { type: integer, minimum: 0, description: '`solved_at` − `batch_at` của mẻ' }
+        rank: { type: integer, minimum: 1, description: Hạng hiện tại trong mẻ }
         streak: { $ref: '#/components/schemas/Streak' }
-        submitted_at: { $ref: '#/components/schemas/Instant' }
+        solved_at: { $ref: '#/components/schemas/Instant' }
     LeaderboardRow:
       type: object
       additionalProperties: false
@@ -1113,7 +1265,7 @@ components:
       properties:
         rank: { type: integer, minimum: 1 }
         nickname: { type: string }
-        value: { type: integer, description: Số bước (Daily) hoặc streak hiện tại }
+        value: { type: integer, description: Thời gian giải tính bằng ms (bảng mẻ) hoặc streak hiện tại }
     DailyLeaderboard:
       type: object
       additionalProperties: false
@@ -1128,6 +1280,32 @@ components:
           oneOf:
             - type: 'null'
             - $ref: '#/components/schemas/LeaderboardRow'
+    PeriodLeaderboardRow:
+      type: object
+      additionalProperties: false
+      required: [rank, nickname, solved, total_ms]
+      properties:
+        rank: { type: integer, minimum: 1 }
+        nickname: { type: string }
+        solved: { type: integer, minimum: 1, description: Số mẻ đã giải trong kỳ }
+        total_ms: { type: integer, minimum: 0, description: Tổng thời gian giải các mẻ đã giải }
+    PeriodLeaderboard:
+      type: object
+      additionalProperties: false
+      required: [period, starts_at, ends_at, batches, rows, me]
+      properties:
+        period: { type: string, examples: ['2026-W43', '2026-10'] }
+        starts_at: { $ref: '#/components/schemas/Instant' }
+        ends_at: { $ref: '#/components/schemas/Instant' }
+        batches: { type: integer, minimum: 0, description: Số mẻ trong kỳ (tới hiện tại) }
+        rows:
+          type: array
+          maxItems: 20
+          items: { $ref: '#/components/schemas/PeriodLeaderboardRow' }
+        me:
+          oneOf:
+            - type: 'null'
+            - $ref: '#/components/schemas/PeriodLeaderboardRow'
     StreakLeaderboard:
       type: object
       additionalProperties: false

@@ -2,6 +2,7 @@ import { HttpError, json, problem, readJson } from '../../http'
 import { elementId, recipeId } from '../../ids'
 import { ANONYMOUS, optionalPlayerId, playerId } from '../../player'
 import { rateCounters, type Limit } from '../../ratelimit'
+import { hasSessionCookie, requireSession, sessionCookie } from '../../session'
 import { dayGmt7 } from '../../uuid'
 import { arr, fail, int, obj, str } from '../../validate'
 import { versionParam } from '../content/content'
@@ -37,7 +38,7 @@ function addDays(day: string, n: number): string {
 }
 
 /** A streak is still alive while its last day is today or yesterday (GMT+7); otherwise it reads as 0. */
-function liveCurrent(row: StreakRow | null, now: number): number {
+export function liveCurrent(row: StreakRow | null, now: number): number {
   if (!row) return 0
   return row.last_day >= addDays(dayGmt7(now), -1) ? row.current : 0
 }
@@ -302,11 +303,27 @@ export async function getStreakLeaderboard(_req: Request, env: Env): Promise<Res
   })
 }
 
-/** GET /api/me/streak */
+/**
+ * GET /api/me/streak - the signed-in account's streak (AC-AUTH-02/04): a cookie that is not a live session is a
+ * 401, and so is a request with neither cookie nor UUID. Until the DAILY rework moves submissions to accounts, a
+ * request with only `X-Player-Id` still reads the old per-UUID streak.
+ */
 export async function getMyStreak(req: Request, env: Env): Promise<Response> {
+  if (hasSessionCookie(req) || req.headers.get('X-Player-Id') === null) {
+    const session = await requireSession(req, env)
+    const row = await accountStreakStatement(env.DB, session.accountId).first<StreakRow>()
+    return json(
+      { current: liveCurrent(row, Date.now()), longest: row?.longest ?? 0 },
+      { headers: { 'Set-Cookie': sessionCookie(env, session.token) } },
+    )
+  }
   const row = await streakStatement(env.DB, playerId(req)).first<StreakRow>()
   return json({
     current: liveCurrent(row, Date.now()),
     longest: row?.longest ?? 0,
   })
+}
+
+export function accountStreakStatement(db: D1Database, accountId: string): D1PreparedStatement {
+  return db.prepare('SELECT current, longest, last_day, reached_at FROM account_streak WHERE account_id = ?').bind(accountId)
 }

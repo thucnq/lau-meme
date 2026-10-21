@@ -2,6 +2,7 @@ import { hasBearer } from './auth'
 import { adminOnly, listAudit, listBatches, listElements, listRecipes, listReports, moderate } from './features/admin/admin'
 import { getGraph, getManifest } from './features/content/content'
 import { createDiscovery, listDiscoveries, putBannedTerms } from './features/disc/disc'
+import { getSession, signInWithGoogle, signOut } from './features/auth/auth'
 import { getDailyLeaderboard, getMyStreak, getStreakLeaderboard, submitDailyResult } from './features/daily/daily'
 import { getPipelineState, patchBatchRun, publishBatch, rollbackBatch } from './features/pipeline/batches'
 import { cleanup } from './features/player/cleanup'
@@ -41,6 +42,8 @@ const routes: Route[] = [
   { pattern: /^\/api\/blocklist$/, methods: { GET: getBlocklist } },
   { pattern: /^\/api\/reports$/, methods: { POST: createReport } },
   { pattern: /^\/api\/discoveries$/, methods: { GET: listDiscoveries, POST: createDiscovery } },
+  { pattern: /^\/api\/auth\/google$/, methods: { POST: signInWithGoogle } },
+  { pattern: /^\/api\/auth\/session$/, methods: { GET: getSession, DELETE: signOut } },
   { pattern: /^\/api\/consents$/, methods: { POST: createConsent } },
   { pattern: /^\/api\/me$/, methods: { GET: getMyData, DELETE: deleteMyData } },
   { pattern: /^\/api\/me\/nickname$/, methods: { PUT: putNickname } },

@@ -1,6 +1,6 @@
 # ERD - D1 (SQLite)
 
-> Nguồn: `worker/migrations/0001..0004`. Id phần tử/công thức là băm (ADR 0002). Thời gian `INTEGER` epoch ms UTC.
+> Nguồn: `worker/migrations/0001..0005`. Id phần tử/công thức là băm (ADR 0002). Thời gian `INTEGER` epoch ms UTC.
 > Không có khóa ngoại từ dữ liệu người chơi sang `element`/`recipe`: nội dung đổi theo version, bảng người chơi chỉ giữ id.
 
 ```mermaid
@@ -141,6 +141,45 @@ erDiagram
     INTEGER received_at
   }
 
+  account {
+    TEXT id PK "UUIDv7"
+    BLOB sub_hash UK "HMAC-SHA256 của sub Google"
+    TEXT nickname
+    TEXT nickname_fold UK
+    INTEGER created_at
+    INTEGER updated_at
+  }
+  account_player {
+    TEXT player_id PK
+    TEXT account_id FK
+    INTEGER linked_at
+  }
+  session {
+    BLOB token_hash PK "SHA-256 mã phiên"
+    TEXT account_id FK
+    INTEGER created_at
+    INTEGER last_used_at
+    INTEGER expires_at
+  }
+  daily_entry {
+    INTEGER seq PK
+    INTEGER version UK
+    TEXT account_id UK
+    TEXT day
+    TEXT a_id
+    TEXT b_id
+    INTEGER solved_at
+    INTEGER solve_ms
+  }
+  account_streak {
+    TEXT account_id PK
+    INTEGER current
+    INTEGER longest
+    TEXT last_day
+    INTEGER reached_at
+    INTEGER updated_at
+  }
+
   rate_counter {
     TEXT bucket PK
     INTEGER count
@@ -162,8 +201,13 @@ erDiagram
   batch_content ||--|| batch_run : "version"
   element ||--o| discovery : "element_id"
   player ||--o{ consent : "player_id (giữ sau khi xóa)"
-  player ||--o{ daily_result : "player_id"
-  player ||--o| streak : "player_id"
+  player ||--o{ daily_result : "player_id (không ghi nữa, câu hỏi mở 34)"
+  player ||--o| streak : "player_id (không ghi nữa, câu hỏi mở 34)"
+  account ||--o{ account_player : "account_id"
+  player ||--o| account_player : "player_id"
+  account ||--o{ session : "account_id"
+  account ||--o{ daily_entry : "account_id"
+  account ||--o| account_streak : "account_id"
   player ||--o{ report : "player_id"
   player ||--o{ vote : "player_id"
   player ||--o{ event : "player_id"
@@ -174,4 +218,5 @@ erDiagram
 
 ## Ghi chú
 - Dữ liệu cá nhân: `player`, `consent`, `discovery.player_id`, `daily_result`, `streak`, `report.player_id`, `vote`, `event` (BRD 5.2). Xóa theo UUID: AC-PRIV-05.
-- Giữ dữ liệu (Cron Trigger hằng ngày, ADR 0004): `event` 90 ngày; `consent.ip_hash` 7 ngày; `admin_audit` 12 tháng; `consent` 1 năm sau dòng `erase`; `batch_content` 14 version mới nhất.
+- Tài khoản Google (ADR 0010): `account`, `account_player`, `session`, `daily_entry`, `account_streak`; xóa `account` thì `ON DELETE CASCADE` xóa phần còn lại (AC-AUTH-06). Kết quả Daily, streak và nickname trên bảng xếp hạng thuộc tài khoản; `daily_result`/`streak` theo UUID cũ không còn được ghi.
+- Giữ dữ liệu (Cron Trigger hằng ngày, ADR 0004): `event` 90 ngày; `consent.ip_hash` 7 ngày; `admin_audit` 12 tháng; `consent` 1 năm sau dòng `erase`; `session` hết hạn (90 ngày không dùng); `batch_content` 14 version mới nhất.

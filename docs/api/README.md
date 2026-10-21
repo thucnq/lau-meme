@@ -15,6 +15,7 @@ Trên host game, `/lau-meme/api/admin/*` trả 404; trên host quản trị ch�
 |---|---|---|
 | - | không cần | đọc công khai (`/health`, `/manifest`, `/graph`, `/blocklist`, bảng xếp hạng…) |
 | `PlayerId` | header `X-Player-Id: <UUID v4>` sinh ở client | định danh ẩn danh người chơi, **không phải** xác thực; sai định dạng → 400 |
+| `Session` | cookie `laumeme_sid` (HttpOnly, Secure, SameSite=Lax, Path=/lau-meme) đặt bởi `POST /auth/google` | thực khách đã đăng nhập Google: nộp Daily, streak của mình, nickname tài khoản; hết hạn sau 90 ngày không dùng (ADR 0010) |
 | `PipelineToken` | `Authorization: Bearer <PIPELINE_TOKEN>` | `/pipeline/*`, `/metrics/summary` |
 | `AdminToken` | `Authorization: Bearer <ADMIN_TOKEN>` | `/admin/*`, `/metrics/summary`; 5 lần sai/phút/IP băm ⇒ khóa 15 phút (429 + `Retry-After`) |
 
@@ -34,14 +35,18 @@ Mọi lỗi là RFC 9457 `application/problem+json` (`type`, `title`, `status`, 
 | GET | `/graph/{version}` | Graph mã hóa của một version (bất biến) | - | AC-GRAPH-01..04 |
 | GET | `/blocklist` | Danh sách chặn nóng (phần tử, công thức, ảnh) | - | AC-REPORT-04..07, AC-ADMIN-03/04 |
 | POST | `/consents` | Ghi / rút đồng ý (append-only) | PlayerId | AC-PRIV-02..04, AC-PRIV-09 |
-| GET | `/me` | Xem / xuất dữ liệu của tôi | PlayerId | AC-PRIV-08 |
-| DELETE | `/me` | Xóa dữ liệu của tôi (idempotent) | PlayerId | AC-PRIV-05 |
-| PUT | `/me/nickname` | Đặt / đổi nickname | PlayerId | AC-DISC-02..04, AC-DISC-12 |
-| GET | `/me/streak` | Streak của tôi | PlayerId | AC-DAILY-10 |
+| POST | `/auth/google` | Đăng nhập bằng ID token Google, mở phiên | PlayerId | AC-AUTH-01, AC-AUTH-03, AC-AUTH-04, AC-AUTH-07 |
+| GET | `/auth/session` | Phiên hiện tại (gia hạn) | Session | AC-AUTH-02 |
+| DELETE | `/auth/session` | Đăng xuất | - hoặc Session | AC-AUTH-05 |
+| GET | `/me` | Xem / xuất dữ liệu của tôi (có phiên thì kèm tài khoản) | PlayerId (+ Session) | AC-PRIV-08, AC-AUTH-06 |
+| DELETE | `/me` | Xóa dữ liệu của tôi (có phiên thì xóa cả tài khoản) | PlayerId (+ Session) | AC-PRIV-05, AC-AUTH-06 |
+| PUT | `/me/nickname` | Đặt / đổi nickname (có phiên thì của tài khoản) | PlayerId (+ Session) | AC-DISC-02..04, AC-DISC-12, AC-AUTH-04 |
+| GET | `/me/streak` | Streak của tài khoản | Session | AC-DAILY-10 |
 | GET | `/discoveries` | Công thức gia truyền của các phần tử | - | AC-DISC-09 |
 | POST | `/discoveries` | Gửi khám phá (ghi người đầu tiên) | PlayerId | AC-DISC-05..08, AC-DISC-10..12 |
-| POST | `/daily/{version}/results` | Nộp kết quả Món đặc biệt | PlayerId | AC-DAILY-06..08, AC-DAILY-13 |
-| GET | `/daily/{version}/leaderboard` | Bảng xếp hạng đợt (top 20) | - hoặc PlayerId | AC-DAILY-09 |
+| POST | `/daily/{version}/results` | Nộp cặp ghép ra Món đặc biệt | PlayerId + Session | AC-DAILY-06..08, AC-DAILY-13 |
+| GET | `/daily/{version}/leaderboard` | Bảng xếp hạng mẻ (top 20) | - hoặc Session | AC-DAILY-09 |
+| GET | `/daily/leaderboard?period=2026-W43` | Bảng xếp hạng tuần / tháng (top 20) | - hoặc Session | AC-DAILY-14 |
 | GET | `/streaks/leaderboard` | Bảng xếp hạng streak (top 20) | - | AC-DAILY-11 |
 | POST | `/reports` | Báo cáo phần tử hoặc ảnh | PlayerId | AC-REPORT-01..05, AC-REPORT-08 |
 | PUT | `/votes` | Bỏ phiếu Ngon / Nhạt cho công thức | PlayerId | AC-FEEDBACK-01..03 |
@@ -71,7 +76,7 @@ Mọi lỗi là RFC 9457 `application/problem+json` (`type`, `title`, `status`, 
 ## Thử nhanh
 ```bash
 curl -s https://staging.dinoduct.fun/lau-meme/api/health
-curl -s -H "X-Player-Id: $(uuidgen)" https://staging.dinoduct.fun/lau-meme/api/me/streak
+curl -s https://staging.dinoduct.fun/lau-meme/api/streaks/leaderboard
 ```
 
 ## Đổi hợp đồng
