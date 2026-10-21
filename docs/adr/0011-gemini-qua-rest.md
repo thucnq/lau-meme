@@ -1,4 +1,4 @@
-# 0011 - Gemini 2.5 Flash gọi qua REST bằng thư viện chuẩn, khóa ở GitHub Secret
+# 0011 - Gemini Flash gọi qua REST bằng thư viện chuẩn, khóa ở GitHub Secret
 
 - Trạng thái: Đã chấp nhận (người duyệt 2026-10-21)
 - Ngày: 2026-10-21
@@ -8,7 +8,7 @@
 Mẻ `full` cần LLM ở các bước: hỏi trùng (`same`), mô tả meme (`describe`), kiểm duyệt lớp 2 (`classify`), liên kết ngược (`link`), giám khảo (`judge`), công thức bổ sung. Code thuần (`full.py`, `llm.py`) đã nhận LLM dưới dạng hàm theo bước và xử lý gom lô, backoff, hết quota, cache theo mẻ; còn thiếu adapter mạng thật. Pipeline hiện chỉ dùng thư viện chuẩn Python, không có phụ thuộc mạng nào.
 
 ## Quyết định
-- **Nhà cung cấp và model:** Google AI Studio, gói free, model `gemini-2.5-flash` (người chọn 2026-10-21). Đổi model bằng biến `GEMINI_MODEL`, không cần sửa code.
+- **Nhà cung cấp và model:** Google AI Studio, gói free, model `gemini-3.8-flash` (người chọn 2026-10-21). Đổi model bằng biến `GEMINI_MODEL`, không cần sửa code. Cập nhật 2026-10-21: lúc đầu chọn `gemini-2.5-flash`, nhưng Google trả HTTP 404 "no longer available to new users" cho khóa mới nên đổi mặc định sang `gemini-3.8-flash`.
 - **Gọi REST** `POST https://generativelanguage.googleapis.com/v1beta/models/<model>:generateContent` bằng `http.client` (cùng kiểu adapter `_Https` của `batch.py`), header `x-goog-api-key`, `generationConfig.responseMimeType = application/json`, `temperature = 0`. Không thêm SDK `google-genai`.
 - **Ánh xạ lỗi:** HTTP 429 mà chi tiết lỗi nêu hạn mức theo ngày (`quotaId` chứa `PerDay`) → `QuotaExhausted`; 429 khác (theo phút) và 5xx → `RateLimited` (backoff của `call_in_batches`); lỗi khác hoặc trả lời không phải JSON → `LlmError`. Thông báo lỗi chỉ ghi loại lỗi và mã HTTP, không ghi URL hay khóa.
 - **Khóa:** GitHub Environment secret `GEMINI_API_KEY` (staging, production-no-approval), không bao giờ vào repo hay log. Thiếu khóa ở chế độ `full` → đợt thất bại ở bước `llm`, bản hiện hành giữ nguyên.

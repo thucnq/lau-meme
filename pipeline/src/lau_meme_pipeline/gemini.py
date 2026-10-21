@@ -25,7 +25,7 @@ from lau_meme_pipeline.llm import (
 from lau_meme_pipeline.moderation import CATEGORIES
 
 HOST = "generativelanguage.googleapis.com"
-DEFAULT_MODEL = "gemini-2.5-flash"
+DEFAULT_MODEL = "gemini-3.8-flash"
 
 _COMMON = (
     "Bạn hỗ trợ game ghép meme tiếng Việt 'Lẩu Meme'. Dữ liệu vào là JSON ở cuối. "
@@ -176,7 +176,8 @@ class GeminiSteps(Mapping[str, Callable[[object], object]]):
             if not out.results:
                 raise QuotaExhausted()
         elif items and not out.results:
-            raise LlmError(f"Gemini: cả {len(items)} mục của bước {step} đều lỗi")
+            causes = ", ".join(dict.fromkeys(out.causes))
+            raise LlmError(f"Gemini: cả {len(items)} mục của bước {step} đều lỗi ({causes})")
         if merged_dict:
             answer: object = {k: v for part in out.results for k, v in part.items()}
         elif step == "same" and out.failed:
