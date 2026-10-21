@@ -73,7 +73,7 @@
 
 ### 4.4 Mẻ nhúng mới (PIPE + MOD + ART)
 - Giai đoạn 1 (chế độ lõi): chọn Món đặc biệt → xuất graph + manifest → deploy → báo cáo đợt.
-- Giai đoạn 2 (đầy đủ): crawl → khử trùng → kiểm duyệt 2 lớp → liên kết ngược → công thức bổ sung → giám khảo → vẽ minh họa → chọn Món đặc biệt → xuất graph + manifest (giữ 14 bản) → deploy → báo cáo đợt qua GitHub Issue.
+- Giai đoạn 2 (đầy đủ): crawl → khử trùng → kiểm duyệt 2 lớp → liên kết ngược → công thức bổ sung → giám khảo → vẽ minh họa (tối đa 20 ảnh/đợt, tải lên R2 qua Worker trước khi đăng; lỗi vẽ không làm hỏng mẻ, phần tử chờ vẽ đợt sau - AC-ART-09/10, cập nhật 2026-10-21) → chọn Món đặc biệt → xuất graph + manifest (giữ 14 bản) → deploy → báo cáo đợt qua GitHub Issue.
 - Ngoại lệ: lỗi ở bất kỳ bước nào trước deploy → không đăng gì, bản cũ giữ nguyên; hết quota Gemini → dừng êm, đăng phần đã xong và qua kiểm duyệt, phần còn lại vào hàng chờ.
 
 ### 4.5 Phanh khẩn cấp (REPORT + ADMIN + GRAPH)
@@ -176,3 +176,4 @@ Stack là Cloudflare Worker + D1 + Python pipeline (không Docker/Postgres), nê
 | 2026-10-20 | 0.2 | AC-PIPE-08: thêm hạn mức 150 cặp/đợt chọn theo mức hay cùng nằm trên Đĩa (giảm ghép trượt, mô phỏng: +200 cặp đúng chỗ kéo 20 lượt đầu từ 41,5 % xuống 28 %); AC-ART-01 đổi phong cách sticker sang vẽ tay; thêm AC-ART-08 phóng lớn ảnh khi ghép ra món lần đầu | nguyenquythuc (chờ /dk:approve spec) |
 | 2026-10-21 | 0.4 | Thêm AC-DAILY-14: bấm món trên bàn thử thách thì đặt vào nồi lẩu, nồi sôi và câu Nồi trào như bàn lẩu (lần trượt liên tiếp vẫn thấy rõ); món thử thách không ghép lẫn với món Đĩa. (0.3 nằm ở PR #24) | nguyenquythuc (chờ /dk:approve spec) |
 | 2026-10-21 | 0.5 | DAILY: bỏ bàn thử thách và đếm bước, ghép ra món trên bàn lẩu là giải; xếp hạng mẻ theo thời điểm server nhận; thêm bảng tuần/tháng lịch GMT+7 (số mẻ giải, rồi tổng thời gian); chỉ tài khoản Google nộp được. Thêm AUTH (đăng nhập Google, chỉ băm `sub`). SHARE thẻ Daily hiện thời gian giải thay số bước. INV-11 theo cặp đã ghép. AC-GAME-18 nồi lẩu trong màn hình đầu tiên | nguyenquythuc (chờ /dk:approve spec) |
+| 2026-10-21 | 0.6 | ART: thêm AC-ART-09 (mẻ full vẽ ảnh: 20 ảnh/đợt, kiểm đúng byte WebP, tải lên trước khi đăng, ngân sách 8 phút, báo cáo đợt) và AC-ART-10 (thiếu cấu hình, lỗi 401/403/404, lỗi tạm thời 3 đợt thì về emoji) theo ADR 0012 đã chấp nhận; không đổi hành vi đã làm | nguyenquythuc (chờ /dk:approve spec) |
