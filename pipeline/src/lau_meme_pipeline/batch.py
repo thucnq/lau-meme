@@ -290,6 +290,11 @@ def _art_lines(report: Mapping | None) -> list[str]:
         lines.append("- Ảnh bị loại: " + ", ".join(f"{k} {v}" for k, v in report["rejections"].items()))
     if report.get("errors"):
         lines.append("- Ảnh lỗi: " + ", ".join(f"{k} {v}" for k, v in report["errors"].items()))
+    if report.get("config_error"):
+        lines.append(
+            "- ⚠️ Vẽ ảnh dừng vì lỗi cấu hình (401/403/404): kiểm WORKERS_AI_TOKEN, CLOUDFLARE_ACCOUNT_ID, "
+            "WORKERS_AI_MODEL, GEMINI_API_KEY - phần tử giữ nguyên chờ vẽ"
+        )
     if report.get("missing"):
         lines.append("- ⚠️ Chưa vẽ ảnh: thiếu WORKERS_AI_TOKEN / CLOUDFLARE_ACCOUNT_ID (ADR 0012), phần tử mới chờ vẽ")
     return lines

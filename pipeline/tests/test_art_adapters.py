@@ -394,7 +394,7 @@ def test_ac_art_04_image_exists_dung_head_tren_duong_dan_img(monkeypatch, status
 # ================================================================ AC-ART-02: a refused request is a failed draw
 
 
-@pytest.mark.parametrize("status", [400, 403, 422])
+@pytest.mark.parametrize("status", [400, 413, 422])
 def test_ac_art_02_workers_ai_tu_choi_thi_nem_draw_rejected_khong_retry(monkeypatch, status):
     """AC-ART-02: Workers AI trả 400/403/422 (không phải 429, không phải 5xx): ném DrawRejected (lớp con của
     LlmError), không thử lại, không ngủ."""
@@ -414,7 +414,7 @@ def test_ac_art_02_workers_ai_tu_choi_thi_nem_draw_rejected_khong_retry(monkeypa
     assert FAKE_AI_BEARER not in str(info.value) + repr(info.value)
 
 
-@pytest.mark.parametrize("status", [400, 403])
+@pytest.mark.parametrize("status", [400])
 def test_ac_art_02_gemini_kiem_anh_tu_choi_thi_nem_draw_rejected(monkeypatch, status):
     """AC-ART-02: Gemini trả 400/403 khi kiểm ảnh: ném DrawRejected, không thử lại, khóa không lộ."""
     from lau_meme_pipeline.llm import DrawRejected
@@ -477,3 +477,81 @@ def test_ac_pipe_10_workers_ai_prompt_khac_thi_seed_khac(monkeypatch):
         make_ai()[0](prompt)
 
     assert len({seed_of(r) for r in seen}) == len(prompts)
+
+
+# ================================================================ AC-ART-03: configuration errors
+
+
+@pytest.mark.parametrize("status", [401, 403, 404])
+def test_ac_art_03_workers_ai_loi_cau_hinh_thi_nem_art_config_error_khong_retry(monkeypatch, status):
+    """AC-ART-03: Workers AI trả 401/403/404 (token hoặc account sai): ném ArtConfigError (lớp con LlmError, không
+    phải DrawRejected), không thử lại, token không lộ."""
+    from lau_meme_pipeline.llm import ArtConfigError, DrawRejected, LlmError
+
+    server = Server(ai_ok(), script=[status] * 4, echo=FAKE_AI_BEARER)
+    install(monkeypatch, server)
+    draw, sleeps = make_ai()
+
+    with pytest.raises(ArtConfigError) as info:
+        draw(PROMPT)
+
+    assert isinstance(info.value, LlmError)
+    assert not isinstance(info.value, DrawRejected)
+    assert len(server.requests) == 1
+    assert sleeps == []
+    assert FAKE_AI_BEARER not in str(info.value) + repr(info.value)
+
+
+@pytest.mark.parametrize("status", [401, 403, 404])
+def test_ac_art_03_gemini_kiem_anh_loi_cau_hinh_thi_nem_art_config_error(monkeypatch, status):
+    """AC-ART-03: Gemini trả 401/403/404 khi kiểm ảnh: ArtConfigError (không phải DrawRejected), không retry."""
+    from lau_meme_pipeline.llm import ArtConfigError, DrawRejected
+
+    server = Server(gemini_answer('{"ok": true}'), script=[(status, {"error": {"message": API_KEY}})] * 4)
+    install(monkeypatch, server)
+    check, sleeps = make_check()
+
+    with pytest.raises(ArtConfigError) as info:
+        check(IMAGE)
+
+    assert not isinstance(info.value, DrawRejected)
+    assert len(server.requests) == 1
+    assert sleeps == []
+    assert API_KEY not in str(info.value) + repr(info.value)
+
+
+def test_ac_art_03_gemini_400_api_key_invalid_la_loi_cau_hinh(monkeypatch):
+    """AC-ART-03: HTTP 400 có API_KEY_INVALID trong thân (khóa Gemini sai) là ArtConfigError."""
+    from lau_meme_pipeline.llm import ArtConfigError
+
+    body = {
+        "error": {
+            "code": 400,
+            "message": "API key not valid. Please pass a valid API key.",
+            "details": [{"@type": "type.googleapis.com/google.rpc.ErrorInfo", "reason": "API_KEY_INVALID"}],
+        }
+    }
+    server = Server(gemini_answer('{"ok": true}'), script=[(400, body)])
+    install(monkeypatch, server)
+    check, _ = make_check()
+
+    with pytest.raises(ArtConfigError):
+        check(IMAGE)
+
+    assert len(server.requests) == 1
+
+
+def test_ac_art_02_gemini_400_khac_van_la_draw_rejected(monkeypatch):
+    """AC-ART-02: HTTP 400 không có API_KEY_INVALID (yêu cầu bị từ chối) vẫn là DrawRejected, không phải lỗi cấu
+    hình."""
+    from lau_meme_pipeline.llm import ArtConfigError, DrawRejected
+
+    body = {"error": {"code": 400, "message": "Unable to process input image", "status": "INVALID_ARGUMENT"}}
+    server = Server(gemini_answer('{"ok": true}'), script=[(400, body)])
+    install(monkeypatch, server)
+    check, _ = make_check()
+
+    with pytest.raises(DrawRejected) as info:
+        check(IMAGE)
+
+    assert not isinstance(info.value, ArtConfigError)

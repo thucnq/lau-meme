@@ -1,7 +1,8 @@
 """Network adapter: Workers AI text-to-image over the Cloudflare REST API (ADR 0012).
 
 `WorkersAiImages(prompt) -> bytes` is the `generate` of `art.ArtAdapters`. 429 means the free allocation is used up
-(the rest waits, AC-ART-03); 5xx is retried with backoff; another 4xx is DrawRejected (the prompt itself is refused).
+(the rest waits, AC-ART-03); 5xx is retried with backoff; 400/413/422 is DrawRejected (the prompt itself is refused);
+401/403/404 is ArtConfigError (token, account or model).
 The seed comes from the prompt and how many times this run asked it, so a rerun draws the same pictures
 (AC-PIPE-10) while a redraw is a new one. Only the Flux response shape `{"result": {"image": base64}}` is read.
 Errors carry only their type and HTTP status, never the token or the account URL.
@@ -16,12 +17,14 @@ import time
 from collections.abc import Callable
 
 from lau_meme_pipeline.batch import TIMEOUT_SECONDS
-from lau_meme_pipeline.llm import DrawRejected, LlmError, QuotaExhausted
+from lau_meme_pipeline.llm import ArtConfigError, DrawRejected, LlmError, QuotaExhausted
 
 HOST = "api.cloudflare.com"
 DEFAULT_MODEL = "@cf/black-forest-labs/flux-1-schnell"
 MAX_RETRIES = 3
 BASE_DELAY = 2.0
+CONFIG_STATUSES = (401, 403, 404)
+REFUSED_STATUSES = (400, 413, 422)
 
 
 class WorkersAiImages:
@@ -53,8 +56,12 @@ class WorkersAiImages:
                     raise LlmError(f"Workers AI HTTP {status}")
                 self._sleep(BASE_DELAY * 2**attempt)
                 continue
-            if status != 200:
+            if status in CONFIG_STATUSES:
+                raise ArtConfigError(f"Workers AI HTTP {status}")
+            if status in REFUSED_STATUSES:
                 raise DrawRejected(f"Workers AI HTTP {status}")
+            if status != 200:
+                raise LlmError(f"Workers AI HTTP {status}")
             try:
                 answer = json.loads(raw)
                 if answer.get("success") is not True:

@@ -13,7 +13,15 @@ from collections.abc import Callable, Iterator, Mapping
 
 from lau_meme_pipeline.art import REJECT_REASONS
 from lau_meme_pipeline.batch import TIMEOUT_SECONDS, build_llm_payload
-from lau_meme_pipeline.llm import DrawRejected, LlmError, PartialAnswer, QuotaExhausted, RateLimited, call_in_batches
+from lau_meme_pipeline.llm import (
+    ArtConfigError,
+    DrawRejected,
+    LlmError,
+    PartialAnswer,
+    QuotaExhausted,
+    RateLimited,
+    call_in_batches,
+)
 from lau_meme_pipeline.moderation import CATEGORIES
 
 HOST = "generativelanguage.googleapis.com"
@@ -75,12 +83,21 @@ class _Http:
         if res.status >= 500:
             raise RateLimited()
         if res.status != 200:
-            raise LlmError(f"Gemini HTTP {res.status}")
+            raise _HttpStatus(res.status, b"API_KEY_INVALID" in raw)
         try:
             text = json.loads(raw)["candidates"][0]["content"]["parts"][0]["text"]
             return json.loads(text)
         except (ValueError, KeyError, IndexError, TypeError):
             raise _Unreadable("Gemini trả lời không phải JSON") from None
+
+
+class _HttpStatus(LlmError):
+    """A non-2xx answer; the message holds only the status, never the key the server may echo."""
+
+    def __init__(self, status: int, key_invalid: bool) -> None:
+        super().__init__(f"Gemini HTTP {status}")
+        self.status = status
+        self.key_invalid = key_invalid
 
 
 class _Unreadable(LlmError):
@@ -214,8 +231,10 @@ class GeminiImageCheck:
                 self._sleep(2.0 * 2**attempt)
             except _Unreadable:
                 return "banned_category"
-            except LlmError as exc:  # HTTP 4xx: this image is refused, a retry cannot help
-                raise DrawRejected(str(exc)) from None
+            except _HttpStatus as exc:
+                if exc.status in (401, 403, 404) or exc.key_invalid:  # key or model: every image would fail
+                    raise ArtConfigError(str(exc)) from None
+                raise DrawRejected(str(exc)) from None  # this image is refused, a retry cannot help
         if not isinstance(answer, Mapping) or not isinstance(answer.get("ok"), bool):
             return "banned_category"
         if answer["ok"]:

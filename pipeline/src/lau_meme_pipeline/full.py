@@ -409,7 +409,10 @@ def _illustrate(
         trend[eid]["image_key"] = key
     pending = list(art.pending)
     gave_up = []
-    for eid in art.errored:
+    # An error counts against an element only when drawing worked for something else in this batch; otherwise it
+    # is an outage (network, Worker, credentials) and holding it against the elements would lose their images.
+    progress = bool(art.images or art.rejections or art.errors.get("draw_rejected") or art.errors.get("decode_error"))
+    for eid in art.errored if progress else []:
         trend[eid]["art_attempts"] = trend[eid].get("art_attempts", 0) + 1
         if trend[eid]["art_attempts"] >= MAX_ART_ATTEMPTS:
             gave_up.append(eid)
@@ -421,11 +424,12 @@ def _illustrate(
     out_store["art_pending"] = pending[:MAX_ART_PENDING]
     report["art"] = {
         "drawn": len(art.images),
-        "fallback": len(art.fallback) + len(gave_up),
+        "fallback": len(art.fallback) - len(art.skipped) + len(gave_up),
         "pending": len(pending),
         "draws": art.draws,
         "rejections": dict(sorted(art.rejections.items())),
         "errors": dict(sorted(art.errors.items())),
+        "config_error": art.config_error,
     }
     return apply_images(content, art.images)
 

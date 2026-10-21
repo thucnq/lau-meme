@@ -417,3 +417,52 @@ def test_ac_art_03_het_thoi_gian_thi_phan_tu_sau_cho_ve_khong_ve_tiep():
     assert list(result.images) == ["e00"]
     assert result.pending == ["e01", "e02"]
     assert result.fallback == []
+
+
+# ================================================================ AC-ART-03: configuration error stops drawing
+
+
+class RaisingCheck(FakeCheck):
+    """check(image) raising `exc`."""
+
+    def __init__(self, exc):
+        super().__init__()
+        self.exc = exc
+
+    def __call__(self, image):
+        self.seen.append(image)
+        raise self.exc
+
+
+def assert_stopped_by_config_error(result, gen, count):
+    assert result.pending == ["e00", "e01", "e02"]
+    assert not result.errored
+    assert result.fallback == []
+    assert result.images == {}
+    assert len(gen.prompts) == count
+    assert result.errors == {"ArtConfigError": 1}
+    assert result.config_error is True
+
+
+def test_ac_art_03_generate_loi_cau_hinh_o_phan_tu_dau_thi_dung_ve_tat_ca_cho_ve():
+    """AC-ART-03: generate ném ArtConfigError ở phần tử đầu: dừng vẽ, mọi phần tử có gợi ý (kể cả phần tử đầu) vào
+    pending, không vào errored hay fallback, generate gọi đúng 1 lần, errors đếm ArtConfigError 1, config_error True."""
+    from lau_meme_pipeline.art import draw_images
+    from lau_meme_pipeline.llm import ArtConfigError
+
+    gen = RaisingGenerate(ArtConfigError("token sai"), on_calls=[1])
+    result = draw_images([item(0), item(1), item(2)], gen, FakeCheck(), FakeSave())
+
+    assert_stopped_by_config_error(result, gen, 1)
+
+
+def test_ac_art_03_check_loi_cau_hinh_thi_cung_dung_ve_tat_ca_cho_ve():
+    """AC-ART-03: check ném ArtConfigError (khóa Gemini sai): dừng vẽ, mọi phần tử vào pending, generate gọi đúng 1
+    lần, config_error True."""
+    from lau_meme_pipeline.art import draw_images
+    from lau_meme_pipeline.llm import ArtConfigError
+
+    gen = FakeGenerate()
+    result = draw_images([item(0), item(1), item(2)], gen, RaisingCheck(ArtConfigError("khóa sai")), FakeSave())
+
+    assert_stopped_by_config_error(result, gen, 1)

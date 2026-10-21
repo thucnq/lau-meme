@@ -78,6 +78,21 @@ class Draw:
         return png_64(prompt)
 
 
+class DrawFailingOn(Draw):
+    """Raises `exc` only for prompts containing `hint`; every other prompt gets its own real PNG."""
+
+    def __init__(self, hint, exc):
+        super().__init__()
+        self.hint = hint
+        self.failure = exc
+
+    def __call__(self, prompt):
+        if self.hint in prompt:
+            self.prompts.append(prompt)
+            raise self.failure
+        return super().__call__(prompt)
+
+
 class Check:
     """check(image) -> next verdict from `verdicts` (None = passes); passes once the list runs out."""
 
@@ -400,11 +415,18 @@ def test_ac_art_03_loi_tam_thoi_ba_me_lien_tiep_thi_bo_cuoc_ve_emoji_va_ghi_art_
     (mỗi mẻ nhận kho của mẻ trước, thêm meme mới) meme hết chờ vẽ (về emoji) và phần tử trong kho có art_attempts 3."""
     from lau_meme_pipeline.llm import LlmError
 
-    plan = [(MEME, T), (MEME2, T2), (MANY_NAMES[0], T + timedelta(hours=24))]
+    # Each batch also crawls a fresh meme whose drawing succeeds, so every batch made progress; only the prompt
+    # of the failing meme (identified by its hint) raises.
+    plan = [
+        ([MEME, MANY_NAMES[1]], T),
+        ([MEME2, MANY_NAMES[2]], T2),
+        ([MANY_NAMES[0], MANY_NAMES[3]], T + timedelta(hours=24)),
+    ]
     store, meme_id, bodies = {}, None, []
-    for name, batch_at in plan:
+    for names, batch_at in plan:
         client = ArtClient(store=store)
-        outcome = run(client, FakeReporter(), [name], art_adapters(Draw(LlmError("boom")), Check()), batch_at=batch_at)
+        draw = DrawFailingOn(HINT, LlmError("boom"))
+        outcome = run(client, FakeReporter(), names, art_adapters(draw, Check()), batch_at=batch_at)
         assert outcome.ok is True and outcome.status == "success"
         (body,) = client.success_posts
         bodies.append(body)
@@ -457,3 +479,65 @@ def test_ac_art_04_check_nhan_dung_byte_webp_se_duoc_dang():
     (key, data) = client.puts[0]
     assert data == check.seen[0]
     assert key == key_of(check.seen[0])
+
+
+# ================================================================ configuration and outage rules
+
+
+def run_chain(make_draw):
+    """Three full batches in a row, each fed the previous published store, each with a new meme."""
+    plan = [([MEME], T), ([MEME2], T2), ([MANY_NAMES[0]], T + timedelta(hours=24))]
+    store, bodies, issues = {}, [], []
+    for names, batch_at in plan:
+        client, reporter = ArtClient(store=store), FakeReporter()
+        outcome = run(client, reporter, names, art_adapters(make_draw(), Check()), batch_at=batch_at)
+        assert outcome.ok is True and outcome.status == "success"
+        (body,) = client.success_posts
+        bodies.append(body)
+        issues.append(reporter.issues[0][1])
+        store = body["store"]
+    return bodies, issues
+
+
+def test_ac_art_03_loi_cau_hinh_ba_me_lien_tiep_thi_van_cho_ve_khong_tinh_lan_va_issue_canh_bao():
+    """AC-ART-03: generate luôn ném ArtConfigError (token sai): sau mẻ thứ 3 meme vẫn trong art_pending, không
+    image_fallback, art_attempts vắng hoặc 0; Issue của mỗi mẻ nhắc WORKERS_AI_TOKEN."""
+    from lau_meme_pipeline.llm import ArtConfigError
+
+    bodies, issues = run_chain(lambda: Draw(ArtConfigError("token sai")))
+
+    meme_id = content_element(bodies[2], MEME)["id"]
+    assert meme_id in pending_of(bodies[2])
+    element = store_element(bodies[2], MEME)
+    assert not element.get("image_fallback")
+    assert element.get("art_attempts", 0) == 0
+    assert content_element(bodies[2], MEME).get("image_key") is None
+    assert all("WORKERS_AI_TOKEN" in text for text in issues)
+
+
+def test_ac_art_03_mat_ket_noi_ba_me_lien_tiep_khong_tinh_lan_vi_khong_ve_duoc_gi():
+    """AC-ART-03: generate luôn ném ConnectionError (sự cố hệ thống, không có phần tử nào khác vẽ được) 3 mẻ liền:
+    meme vẫn trong art_pending, không image_fallback, art_attempts vắng hoặc 0."""
+    bodies, _issues = run_chain(lambda: Draw(ConnectionError("down")))
+
+    meme_id = content_element(bodies[2], MEME)["id"]
+    assert meme_id in pending_of(bodies[2])
+    element = store_element(bodies[2], MEME)
+    assert not element.get("image_fallback")
+    assert element.get("art_attempts", 0) == 0
+    assert content_element(bodies[2], MEME).get("image_key") is None
+
+
+def test_ac_art_02_issue_ve_emoji_khong_tinh_meme_bi_bo_qua_vi_goi_y_rong():
+    """AC-ART-02: một meme có image_hint rỗng, không vẽ gì khác: dòng "về emoji" trong Issue là 0."""
+
+    def no_hint(items):
+        return [{**d, "image_hint": ""} for d in _describe(items)]
+
+    llm = llm_with_hints()
+    llm["describe"] = no_hint
+    client, reporter, draw = ArtClient(), FakeReporter(), Draw()
+    run(client, reporter, [MEME], art_adapters(draw, Check()), llm=llm)
+
+    assert draw.prompts == []
+    assert re.search(r"về emoji\W{0,6}0\b", reporter.issues[0][1])

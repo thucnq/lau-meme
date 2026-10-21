@@ -13,7 +13,7 @@ from typing import Protocol
 
 from PIL import Image, ImageOps
 
-from lau_meme_pipeline.llm import DrawRejected, QuotaExhausted
+from lau_meme_pipeline.llm import ArtConfigError, DrawRejected, QuotaExhausted
 from lau_meme_pipeline.moderation import ModLists
 from lau_meme_pipeline.seed import ContentStore
 
@@ -63,6 +63,8 @@ class ArtResult:
     rejections: dict[str, int] = field(default_factory=dict)
     errors: dict[str, int] = field(default_factory=dict)
     errored: list[str] = field(default_factory=list)  # pending because of a transient error (not quota/limit)
+    skipped: list[str] = field(default_factory=list)  # no hint yet: neither drawn nor held to the emoji
+    config_error: bool = False  # credentials/account/model rejected: drawing stopped, nothing held against elements
     draws: int = 0
 
 
@@ -109,6 +111,7 @@ def draw_images(
     for index, art in enumerate(items):
         if not art.image_hint.strip():
             result.fallback.append(art.id)  # no approved hint: a generic picture would mislead (AC-ART-01)
+            result.skipped.append(art.id)
             continue
         out_of_time = deadline is not None and clock is not None and clock() > deadline
         if drawn_items >= limit or out_of_time:
@@ -147,9 +150,15 @@ def draw_images(
                     errors["decode_error"] += 1
             else:
                 result.fallback.append(art.id)
-        except QuotaExhausted:
+        except (QuotaExhausted, ArtConfigError) as exc:
+            # Every later call would fail the same way: stop, the rest waits (AC-ART-03).
             result.pending.extend(i.id for i in items[index:] if i.image_hint.strip())
-            result.fallback.extend(i.id for i in items[index + 1 :] if not i.image_hint.strip())
+            rest = [i.id for i in items[index + 1 :] if not i.image_hint.strip()]
+            result.fallback.extend(rest)
+            result.skipped.extend(rest)
+            if isinstance(exc, ArtConfigError):
+                result.config_error = True
+                errors["ArtConfigError"] += 1
             break
         except Exception as exc:  # network, 5xx after retries, upload: try again next batch, but say so
             result.pending.append(art.id)
