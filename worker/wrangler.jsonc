@@ -33,6 +33,16 @@
   // Daily retention job 03:00 GMT+7 (ADR 0004, AC-PRIV-06). Not inherited by env.staging: declared there too.
   "triggers": { "crons": ["0 20 * * *"] },
   "vars": { "APP_ENV": "production", "POLICY_VERSION": "1", "BASE_PATH": "/lau-meme", "ADMIN_HOST": "laumeme-admin.dinoduct.fun", "GOOGLE_CLIENT_ID": "983893414114-5s71asl52rc0c5o5pffdnbfa1n0uc2r1.apps.googleusercontent.com" },
+  // Worker Previews (`wrangler preview`, run by Workers Builds on non-production branches). Bindings are not
+  // inherited, so previews point at the STAGING data - never at production. No ADMIN_HOST: the admin page stays off.
+  // Preview secrets are separate: `wrangler preview secret`.
+  "previews": {
+    "d1_databases": [
+      { "binding": "DB", "database_name": "lau-meme-staging", "database_id": "03517712-b21e-427d-8881-53e34bf6c44b", "migrations_dir": "migrations" }
+    ],
+    "r2_buckets": [{ "binding": "IMG", "bucket_name": "lau-meme-img-staging" }],
+    "vars": { "APP_ENV": "preview", "POLICY_VERSION": "1", "BASE_PATH": "/lau-meme", "GOOGLE_CLIENT_ID": "983893414114-4fqirgtmr60j2ae9mumhtuuthr31vl4c.apps.googleusercontent.com" }
+  },
   "env": {
     "staging": {
       "name": "lau-meme-staging",
