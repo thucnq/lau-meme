@@ -25,7 +25,7 @@ Bảng xếp hạng Daily cần một danh tính khó nhân bản hơn UUID ẩn
 - Google biết tài khoản đã đăng nhập vào game; trang chính sách phải nêu (AC-AUTH-06).
 - Đổi `ACCOUNT_HASH_KEY` làm mọi tài khoản cũ không tìm lại được - coi khóa này như khóa vĩnh viễn.
 - Kết quả và streak theo UUID trước khi đổi luật không chuyển sang tài khoản.
-- Mỗi UUID gắn đúng một tài khoản, lần đăng nhập sau thắng: ai biết UUID của người khác (vốn đã là khóa chủ sở hữu theo ADR 0004) và đăng nhập Google của mình trên UUID đó sẽ chuyển gắn sang tài khoản mình, rồi `DELETE /me` của họ xóa luôn dữ liệu theo UUID đó. Không thêm quyền đọc mới so với ADR 0004; chấp nhận ở giai đoạn 1 (câu hỏi mở 38).
+- Mỗi UUID gắn đúng một tài khoản, lần đăng nhập sau thắng: ai biết UUID của người khác (vốn đã là khóa chủ sở hữu theo ADR 0004) và đăng nhập Google của mình trên UUID đó sẽ chuyển gắn sang tài khoản mình, rồi `DELETE /me` của họ xóa luôn dữ liệu theo UUID đó. Không thêm quyền đọc mới so với ADR 0004; chấp nhận (câu hỏi mở 38, đã chốt 2026-10-21: giữ "lần sau thắng").
 - Đăng nhập trên trình duyệt đang giữ phiên cũ thì phiên cũ bị thu hồi; `/me`, `/me/nickname`, `/me/streak`, `/auth/session` đặt lại cookie mỗi lần gia hạn.
 - JWKS của Google cache 10 phút trong isolate (mặc định của `jose`), `kid` lạ thì tải lại.
 
