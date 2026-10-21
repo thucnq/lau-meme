@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url'
 import { defineConfig } from 'vite'
 import type { Plugin } from 'vite'
 import react from '@vitejs/plugin-react'
+import { playwright } from '@vitest/browser-playwright'
 
 // The game lives under a sub-path (ADR 0007); base-path.json is the only place the prefix is written.
 const { basePath } = JSON.parse(readFileSync(new URL('../base-path.json', import.meta.url), 'utf8')) as { basePath: string }
@@ -63,5 +64,18 @@ export default defineConfig({
     // Vitest serves from "/" and sets BASE_URL to "/"; give the code under test the base the build uses.
     env: { BASE_URL: base },
     coverage: { provider: 'istanbul', include: ['src/**'], exclude: ['src/main.tsx', 'src/test/**'], thresholds: { lines: 70 } },
+    // Layout checks need a real engine (jsdom computes no boxes): *.browser.test.tsx run in Chromium via Playwright, with CSS.
+    projects: [
+      { extends: true, test: { name: 'unit', exclude: ['**/node_modules/**', 'src/**/*.browser.test.tsx'] } },
+      {
+        extends: true,
+        test: {
+          name: 'browser',
+          include: ['src/**/*.browser.test.tsx'],
+          css: true,
+          browser: { enabled: true, provider: playwright(), headless: true, instances: [{ browser: 'chromium' }] },
+        },
+      },
+    ],
   },
 })

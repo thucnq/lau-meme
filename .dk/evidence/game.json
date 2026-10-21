@@ -70,12 +70,18 @@
    "AC-GAME-17": {
     "status": "FAIL",
     "test": "(không biên dịch)"
+   },
+   "AC-GAME-18": {
+    "status": "FAIL",
+    "test": "Game.browser.test.tsx#AC-GAME-18: nồi lẩu nằm trọn trong màn hình đầu tiên ",
+    "ts": "2026-10-21T07:39:55+00:00",
+    "commit": "56bbea6"
    }
   }
  },
  "green": {
-  "ts": "2026-10-20T01:37:34+00:00",
-  "commit": "831cf3b",
+  "ts": "2026-10-21T07:40:50+00:00",
+  "commit": "cde6638",
   "results": {
    "AC-GAME-01": {
     "status": "PASS",
@@ -83,7 +89,7 @@
    },
    "AC-GAME-02": {
     "status": "PASS",
-    "test": "Game.test.tsx#Game > AC-GAME-02: thả A và B vào nồi — nồi sôi tối đa 1,2 s, bỏ qua thao tác lúc sôi, C lên bàn và vào Đĩa"
+    "test": "Game.test.tsx#Game > AC-GAME-02: thả A và B vào nồi - nồi sôi tối đa 1,2 s, bỏ qua thao tác lúc sôi, C lên bàn và vào Đĩa"
    },
    "AC-GAME-03": {
     "status": "PASS",
@@ -143,7 +149,11 @@
    },
    "AC-GAME-17": {
     "status": "PASS",
-    "test": "Game.test.tsx#Game > AC-GAME-17: tiến độ của V1 khi manifest là V2 — giữ mọi phần tử, tra theo graph V2, không hỏi gì"
+    "test": "Game.test.tsx#Game > AC-GAME-17: tiến độ của V1 khi manifest là V2 - giữ mọi phần tử, tra theo graph V2, không hỏi gì"
+   },
+   "AC-GAME-18": {
+    "status": "PASS",
+    "test": "Game.browser.test.tsx#AC-GAME-18: nồi lẩu nằm trọn trong màn hình đầu tiên "
    }
   }
  }
