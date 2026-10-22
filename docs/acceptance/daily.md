@@ -92,3 +92,15 @@
 - **Khi** thẻ Món đặc biệt hiện "Đã giải"; thực khách bấm "Đăng nhập bằng Google" và đăng nhập thành công; rồi mở Bảng xếp hạng
 - **Thì** thẻ hiện lời mời "Đăng nhập bằng Google để lên bảng xếp hạng"; đăng nhập xong kết quả tự gửi ngay (không cần bấm thêm), `solved_at` là lúc server nhận (sau khi đăng nhập) và hiện "Hạng #… · Streak …"; Bảng xếp hạng có 3 thẻ "Mẻ này", "Tuần", "Tháng"; bảng rỗng hiện "Chưa có ai giải món này" (thẻ Tuần/Tháng: "Chưa có ai giải món nào trong kỳ"), không để trống; chưa đăng nhập vẫn xem được bảng, kèm dòng nhắc đăng nhập
 - Ưu tiên: Bắt buộc
+
+### AC-DAILY-16: Thẻ thử thách nổi bật (thêm 2026-10-22)
+- **Cho** mẻ hiện tại có Món đặc biệt, thực khách chưa giải
+- **Khi** trang vừa tải xong
+- **Thì** thẻ Món đặc biệt có nhãn "Thử thách" nổi bật ở đầu thẻ, câu dẫn "Ghép ra món bí ẩn này trên bàn lẩu" ngay dưới nhãn, emoji và gợi ý mờ của món cỡ chữ lớn hơn chữ thường của trang, nền thẻ dùng màu nhấn khác nền trang; đồng hồ "Mẻ mới sau …" vẫn hiện. Khi đã giải, nhãn đổi thành "Đã giải" như AC-DAILY-05
+- Ưu tiên: Bắt buộc
+
+### AC-DAILY-17: Bảng xếp hạng ở tab riêng (thêm 2026-10-22)
+- **Cho** thực khách đang chơi, trên bàn có món và một ô nồi đã có món
+- **Khi** bấm "Xem bảng xếp hạng" trên thẻ Món đặc biệt (hoặc tab "Bảng xếp hạng" ở đầu trang); rồi bấm tab "Bàn lẩu"
+- **Thì** trang có hai tab "Bàn lẩu" và "Bảng xếp hạng"; thẻ Món đặc biệt không còn chứa bảng xếp hạng. Tab "Bảng xếp hạng" giữ 3 thẻ "Mẻ này", "Tuần", "Tháng" và mọi trạng thái của AC-DAILY-15 (bảng rỗng, dòng nhắc đăng nhập); 3 hạng đầu có huy chương 🥇🥈🥉; dòng của chính thực khách (khi đã đăng nhập và có tên trong bảng) được tô nổi. Quay lại tab "Bàn lẩu" thì món trên bàn và ô nồi giữ nguyên
+- Ưu tiên: Bắt buộc

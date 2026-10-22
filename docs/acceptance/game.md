@@ -111,3 +111,21 @@
 - **Thì** toàn bộ nồi lẩu (2 chỗ thả) nằm trọn trong khung nhìn; trên mobile Đĩa nhúng có thể nằm dưới nồi và phải cuộn mới thấy; chiều cao mặt bàn co theo khung nhìn thay vì cố định. Kiểm bằng Vitest browser mode với Playwright (Chromium thật) đo hộp bao của nồi ở cả 5 khung nhìn, vì jsdom không tính bố cục; test vẫn chạy qua `vitest -t AC-GAME-18` như các test khác (chốt 2026-10-21)
 - Ưu tiên: Bắt buộc
 
+
+### AC-GAME-19: Nút điều khiển nằm ở khu bàn lẩu, đăng nhập ở đầu trang (thêm 2026-10-22)
+- **Cho** thực khách mở trang ở khung nhìn 1366×768 (PC) và 390×844 (mobile)
+- **Khi** trang vừa tải xong; rồi đăng nhập Google thành công
+- **Thì** đầu trang chỉ có tên game, nút đổi giao diện sáng/tối và khu tài khoản: chưa đăng nhập là nút "Đăng nhập bằng Google" (ở vị trí cũ của "Dọn bàn"), đã đăng nhập là "Đã đăng nhập: <nickname>" như AC-AUTH-02; chân trang không còn nút đăng nhập. "Dọn bàn", "Chơi lại từ đầu" và "?" nằm trong khu bàn lẩu (PC: góc trên bên phải mặt bàn; mobile: một hàng ngay trên mặt bàn), không đè lên nồi lẩu hay món trên bàn; hành vi của ba nút giữ nguyên như AC-GAME-11 và hướng dẫn
+- Ưu tiên: Bắt buộc
+
+### AC-GAME-20: Nồi lẩu vẽ trọn, quai ngang thân nồi (thêm 2026-10-22)
+- **Cho** nồi lẩu ở các khung nhìn của AC-GAME-18, giao diện sáng và tối
+- **Khi** trang vừa tải xong; và khi nồi đang sôi
+- **Thì** hàng lửa dưới nồi hiện trọn chiều cao, không bị mép dưới mặt bàn hay khung nào cắt; hai quai nồi gắn vào nửa trên của thân nồi (ngay dưới miệng nồi), không thấp hơn giữa thân. Kiểm bằng Vitest browser mode như AC-GAME-18: hộp bao của hàng lửa nằm trọn trong mặt bàn, tâm quai nằm trên đường giữa thân nồi
+- Ưu tiên: Bắt buộc
+
+### AC-GAME-21: Vuốt cuộn trang trên màn hình cảm ứng (thêm 2026-10-22)
+- **Cho** thực khách dùng điện thoại cảm ứng (390×844), trên bàn có món, Đĩa nhúng nằm dưới nồi
+- **Khi** vuốt dọc bắt đầu ở chỗ trống trên mặt bàn; rồi giữ và kéo một món vào nồi
+- **Thì** vuốt ở chỗ trống cuộn trang bình thường (chỉ món trên bàn và trong Đĩa giữ cử chỉ kéo); kéo món vẫn thả vào nồi như AC-GAME-02. Lần đầu mở trên thiết bị cảm ứng hiện gợi ý "Giữ món để kéo, vuốt chỗ trống để cuộn" sát mặt bàn; gợi ý ẩn khi bấm đóng hoặc sau lần kéo thả thành công đầu tiên, và không hiện lại sau khi tải lại trang (lưu cùng tiến độ cục bộ)
+- Ưu tiên: Bắt buộc
