@@ -90,8 +90,8 @@
   }
  },
  "green": {
-  "ts": "2026-10-21T07:40:50+00:00",
-  "commit": "cde6638",
+  "ts": "2026-10-22T02:56:58+00:00",
+  "commit": "8a6a260",
   "results": {
    "AC-GAME-01": {
     "status": "PASS",
@@ -164,6 +164,18 @@
    "AC-GAME-18": {
     "status": "PASS",
     "test": "Game.browser.test.tsx#AC-GAME-18: nồi lẩu nằm trọn trong màn hình đầu tiên "
+   },
+   "AC-GAME-19": {
+    "status": "PASS",
+    "test": "ui2.browser.test.tsx#ui2 bố cục nút điều khiển "
+   },
+   "AC-GAME-20": {
+    "status": "PASS",
+    "test": "ui2.browser.test.tsx#ui2 nồi lẩu vẽ trọn "
+   },
+   "AC-GAME-21": {
+    "status": "PASS",
+    "test": "ui2.browser.test.tsx#ui2 touch-action "
    }
   }
  }

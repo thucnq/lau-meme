@@ -54,8 +54,8 @@
   }
  },
  "green": {
-  "ts": "2026-10-21T06:15:05+00:00",
-  "commit": "732bb73",
+  "ts": "2026-10-22T02:56:58+00:00",
+  "commit": "8a6a260",
   "results": {
    "AC-DAILY-01": {
     "status": "PASS",
@@ -116,6 +116,14 @@
    "AC-DAILY-15": {
     "status": "PASS",
     "test": "daily.ui.test.tsx#daily ui: gửi kết quả > AC-DAILY-15: giải khi chưa đăng nhập thì hiện lời mời đăng nhập, không gửi gì; đăng nhập xong tự gửi ngay "
+   },
+   "AC-DAILY-16": {
+    "status": "PASS",
+    "test": "ui2.browser.test.tsx#ui2 thẻ thử thách nổi bật "
+   },
+   "AC-DAILY-17": {
+    "status": "PASS",
+    "test": "ui2.ui.test.tsx#ui2: bảng xếp hạng ở tab riêng "
    },
    "AC-DAILY-TENANT": {
     "status": "PASS",
