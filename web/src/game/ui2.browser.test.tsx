@@ -40,10 +40,18 @@ async function buildGraph(version: number): Promise<unknown> {
   return { format: 1, version, entries: { [key]: b64u(new Uint8Array(ct)) } }
 }
 
+/** Most recent 05:00 or 17:00 UTC mark before now, so the next batch is always in the future (countdown "Mẻ mới sau"). */
+function recentBatchMark(): string {
+  const now = new Date()
+  const d = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 5))
+  const marks = [-12, 0, 12, 24].map((h) => d.getTime() + h * 3_600_000).filter((t) => t < now.getTime())
+  return new Date(Math.max(...marks)).toISOString()
+}
+
 async function manifestOf(): Promise<unknown> {
   return {
     version: 7,
-    batch_at: '2026-10-20T00:00:00.000Z',
+    batch_at: recentBatchMark(),
     graph_url: '/api/graph/7',
     starters: [
       { id: await eid('Cay'), name: 'Cay', emoji: '🌶️' },
@@ -179,6 +187,14 @@ describe.each(['light', 'dark'] as const)('ui2 nồi lẩu vẽ trọn (giao di�
       expect(f.height).toBeGreaterThan(0)
       expect(f.width).toBeGreaterThan(0)
       expect(inside(f, table), 'hàng lửa phải nằm trọn trong mặt bàn').toBe(true)
+      // chỉ vẽ ngọn lửa nguyên: lặp kiểu space, hoặc bề rộng hàng chia hết cho bề rộng một ngọn
+      const cs = getComputedStyle(flames)
+      if (!cs.backgroundRepeat.trim().startsWith('space')) {
+        const tile = parseFloat(cs.backgroundSize.split(/[\s,]+/)[0] ?? '')
+        expect(Number.isFinite(tile) && tile > 0, `background-size phải là px, đang là "${cs.backgroundSize}"`).toBe(true)
+        const ratio = f.width / tile
+        expect(Math.abs(f.width - Math.round(ratio) * tile), `bề rộng ${f.width} không chia hết cho ${tile}`).toBeLessThanOrEqual(0.5)
+      }
       // không khung nào ở giữa cắt: mọi tổ tiên có overflow khác visible cũng phải chứa trọn hàng lửa
       for (let el = flames.parentElement; el && el !== document.body; el = el.parentElement) {
         const o = getComputedStyle(el)
