@@ -2,7 +2,7 @@
  "meta": {
   "title": "ƯỚC LƯỢNG - LẨU MEME",
   "start": "2026-10-20",
-  "today": "2026-10-21",
+  "today": "2026-10-22",
   "lanes": [
    "Thuc"
   ],
@@ -11,8 +11,8 @@
    "2027-11-23"
   ],
   "fcUat": [
-   "2027-03-17",
-   "2027-03-17"
+   "2027-01-18",
+   "2027-01-18"
   ],
   "holidays": [
    "2027-01-01",
@@ -22,15 +22,13 @@
    "2027-02-07",
    "2027-02-08",
    "2027-02-09",
-   "2027-02-10",
-   "2027-04-30",
-   "2027-05-01"
+   "2027-02-10"
   ],
-  "pct": 55.0,
+  "pct": 81.7,
   "counts": {
-   "done": 13,
-   "doing": 1,
-   "todo": 7,
+   "done": 17,
+   "doing": 0,
+   "todo": 4,
    "late": 0
   },
   "slip": 0,
@@ -75,7 +73,7 @@
      "title": "API sức khỏe",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 8
     },
     {
@@ -83,7 +81,7 @@
      "title": "Trang chủ hiện trạng thái máy chủ",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 9
     },
     {
@@ -91,7 +89,7 @@
      "title": "Khóa so khớp văn bản",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 10
     }
    ]
@@ -130,7 +128,7 @@
      "title": "Nạp lõi hợp lệ",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 14
     },
     {
@@ -138,7 +136,7 @@
      "title": "Phần tử không tới được",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 15
     },
     {
@@ -146,7 +144,7 @@
      "title": "Trùng cặp",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 16
     },
     {
@@ -154,7 +152,7 @@
      "title": "Trùng tên sau chuẩn hóa hoặc trùng emoji",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 17
     },
     {
@@ -162,7 +160,7 @@
      "title": "Tham chiếu không tồn tại và tự tham chiếu",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 18
     },
     {
@@ -170,7 +168,7 @@
      "title": "Depth tính lại bằng BFS",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 19
     },
     {
@@ -178,7 +176,7 @@
      "title": "Ràng buộc tên",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 20
     },
     {
@@ -186,7 +184,7 @@
      "title": "Nạp lại idempotent",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 21
     }
    ]
@@ -225,7 +223,7 @@
      "title": "Khóa tra cứu là băm của cặp tên đã chuẩn hóa",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 23
     },
     {
@@ -233,7 +231,7 @@
      "title": "Kết quả mã hóa bằng khóa dẫn xuất từ 2 tên đầu vào",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 24
     },
     {
@@ -241,7 +239,7 @@
      "title": "Graph công khai không lộ tên kết quả",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 25
     },
     {
@@ -249,7 +247,7 @@
      "title": "Manifest có version và giờ mẻ thật",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 26
     },
     {
@@ -257,7 +255,7 @@
      "title": "Giữ 14 bản gần nhất",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 27
     },
     {
@@ -265,7 +263,7 @@
      "title": "Rollback về đợt trước bằng một lệnh",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 28
     },
     {
@@ -273,7 +271,7 @@
      "title": "Rollback khi không có bản trước",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 29
     },
     {
@@ -281,7 +279,7 @@
      "title": "Manifest chưa có",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 30
     }
    ]
@@ -320,7 +318,7 @@
      "title": "Bàn chơi lần đầu",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 34
     },
     {
@@ -328,7 +326,7 @@
      "title": "Nhúng lẩu qua nồi - ghép thành công",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 35
     },
     {
@@ -336,7 +334,7 @@
      "title": "Thả chồng trên mặt bàn",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 36
     },
     {
@@ -344,7 +342,7 @@
      "title": "Ghép ra phần tử đã có",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 37
     },
     {
@@ -352,7 +350,7 @@
      "title": "Nồi trào - câu cố định theo cặp",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 38
     },
     {
@@ -360,7 +358,7 @@
      "title": "Gợi ý khi trượt",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 39
     },
     {
@@ -368,7 +366,7 @@
      "title": "Tìm trong Đĩa nhúng không dấu",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 40
     },
     {
@@ -376,7 +374,7 @@
      "title": "Sắp xếp Đĩa nhúng",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 41
     },
     {
@@ -384,7 +382,7 @@
      "title": "Nhãn \"MỚI\"",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 42
     },
     {
@@ -392,7 +390,7 @@
      "title": "Lưu và khôi phục tiến độ cục bộ",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 43
     },
     {
@@ -400,7 +398,7 @@
      "title": "Dọn bàn và Chơi lại từ đầu",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 44
     },
     {
@@ -408,7 +406,7 @@
      "title": "Hướng dẫn lần đầu",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 45
     },
     {
@@ -416,7 +414,7 @@
      "title": "Chế độ tối",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 46
     },
     {
@@ -424,7 +422,7 @@
      "title": "Ghép tra trong bộ nhớ dưới 50 ms",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 47
     },
     {
@@ -432,7 +430,7 @@
      "title": "Phần tử bị chặn nóng",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 48
     },
     {
@@ -440,7 +438,7 @@
      "title": "Lỗi tải graph",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 49
     },
     {
@@ -448,7 +446,7 @@
      "title": "Đổi version graph giữ tiến độ",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 50
     },
     {
@@ -456,7 +454,7 @@
      "title": "Nồi lẩu nằm trong màn hình đầu tiên (thêm 2026-10-21)",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 51
     }
    ]
@@ -495,7 +493,7 @@
      "title": "Chế độ lõi (giai đoạn 1)",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 55
     },
     {
@@ -503,7 +501,7 @@
      "title": "Lịch chạy và chạy tay",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 56
     },
     {
@@ -511,7 +509,7 @@
      "title": "Lỗi giữa chừng không đăng gì",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 57
     },
     {
@@ -519,7 +517,7 @@
      "title": "Không gửi dữ liệu người chơi cho LLM",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 58
     },
     {
@@ -527,7 +525,7 @@
      "title": "Báo cáo đợt qua GitHub Issue",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 59
     }
    ]
@@ -566,7 +564,7 @@
      "title": "Trang chính sách",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 63
     },
     {
@@ -574,7 +572,7 @@
      "title": "Đồng ý trước khi gửi dữ liệu",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 64
     },
     {
@@ -582,7 +580,7 @@
      "title": "Lưu bằng chứng đồng ý",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 65
     },
     {
@@ -590,7 +588,7 @@
      "title": "Rút lại đồng ý",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 66
     },
     {
@@ -598,7 +596,7 @@
      "title": "Xóa dữ liệu của mình",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 67
     },
     {
@@ -606,7 +604,7 @@
      "title": "IP chỉ lưu dạng băm, xóa sau 7 ngày",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 68
     },
     {
@@ -614,7 +612,7 @@
      "title": "Log không chứa dữ liệu cá nhân thô",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 69
     },
     {
@@ -622,7 +620,7 @@
      "title": "Xem và xuất dữ liệu của mình",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 70
     },
     {
@@ -630,7 +628,7 @@
      "title": "Chính sách đổi version",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 71
     }
    ]
@@ -669,7 +667,7 @@
      "title": "Sinh UUID cục bộ",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 75
     },
     {
@@ -677,7 +675,7 @@
      "title": "Đặt nickname hợp lệ",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 76
     },
     {
@@ -685,7 +683,7 @@
      "title": "Nickname bị từ chối",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 77
     },
     {
@@ -693,7 +691,7 @@
      "title": "Nickname trùng",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 78
     },
     {
@@ -701,7 +699,7 @@
      "title": "Ghi nhận người khám phá đầu tiên",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 79
     },
     {
@@ -709,7 +707,7 @@
      "title": "Đã có người khám phá",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 80
     },
     {
@@ -717,7 +715,7 @@
      "title": "Công thức không có thật",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 81
     },
     {
@@ -725,7 +723,7 @@
      "title": "Gửi đồng thời",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 82
     },
     {
@@ -733,7 +731,7 @@
      "title": "Hiện Công thức gia truyền",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 83
     },
     {
@@ -741,7 +739,7 @@
      "title": "Phần tử khởi đầu không có Công thức gia truyền",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 84
     },
     {
@@ -749,7 +747,7 @@
      "title": "Giới hạn tần suất theo UUID và IP băm",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 85
     },
     {
@@ -757,7 +755,7 @@
      "title": "Đầu vào sai định dạng",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 86
     }
    ]
@@ -797,7 +795,7 @@
      "title": "Chọn Món đặc biệt",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 90
     },
     {
@@ -805,7 +803,7 @@
      "title": "Không có ứng viên nào",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 91
     },
     {
@@ -813,7 +811,7 @@
      "title": "Công bố món không lộ tên",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 92
     },
     {
@@ -821,7 +819,7 @@
      "title": "Ghép ra Món đặc biệt trên bàn lẩu",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 93
     },
     {
@@ -829,7 +827,7 @@
      "title": "Trạng thái đã giải giữ qua tải lại",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 94
     },
     {
@@ -837,7 +835,7 @@
      "title": "Nộp kết quả hợp lệ",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 95
     },
     {
@@ -845,7 +843,7 @@
      "title": "Nộp kết quả không hợp lệ",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 96
     },
     {
@@ -853,7 +851,7 @@
      "title": "Nộp trùng, nộp cho mẻ đã qua, chưa đăng nhập",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 97
     },
     {
@@ -861,7 +859,7 @@
      "title": "Bảng xếp hạng mẻ",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 98
     },
     {
@@ -869,7 +867,7 @@
      "title": "Streak",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 99
     },
     {
@@ -877,7 +875,7 @@
      "title": "Bảng xếp hạng streak",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 100
     },
     {
@@ -885,7 +883,7 @@
      "title": "Đồng hồ đếm ngược theo manifest thật",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 101
     },
     {
@@ -893,7 +891,7 @@
      "title": "Giới hạn tần suất nộp",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 102
     },
     {
@@ -901,7 +899,7 @@
      "title": "Bảng xếp hạng tuần và tháng (thêm 2026-10-21)",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 103
     },
     {
@@ -909,7 +907,7 @@
      "title": "Bảng xếp hạng trên giao diện, chưa đăng nhập và bảng rỗng (thêm 2026-10-21)",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 104
     }
    ]
@@ -926,20 +924,20 @@
    ],
    "owner": "Thuc",
    "lane": "Thuc",
-   "pct": 0,
-   "pctAuto": true,
-   "status": "todo",
+   "pct": 100,
+   "pctAuto": false,
+   "status": "done",
    "slip": 0,
-   "note": "",
-   "startActual": "",
-   "finishActual": "",
+   "note": "PR #28; trên staging",
+   "startActual": "2026-10-21",
+   "finishActual": "2026-10-21",
    "kh": [
     "2027-04-12",
     "2027-05-07"
    ],
    "fc": [
     "2026-10-21",
-    "2026-11-16"
+    "2026-10-21"
    ],
    "line": 107,
    "acs": [
@@ -948,7 +946,7 @@
      "title": "Đăng nhập bằng Google",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 108
     },
     {
@@ -956,7 +954,7 @@
      "title": "Phiên đăng nhập",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 109
     },
     {
@@ -964,7 +962,7 @@
      "title": "ID token không hợp lệ",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 110
     },
     {
@@ -972,7 +970,7 @@
      "title": "Cùng tài khoản trên nhiều máy",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 111
     },
     {
@@ -980,7 +978,7 @@
      "title": "Đăng xuất",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 112
     },
     {
@@ -988,7 +986,7 @@
      "title": "Xóa tài khoản và dữ liệu",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 113
     },
     {
@@ -996,7 +994,7 @@
      "title": "Giới hạn tần suất đăng nhập",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 114
     }
    ]
@@ -1014,20 +1012,20 @@
    ],
    "owner": "Thuc",
    "lane": "Thuc",
-   "pct": 0,
-   "pctAuto": true,
-   "status": "todo",
+   "pct": 100,
+   "pctAuto": false,
+   "status": "done",
    "slip": 0,
-   "note": "",
-   "startActual": "",
-   "finishActual": "",
+   "note": "PR #29; trên staging",
+   "startActual": "2026-10-21",
+   "finishActual": "2026-10-21",
    "kh": [
     "2027-05-10",
     "2027-06-03"
    ],
    "fc": [
-    "2026-11-17",
-    "2026-12-11"
+    "2026-10-21",
+    "2026-10-21"
    ],
    "line": 117,
    "acs": [
@@ -1036,7 +1034,7 @@
      "title": "Ghép ra Món đặc biệt trên bàn lẩu",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 118
     },
     {
@@ -1044,7 +1042,7 @@
      "title": "Trạng thái đã giải giữ qua tải lại",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 119
     },
     {
@@ -1052,7 +1050,7 @@
      "title": "Nộp kết quả hợp lệ",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 120
     },
     {
@@ -1060,7 +1058,7 @@
      "title": "Nộp kết quả không hợp lệ",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 121
     },
     {
@@ -1068,7 +1066,7 @@
      "title": "Nộp trùng, nộp cho mẻ đã qua, chưa đăng nhập",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 122
     },
     {
@@ -1076,7 +1074,7 @@
      "title": "Bảng xếp hạng mẻ",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 123
     },
     {
@@ -1084,7 +1082,7 @@
      "title": "Streak",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 124
     },
     {
@@ -1092,7 +1090,7 @@
      "title": "Bảng xếp hạng streak",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 125
     },
     {
@@ -1100,7 +1098,7 @@
      "title": "Bảng xếp hạng tuần và tháng (thêm 2026-10-21)",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 126
     },
     {
@@ -1108,7 +1106,7 @@
      "title": "Bảng xếp hạng trên giao diện, chưa đăng nhập và bảng rỗng (thêm 2026-10-21)",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 127
     }
    ]
@@ -1137,8 +1135,8 @@
     "2027-04-19"
    ],
    "fc": [
-    "2026-12-14",
-    "2026-12-24"
+    "2026-10-22",
+    "2026-11-03"
    ],
    "line": 130,
    "acs": [
@@ -1226,7 +1224,7 @@
      "title": "Báo cáo phần tử",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 140
     },
     {
@@ -1234,7 +1232,7 @@
      "title": "Báo cáo không hợp lệ",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 141
     },
     {
@@ -1242,7 +1240,7 @@
      "title": "Một UUID chỉ tính một lần",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 142
     },
     {
@@ -1250,7 +1248,7 @@
      "title": "Đủ 3 UUID khác nhau ⇒ tự ẩn ngay",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 143
     },
     {
@@ -1258,7 +1256,7 @@
      "title": "Báo cáo ảnh ⇒ về emoji ngay",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 144
     },
     {
@@ -1266,7 +1264,7 @@
      "title": "Danh sách chặn nóng",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 145
     },
     {
@@ -1274,7 +1272,7 @@
      "title": "Client áp danh sách chặn khi khởi động",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 146
     },
     {
@@ -1282,7 +1280,7 @@
      "title": "Giới hạn tần suất báo cáo",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 147
     },
     {
@@ -1290,7 +1288,7 @@
      "title": "Phần tử bị ẩn và các công thức liên quan",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 148
     }
    ]
@@ -1329,7 +1327,7 @@
      "title": "Thiếu hoặc sai token",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 150
     },
     {
@@ -1337,7 +1335,7 @@
      "title": "Chống dò token",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 151
     },
     {
@@ -1345,7 +1343,7 @@
      "title": "Ẩn / hiện phần tử có hiệu lực ngay",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 152
     },
     {
@@ -1353,7 +1351,7 @@
      "title": "Ẩn / hiện công thức và ảnh",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 153
     },
     {
@@ -1361,7 +1359,7 @@
      "title": "Chặn vĩnh viễn",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 154
     },
     {
@@ -1369,7 +1367,7 @@
      "title": "Xem báo cáo",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 155
     },
     {
@@ -1377,7 +1375,7 @@
      "title": "Bỏ qua báo cáo",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 156
     },
     {
@@ -1385,7 +1383,7 @@
      "title": "Nhật ký các đợt",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 157
     },
     {
@@ -1393,7 +1391,7 @@
      "title": "Audit mọi thao tác quản trị",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 158
     },
     {
@@ -1401,7 +1399,7 @@
      "title": "Trang quản trị",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 159
     }
    ]
@@ -1430,8 +1428,8 @@
     "2027-06-10"
    ],
    "fc": [
-    "2026-12-25",
-    "2027-01-08"
+    "2026-11-04",
+    "2026-11-17"
    ],
    "line": 162,
    "acs": [
@@ -1529,7 +1527,7 @@
      "title": "Ghép đối xứng",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 173
     },
     {
@@ -1537,7 +1535,7 @@
      "title": "Mỗi cặp tối đa một kết quả",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 174
     },
     {
@@ -1545,7 +1543,7 @@
      "title": "Mọi phần tử hoạt động đều tới được, depth = BFS",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 175
     },
     {
@@ -1553,7 +1551,7 @@
      "title": "Graph không lộ, không giải mã được khi thiếu đầu vào",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 176
     },
     {
@@ -1561,7 +1559,7 @@
      "title": "Pipeline idempotent",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 177
     },
     {
@@ -1569,7 +1567,7 @@
      "title": "Đợt lỗi không đổi bản đang chạy",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 178
     },
     {
@@ -1577,7 +1575,7 @@
      "title": "Không nội dung hoạt động nào vi phạm danh mục cấm",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 179
     },
     {
@@ -1585,7 +1583,7 @@
      "title": "First Discovery chỉ cho công thức có thật",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 180
     },
     {
@@ -1593,7 +1591,7 @@
      "title": "Đủ 3 báo cáo từ 3 UUID khác nhau ⇒ không còn hiện",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 181
     },
     {
@@ -1601,7 +1599,7 @@
      "title": "Món đặc biệt luôn hợp lệ",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 182
     },
     {
@@ -1609,7 +1607,7 @@
      "title": "Bảng xếp hạng chỉ có kết quả hợp lệ (cập nhật 2026-10-21)",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 183
     },
     {
@@ -1617,7 +1615,7 @@
      "title": "Tỉ lệ ghép trượt khi chơi ngẫu nhiên",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 184
     }
    ]
@@ -1657,7 +1655,7 @@
      "title": "Một nguồn tiền tố, route đúng",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 188
     },
     {
@@ -1665,7 +1663,7 @@
      "title": "API dưới tiền tố",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 189
     },
     {
@@ -1673,7 +1671,7 @@
      "title": "Thiếu dấu gạch chéo cuối",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 190
     },
     {
@@ -1681,7 +1679,7 @@
      "title": "Ngoài tiền tố là 404",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 191
     },
     {
@@ -1689,7 +1687,7 @@
      "title": "Vào game và F5 ở mọi màn hình",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 192
     },
     {
@@ -1697,7 +1695,7 @@
      "title": "Giữ chỗ đường dẫn ảnh",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 193
     },
     {
@@ -1705,7 +1703,7 @@
      "title": "Web không gọi ra ngoài tiền tố",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 194
     },
     {
@@ -1713,7 +1711,7 @@
      "title": "Mọi khóa localStorage có tiền tố `laumeme:`",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 195
     },
     {
@@ -1721,7 +1719,7 @@
      "title": "Chuyển khóa cũ một lần",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 196
     },
     {
@@ -1729,7 +1727,7 @@
      "title": "Link chia sẻ tuyệt đối",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 197
     },
     {
@@ -1737,7 +1735,7 @@
      "title": "Thẻ xem trước link và favicon",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 198
     },
     {
@@ -1745,7 +1743,7 @@
      "title": "Pipeline gọi API dưới tiền tố",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 199
     }
    ]
@@ -1774,8 +1772,8 @@
     "2027-08-04"
    ],
    "fc": [
-    "2027-01-11",
-    "2027-03-01"
+    "2026-11-18",
+    "2026-12-30"
    ],
    "line": 202,
    "acs": [
@@ -1784,7 +1782,7 @@
      "title": "Bàn chơi lần đầu",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 203
     },
     {
@@ -1792,7 +1790,7 @@
      "title": "Nhúng lẩu qua nồi - ghép thành công",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 204
     },
     {
@@ -1800,7 +1798,7 @@
      "title": "Thả chồng trên mặt bàn",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 205
     },
     {
@@ -1808,7 +1806,7 @@
      "title": "Ghép ra phần tử đã có",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 206
     },
     {
@@ -1816,7 +1814,7 @@
      "title": "Nồi trào - câu cố định theo cặp",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 207
     },
     {
@@ -1824,7 +1822,7 @@
      "title": "Gợi ý khi trượt",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 208
     },
     {
@@ -1832,7 +1830,7 @@
      "title": "Tìm trong Đĩa nhúng không dấu",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 209
     },
     {
@@ -1840,7 +1838,7 @@
      "title": "Sắp xếp Đĩa nhúng",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 210
     },
     {
@@ -1848,7 +1846,7 @@
      "title": "Nhãn \"MỚI\"",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 211
     },
     {
@@ -1856,7 +1854,7 @@
      "title": "Lưu và khôi phục tiến độ cục bộ",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 212
     },
     {
@@ -1864,7 +1862,7 @@
      "title": "Dọn bàn và Chơi lại từ đầu",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 213
     },
     {
@@ -1872,7 +1870,7 @@
      "title": "Hướng dẫn lần đầu",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 214
     },
     {
@@ -1880,7 +1878,7 @@
      "title": "Chế độ tối",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 215
     },
     {
@@ -1888,7 +1886,7 @@
      "title": "Ghép tra trong bộ nhớ dưới 50 ms",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 216
     },
     {
@@ -1896,7 +1894,7 @@
      "title": "Phần tử bị chặn nóng",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 217
     },
     {
@@ -1904,7 +1902,7 @@
      "title": "Lỗi tải graph",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 218
     },
     {
@@ -1912,7 +1910,7 @@
      "title": "Đổi version graph giữ tiến độ",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 219
     },
     {
@@ -1920,7 +1918,7 @@
      "title": "Nồi lẩu nằm trong màn hình đầu tiên (thêm 2026-10-21)",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 220
     }
    ]
@@ -1959,7 +1957,7 @@
      "title": "Lớp 1 - danh sách từ cấm",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 224
     },
     {
@@ -1967,7 +1965,7 @@
      "title": "Lớp 2 - LLM phân loại theo danh mục",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 225
     },
     {
@@ -1975,7 +1973,7 @@
      "title": "Không chắc thì loại",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 226
     },
     {
@@ -1983,7 +1981,7 @@
      "title": "Kiểm cả tên kết quả công thức và văn bản phụ",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 227
     },
     {
@@ -1991,7 +1989,7 @@
      "title": "Luật người thật dựa trên ngữ cảnh nguồn",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 228
     },
     {
@@ -1999,7 +1997,7 @@
      "title": "Danh sách chặn bí danh áp cho mọi đầu vào sau",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 229
     },
     {
@@ -2007,7 +2005,7 @@
      "title": "Tiếng lóng chung và hiện tượng chung được phép",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 230
     },
     {
@@ -2015,7 +2013,7 @@
      "title": "Hoãn nội dung nóng vì một người",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 231
     },
     {
@@ -2023,7 +2021,7 @@
      "title": "Không bao giờ - cáo buộc và quấy rối",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 232
     },
     {
@@ -2031,7 +2029,7 @@
      "title": "Tên bị quản trị chặn không quay lại",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 233
     }
    ]
@@ -2048,20 +2046,20 @@
    ],
    "owner": "Thuc",
    "lane": "Thuc",
-   "pct": 0,
-   "pctAuto": true,
-   "status": "todo",
+   "pct": 100,
+   "pctAuto": false,
+   "status": "done",
    "slip": 0,
-   "note": "",
-   "startActual": "",
-   "finishActual": "",
+   "note": "PR #34 (mẻ full), #40, #43; trên staging",
+   "startActual": "2026-10-21",
+   "finishActual": "2026-10-21",
    "kh": [
     "2027-09-03",
     "2027-10-15"
    ],
    "fc": [
-    "2026-11-18",
-    "2026-12-30"
+    "2026-10-21",
+    "2026-10-21"
    ],
    "line": 234,
    "acs": [
@@ -2070,7 +2068,7 @@
      "title": "Một nguồn lỗi không làm hỏng cả đợt",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 235
     },
     {
@@ -2078,7 +2076,7 @@
      "title": "Adapter chỉ thu khái niệm, tôn trọng robots.txt",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 236
     },
     {
@@ -2086,7 +2084,7 @@
      "title": "Khử trùng",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 237
     },
     {
@@ -2094,7 +2092,7 @@
      "title": "Liên kết ngược hợp lệ",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 238
     },
     {
@@ -2102,7 +2100,7 @@
      "title": "Hàng chờ meme chưa nối được",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 239
     },
     {
@@ -2110,7 +2108,7 @@
      "title": "Công thức bổ sung (cập nhật 2026-10-20)",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 240
     },
     {
@@ -2118,7 +2116,7 @@
      "title": "Giám khảo hài",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 241
     },
     {
@@ -2126,7 +2124,7 @@
      "title": "Idempotent",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 242
     },
     {
@@ -2134,7 +2132,7 @@
      "title": "Gom lô Gemini, backoff, hết quota dừng êm",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 243
     }
    ]
@@ -2151,20 +2149,20 @@
    ],
    "owner": "Thuc",
    "lane": "Thuc",
-   "pct": 0,
+   "pct": 100,
    "pctAuto": false,
-   "status": "doing",
+   "status": "done",
    "slip": 0,
    "note": "đã nối vào mẻ full (ADR 0012, nhánh feat/art-wiring); cần WORKERS_AI_TOKEN + CLOUDFLARE_ACCOUNT_ID để vẽ thật; hạn mức Workers AI vẫn chờ kiểm (câu hỏi mở 13)",
    "startActual": "2026-10-21",
-   "finishActual": "",
+   "finishActual": "2026-10-22",
    "kh": [
     "2027-10-18",
     "2027-11-08"
    ],
    "fc": [
     "2026-10-21",
-    "2026-11-17"
+    "2026-10-22"
    ],
    "line": 244,
    "acs": [
@@ -2173,7 +2171,7 @@
      "title": "Prompt vẽ khái niệm, không người thật",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 245
     },
     {
@@ -2181,7 +2179,7 @@
      "title": "Kiểm duyệt ảnh, vẽ lại một lần rồi về emoji",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 246
     },
     {
@@ -2189,7 +2187,7 @@
      "title": "Hết hạn mức thì vẽ bù đợt sau",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 247
     },
     {
@@ -2197,7 +2195,7 @@
      "title": "Lưu ảnh theo băm nội dung",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 248
     },
     {
@@ -2205,7 +2203,7 @@
      "title": "Phục vụ ảnh qua Worker với cache bất biến",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 249
     },
     {
@@ -2213,7 +2211,7 @@
      "title": "Client hiện emoji trước, ảnh sau",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 250
     },
     {
@@ -2221,7 +2219,7 @@
      "title": "Ảnh bị chặn không được tải",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 251
     },
     {
@@ -2229,23 +2227,23 @@
      "title": "Phóng lớn bất ngờ khi ghép ra món lần đầu (thêm 2026-10-20)",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 252
     },
     {
      "id": "AC-ART-09",
      "title": "Mẻ full vẽ ảnh cho phần tử mới (thêm 2026-10-21, ADR 0012)",
      "optional": false,
-     "tested": false,
-     "done": false,
+     "tested": true,
+     "done": true,
      "line": 253
     },
     {
      "id": "AC-ART-10",
      "title": "Thiếu cấu hình hoặc lỗi vẽ kéo dài không làm hỏng mẻ (thêm 2026-10-21, ADR 0012)",
      "optional": false,
-     "tested": false,
-     "done": false,
+     "tested": true,
+     "done": true,
      "line": 254
     }
    ]
@@ -2274,8 +2272,8 @@
     "2027-11-22"
    ],
    "fc": [
-    "2027-03-02",
-    "2027-03-16"
+    "2026-12-31",
+    "2027-01-15"
    ],
    "line": 257,
    "acs": []
@@ -2285,131 +2283,131 @@
   "# Tiến độ — ƯỚC LƯỢNG - LẨU MEME",
   "",
   "> Sinh bởi `/dk:plan` (gen-plan.py) từ `docs/estimate/items.json`. **Người sửa trực tiếp file này**: dấu `[x]` (hạng mục hoặc AC), `tiến độ: N%`, `người`, `bắt đầu`, `xong` (YYYY-MM-DD), `ghi chú` — giữ nguyên dấu ` · ` giữa các trường. Chạy lại `/dk:plan` để tính dự báo và vẽ lại `gantt.html`. `KH` là kế hoạch gốc, chỉ đổi bằng `/dk:plan rebaseline`.",
-  "> Bắt đầu dự án: 2026-10-20 · Kỹ sư: 1 (Thuc) · Giờ/tuần: 20 · Nghiệm thu KH: 2027-11-23 · Dự báo: 2027-03-17 · Cập nhật: 2026-10-21",
+  "> Bắt đầu dự án: 2026-10-20 · Kỹ sư: 1 (Thuc) · Giờ/tuần: 20 · Nghiệm thu KH: 2027-11-23 · Dự báo: 2027-01-18 · Cập nhật: 2026-10-22",
   "",
   "",
   "## Nền tảng",
   "- [x] **NEN** Khởi tạo dự án & hạ tầng · 3đ · rủi ro: LOW · KH: 2026-10-20 → 2026-10-28 · tiến độ: 100% · người: Thuc · bắt đầu: 2026-10-19 · xong: 2026-10-19 · ghi chú: ",
-  "  - [ ] AC-HEALTH-01 API sức khỏe",
-  "  - [ ] AC-HEALTH-02 Trang chủ hiện trạng thái máy chủ",
-  "  - [ ] AC-HEALTH-03 Khóa so khớp văn bản",
+  "  - [x] AC-HEALTH-01 API sức khỏe",
+  "  - [x] AC-HEALTH-02 Trang chủ hiện trạng thái máy chủ",
+  "  - [x] AC-HEALTH-03 Khóa so khớp văn bản",
   "",
   "## Nội dung",
   "- [x] **SEED** Nạp lõi nội dung classic · 3đ · rủi ro: LOW · KH: 2026-10-29 → 2026-11-06 · tiến độ: 100% · người: Thuc · bắt đầu: 2026-10-19 · xong: 2026-10-20 · ghi chú: ",
-  "  - [ ] AC-SEED-01 Nạp lõi hợp lệ",
-  "  - [ ] AC-SEED-02 Phần tử không tới được",
-  "  - [ ] AC-SEED-03 Trùng cặp",
-  "  - [ ] AC-SEED-04 Trùng tên sau chuẩn hóa hoặc trùng emoji",
-  "  - [ ] AC-SEED-05 Tham chiếu không tồn tại và tự tham chiếu",
-  "  - [ ] AC-SEED-06 Depth tính lại bằng BFS",
-  "  - [ ] AC-SEED-07 Ràng buộc tên",
-  "  - [ ] AC-SEED-08 Nạp lại idempotent",
+  "  - [x] AC-SEED-01 Nạp lõi hợp lệ",
+  "  - [x] AC-SEED-02 Phần tử không tới được",
+  "  - [x] AC-SEED-03 Trùng cặp",
+  "  - [x] AC-SEED-04 Trùng tên sau chuẩn hóa hoặc trùng emoji",
+  "  - [x] AC-SEED-05 Tham chiếu không tồn tại và tự tham chiếu",
+  "  - [x] AC-SEED-06 Depth tính lại bằng BFS",
+  "  - [x] AC-SEED-07 Ràng buộc tên",
+  "  - [x] AC-SEED-08 Nạp lại idempotent",
   "- [x] **GRAPH** Graph mã hóa + manifest + rollback · 6đ · rủi ro: MEDIUM · KH: 2026-11-09 → 2026-11-26 · tiến độ: 100% · người: Thuc · bắt đầu: 2026-10-19 · xong: 2026-10-19 · ghi chú: ",
-  "  - [ ] AC-GRAPH-01 Khóa tra cứu là băm của cặp tên đã chuẩn hóa",
-  "  - [ ] AC-GRAPH-02 Kết quả mã hóa bằng khóa dẫn xuất từ 2 tên đầu vào",
-  "  - [ ] AC-GRAPH-03 Graph công khai không lộ tên kết quả",
-  "  - [ ] AC-GRAPH-04 Manifest có version và giờ mẻ thật",
-  "  - [ ] AC-GRAPH-05 Giữ 14 bản gần nhất",
-  "  - [ ] AC-GRAPH-06 Rollback về đợt trước bằng một lệnh",
-  "  - [ ] AC-GRAPH-07 Rollback khi không có bản trước",
-  "  - [ ] AC-GRAPH-08 Manifest chưa có",
+  "  - [x] AC-GRAPH-01 Khóa tra cứu là băm của cặp tên đã chuẩn hóa",
+  "  - [x] AC-GRAPH-02 Kết quả mã hóa bằng khóa dẫn xuất từ 2 tên đầu vào",
+  "  - [x] AC-GRAPH-03 Graph công khai không lộ tên kết quả",
+  "  - [x] AC-GRAPH-04 Manifest có version và giờ mẻ thật",
+  "  - [x] AC-GRAPH-05 Giữ 14 bản gần nhất",
+  "  - [x] AC-GRAPH-06 Rollback về đợt trước bằng một lệnh",
+  "  - [x] AC-GRAPH-07 Rollback khi không có bản trước",
+  "  - [x] AC-GRAPH-08 Manifest chưa có",
   "",
   "## Trò chơi",
   "- [x] **GAME** Chơi ghép (Nhúng lẩu) · 13.5đ · rủi ro: MEDIUM · KH: 2026-11-27 → 2027-01-05 · tiến độ: 100% · người: Thuc · bắt đầu: 2026-10-20 · xong: 2026-10-20 · ghi chú: ",
-  "  - [ ] AC-GAME-01 Bàn chơi lần đầu",
-  "  - [ ] AC-GAME-02 Nhúng lẩu qua nồi - ghép thành công",
-  "  - [ ] AC-GAME-03 Thả chồng trên mặt bàn",
-  "  - [ ] AC-GAME-04 Ghép ra phần tử đã có",
-  "  - [ ] AC-GAME-05 Nồi trào - câu cố định theo cặp",
-  "  - [ ] AC-GAME-06 Gợi ý khi trượt",
-  "  - [ ] AC-GAME-07 Tìm trong Đĩa nhúng không dấu",
-  "  - [ ] AC-GAME-08 Sắp xếp Đĩa nhúng",
-  "  - [ ] AC-GAME-09 Nhãn \"MỚI\"",
-  "  - [ ] AC-GAME-10 Lưu và khôi phục tiến độ cục bộ",
-  "  - [ ] AC-GAME-11 Dọn bàn và Chơi lại từ đầu",
-  "  - [ ] AC-GAME-12 Hướng dẫn lần đầu",
-  "  - [ ] AC-GAME-13 Chế độ tối",
-  "  - [ ] AC-GAME-14 Ghép tra trong bộ nhớ dưới 50 ms",
-  "  - [ ] AC-GAME-15 Phần tử bị chặn nóng",
-  "  - [ ] AC-GAME-16 Lỗi tải graph",
-  "  - [ ] AC-GAME-17 Đổi version graph giữ tiến độ",
-  "  - [ ] AC-GAME-18 Nồi lẩu nằm trong màn hình đầu tiên (thêm 2026-10-21)",
+  "  - [x] AC-GAME-01 Bàn chơi lần đầu",
+  "  - [x] AC-GAME-02 Nhúng lẩu qua nồi - ghép thành công",
+  "  - [x] AC-GAME-03 Thả chồng trên mặt bàn",
+  "  - [x] AC-GAME-04 Ghép ra phần tử đã có",
+  "  - [x] AC-GAME-05 Nồi trào - câu cố định theo cặp",
+  "  - [x] AC-GAME-06 Gợi ý khi trượt",
+  "  - [x] AC-GAME-07 Tìm trong Đĩa nhúng không dấu",
+  "  - [x] AC-GAME-08 Sắp xếp Đĩa nhúng",
+  "  - [x] AC-GAME-09 Nhãn \"MỚI\"",
+  "  - [x] AC-GAME-10 Lưu và khôi phục tiến độ cục bộ",
+  "  - [x] AC-GAME-11 Dọn bàn và Chơi lại từ đầu",
+  "  - [x] AC-GAME-12 Hướng dẫn lần đầu",
+  "  - [x] AC-GAME-13 Chế độ tối",
+  "  - [x] AC-GAME-14 Ghép tra trong bộ nhớ dưới 50 ms",
+  "  - [x] AC-GAME-15 Phần tử bị chặn nóng",
+  "  - [x] AC-GAME-16 Lỗi tải graph",
+  "  - [x] AC-GAME-17 Đổi version graph giữ tiến độ",
+  "  - [x] AC-GAME-18 Nồi lẩu nằm trong màn hình đầu tiên (thêm 2026-10-21)",
   "",
   "## Nội dung",
   "- [x] **PIPE** Pipeline Mẻ nhúng - chế độ lõi (giai đoạn 1) · 5đ · rủi ro: MEDIUM · KH: 2027-01-06 → 2027-01-20 · tiến độ: 100% · người: Thuc · bắt đầu: 2026-10-20 · xong: 2026-10-21 · ghi chú: ",
-  "  - [ ] AC-PIPE-01 Chế độ lõi (giai đoạn 1)",
-  "  - [ ] AC-PIPE-02 Lịch chạy và chạy tay",
-  "  - [ ] AC-PIPE-11 Lỗi giữa chừng không đăng gì",
-  "  - [ ] AC-PIPE-13 Không gửi dữ liệu người chơi cho LLM",
-  "  - [ ] AC-PIPE-14 Báo cáo đợt qua GitHub Issue",
+  "  - [x] AC-PIPE-01 Chế độ lõi (giai đoạn 1)",
+  "  - [x] AC-PIPE-02 Lịch chạy và chạy tay",
+  "  - [x] AC-PIPE-11 Lỗi giữa chừng không đăng gì",
+  "  - [x] AC-PIPE-13 Không gửi dữ liệu người chơi cho LLM",
+  "  - [x] AC-PIPE-14 Báo cáo đợt qua GitHub Issue",
   "",
   "## Vận hành",
   "- [x] **PRIV** Chính sách quyền riêng tư · 6đ · rủi ro: HIGH · KH: 2027-01-21 → 2027-02-16 · tiến độ: 100% · người: Thuc · bắt đầu: 2026-10-20 · xong: 2026-10-20 · ghi chú: ",
-  "  - [ ] AC-PRIV-01 Trang chính sách",
-  "  - [ ] AC-PRIV-02 Đồng ý trước khi gửi dữ liệu",
-  "  - [ ] AC-PRIV-03 Lưu bằng chứng đồng ý",
-  "  - [ ] AC-PRIV-04 Rút lại đồng ý",
-  "  - [ ] AC-PRIV-05 Xóa dữ liệu của mình",
-  "  - [ ] AC-PRIV-06 IP chỉ lưu dạng băm, xóa sau 7 ngày",
-  "  - [ ] AC-PRIV-07 Log không chứa dữ liệu cá nhân thô",
-  "  - [ ] AC-PRIV-08 Xem và xuất dữ liệu của mình",
-  "  - [ ] AC-PRIV-09 Chính sách đổi version",
+  "  - [x] AC-PRIV-01 Trang chính sách",
+  "  - [x] AC-PRIV-02 Đồng ý trước khi gửi dữ liệu",
+  "  - [x] AC-PRIV-03 Lưu bằng chứng đồng ý",
+  "  - [x] AC-PRIV-04 Rút lại đồng ý",
+  "  - [x] AC-PRIV-05 Xóa dữ liệu của mình",
+  "  - [x] AC-PRIV-06 IP chỉ lưu dạng băm, xóa sau 7 ngày",
+  "  - [x] AC-PRIV-07 Log không chứa dữ liệu cá nhân thô",
+  "  - [x] AC-PRIV-08 Xem và xuất dữ liệu của mình",
+  "  - [x] AC-PRIV-09 Chính sách đổi version",
   "",
   "## Cộng đồng",
   "- [x] **DISC** Công thức gia truyền · 6.5đ · rủi ro: HIGH · KH: 2027-02-17 → 2027-03-09 · tiến độ: 100% · người: Thuc · bắt đầu: 2026-10-20 · xong: 2026-10-20 · ghi chú: ",
-  "  - [ ] AC-DISC-01 Sinh UUID cục bộ",
-  "  - [ ] AC-DISC-02 Đặt nickname hợp lệ",
-  "  - [ ] AC-DISC-03 Nickname bị từ chối",
-  "  - [ ] AC-DISC-04 Nickname trùng",
-  "  - [ ] AC-DISC-05 Ghi nhận người khám phá đầu tiên",
-  "  - [ ] AC-DISC-06 Đã có người khám phá",
-  "  - [ ] AC-DISC-07 Công thức không có thật",
-  "  - [ ] AC-DISC-08 Gửi đồng thời",
-  "  - [ ] AC-DISC-09 Hiện Công thức gia truyền",
-  "  - [ ] AC-DISC-10 Phần tử khởi đầu không có Công thức gia truyền",
-  "  - [ ] AC-DISC-11 Giới hạn tần suất theo UUID và IP băm",
-  "  - [ ] AC-DISC-12 Đầu vào sai định dạng",
+  "  - [x] AC-DISC-01 Sinh UUID cục bộ",
+  "  - [x] AC-DISC-02 Đặt nickname hợp lệ",
+  "  - [x] AC-DISC-03 Nickname bị từ chối",
+  "  - [x] AC-DISC-04 Nickname trùng",
+  "  - [x] AC-DISC-05 Ghi nhận người khám phá đầu tiên",
+  "  - [x] AC-DISC-06 Đã có người khám phá",
+  "  - [x] AC-DISC-07 Công thức không có thật",
+  "  - [x] AC-DISC-08 Gửi đồng thời",
+  "  - [x] AC-DISC-09 Hiện Công thức gia truyền",
+  "  - [x] AC-DISC-10 Phần tử khởi đầu không có Công thức gia truyền",
+  "  - [x] AC-DISC-11 Giới hạn tần suất theo UUID và IP băm",
+  "  - [x] AC-DISC-12 Đầu vào sai định dạng",
   "",
   "## Trò chơi",
   "- [x] **DAILY** Món đặc biệt hôm nay · 9đ · rủi ro: MEDIUM · KH: 2027-03-10 → 2027-04-06 · tiến độ: 100% · người: Thuc · bắt đầu: 2026-10-20 · xong: 2026-10-21 · ghi chú: ",
-  "  - [ ] AC-DAILY-01 Chọn Món đặc biệt",
-  "  - [ ] AC-DAILY-02 Không có ứng viên nào",
-  "  - [ ] AC-DAILY-03 Công bố món không lộ tên",
-  "  - [ ] AC-DAILY-04 Ghép ra Món đặc biệt trên bàn lẩu",
-  "  - [ ] AC-DAILY-05 Trạng thái đã giải giữ qua tải lại",
-  "  - [ ] AC-DAILY-06 Nộp kết quả hợp lệ",
-  "  - [ ] AC-DAILY-07 Nộp kết quả không hợp lệ",
-  "  - [ ] AC-DAILY-08 Nộp trùng, nộp cho mẻ đã qua, chưa đăng nhập",
-  "  - [ ] AC-DAILY-09 Bảng xếp hạng mẻ",
-  "  - [ ] AC-DAILY-10 Streak",
-  "  - [ ] AC-DAILY-11 Bảng xếp hạng streak",
-  "  - [ ] AC-DAILY-12 Đồng hồ đếm ngược theo manifest thật",
-  "  - [ ] AC-DAILY-13 Giới hạn tần suất nộp",
-  "  - [ ] AC-DAILY-14 Bảng xếp hạng tuần và tháng (thêm 2026-10-21)",
-  "  - [ ] AC-DAILY-15 Bảng xếp hạng trên giao diện, chưa đăng nhập và bảng rỗng (thêm 2026-10-21)",
+  "  - [x] AC-DAILY-01 Chọn Món đặc biệt",
+  "  - [x] AC-DAILY-02 Không có ứng viên nào",
+  "  - [x] AC-DAILY-03 Công bố món không lộ tên",
+  "  - [x] AC-DAILY-04 Ghép ra Món đặc biệt trên bàn lẩu",
+  "  - [x] AC-DAILY-05 Trạng thái đã giải giữ qua tải lại",
+  "  - [x] AC-DAILY-06 Nộp kết quả hợp lệ",
+  "  - [x] AC-DAILY-07 Nộp kết quả không hợp lệ",
+  "  - [x] AC-DAILY-08 Nộp trùng, nộp cho mẻ đã qua, chưa đăng nhập",
+  "  - [x] AC-DAILY-09 Bảng xếp hạng mẻ",
+  "  - [x] AC-DAILY-10 Streak",
+  "  - [x] AC-DAILY-11 Bảng xếp hạng streak",
+  "  - [x] AC-DAILY-12 Đồng hồ đếm ngược theo manifest thật",
+  "  - [x] AC-DAILY-13 Giới hạn tần suất nộp",
+  "  - [x] AC-DAILY-14 Bảng xếp hạng tuần và tháng (thêm 2026-10-21)",
+  "  - [x] AC-DAILY-15 Bảng xếp hạng trên giao diện, chưa đăng nhập và bảng rỗng (thêm 2026-10-21)",
   "",
   "## Cộng đồng",
-  "- [ ] **AUTH** Đăng nhập bằng Google · 8.5đ · rủi ro: HIGH · KH: 2027-04-12 → 2027-05-07 · tiến độ: 0% (theo AC) · người: Thuc · bắt đầu:  · xong:  · ghi chú: ",
-  "  - [ ] AC-AUTH-01 Đăng nhập bằng Google",
-  "  - [ ] AC-AUTH-02 Phiên đăng nhập",
-  "  - [ ] AC-AUTH-03 ID token không hợp lệ",
-  "  - [ ] AC-AUTH-04 Cùng tài khoản trên nhiều máy",
-  "  - [ ] AC-AUTH-05 Đăng xuất",
-  "  - [ ] AC-AUTH-06 Xóa tài khoản và dữ liệu",
-  "  - [ ] AC-AUTH-07 Giới hạn tần suất đăng nhập",
+  "- [x] **AUTH** Đăng nhập bằng Google · 8.5đ · rủi ro: HIGH · KH: 2027-04-12 → 2027-05-07 · tiến độ: 100% · người: Thuc · bắt đầu: 2026-10-21 · xong: 2026-10-21 · ghi chú: PR #28; trên staging",
+  "  - [x] AC-AUTH-01 Đăng nhập bằng Google",
+  "  - [x] AC-AUTH-02 Phiên đăng nhập",
+  "  - [x] AC-AUTH-03 ID token không hợp lệ",
+  "  - [x] AC-AUTH-04 Cùng tài khoản trên nhiều máy",
+  "  - [x] AC-AUTH-05 Đăng xuất",
+  "  - [x] AC-AUTH-06 Xóa tài khoản và dữ liệu",
+  "  - [x] AC-AUTH-07 Giới hạn tần suất đăng nhập",
   "",
   "## Trò chơi",
-  "- [ ] **DAILY2** Món đặc biệt - làm lại theo thời gian và tài khoản · 8.5đ · rủi ro: MEDIUM · KH: 2027-05-10 → 2027-06-03 · tiến độ: 0% (theo AC) · người: Thuc · bắt đầu:  · xong:  · ghi chú: ",
-  "  - [ ] AC-DAILY-04 Ghép ra Món đặc biệt trên bàn lẩu",
-  "  - [ ] AC-DAILY-05 Trạng thái đã giải giữ qua tải lại",
-  "  - [ ] AC-DAILY-06 Nộp kết quả hợp lệ",
-  "  - [ ] AC-DAILY-07 Nộp kết quả không hợp lệ",
-  "  - [ ] AC-DAILY-08 Nộp trùng, nộp cho mẻ đã qua, chưa đăng nhập",
-  "  - [ ] AC-DAILY-09 Bảng xếp hạng mẻ",
-  "  - [ ] AC-DAILY-10 Streak",
-  "  - [ ] AC-DAILY-11 Bảng xếp hạng streak",
-  "  - [ ] AC-DAILY-14 Bảng xếp hạng tuần và tháng (thêm 2026-10-21)",
-  "  - [ ] AC-DAILY-15 Bảng xếp hạng trên giao diện, chưa đăng nhập và bảng rỗng (thêm 2026-10-21)",
+  "- [x] **DAILY2** Món đặc biệt - làm lại theo thời gian và tài khoản · 8.5đ · rủi ro: MEDIUM · KH: 2027-05-10 → 2027-06-03 · tiến độ: 100% · người: Thuc · bắt đầu: 2026-10-21 · xong: 2026-10-21 · ghi chú: PR #29; trên staging",
+  "  - [x] AC-DAILY-04 Ghép ra Món đặc biệt trên bàn lẩu",
+  "  - [x] AC-DAILY-05 Trạng thái đã giải giữ qua tải lại",
+  "  - [x] AC-DAILY-06 Nộp kết quả hợp lệ",
+  "  - [x] AC-DAILY-07 Nộp kết quả không hợp lệ",
+  "  - [x] AC-DAILY-08 Nộp trùng, nộp cho mẻ đã qua, chưa đăng nhập",
+  "  - [x] AC-DAILY-09 Bảng xếp hạng mẻ",
+  "  - [x] AC-DAILY-10 Streak",
+  "  - [x] AC-DAILY-11 Bảng xếp hạng streak",
+  "  - [x] AC-DAILY-14 Bảng xếp hạng tuần và tháng (thêm 2026-10-21)",
+  "  - [x] AC-DAILY-15 Bảng xếp hạng trên giao diện, chưa đăng nhập và bảng rỗng (thêm 2026-10-21)",
   "",
   "## Cộng đồng",
   "- [ ] **SHARE** Thẻ chia sẻ · 4đ · rủi ro: MEDIUM · KH: 2027-04-07 → 2027-04-19 · tiến độ: 0% · người: Thuc · bắt đầu:  · xong:  · ghi chú: ",
@@ -2422,26 +2420,26 @@
   "",
   "## An toàn",
   "- [x] **REPORT** Báo cáo + chặn nóng · 5.5đ · rủi ro: MEDIUM · KH: 2027-04-20 → 2027-05-07 · tiến độ: 100% · người: Thuc · bắt đầu: 2026-10-20 · xong: 2026-10-20 · ghi chú: ",
-  "  - [ ] AC-REPORT-01 Báo cáo phần tử",
-  "  - [ ] AC-REPORT-02 Báo cáo không hợp lệ",
-  "  - [ ] AC-REPORT-03 Một UUID chỉ tính một lần",
-  "  - [ ] AC-REPORT-04 Đủ 3 UUID khác nhau ⇒ tự ẩn ngay",
-  "  - [ ] AC-REPORT-05 Báo cáo ảnh ⇒ về emoji ngay",
-  "  - [ ] AC-REPORT-06 Danh sách chặn nóng",
-  "  - [ ] AC-REPORT-07 Client áp danh sách chặn khi khởi động",
-  "  - [ ] AC-REPORT-08 Giới hạn tần suất báo cáo",
-  "  - [ ] AC-REPORT-09 Phần tử bị ẩn và các công thức liên quan",
+  "  - [x] AC-REPORT-01 Báo cáo phần tử",
+  "  - [x] AC-REPORT-02 Báo cáo không hợp lệ",
+  "  - [x] AC-REPORT-03 Một UUID chỉ tính một lần",
+  "  - [x] AC-REPORT-04 Đủ 3 UUID khác nhau ⇒ tự ẩn ngay",
+  "  - [x] AC-REPORT-05 Báo cáo ảnh ⇒ về emoji ngay",
+  "  - [x] AC-REPORT-06 Danh sách chặn nóng",
+  "  - [x] AC-REPORT-07 Client áp danh sách chặn khi khởi động",
+  "  - [x] AC-REPORT-08 Giới hạn tần suất báo cáo",
+  "  - [x] AC-REPORT-09 Phần tử bị ẩn và các công thức liên quan",
   "- [x] **ADMIN** Trang quản trị tối giản · 6đ · rủi ro: MEDIUM · KH: 2027-05-10 → 2027-05-27 · tiến độ: 100% · người: Thuc · bắt đầu: 2026-10-20 · xong: 2026-10-20 · ghi chú: ",
-  "  - [ ] AC-ADMIN-01 Thiếu hoặc sai token",
-  "  - [ ] AC-ADMIN-02 Chống dò token",
-  "  - [ ] AC-ADMIN-03 Ẩn / hiện phần tử có hiệu lực ngay",
-  "  - [ ] AC-ADMIN-04 Ẩn / hiện công thức và ảnh",
-  "  - [ ] AC-ADMIN-05 Chặn vĩnh viễn",
-  "  - [ ] AC-ADMIN-06 Xem báo cáo",
-  "  - [ ] AC-ADMIN-07 Bỏ qua báo cáo",
-  "  - [ ] AC-ADMIN-08 Nhật ký các đợt",
-  "  - [ ] AC-ADMIN-09 Audit mọi thao tác quản trị",
-  "  - [ ] AC-ADMIN-10 Trang quản trị",
+  "  - [x] AC-ADMIN-01 Thiếu hoặc sai token",
+  "  - [x] AC-ADMIN-02 Chống dò token",
+  "  - [x] AC-ADMIN-03 Ẩn / hiện phần tử có hiệu lực ngay",
+  "  - [x] AC-ADMIN-04 Ẩn / hiện công thức và ảnh",
+  "  - [x] AC-ADMIN-05 Chặn vĩnh viễn",
+  "  - [x] AC-ADMIN-06 Xem báo cáo",
+  "  - [x] AC-ADMIN-07 Bỏ qua báo cáo",
+  "  - [x] AC-ADMIN-08 Nhật ký các đợt",
+  "  - [x] AC-ADMIN-09 Audit mọi thao tác quản trị",
+  "  - [x] AC-ADMIN-10 Trang quản trị",
   "",
   "## Vận hành",
   "- [ ] **METRIC** Đo chỉ số thành công · 4.5đ · rủi ro: MEDIUM · KH: 2027-05-28 → 2027-06-10 · tiến độ: 0% · người: Thuc · bắt đầu:  · xong:  · ghi chú: ",
@@ -2455,88 +2453,88 @@
   "",
   "## Kiểm thử",
   "- [x] **INV** Bất biến nội dung và trò chơi · 6đ · rủi ro: HIGH · KH: 2027-06-11 → 2027-06-30 · tiến độ: 100% · người: Thuc · bắt đầu: 2026-10-20 · xong: 2026-10-20 · ghi chú: ",
-  "  - [ ] AC-INV-01 Ghép đối xứng",
-  "  - [ ] AC-INV-02 Mỗi cặp tối đa một kết quả",
-  "  - [ ] AC-INV-03 Mọi phần tử hoạt động đều tới được, depth = BFS",
-  "  - [ ] AC-INV-04 Graph không lộ, không giải mã được khi thiếu đầu vào",
-  "  - [ ] AC-INV-05 Pipeline idempotent",
-  "  - [ ] AC-INV-06 Đợt lỗi không đổi bản đang chạy",
-  "  - [ ] AC-INV-07 Không nội dung hoạt động nào vi phạm danh mục cấm",
-  "  - [ ] AC-INV-08 First Discovery chỉ cho công thức có thật",
-  "  - [ ] AC-INV-09 Đủ 3 báo cáo từ 3 UUID khác nhau ⇒ không còn hiện",
-  "  - [ ] AC-INV-10 Món đặc biệt luôn hợp lệ",
-  "  - [ ] AC-INV-11 Bảng xếp hạng chỉ có kết quả hợp lệ (cập nhật 2026-10-21)",
-  "  - [ ] AC-INV-12 Tỉ lệ ghép trượt khi chơi ngẫu nhiên",
+  "  - [x] AC-INV-01 Ghép đối xứng",
+  "  - [x] AC-INV-02 Mỗi cặp tối đa một kết quả",
+  "  - [x] AC-INV-03 Mọi phần tử hoạt động đều tới được, depth = BFS",
+  "  - [x] AC-INV-04 Graph không lộ, không giải mã được khi thiếu đầu vào",
+  "  - [x] AC-INV-05 Pipeline idempotent",
+  "  - [x] AC-INV-06 Đợt lỗi không đổi bản đang chạy",
+  "  - [x] AC-INV-07 Không nội dung hoạt động nào vi phạm danh mục cấm",
+  "  - [x] AC-INV-08 First Discovery chỉ cho công thức có thật",
+  "  - [x] AC-INV-09 Đủ 3 báo cáo từ 3 UUID khác nhau ⇒ không còn hiện",
+  "  - [x] AC-INV-10 Món đặc biệt luôn hợp lệ",
+  "  - [x] AC-INV-11 Bảng xếp hạng chỉ có kết quả hợp lệ (cập nhật 2026-10-21)",
+  "  - [x] AC-INV-12 Tỉ lệ ghép trượt khi chơi ngẫu nhiên",
   "",
   "## Nền tảng",
   "- [x] **SUBPATH** Chạy dưới đường dẫn con dinoduct.fun/lau-meme · 4đ · rủi ro: MEDIUM · KH: 2027-07-01 → 2027-07-13 · tiến độ: 100% · người: Thuc · bắt đầu: 2026-10-20 · xong: 2026-10-20 · ghi chú: ",
-  "  - [ ] AC-SUBPATH-01 Một nguồn tiền tố, route đúng",
-  "  - [ ] AC-SUBPATH-02 API dưới tiền tố",
-  "  - [ ] AC-SUBPATH-03 Thiếu dấu gạch chéo cuối",
-  "  - [ ] AC-SUBPATH-04 Ngoài tiền tố là 404",
-  "  - [ ] AC-SUBPATH-05 Vào game và F5 ở mọi màn hình",
-  "  - [ ] AC-SUBPATH-06 Giữ chỗ đường dẫn ảnh",
-  "  - [ ] AC-SUBPATH-07 Web không gọi ra ngoài tiền tố",
-  "  - [ ] AC-SUBPATH-08 Mọi khóa localStorage có tiền tố `laumeme:`",
-  "  - [ ] AC-SUBPATH-09 Chuyển khóa cũ một lần",
-  "  - [ ] AC-SUBPATH-10 Link chia sẻ tuyệt đối",
-  "  - [ ] AC-SUBPATH-11 Thẻ xem trước link và favicon",
-  "  - [ ] AC-SUBPATH-12 Pipeline gọi API dưới tiền tố",
+  "  - [x] AC-SUBPATH-01 Một nguồn tiền tố, route đúng",
+  "  - [x] AC-SUBPATH-02 API dưới tiền tố",
+  "  - [x] AC-SUBPATH-03 Thiếu dấu gạch chéo cuối",
+  "  - [x] AC-SUBPATH-04 Ngoài tiền tố là 404",
+  "  - [x] AC-SUBPATH-05 Vào game và F5 ở mọi màn hình",
+  "  - [x] AC-SUBPATH-06 Giữ chỗ đường dẫn ảnh",
+  "  - [x] AC-SUBPATH-07 Web không gọi ra ngoài tiền tố",
+  "  - [x] AC-SUBPATH-08 Mọi khóa localStorage có tiền tố `laumeme:`",
+  "  - [x] AC-SUBPATH-09 Chuyển khóa cũ một lần",
+  "  - [x] AC-SUBPATH-10 Link chia sẻ tuyệt đối",
+  "  - [x] AC-SUBPATH-11 Thẻ xem trước link và favicon",
+  "  - [x] AC-SUBPATH-12 Pipeline gọi API dưới tiền tố",
   "",
   "## Kiểm thử",
   "- [ ] **UAT** Kiểm thử nghiệm thu & sửa lỗi (giai đoạn 1) · 14đ · rủi ro: MEDIUM · KH: 2027-07-01 → 2027-08-04 · tiến độ: 0% · người: Thuc · bắt đầu:  · xong:  · ghi chú: ",
-  "  - [ ] AC-GAME-01 Bàn chơi lần đầu",
-  "  - [ ] AC-GAME-02 Nhúng lẩu qua nồi - ghép thành công",
-  "  - [ ] AC-GAME-03 Thả chồng trên mặt bàn",
-  "  - [ ] AC-GAME-04 Ghép ra phần tử đã có",
-  "  - [ ] AC-GAME-05 Nồi trào - câu cố định theo cặp",
-  "  - [ ] AC-GAME-06 Gợi ý khi trượt",
-  "  - [ ] AC-GAME-07 Tìm trong Đĩa nhúng không dấu",
-  "  - [ ] AC-GAME-08 Sắp xếp Đĩa nhúng",
-  "  - [ ] AC-GAME-09 Nhãn \"MỚI\"",
-  "  - [ ] AC-GAME-10 Lưu và khôi phục tiến độ cục bộ",
-  "  - [ ] AC-GAME-11 Dọn bàn và Chơi lại từ đầu",
-  "  - [ ] AC-GAME-12 Hướng dẫn lần đầu",
-  "  - [ ] AC-GAME-13 Chế độ tối",
-  "  - [ ] AC-GAME-14 Ghép tra trong bộ nhớ dưới 50 ms",
-  "  - [ ] AC-GAME-15 Phần tử bị chặn nóng",
-  "  - [ ] AC-GAME-16 Lỗi tải graph",
-  "  - [ ] AC-GAME-17 Đổi version graph giữ tiến độ",
-  "  - [ ] AC-GAME-18 Nồi lẩu nằm trong màn hình đầu tiên (thêm 2026-10-21)",
+  "  - [x] AC-GAME-01 Bàn chơi lần đầu",
+  "  - [x] AC-GAME-02 Nhúng lẩu qua nồi - ghép thành công",
+  "  - [x] AC-GAME-03 Thả chồng trên mặt bàn",
+  "  - [x] AC-GAME-04 Ghép ra phần tử đã có",
+  "  - [x] AC-GAME-05 Nồi trào - câu cố định theo cặp",
+  "  - [x] AC-GAME-06 Gợi ý khi trượt",
+  "  - [x] AC-GAME-07 Tìm trong Đĩa nhúng không dấu",
+  "  - [x] AC-GAME-08 Sắp xếp Đĩa nhúng",
+  "  - [x] AC-GAME-09 Nhãn \"MỚI\"",
+  "  - [x] AC-GAME-10 Lưu và khôi phục tiến độ cục bộ",
+  "  - [x] AC-GAME-11 Dọn bàn và Chơi lại từ đầu",
+  "  - [x] AC-GAME-12 Hướng dẫn lần đầu",
+  "  - [x] AC-GAME-13 Chế độ tối",
+  "  - [x] AC-GAME-14 Ghép tra trong bộ nhớ dưới 50 ms",
+  "  - [x] AC-GAME-15 Phần tử bị chặn nóng",
+  "  - [x] AC-GAME-16 Lỗi tải graph",
+  "  - [x] AC-GAME-17 Đổi version graph giữ tiến độ",
+  "  - [x] AC-GAME-18 Nồi lẩu nằm trong màn hình đầu tiên (thêm 2026-10-21)",
   "",
   "## Nội dung",
   "- [x] **MOD** Kiểm duyệt nội dung tự động (giai đoạn 2) · 9đ · rủi ro: HIGH · KH: 2027-08-05 → 2027-09-01 · tiến độ: 100% · người: Thuc · bắt đầu: 2026-10-20 · xong: 2026-10-20 · ghi chú: ",
-  "  - [ ] AC-MOD-01 Lớp 1 - danh sách từ cấm",
-  "  - [ ] AC-MOD-02 Lớp 2 - LLM phân loại theo danh mục",
-  "  - [ ] AC-MOD-03 Không chắc thì loại",
-  "  - [ ] AC-MOD-04 Kiểm cả tên kết quả công thức và văn bản phụ",
-  "  - [ ] AC-MOD-05 Luật người thật dựa trên ngữ cảnh nguồn",
-  "  - [ ] AC-MOD-06 Danh sách chặn bí danh áp cho mọi đầu vào sau",
-  "  - [ ] AC-MOD-07 Tiếng lóng chung và hiện tượng chung được phép",
-  "  - [ ] AC-MOD-08 Hoãn nội dung nóng vì một người",
-  "  - [ ] AC-MOD-09 Không bao giờ - cáo buộc và quấy rối",
-  "  - [ ] AC-MOD-10 Tên bị quản trị chặn không quay lại",
-  "- [ ] **PIPE2** Pipeline Mẻ nhúng - crawl và tự động đăng (giai đoạn 2) · 14đ · rủi ro: HIGH · KH: 2027-09-03 → 2027-10-15 · tiến độ: 0% (theo AC) · người: Thuc · bắt đầu:  · xong:  · ghi chú: ",
-  "  - [ ] AC-PIPE-03 Một nguồn lỗi không làm hỏng cả đợt",
-  "  - [ ] AC-PIPE-04 Adapter chỉ thu khái niệm, tôn trọng robots.txt",
-  "  - [ ] AC-PIPE-05 Khử trùng",
-  "  - [ ] AC-PIPE-06 Liên kết ngược hợp lệ",
-  "  - [ ] AC-PIPE-07 Hàng chờ meme chưa nối được",
-  "  - [ ] AC-PIPE-08 Công thức bổ sung (cập nhật 2026-10-20)",
-  "  - [ ] AC-PIPE-09 Giám khảo hài",
-  "  - [ ] AC-PIPE-10 Idempotent",
-  "  - [ ] AC-PIPE-12 Gom lô Gemini, backoff, hết quota dừng êm",
-  "- [ ] **ART** Ảnh minh họa tự tạo (giai đoạn 2) · 9đ · rủi ro: HIGH · KH: 2027-10-18 → 2027-11-08 · tiến độ: 0% · người: Thuc · bắt đầu: 2026-10-21 · xong:  · ghi chú: đã nối vào mẻ full (ADR 0012, nhánh feat/art-wiring); cần WORKERS_AI_TOKEN + CLOUDFLARE_ACCOUNT_ID để vẽ thật; hạn mức Workers AI vẫn chờ kiểm (câu hỏi mở 13)",
-  "  - [ ] AC-ART-01 Prompt vẽ khái niệm, không người thật",
-  "  - [ ] AC-ART-02 Kiểm duyệt ảnh, vẽ lại một lần rồi về emoji",
-  "  - [ ] AC-ART-03 Hết hạn mức thì vẽ bù đợt sau",
-  "  - [ ] AC-ART-04 Lưu ảnh theo băm nội dung",
-  "  - [ ] AC-ART-05 Phục vụ ảnh qua Worker với cache bất biến",
-  "  - [ ] AC-ART-06 Client hiện emoji trước, ảnh sau",
-  "  - [ ] AC-ART-07 Ảnh bị chặn không được tải",
-  "  - [ ] AC-ART-08 Phóng lớn bất ngờ khi ghép ra món lần đầu (thêm 2026-10-20)",
-  "  - [ ] AC-ART-09 Mẻ full vẽ ảnh cho phần tử mới (thêm 2026-10-21, ADR 0012)",
-  "  - [ ] AC-ART-10 Thiếu cấu hình hoặc lỗi vẽ kéo dài không làm hỏng mẻ (thêm 2026-10-21, ADR 0012)",
+  "  - [x] AC-MOD-01 Lớp 1 - danh sách từ cấm",
+  "  - [x] AC-MOD-02 Lớp 2 - LLM phân loại theo danh mục",
+  "  - [x] AC-MOD-03 Không chắc thì loại",
+  "  - [x] AC-MOD-04 Kiểm cả tên kết quả công thức và văn bản phụ",
+  "  - [x] AC-MOD-05 Luật người thật dựa trên ngữ cảnh nguồn",
+  "  - [x] AC-MOD-06 Danh sách chặn bí danh áp cho mọi đầu vào sau",
+  "  - [x] AC-MOD-07 Tiếng lóng chung và hiện tượng chung được phép",
+  "  - [x] AC-MOD-08 Hoãn nội dung nóng vì một người",
+  "  - [x] AC-MOD-09 Không bao giờ - cáo buộc và quấy rối",
+  "  - [x] AC-MOD-10 Tên bị quản trị chặn không quay lại",
+  "- [x] **PIPE2** Pipeline Mẻ nhúng - crawl và tự động đăng (giai đoạn 2) · 14đ · rủi ro: HIGH · KH: 2027-09-03 → 2027-10-15 · tiến độ: 100% · người: Thuc · bắt đầu: 2026-10-21 · xong: 2026-10-21 · ghi chú: PR #34 (mẻ full), #40, #43; trên staging",
+  "  - [x] AC-PIPE-03 Một nguồn lỗi không làm hỏng cả đợt",
+  "  - [x] AC-PIPE-04 Adapter chỉ thu khái niệm, tôn trọng robots.txt",
+  "  - [x] AC-PIPE-05 Khử trùng",
+  "  - [x] AC-PIPE-06 Liên kết ngược hợp lệ",
+  "  - [x] AC-PIPE-07 Hàng chờ meme chưa nối được",
+  "  - [x] AC-PIPE-08 Công thức bổ sung (cập nhật 2026-10-20)",
+  "  - [x] AC-PIPE-09 Giám khảo hài",
+  "  - [x] AC-PIPE-10 Idempotent",
+  "  - [x] AC-PIPE-12 Gom lô Gemini, backoff, hết quota dừng êm",
+  "- [x] **ART** Ảnh minh họa tự tạo (giai đoạn 2) · 9đ · rủi ro: HIGH · KH: 2027-10-18 → 2027-11-08 · tiến độ: 100% · người: Thuc · bắt đầu: 2026-10-21 · xong: 2026-10-22 · ghi chú: đã nối vào mẻ full (ADR 0012, nhánh feat/art-wiring); cần WORKERS_AI_TOKEN + CLOUDFLARE_ACCOUNT_ID để vẽ thật; hạn mức Workers AI vẫn chờ kiểm (câu hỏi mở 13)",
+  "  - [x] AC-ART-01 Prompt vẽ khái niệm, không người thật",
+  "  - [x] AC-ART-02 Kiểm duyệt ảnh, vẽ lại một lần rồi về emoji",
+  "  - [x] AC-ART-03 Hết hạn mức thì vẽ bù đợt sau",
+  "  - [x] AC-ART-04 Lưu ảnh theo băm nội dung",
+  "  - [x] AC-ART-05 Phục vụ ảnh qua Worker với cache bất biến",
+  "  - [x] AC-ART-06 Client hiện emoji trước, ảnh sau",
+  "  - [x] AC-ART-07 Ảnh bị chặn không được tải",
+  "  - [x] AC-ART-08 Phóng lớn bất ngờ khi ghép ra món lần đầu (thêm 2026-10-20)",
+  "  - [x] AC-ART-09 Mẻ full vẽ ảnh cho phần tử mới (thêm 2026-10-21, ADR 0012)",
+  "  - [x] AC-ART-10 Thiếu cấu hình hoặc lỗi vẽ kéo dài không làm hỏng mẻ (thêm 2026-10-21, ADR 0012)",
   "",
   "## Kiểm thử",
   "- [ ] **UAT2** Kiểm thử nghiệm thu & sửa lỗi (giai đoạn 2) · 5đ · rủi ro: MEDIUM · KH: 2027-11-09 → 2027-11-22 · tiến độ: 0% · người: Thuc · bắt đầu:  · xong:  · ghi chú: "
