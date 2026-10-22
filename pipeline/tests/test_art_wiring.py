@@ -8,7 +8,8 @@ Reuses the fakes of test_art_full_batch.py / test_pipe_full_batch.py / test_art_
 
 No network, no sleeping, no real clock. Imports of production names happen inside the tests.
 
-Not covered here (no injectable clock or budget is visible on the public surface): the 8-minute drawing budget.
+The 8-minute drawing budget is tested with a fake `time` in lau_meme_pipeline.batch. "Đã có object cùng khóa thì không
+tải lại" is covered through run_batch(mode="full") by the AC-ART-04 test in test_art_full_batch.py (image_exists True).
 """
 
 import http.client
@@ -148,12 +149,9 @@ def test_ac_art_09_issue_ghi_so_anh_ve_duoc_ve_emoji_cho_ve_so_lan_ve_va_ly_do_b
 
     assert len(draw.prompts) == 4
     text = reporter.issues[0][1]
-    assert re.search(r"vẽ được\W{0,8}2\b|\b2\b\W{0,8}ảnh vẽ được", text)
-    assert re.search(r"về emoji\W{0,8}1\b", text)
-    assert re.search(r"chờ vẽ\W{0,8}0\b", text)
-    assert re.search(r"lần vẽ\W{0,8}4\b|\b4\b\W{0,8}lần vẽ", text)
-    assert re.search(r"real_face\W{1,8}1\b", text)
-    assert re.search(r"\btext\W{1,8}1\b", text)
+    assert re.search(r"^- Ảnh: vẽ được 2 · về emoji 1 · chờ vẽ 0 · 4 lần vẽ\b", text, re.M)
+    assert re.search(r"^- Ảnh bị loại: .*\breal_face 1\b", text, re.M)
+    assert re.search(r"^- Ảnh bị loại: .*\btext 1\b", text, re.M)
 
 
 def test_ac_art_09_chay_lai_cung_me_cho_cung_khoa_anh():
@@ -182,6 +180,34 @@ def test_ac_art_09_adapter_workers_ai_gui_cung_seed_cho_cung_prompt_o_lan_dau(mo
     second(PROMPT)
 
     assert seed_of(seen[0]) == seed_of(seen[1])
+
+
+def test_ac_art_09_het_8_phut_thi_ngung_ve_phan_con_lai_cho_dot_sau(monkeypatch):
+    """AC-ART-09: bước vẽ dừng khi quá 8 phút: đồng hồ giả, mỗi lần vẽ tốn 60 giây; vẽ đến khi vượt 480 giây (9 ảnh)
+    thì ngừng, 13 phần tử còn lại vào art_pending không có image_key, mẻ vẫn đăng thành công."""
+    import types
+
+    from lau_meme_pipeline import batch
+
+    now = [0.0]
+    monkeypatch.setattr(batch, "time", types.SimpleNamespace(monotonic=lambda: now[0]))
+
+    class SlowDraw(Draw):
+        def __call__(self, prompt):
+            now[0] += 60
+            return super().__call__(prompt)
+
+    client, draw = ArtClient(store={"art_pending": []}), SlowDraw()
+    outcome = run(client, FakeReporter(), MANY_NAMES, art_adapters(draw, Check()))
+
+    assert batch.ART_BUDGET_SECONDS == 8 * 60
+    assert outcome.ok is True and outcome.status == "success"
+    assert len(draw.prompts) == 9
+    assert len(client.puts) == 9
+    (body,) = client.success_posts
+    without = {n for n in MANY_NAMES if not content_element(body, n).get("image_key")}
+    assert len(without) == 13
+    assert {names_by_id(body)[i] for i in pending_of(body)} == without
 
 
 # ================================================================ AC-ART-10
@@ -290,7 +316,7 @@ def test_ac_art_10_d_issue_dem_loi_ve_theo_loai():
     client, reporter = ArtClient(), FakeReporter()
     run(client, reporter, [MEME], art_adapters(Draw(ConnectionError("down")), Check()))
 
-    assert re.search(r"ConnectionError\W{1,8}1\b", reporter.issues[0][1])
+    assert re.search(r"^- Ảnh lỗi: .*\bConnectionError 1\b", reporter.issues[0][1], re.M)
 
 
 def test_ac_art_10_thieu_gemini_api_key_thi_me_full_that_bai_du_da_co_cau_hinh_ve(monkeypatch):

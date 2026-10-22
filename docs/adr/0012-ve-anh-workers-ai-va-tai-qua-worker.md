@@ -2,7 +2,7 @@
 
 - Trạng thái: Đã chấp nhận (2026-10-21, cổng contract duyệt tại 02bca48)
 - Ngày: 2026-10-21
-- Nguồn: ART (AC-ART-01..04; AC-ART-09/10 thêm 2026-10-21 ghi lại các quyết định dưới đây thành tiêu chí nghiệm thu), ADR 0009 (kho pipeline), ADR 0011 (Gemini qua REST), câu hỏi mở 13
+- Nguồn: ART (AC-ART-01..04; AC-ART-09/10 thêm 2026-10-21 ghi lại các quyết định dưới đây thành tiêu chí nghiệm thu; test của hai AC này là test mô tả hành vi đã có từ PR #35 nên không có RED riêng, RED gốc của ART giữ tại 02bca48), ADR 0009 (kho pipeline), ADR 0011 (Gemini qua REST), câu hỏi mở 13
 
 ## Bối cảnh
 PR #35 đã có logic thuần của ART (`pipeline/src/lau_meme_pipeline/art.py`: prompt, vẽ lại một lần, chờ vẽ, WebP theo băm), Worker phục vụ `/img/{key}` từ R2 và web hiện ảnh. Còn thiếu ba adapter để mẻ `full` có ảnh thật:
