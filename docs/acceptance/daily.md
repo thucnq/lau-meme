@@ -96,7 +96,7 @@
 ### AC-DAILY-16: Thẻ thử thách nổi bật (thêm 2026-10-22)
 - **Cho** mẻ hiện tại có Món đặc biệt, thực khách chưa giải
 - **Khi** trang vừa tải xong
-- **Thì** thẻ Món đặc biệt có nhãn "Thử thách" nổi bật ở đầu thẻ, câu dẫn "Ghép ra món bí ẩn này trên bàn lẩu" ngay dưới nhãn, emoji và gợi ý mờ của món cỡ chữ lớn hơn chữ thường của trang, nền thẻ dùng màu nhấn khác nền trang; đồng hồ "Mẻ mới sau …" vẫn hiện. Khi đã giải, nhãn đổi thành "Đã giải" như AC-DAILY-15
+- **Thì** thẻ Món đặc biệt có nhãn "Thử thách" nổi bật ở đầu thẻ, câu dẫn "Ghép ra món bí ẩn này trên bàn lẩu" ngay dưới nhãn, emoji và gợi ý mờ của món cỡ chữ lớn hơn chữ thường của trang, nền thẻ dùng màu nhấn khác nền trang; đồng hồ "Mẻ mới sau …" vẫn hiện. Khi đã giải, nhãn đổi thành "Đã giải" như AC-DAILY-05
 - Ưu tiên: Bắt buộc
 
 ### AC-DAILY-17: Bảng xếp hạng ở tab riêng (thêm 2026-10-22)
