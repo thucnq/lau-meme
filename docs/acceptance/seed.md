@@ -6,7 +6,7 @@
 ### AC-SEED-01: Nạp lõi hợp lệ
 - **Cho** `noi-dung-loi.json` hiện tại
 - **Khi** chạy lệnh nạp lõi vào kho nội dung rỗng
-- **Thì** kho có 139 phần tử, 363 công thức, 40 câu Nồi trào, 4 phần tử khởi đầu (Cay, Cười, Toang, Deadline), mọi phần tử ở trạng thái hoạt động và gắn mẻ "classic"; lệnh in tóm tắt các con số này
+- **Thì** kho có 174 phần tử, 518 công thức, 40 câu Nồi trào, 4 phần tử khởi đầu (Cay, Cười, Toang, Deadline), mọi phần tử ở trạng thái hoạt động và gắn mẻ "classic"; lệnh in tóm tắt các con số này
 - Ưu tiên: Bắt buộc
 
 ### AC-SEED-02: Phần tử không tới được
