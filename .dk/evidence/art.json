@@ -46,8 +46,8 @@
   }
  },
  "green": {
-  "ts": "2026-10-21T14:16:15+00:00",
-  "commit": "067e9c7",
+  "ts": "2026-10-22T01:33:40+00:00",
+  "commit": "9cb160d",
   "results": {
    "AC-ART-01": {
     "status": "PASS",
@@ -80,6 +80,14 @@
    "AC-ART-08": {
     "status": "PASS",
     "test": "art.ui.test.tsx#art: phóng lớn khi ghép ra món lần đầu > AC-ART-08: ghép ra phần tử chưa có thì lớp phủ hiện tên, emoji "
+   },
+   "AC-ART-09": {
+    "status": "PASS",
+    "test": "test_art_wiring#test_ac_art_09_22_meme_moi_ve_dung_20_anh_tai_len_truoc_khi_dang_va_2_vao_cho_ve"
+   },
+   "AC-ART-10": {
+    "status": "PASS",
+    "test": "test_art_wiring#test_ac_art_10_a_thieu_cau_hinh_ve_thi_bo_buoc_ve_meme_vao_cho_ve_va_issue_canh_bao"
    },
    "AC-ART-VALIDATION": {
     "status": "PASS",

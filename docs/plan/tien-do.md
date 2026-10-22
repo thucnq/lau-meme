@@ -1,7 +1,7 @@
 # Tiến độ — ƯỚC LƯỢNG - LẨU MEME
 
 > Sinh bởi `/dk:plan` (gen-plan.py) từ `docs/estimate/items.json`. **Người sửa trực tiếp file này**: dấu `[x]` (hạng mục hoặc AC), `tiến độ: N%`, `người`, `bắt đầu`, `xong` (YYYY-MM-DD), `ghi chú` — giữ nguyên dấu ` · ` giữa các trường. Chạy lại `/dk:plan` để tính dự báo và vẽ lại `gantt.html`. `KH` là kế hoạch gốc, chỉ đổi bằng `/dk:plan rebaseline`.
-> Bắt đầu dự án: 2026-10-20 · Kỹ sư: 1 (Thuc) · Giờ/tuần: 20 · Nghiệm thu KH: 2027-11-23 · Dự báo: 2027-05-21 · Cập nhật: 2026-10-21
+> Bắt đầu dự án: 2026-10-20 · Kỹ sư: 1 (Thuc) · Giờ/tuần: 20 · Nghiệm thu KH: 2027-11-23 · Dự báo: 2027-03-17 · Cập nhật: 2026-10-21
 
 
 ## Nền tảng
@@ -242,7 +242,7 @@
   - [ ] AC-PIPE-09 Giám khảo hài
   - [ ] AC-PIPE-10 Idempotent
   - [ ] AC-PIPE-12 Gom lô Gemini, backoff, hết quota dừng êm
-- [ ] **ART** Ảnh minh họa tự tạo (giai đoạn 2) · 7đ · rủi ro: HIGH · KH: 2027-10-18 → 2027-11-08 · tiến độ: 0% · người: Thuc · bắt đầu: 2026-10-21 · xong:  · ghi chú: đã nối vào mẻ full (ADR 0012, nhánh feat/art-wiring); cần WORKERS_AI_TOKEN + CLOUDFLARE_ACCOUNT_ID để vẽ thật; hạn mức Workers AI vẫn chờ kiểm (câu hỏi mở 13) 
+- [ ] **ART** Ảnh minh họa tự tạo (giai đoạn 2) · 9đ · rủi ro: HIGH · KH: 2027-10-18 → 2027-11-08 · tiến độ: 0% · người: Thuc · bắt đầu: 2026-10-21 · xong:  · ghi chú: đã nối vào mẻ full (ADR 0012, nhánh feat/art-wiring); cần WORKERS_AI_TOKEN + CLOUDFLARE_ACCOUNT_ID để vẽ thật; hạn mức Workers AI vẫn chờ kiểm (câu hỏi mở 13)
   - [ ] AC-ART-01 Prompt vẽ khái niệm, không người thật
   - [ ] AC-ART-02 Kiểm duyệt ảnh, vẽ lại một lần rồi về emoji
   - [ ] AC-ART-03 Hết hạn mức thì vẽ bù đợt sau
@@ -251,6 +251,8 @@
   - [ ] AC-ART-06 Client hiện emoji trước, ảnh sau
   - [ ] AC-ART-07 Ảnh bị chặn không được tải
   - [ ] AC-ART-08 Phóng lớn bất ngờ khi ghép ra món lần đầu (thêm 2026-10-20)
+  - [ ] AC-ART-09 Mẻ full vẽ ảnh cho phần tử mới (thêm 2026-10-21, ADR 0012)
+  - [ ] AC-ART-10 Thiếu cấu hình hoặc lỗi vẽ kéo dài không làm hỏng mẻ (thêm 2026-10-21, ADR 0012)
 
 ## Kiểm thử
-- [ ] **UAT2** Kiểm thử nghiệm thu & sửa lỗi (giai đoạn 2) · 4.5đ · rủi ro: MEDIUM · KH: 2027-11-09 → 2027-11-22 · tiến độ: 0% · người: Thuc · bắt đầu:  · xong:  · ghi chú: 
+- [ ] **UAT2** Kiểm thử nghiệm thu & sửa lỗi (giai đoạn 2) · 5đ · rủi ro: MEDIUM · KH: 2027-11-09 → 2027-11-22 · tiến độ: 0% · người: Thuc · bắt đầu:  · xong:  · ghi chú: 
