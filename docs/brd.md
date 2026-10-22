@@ -61,7 +61,7 @@
 2. Thực khách ghép trên bàn lẩu như thường (cập nhật 2026-10-21: bỏ bàn thử thách và đếm bước). Lượt ghép ra đúng món đích là giải: tên lộ ra.
 3. Đã đăng nhập Google thì client gửi cặp vừa ghép lên server; chưa đăng nhập thì thẻ mời đăng nhập, đăng nhập xong tự gửi.
 4. Server kiểm cặp là công thức có thật ra món đích → ghi kết quả với `solved_at` = lúc nhận, cập nhật streak, trả hạng.
-5. Thực khách xem bảng xếp hạng mẻ, tuần, tháng, streak, tạo thẻ chia sẻ (SHARE).
+5. Thực khách xem bảng xếp hạng mẻ, tuần, tháng, streak ở tab "Bảng xếp hạng" riêng (AC-DAILY-17), tạo thẻ chia sẻ (SHARE).
 - Ngoại lệ: mẻ đã qua → không nhận kết quả; cron trễ → đồng hồ hiện "Mẻ mới sắp lên" thay vì số âm.
 
 ### 4.3 Công thức gia truyền (DISC)
@@ -177,3 +177,4 @@ Stack là Cloudflare Worker + D1 + Python pipeline (không Docker/Postgres), nê
 | 2026-10-21 | 0.4 | Thêm AC-DAILY-14: bấm món trên bàn thử thách thì đặt vào nồi lẩu, nồi sôi và câu Nồi trào như bàn lẩu (lần trượt liên tiếp vẫn thấy rõ); món thử thách không ghép lẫn với món Đĩa. (0.3 nằm ở PR #24) | nguyenquythuc (chờ /dk:approve spec) |
 | 2026-10-21 | 0.5 | DAILY: bỏ bàn thử thách và đếm bước, ghép ra món trên bàn lẩu là giải; xếp hạng mẻ theo thời điểm server nhận; thêm bảng tuần/tháng lịch GMT+7 (số mẻ giải, rồi tổng thời gian); chỉ tài khoản Google nộp được. Thêm AUTH (đăng nhập Google, chỉ băm `sub`). SHARE thẻ Daily hiện thời gian giải thay số bước. INV-11 theo cặp đã ghép. AC-GAME-18 nồi lẩu trong màn hình đầu tiên | nguyenquythuc (chờ /dk:approve spec) |
 | 2026-10-21 | 0.6 | ART: thêm AC-ART-09 (mẻ full vẽ ảnh: 20 ảnh/đợt, kiểm đúng byte WebP, tải lên trước khi đăng, ngân sách 8 phút, báo cáo đợt) và AC-ART-10 (thiếu cấu hình, lỗi 401/403/404, lỗi tạm thời 3 đợt thì về emoji) theo ADR 0012 đã chấp nhận; không đổi hành vi đã làm | nguyenquythuc (chờ /dk:approve spec) |
+| 2026-10-22 | 0.7 | Góp ý giao diện sau staging: AC-GAME-19 (Dọn bàn, Chơi lại từ đầu, ? vào khu bàn lẩu; đăng nhập lên đầu trang), AC-GAME-20 (lửa không bị cắt, quai ngang thân nồi), AC-GAME-21 (vuốt chỗ trống để cuộn trên điện thoại, gợi ý lần đầu), AC-DAILY-16 (thẻ thử thách nổi bật), AC-DAILY-17 (bảng xếp hạng ở tab riêng, huy chương top 3, tô dòng của mình) | nguyenquythuc (chờ /dk:approve spec) |
