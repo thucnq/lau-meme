@@ -156,6 +156,42 @@ E = {
  "Swole Doge": ("💪", "Q", "chú shiba vai u thịt bắp"),
  "Such Wow": ("✨", "Q", "chữ màu Comic Sans bay lấp lánh"),
  "Ổn Áp": ("👌", "V", "ngón tay OK trên nền nồi lẩu êm ả"),
+ # meme bổ sung 2026-10-22 (docs/input/meme-moi.md): tên theo hiện tượng, không người thật, không nhân vật có bản quyền
+ "Nhiệm Vụ Hệ Thống": ("🎮", "V", "khung thông báo nhiệm vụ kiểu game lơ lửng trên chiếc bàn chải đánh răng"),
+ "Hồi Chiều Trời Mưa": ("☔", "V", "khung cửa sổ chiều mưa, chiếc ô nhỏ rưng rưng, không vẽ người"),
+ "Công Chúa Phòng Trọ": ("👑", "V", "vương miện lấp lánh đặt trên gói mì tôm trong căn phòng trọ chật"),
+ "Bá Khí": ("🐉", "V", "con rồng nhỏ khoanh tay ưỡn ngực, gió thổi tung bờm"),
+ "Farm Aura": ("🗿", "V", "tượng đá cố nghiêng mặt góc 45 độ dưới đèn chiếu"),
+ "Dự Án Ma": ("👻", "V", "bóng ma ôm bản kế hoạch trắng trơn, bay lơ lửng"),
+ "Rắn Độc Văn Phòng": ("🐍", "V", "con rắn đeo thẻ nhân viên, cười mỉm sau tập hồ sơ"),
+ "Mèo Khóc": ("😿", "Q", "chú mèo hoạt hình mắt rưng rưng hai giọt lệ to mà vẫn cố gượng"),
+ "Mèo Khinh Bỉ": ("😼", "Q", "chú mèo nheo mắt khinh khỉnh nhìn xuống từ nóc tủ"),
+ "Mèo Chui Hộp": ("🐈", "Q", "chú mèo nhét mình vào hộp giấy quá nhỏ, cạnh giường êm bỏ trống"),
+ "Gào Thét Với Mèo": ("🙀", "Q", "bong bóng thoại đỏ rực gào vào chú mèo đang ngồi thản nhiên liếm chân"),
+ "Ngạc Nhiên Giả Trân": ("😲", "Q", "quả trứng hoạt hình há hốc mồm trước tờ hóa đơn ai cũng đoán được"),
+ "Liếc Xéo": ("🤨", "Q", "đôi mắt hoạt hình liếc ngang, một bên chân mày nhướn cao"),
+ "Lảng Đi Chỗ Khác": ("🐒", "Q", "con rối khỉ nhồi bông liếc mắt sang bên, mồ hôi nhỏ giọt"),
+ "Cười Mà Đau": ("🫠", "Q", "cốc trà nóng mỉm cười trong khi nứt dần"),
+ "Logic Lỏ": ("🤓", "Q", "ngón tay chỉ vào thái dương bằng giấy, sau lưng là phép tính sai"),
+ "Chê Kèo Thơm": ("🫷", "Q", "bàn tay xua đi đĩa cơm ngon, quay sang ôm hộp quà giảm giá"),
+ "Trông Núi Nọ": ("⛰️", "Q", "hai ngọn núi, cái gần ngoái cổ nhìn ngọn núi xa lấp lánh"),
+ "Nhìn Xa Xăm": ("🫥", "Q", "chiếc ghế văn phòng quay về phía cửa sổ, đám mây trôi vô định"),
+ "Ngồi Chờ Mòn Mỏi": ("🪑", "Q", "chiếc ghế phủ mạng nhện cạnh đồng hồ quay vòng"),
+ "Kế Hoạch Hoàn Hảo": ("📋", "Q", "bảng kế hoạch bốn ô, ô cuối có cái bẫy tự sập"),
+ "Hai Nút Bấm": ("🔘", "Q", "hai nút đỏ to, giọt mồ hôi khổng lồ lơ lửng phía trên"),
+ "Galaxy Brain": ("🌌", "Q", "bộ não phát sáng thành dải ngân hà, nổ pháo hoa"),
+ "Ngồi Co Ro": ("🧤", "Q", "đôi găng len to sụ ôm lấy chiếc ghế xếp giữa gió lạnh"),
+ "Coffin Dance": ("⚰️", "Q", "cỗ hòm bằng hộp giấy tự nhún nhảy theo nốt nhạc, không vẽ người"),
+ "Chiến Thắng Nhỏ": ("✊", "Q", "nắm tay nhỏ xíu giơ lên trước bãi cát, cờ chiến thắng tí hon"),
+ "Khóc Ròng": ("😭", "Q", "quả bóng xì hơi khóc thành vòi nước"),
+ "Cháy Nhà Cười Tươi": ("😈", "Q", "con quỷ nhỏ cười tủm tỉm trước căn nhà đồ chơi bốc khói"),
+ "Nhại Lại": ("🦜", "Q", "con vẹt chống nạnh nhại giọng, bong bóng thoại méo mó, không có chữ"),
+ "Đổ Lỗi Cho Nhau": ("👉", "Q", "hai ngón tay giống hệt nhau chỉ thẳng vào nhau"),
+ "Cạn Ly Mỉa Mai": ("🍸", "Q", "ly cocktail giơ cao, nháy mắt đầy ẩn ý"),
+ "Máy Em Chạy Mà": ("💻", "Q", "chiếc laptop cười tươi, phía sau màn hình server cháy đỏ"),
+ "Gọi Nhầm Tên": ("🦋", "Q", "con bướm bị chỉ vào bởi tấm biển có dấu hỏi to"),
+ "Debug Ba Giờ Sáng": ("🪲", "Q", "con bọ ngồi trên bàn phím dưới ánh trăng, đồng hồ chỉ 3 giờ"),
+ "Cười Đểu": ("🤭", "Q", "cái miệng che tay khúc khích, ánh mắt biết tuốt"),
 }
 
 R = """
@@ -533,7 +569,168 @@ Meme + Doge = Such Wow
 Meme + Stonks = Not Stonks
 Nồi Lẩu + Nồi Lẩu = Lẩu Meme
 Nồi Lẩu + Có Gấu = Hẹn Hò
-Nồi Lẩu + Toang = Hết Nước Chấm"""
+Nồi Lẩu + Toang = Hết Nước Chấm
+## meme bổ sung 2026-10-22 (docs/input/meme-moi.md)
+# đời thường và mạng xã hội
+Side Quest + Deadline = Nhiệm Vụ Hệ Thống
+Nhiệm Vụ Hệ Thống + Thứ Hai = Bơi Đi Làm
+Nhiệm Vụ Hệ Thống + Deadline = Speedrun
+Nhiệm Vụ Hệ Thống + Để Mai Tính = Dự Án Ma
+Nhiệm Vụ Hệ Thống + Gánh Team = Bá Khí
+Mưa + U Là Trời = Hồi Chiều Trời Mưa
+Hồi Chiều Trời Mưa + Crush = Chia Tay
+Hồi Chiều Trời Mưa + Cười = Cười Mà Đau
+Hồi Chiều Trời Mưa + Ế = Nhạc Suy
+Hồi Chiều Trời Mưa + Hóng Biến = Biến Căng
+Còn Cái Nịt + Delulu = Công Chúa Phòng Trọ
+Công Chúa Phòng Trọ + Săn Sale = Bom Hàng
+Công Chúa Phòng Trọ + Mì Tôm = Phông Bạt
+Công Chúa Phòng Trọ + Trà Sữa Full Topping = Cháy Túi
+Công Chúa Phòng Trọ + Cuối Tháng = Còn Cái Nịt
+Tới Công Chuyện + Gét Gô = Bá Khí
+Bá Khí + Leo Rank = Gánh Team
+Bá Khí + Toang = Ăn Hành
+Bá Khí + Farm Aura = Aura
+Bá Khí + Sếp = Sếp Tổng
+Chill Guy + Gét Gô = Farm Aura
+Farm Aura + Sống Ảo = Main Character
+Farm Aura + Toang = Âm Aura
+Farm Aura + Chill = Chill Guy
+Farm Aura + Cười = Cười Đểu
+Cà Khịa + Hóng Biến = Cười Đểu
+Cười Đểu + Bóc Phốt = Hóng Biến
+Cười Đểu + Crush = Thả Thính
+Cười Đểu + Sếp = Nịnh Sếp
+Cà Khịa + Như Email Trước = Nhại Lại
+Nhại Lại + Sếp = Gật Gù Cho Có
+Nhại Lại + Khẩu Nghiệp = Anh Hùng Bàn Phím
+Nhại Lại + Crush = Cà Khịa
+Cà Khịa + Seen Không Rep = Liếc Xéo
+Liếc Xéo + Phông Bạt = Bóc Phốt
+Liếc Xéo + Crush = Thả Thính
+Liếc Xéo + Red Flag = Chia Tay
+Liếc Xéo + Như Email Trước = Cười Đểu
+# văn phòng
+Hứa Lèo + Đồ Án = Dự Án Ma
+Dự Án Ma + Sếp = Hứa Lèo
+Dự Án Ma + Deadline = Hết Cứu
+Dự Án Ma + Họp = Họp Bàn Lịch Họp
+Dự Án Ma + Stonks = Not Stonks
+Nịnh Sếp + Khẩu Nghiệp = Rắn Độc Văn Phòng
+Rắn Độc Văn Phòng + Họp = Đổ Lỗi Cho Nhau
+Rắn Độc Văn Phòng + Sếp = Nịnh Sếp
+Rắn Độc Văn Phòng + Quiet Quitting = Đơn Nghỉ Việc
+Rắn Độc Văn Phòng + Bóc Phốt = Biến Căng
+Thứ Hai + Tăng Ca = Nhìn Xa Xăm
+Nhìn Xa Xăm + Lương Tháng Sau = Hết Nước Chấm
+Nhìn Xa Xăm + Cuối Tuần = Touch Grass
+Nhìn Xa Xăm + Ngồi Chờ Mòn Mỏi = Chờ Về Bờ
+Nhìn Xa Xăm + Đơn Nghỉ Việc = Tự Do
+Seen Không Rep + Lương Tháng Sau = Ngồi Chờ Mòn Mỏi
+Ngồi Chờ Mòn Mỏi + Cuối Tháng = Lương Về
+Ngồi Chờ Mòn Mỏi + Thả Thính = Friendzone
+Ngồi Chờ Mòn Mỏi + Mạng Lag = AFK
+Để Mai Tính + Hứa Lèo = Kế Hoạch Hoàn Hảo
+Kế Hoạch Hoàn Hảo + Săn Sale = Cháy Túi
+Kế Hoạch Hoàn Hảo + Toang = Plot Twist
+Kế Hoạch Hoàn Hảo + Đồ Án = Dự Án Ma
+Kế Hoạch Hoàn Hảo + Thứ Hai = Để Mai Tính
+Đơn Nghỉ Việc + Lương Tháng Sau = Hai Nút Bấm
+Hai Nút Bấm + Nhậu = Một Hai Ba Dzô
+Hai Nút Bấm + Crush = Thả Thính
+Hai Nút Bấm + Deadline = Ét O Ét
+Ngập + Họp = Ngồi Co Ro
+Ngồi Co Ro + Nồi Lẩu = Trời Lạnh Ăn Lẩu
+Ngồi Co Ro + Cuối Tuần = Chill
+Ngồi Co Ro + Kẹt Xe = Bơi Đi Làm
+Ủa Alo + Cười Xã Giao = Lảng Đi Chỗ Khác
+Lảng Đi Chỗ Khác + Bao Giờ Cưới = Ế
+Lảng Đi Chỗ Khác + Lương Bao Nhiêu = Cười Xã Giao
+Lảng Đi Chỗ Khác + Sếp = Quiet Quitting
+Lảng Đi Chỗ Khác + Họp = Ngủ Gật
+Cười Xã Giao + Hết Cứu = Cười Mà Đau
+Cười Mà Đau + Thứ Hai = Thánh Nhọ
+Cười Mà Đau + Lương Tháng Sau = This Is Fine
+Cười Mà Đau + Deadline = Chạy Deadline
+Cười Mà Đau + Cà Khịa = Khẩu Nghiệp
+This Is Fine + Báo Thủ = Cháy Nhà Cười Tươi
+Cháy Nhà Cười Tươi + Biến Căng = Hóng Biến
+Cháy Nhà Cười Tươi + Đổ Lỗi Cho Nhau = Báo Thủ
+Cháy Nhà Cười Tươi + Sếp = Đơn Nghỉ Việc
+Báo Thủ + Họp = Đổ Lỗi Cho Nhau
+Đổ Lỗi Cho Nhau + Báo Thủ = GG
+Đổ Lỗi Cho Nhau + Sếp = Tâm Thư Xin Lỗi
+Đổ Lỗi Cho Nhau + Bóc Phốt = Biến Căng
+# mèo
+Cười Xã Giao + U Là Trời = Mèo Khóc
+Mèo Khóc + Chill = Mèo Chui Hộp
+Mèo Khóc + Cà Khịa = Mèo Khinh Bỉ
+Mèo Khóc + Nhạc Suy = Hồi Chiều Trời Mưa
+Mèo Khóc + Chia Tay = Ế
+Mèo Khinh Bỉ + Biến Căng = Gào Thét Với Mèo
+Mèo Khinh Bỉ + Khẩu Nghiệp = Anh Hùng Bàn Phím
+Mèo Khinh Bỉ + Delulu = Touch Grass
+Mèo Khinh Bỉ + Flex = Phông Bạt
+Mèo Chui Hộp + Shipper = Mua Rồi Để Đó
+Mèo Chui Hộp + Để Mai Tính = AFK
+Mèo Chui Hộp + Mạng Lag = Ngủ Gật
+Mèo Chui Hộp + Doge = Cheems
+Gào Thét Với Mèo + Seen Không Rep = Khum
+Gào Thét Với Mèo + Ổn Áp = This Is Fine
+Gào Thét Với Mèo + Họp = Biến Căng
+# phản ứng kinh điển
+Plot Twist + Ổn Áp = Ngạc Nhiên Giả Trân
+Ngạc Nhiên Giả Trân + Đu Đỉnh = Cắt Lỗ
+Ngạc Nhiên Giả Trân + Bom Hàng = U Là Trời
+Ngạc Nhiên Giả Trân + Cười = Cười Xã Giao
+Brainrot + Để Mai Tính = Logic Lỏ
+Logic Lỏ + Logic Lỏ = Galaxy Brain
+Logic Lỏ + Stonks = Đu Đỉnh
+Logic Lỏ + Cuối Tháng = Mì Tôm
+Logic Lỏ + Học Tủ = Trật Tủ
+Galaxy Brain + Ctrl Z = Debug Ba Giờ Sáng
+Galaxy Brain + Stonks = Not Stonks
+Galaxy Brain + Họp = Họp Bàn Lịch Họp
+Săn Sale + Khum = Chê Kèo Thơm
+Chê Kèo Thơm + Crush = Friendzone
+Chê Kèo Thơm + Lương Về = Cháy Túi
+Chê Kèo Thơm + Đơn Nghỉ Việc = Hai Nút Bấm
+Chê Kèo Thơm + Cười = Cà Khịa
+Có Gấu + Thả Thính = Trông Núi Nọ
+Trông Núi Nọ + Bóc Phốt = Chia Tay
+Trông Núi Nọ + Crush = Red Flag
+Trông Núi Nọ + Săn Sale = Mua Rồi Để Đó
+Toang + Gét Gô = Coffin Dance
+Coffin Dance + Đu Đỉnh = Cắt Lỗ
+Coffin Dance + Stonks = Not Stonks
+Coffin Dance + Leo Rank = GG
+Trúng Tủ + Cười = Chiến Thắng Nhỏ
+Chiến Thắng Nhỏ + Lương Về = Flex
+Chiến Thắng Nhỏ + Leo Rank = Gánh Team
+Chiến Thắng Nhỏ + Săn Sale = Chốt Đơn
+GG + U Là Trời = Khóc Ròng
+Khóc Ròng + Đu Đỉnh = Chờ Về Bờ
+Khóc Ròng + Mùa Thi = Trật Tủ
+Khóc Ròng + Cười = Cười Mà Đau
+Một Hai Ba Dzô + Cà Khịa = Cạn Ly Mỉa Mai
+Cạn Ly Mỉa Mai + Thưởng Bằng Niềm Tin = Lương Tháng Sau
+Cạn Ly Mỉa Mai + Báo Thủ = GG
+Cạn Ly Mỉa Mai + Nhậu = Tiếp Khách
+# công nghệ
+Ctrl Z + Toang = Máy Em Chạy Mà
+Máy Em Chạy Mà + Thức Trắng = Debug Ba Giờ Sáng
+Máy Em Chạy Mà + Sếp = Ét O Ét
+Máy Em Chạy Mà + Khum = Skill Issue
+Máy Em Chạy Mà + Đổ Lỗi Cho Nhau = Báo Thủ
+NPC + Ủa Alo = Gọi Nhầm Tên
+Gọi Nhầm Tên + Crush = Chia Tay
+Gọi Nhầm Tên + Họp = Cười Xã Giao
+Gọi Nhầm Tên + Sếp = Ăn Hành
+Thức Trắng + Ctrl Z = Debug Ba Giờ Sáng
+Debug Ba Giờ Sáng + Cà Phê Sữa Đá = Tăng Ca
+Debug Ba Giờ Sáng + Deadline = Chạy Deadline
+Debug Ba Giờ Sáng + Ổn Áp = This Is Fine
+Khum + Deadline = Quiet Quitting"""
 
 TRUOT = """Nồi trào rồi, hai món này không ăn chung được.
 Khét lẹt. Thử nhúng món khác xem.
@@ -601,6 +798,43 @@ DAILY_HINT.update({
     "Phông Bạt": "Ảnh thì sang, đời thì khác", "Sống Ảo": "Chụp trăm tấm, đăng một tấm",
     "Bom Hàng": "Đặt rồi mà không nhận", "Lương Bao Nhiêu": "Câu hỏi khiến ai cũng muốn đổi chủ đề",
     "Shipper": "Người được mong chờ nhất mỗi ngày", "Đu Trend": "Cái gì đang hot là làm theo liền",
+})
+# Gợi ý mờ cho meme bổ sung 2026-10-22 (chỉ dùng khi depth trong [4, 8]).
+DAILY_HINT.update({
+    "Nhiệm Vụ Hệ Thống": "Đánh răng cũng thành nhiệm vụ có thưởng",
+    "Công Chúa Phòng Trọ": "Phòng mười mét vuông, chuẩn sống năm sao",
+    "Farm Aura": "Cố tỏ ra ngầu đến mỏi cả cổ",
+    "Dự Án Ma": "Kế hoạch hoành tráng, thành phẩm chưa thấy đâu",
+    "Mèo Khinh Bỉ": "Ánh nhìn dành cho câu hỏi quá ngây thơ",
+    "Mèo Chui Hộp": "Giường êm không nằm, cứ thích chỗ chật",
+    "Gào Thét Với Mèo": "Một bên nổi đóa, một bên tỉnh bơ",
+    "Ngạc Nhiên Giả Trân": "Bất ngờ trước điều ai cũng đoán được",
+    "Logic Lỏ": "Nghe rất có lý, nghĩ lại thấy sai sai",
+    "Chê Kèo Thơm": "Thứ có ích thì chê, thứ vô lý thì mê",
+    "Trông Núi Nọ": "Có rồi mà mắt vẫn ngoái chỗ khác",
+    "Kế Hoạch Hoàn Hảo": "Ba bước đầu ổn, bước cuối tự hủy",
+    "Galaxy Brain": "Giải pháp phức tạp đến mức không ai hiểu",
+    "Ngồi Co Ro": "Chỉ muốn về nhà mà vẫn phải ngồi đây",
+    "Chiến Thắng Nhỏ": "Thắng bé tí mà tự hào to đùng",
+    "Cạn Ly Mỉa Mai": "Lời chúc mừng nghe sai sai",
+    "Máy Em Chạy Mà": "Lời bào chữa kinh điển của dân lập trình",
+    "Gọi Nhầm Tên": "Tự tin chỉ vào rồi gọi sai tên",
+    "Debug Ba Giờ Sáng": "Thức tới khuya chỉ để tìm một dấu chấm phẩy",
+    "Coffin Dance": "Quyết định sai, kết cục có nhạc nền",
+    "Khóc Ròng": "Thua đau tới mức không cần giấu",
+    "Cháy Nhà Cười Tươi": "Hỗn loạn sau lưng, mặt vẫn bình thản",
+    "Bá Khí": "Bước vào là cả phòng im lặng",
+    "Nhìn Xa Xăm": "Nhận thêm một việc rồi ngồi ngẫm về đời",
+    "Ngồi Chờ Mòn Mỏi": "Đợi mãi mà chưa thấy gì tới",
+    "Hai Nút Bấm": "Lựa chọn nào cũng toát mồ hôi",
+    "Rắn Độc Văn Phòng": "Đồng nghiệp tranh công giỏi hơn làm",
+    "Đổ Lỗi Cho Nhau": "Cùng sai một lỗi, chỉ tay vào nhau",
+    "Liếc Xéo": "Nghe xong lời giải thích, chân mày tự nhướn",
+    "Lảng Đi Chỗ Khác": "Bị hỏi trúng tim đen thì nhìn đi chỗ khác",
+    "Cười Mà Đau": "Ngoài mặt cười tươi, trong lòng đổ vỡ",
+    "Nhại Lại": "Nhắc lại lời người khác bằng giọng trêu ngươi",
+    "Cười Đểu": "Biết bí mật mà quyết không nói",
+    "Mèo Khóc": "Ngoài mặt ổn, bên trong tổn thương",
 })
 BEST = {("Còn Cái Nịt", "This Is Fine"), ("Sếp", "Để Mai Tính"), ("Cười", "Deadline"), ("Flex", "Còn Cái Nịt"),
         ("Mạng Lag", "Cà Khịa"), ("Ăn Hành", "Cà Khịa"), ("Thưởng Tết", "Còn Cái Nịt"), ("Ngập", "This Is Fine"),

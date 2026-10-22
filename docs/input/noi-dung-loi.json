@@ -322,7 +322,7 @@
    "name": "Chia Tay",
    "emoji": "💔",
    "origin": "Q",
-   "depth": 5,
+   "depth": 4,
    "image_hint": "trái tim xé đôi, mỗi nửa đi một ngả",
    "daily_hint": "Từ hai thành một"
   },
@@ -583,7 +583,7 @@
    "name": "Bom Hàng",
    "emoji": "💣",
    "origin": "V",
-   "depth": 7,
+   "depth": 6,
    "image_hint": "gói hàng có ngòi nổ, shipper ôm đầu",
    "daily_hint": "Đặt rồi mà không nhận"
   },
@@ -695,7 +695,7 @@
    "name": "Phông Bạt",
    "emoji": "🎭",
    "origin": "V",
-   "depth": 6,
+   "depth": 5,
    "image_hint": "tấm phông nền hình siêu xe, phía sau là xe đạp",
    "daily_hint": "Ảnh thì sang, đời thì khác"
   },
@@ -972,7 +972,7 @@
    "name": "Chờ Về Bờ",
    "emoji": "🏖️",
    "origin": "V",
-   "depth": 6,
+   "depth": 4,
    "image_hint": "người ôm phao nhìn bờ biển xa tít",
    "daily_hint": "Ôm hàng ngồi đợi giá lên lại"
   },
@@ -1018,6 +1018,285 @@
    "origin": "V",
    "depth": 2,
    "image_hint": "ngón tay OK trên nền nồi lẩu êm ả"
+  },
+  {
+   "name": "Nhiệm Vụ Hệ Thống",
+   "emoji": "🎮",
+   "origin": "V",
+   "depth": 4,
+   "image_hint": "khung thông báo nhiệm vụ kiểu game lơ lửng trên chiếc bàn chải đánh răng",
+   "daily_hint": "Đánh răng cũng thành nhiệm vụ có thưởng"
+  },
+  {
+   "name": "Hồi Chiều Trời Mưa",
+   "emoji": "☔",
+   "origin": "V",
+   "depth": 3,
+   "image_hint": "khung cửa sổ chiều mưa, chiếc ô nhỏ rưng rưng, không vẽ người"
+  },
+  {
+   "name": "Công Chúa Phòng Trọ",
+   "emoji": "👑",
+   "origin": "V",
+   "depth": 4,
+   "image_hint": "vương miện lấp lánh đặt trên gói mì tôm trong căn phòng trọ chật",
+   "daily_hint": "Phòng mười mét vuông, chuẩn sống năm sao"
+  },
+  {
+   "name": "Bá Khí",
+   "emoji": "🐉",
+   "origin": "V",
+   "depth": 3,
+   "image_hint": "con rồng nhỏ khoanh tay ưỡn ngực, gió thổi tung bờm",
+   "daily_hint": "Bước vào là cả phòng im lặng"
+  },
+  {
+   "name": "Farm Aura",
+   "emoji": "🗿",
+   "origin": "V",
+   "depth": 4,
+   "image_hint": "tượng đá cố nghiêng mặt góc 45 độ dưới đèn chiếu",
+   "daily_hint": "Cố tỏ ra ngầu đến mỏi cả cổ"
+  },
+  {
+   "name": "Dự Án Ma",
+   "emoji": "👻",
+   "origin": "V",
+   "depth": 4,
+   "image_hint": "bóng ma ôm bản kế hoạch trắng trơn, bay lơ lửng",
+   "daily_hint": "Kế hoạch hoành tráng, thành phẩm chưa thấy đâu"
+  },
+  {
+   "name": "Rắn Độc Văn Phòng",
+   "emoji": "🐍",
+   "origin": "V",
+   "depth": 3,
+   "image_hint": "con rắn đeo thẻ nhân viên, cười mỉm sau tập hồ sơ",
+   "daily_hint": "Đồng nghiệp tranh công giỏi hơn làm"
+  },
+  {
+   "name": "Mèo Khóc",
+   "emoji": "😿",
+   "origin": "Q",
+   "depth": 3,
+   "image_hint": "chú mèo hoạt hình mắt rưng rưng hai giọt lệ to mà vẫn cố gượng",
+   "daily_hint": "Ngoài mặt ổn, bên trong tổn thương"
+  },
+  {
+   "name": "Mèo Khinh Bỉ",
+   "emoji": "😼",
+   "origin": "Q",
+   "depth": 4,
+   "image_hint": "chú mèo nheo mắt khinh khỉnh nhìn xuống từ nóc tủ",
+   "daily_hint": "Ánh nhìn dành cho câu hỏi quá ngây thơ"
+  },
+  {
+   "name": "Mèo Chui Hộp",
+   "emoji": "🐈",
+   "origin": "Q",
+   "depth": 4,
+   "image_hint": "chú mèo nhét mình vào hộp giấy quá nhỏ, cạnh giường êm bỏ trống",
+   "daily_hint": "Giường êm không nằm, cứ thích chỗ chật"
+  },
+  {
+   "name": "Gào Thét Với Mèo",
+   "emoji": "🙀",
+   "origin": "Q",
+   "depth": 5,
+   "image_hint": "bong bóng thoại đỏ rực gào vào chú mèo đang ngồi thản nhiên liếm chân",
+   "daily_hint": "Một bên nổi đóa, một bên tỉnh bơ"
+  },
+  {
+   "name": "Ngạc Nhiên Giả Trân",
+   "emoji": "😲",
+   "origin": "Q",
+   "depth": 4,
+   "image_hint": "quả trứng hoạt hình há hốc mồm trước tờ hóa đơn ai cũng đoán được",
+   "daily_hint": "Bất ngờ trước điều ai cũng đoán được"
+  },
+  {
+   "name": "Liếc Xéo",
+   "emoji": "🤨",
+   "origin": "Q",
+   "depth": 3,
+   "image_hint": "đôi mắt hoạt hình liếc ngang, một bên chân mày nhướn cao",
+   "daily_hint": "Nghe xong lời giải thích, chân mày tự nhướn"
+  },
+  {
+   "name": "Lảng Đi Chỗ Khác",
+   "emoji": "🐒",
+   "origin": "Q",
+   "depth": 3,
+   "image_hint": "con rối khỉ nhồi bông liếc mắt sang bên, mồ hôi nhỏ giọt",
+   "daily_hint": "Bị hỏi trúng tim đen thì nhìn đi chỗ khác"
+  },
+  {
+   "name": "Cười Mà Đau",
+   "emoji": "🫠",
+   "origin": "Q",
+   "depth": 3,
+   "image_hint": "cốc trà nóng mỉm cười trong khi nứt dần",
+   "daily_hint": "Ngoài mặt cười tươi, trong lòng đổ vỡ"
+  },
+  {
+   "name": "Logic Lỏ",
+   "emoji": "🤓",
+   "origin": "Q",
+   "depth": 4,
+   "image_hint": "ngón tay chỉ vào thái dương bằng giấy, sau lưng là phép tính sai",
+   "daily_hint": "Nghe rất có lý, nghĩ lại thấy sai sai"
+  },
+  {
+   "name": "Chê Kèo Thơm",
+   "emoji": "🫷",
+   "origin": "Q",
+   "depth": 6,
+   "image_hint": "bàn tay xua đi đĩa cơm ngon, quay sang ôm hộp quà giảm giá",
+   "daily_hint": "Thứ có ích thì chê, thứ vô lý thì mê"
+  },
+  {
+   "name": "Trông Núi Nọ",
+   "emoji": "⛰️",
+   "origin": "Q",
+   "depth": 5,
+   "image_hint": "hai ngọn núi, cái gần ngoái cổ nhìn ngọn núi xa lấp lánh",
+   "daily_hint": "Có rồi mà mắt vẫn ngoái chỗ khác"
+  },
+  {
+   "name": "Nhìn Xa Xăm",
+   "emoji": "🫥",
+   "origin": "Q",
+   "depth": 3,
+   "image_hint": "chiếc ghế văn phòng quay về phía cửa sổ, đám mây trôi vô định",
+   "daily_hint": "Nhận thêm một việc rồi ngồi ngẫm về đời"
+  },
+  {
+   "name": "Ngồi Chờ Mòn Mỏi",
+   "emoji": "🪑",
+   "origin": "Q",
+   "depth": 3,
+   "image_hint": "chiếc ghế phủ mạng nhện cạnh đồng hồ quay vòng",
+   "daily_hint": "Đợi mãi mà chưa thấy gì tới"
+  },
+  {
+   "name": "Kế Hoạch Hoàn Hảo",
+   "emoji": "📋",
+   "origin": "Q",
+   "depth": 4,
+   "image_hint": "bảng kế hoạch bốn ô, ô cuối có cái bẫy tự sập",
+   "daily_hint": "Ba bước đầu ổn, bước cuối tự hủy"
+  },
+  {
+   "name": "Hai Nút Bấm",
+   "emoji": "🔘",
+   "origin": "Q",
+   "depth": 3,
+   "image_hint": "hai nút đỏ to, giọt mồ hôi khổng lồ lơ lửng phía trên",
+   "daily_hint": "Lựa chọn nào cũng toát mồ hôi"
+  },
+  {
+   "name": "Galaxy Brain",
+   "emoji": "🌌",
+   "origin": "Q",
+   "depth": 5,
+   "image_hint": "bộ não phát sáng thành dải ngân hà, nổ pháo hoa",
+   "daily_hint": "Giải pháp phức tạp đến mức không ai hiểu"
+  },
+  {
+   "name": "Ngồi Co Ro",
+   "emoji": "🧤",
+   "origin": "Q",
+   "depth": 4,
+   "image_hint": "đôi găng len to sụ ôm lấy chiếc ghế xếp giữa gió lạnh",
+   "daily_hint": "Chỉ muốn về nhà mà vẫn phải ngồi đây"
+  },
+  {
+   "name": "Coffin Dance",
+   "emoji": "⚰️",
+   "origin": "Q",
+   "depth": 3,
+   "image_hint": "cỗ hòm bằng hộp giấy tự nhún nhảy theo nốt nhạc, không vẽ người",
+   "daily_hint": "Quyết định sai, kết cục có nhạc nền"
+  },
+  {
+   "name": "Chiến Thắng Nhỏ",
+   "emoji": "✊",
+   "origin": "Q",
+   "depth": 4,
+   "image_hint": "nắm tay nhỏ xíu giơ lên trước bãi cát, cờ chiến thắng tí hon",
+   "daily_hint": "Thắng bé tí mà tự hào to đùng"
+  },
+  {
+   "name": "Khóc Ròng",
+   "emoji": "😭",
+   "origin": "Q",
+   "depth": 3,
+   "image_hint": "quả bóng xì hơi khóc thành vòi nước",
+   "daily_hint": "Thua đau tới mức không cần giấu"
+  },
+  {
+   "name": "Cháy Nhà Cười Tươi",
+   "emoji": "😈",
+   "origin": "Q",
+   "depth": 3,
+   "image_hint": "con quỷ nhỏ cười tủm tỉm trước căn nhà đồ chơi bốc khói",
+   "daily_hint": "Hỗn loạn sau lưng, mặt vẫn bình thản"
+  },
+  {
+   "name": "Nhại Lại",
+   "emoji": "🦜",
+   "origin": "Q",
+   "depth": 3,
+   "image_hint": "con vẹt chống nạnh nhại giọng, bong bóng thoại méo mó, không có chữ",
+   "daily_hint": "Nhắc lại lời người khác bằng giọng trêu ngươi"
+  },
+  {
+   "name": "Đổ Lỗi Cho Nhau",
+   "emoji": "👉",
+   "origin": "Q",
+   "depth": 3,
+   "image_hint": "hai ngón tay giống hệt nhau chỉ thẳng vào nhau",
+   "daily_hint": "Cùng sai một lỗi, chỉ tay vào nhau"
+  },
+  {
+   "name": "Cạn Ly Mỉa Mai",
+   "emoji": "🍸",
+   "origin": "Q",
+   "depth": 4,
+   "image_hint": "ly cocktail giơ cao, nháy mắt đầy ẩn ý",
+   "daily_hint": "Lời chúc mừng nghe sai sai"
+  },
+  {
+   "name": "Máy Em Chạy Mà",
+   "emoji": "💻",
+   "origin": "Q",
+   "depth": 4,
+   "image_hint": "chiếc laptop cười tươi, phía sau màn hình server cháy đỏ",
+   "daily_hint": "Lời bào chữa kinh điển của dân lập trình"
+  },
+  {
+   "name": "Gọi Nhầm Tên",
+   "emoji": "🦋",
+   "origin": "Q",
+   "depth": 4,
+   "image_hint": "con bướm bị chỉ vào bởi tấm biển có dấu hỏi to",
+   "daily_hint": "Tự tin chỉ vào rồi gọi sai tên"
+  },
+  {
+   "name": "Debug Ba Giờ Sáng",
+   "emoji": "🪲",
+   "origin": "Q",
+   "depth": 4,
+   "image_hint": "con bọ ngồi trên bàn phím dưới ánh trăng, đồng hồ chỉ 3 giờ",
+   "daily_hint": "Thức tới khuya chỉ để tìm một dấu chấm phẩy"
+  },
+  {
+   "name": "Cười Đểu",
+   "emoji": "🤭",
+   "origin": "Q",
+   "depth": 3,
+   "image_hint": "cái miệng che tay khúc khích, ánh mắt biết tuốt",
+   "daily_hint": "Biết bí mật mà quyết không nói"
   }
  ],
  "recipes": [
@@ -3197,6 +3476,936 @@
    "a": "Nồi Lẩu",
    "b": "Toang",
    "result": "Hết Nước Chấm",
+   "best": false
+  },
+  {
+   "a": "Side Quest",
+   "b": "Deadline",
+   "result": "Nhiệm Vụ Hệ Thống",
+   "best": false
+  },
+  {
+   "a": "Nhiệm Vụ Hệ Thống",
+   "b": "Thứ Hai",
+   "result": "Bơi Đi Làm",
+   "best": false
+  },
+  {
+   "a": "Nhiệm Vụ Hệ Thống",
+   "b": "Deadline",
+   "result": "Speedrun",
+   "best": false
+  },
+  {
+   "a": "Nhiệm Vụ Hệ Thống",
+   "b": "Để Mai Tính",
+   "result": "Dự Án Ma",
+   "best": false
+  },
+  {
+   "a": "Nhiệm Vụ Hệ Thống",
+   "b": "Gánh Team",
+   "result": "Bá Khí",
+   "best": false
+  },
+  {
+   "a": "Mưa",
+   "b": "U Là Trời",
+   "result": "Hồi Chiều Trời Mưa",
+   "best": false
+  },
+  {
+   "a": "Hồi Chiều Trời Mưa",
+   "b": "Crush",
+   "result": "Chia Tay",
+   "best": false
+  },
+  {
+   "a": "Hồi Chiều Trời Mưa",
+   "b": "Cười",
+   "result": "Cười Mà Đau",
+   "best": false
+  },
+  {
+   "a": "Hồi Chiều Trời Mưa",
+   "b": "Ế",
+   "result": "Nhạc Suy",
+   "best": false
+  },
+  {
+   "a": "Hồi Chiều Trời Mưa",
+   "b": "Hóng Biến",
+   "result": "Biến Căng",
+   "best": false
+  },
+  {
+   "a": "Còn Cái Nịt",
+   "b": "Delulu",
+   "result": "Công Chúa Phòng Trọ",
+   "best": false
+  },
+  {
+   "a": "Công Chúa Phòng Trọ",
+   "b": "Săn Sale",
+   "result": "Bom Hàng",
+   "best": false
+  },
+  {
+   "a": "Công Chúa Phòng Trọ",
+   "b": "Mì Tôm",
+   "result": "Phông Bạt",
+   "best": false
+  },
+  {
+   "a": "Công Chúa Phòng Trọ",
+   "b": "Trà Sữa Full Topping",
+   "result": "Cháy Túi",
+   "best": false
+  },
+  {
+   "a": "Công Chúa Phòng Trọ",
+   "b": "Cuối Tháng",
+   "result": "Còn Cái Nịt",
+   "best": false
+  },
+  {
+   "a": "Tới Công Chuyện",
+   "b": "Gét Gô",
+   "result": "Bá Khí",
+   "best": false
+  },
+  {
+   "a": "Bá Khí",
+   "b": "Leo Rank",
+   "result": "Gánh Team",
+   "best": false
+  },
+  {
+   "a": "Bá Khí",
+   "b": "Toang",
+   "result": "Ăn Hành",
+   "best": false
+  },
+  {
+   "a": "Bá Khí",
+   "b": "Farm Aura",
+   "result": "Aura",
+   "best": false
+  },
+  {
+   "a": "Bá Khí",
+   "b": "Sếp",
+   "result": "Sếp Tổng",
+   "best": false
+  },
+  {
+   "a": "Chill Guy",
+   "b": "Gét Gô",
+   "result": "Farm Aura",
+   "best": false
+  },
+  {
+   "a": "Farm Aura",
+   "b": "Sống Ảo",
+   "result": "Main Character",
+   "best": false
+  },
+  {
+   "a": "Farm Aura",
+   "b": "Toang",
+   "result": "Âm Aura",
+   "best": false
+  },
+  {
+   "a": "Farm Aura",
+   "b": "Chill",
+   "result": "Chill Guy",
+   "best": false
+  },
+  {
+   "a": "Farm Aura",
+   "b": "Cười",
+   "result": "Cười Đểu",
+   "best": false
+  },
+  {
+   "a": "Cà Khịa",
+   "b": "Hóng Biến",
+   "result": "Cười Đểu",
+   "best": false
+  },
+  {
+   "a": "Cười Đểu",
+   "b": "Bóc Phốt",
+   "result": "Hóng Biến",
+   "best": false
+  },
+  {
+   "a": "Cười Đểu",
+   "b": "Crush",
+   "result": "Thả Thính",
+   "best": false
+  },
+  {
+   "a": "Cười Đểu",
+   "b": "Sếp",
+   "result": "Nịnh Sếp",
+   "best": false
+  },
+  {
+   "a": "Cà Khịa",
+   "b": "Như Email Trước",
+   "result": "Nhại Lại",
+   "best": false
+  },
+  {
+   "a": "Nhại Lại",
+   "b": "Sếp",
+   "result": "Gật Gù Cho Có",
+   "best": false
+  },
+  {
+   "a": "Nhại Lại",
+   "b": "Khẩu Nghiệp",
+   "result": "Anh Hùng Bàn Phím",
+   "best": false
+  },
+  {
+   "a": "Nhại Lại",
+   "b": "Crush",
+   "result": "Cà Khịa",
+   "best": false
+  },
+  {
+   "a": "Cà Khịa",
+   "b": "Seen Không Rep",
+   "result": "Liếc Xéo",
+   "best": false
+  },
+  {
+   "a": "Liếc Xéo",
+   "b": "Phông Bạt",
+   "result": "Bóc Phốt",
+   "best": false
+  },
+  {
+   "a": "Liếc Xéo",
+   "b": "Crush",
+   "result": "Thả Thính",
+   "best": false
+  },
+  {
+   "a": "Liếc Xéo",
+   "b": "Red Flag",
+   "result": "Chia Tay",
+   "best": false
+  },
+  {
+   "a": "Liếc Xéo",
+   "b": "Như Email Trước",
+   "result": "Cười Đểu",
+   "best": false
+  },
+  {
+   "a": "Hứa Lèo",
+   "b": "Đồ Án",
+   "result": "Dự Án Ma",
+   "best": false
+  },
+  {
+   "a": "Dự Án Ma",
+   "b": "Sếp",
+   "result": "Hứa Lèo",
+   "best": false
+  },
+  {
+   "a": "Dự Án Ma",
+   "b": "Deadline",
+   "result": "Hết Cứu",
+   "best": false
+  },
+  {
+   "a": "Dự Án Ma",
+   "b": "Họp",
+   "result": "Họp Bàn Lịch Họp",
+   "best": false
+  },
+  {
+   "a": "Dự Án Ma",
+   "b": "Stonks",
+   "result": "Not Stonks",
+   "best": false
+  },
+  {
+   "a": "Nịnh Sếp",
+   "b": "Khẩu Nghiệp",
+   "result": "Rắn Độc Văn Phòng",
+   "best": false
+  },
+  {
+   "a": "Rắn Độc Văn Phòng",
+   "b": "Họp",
+   "result": "Đổ Lỗi Cho Nhau",
+   "best": false
+  },
+  {
+   "a": "Rắn Độc Văn Phòng",
+   "b": "Sếp",
+   "result": "Nịnh Sếp",
+   "best": false
+  },
+  {
+   "a": "Rắn Độc Văn Phòng",
+   "b": "Quiet Quitting",
+   "result": "Đơn Nghỉ Việc",
+   "best": false
+  },
+  {
+   "a": "Rắn Độc Văn Phòng",
+   "b": "Bóc Phốt",
+   "result": "Biến Căng",
+   "best": false
+  },
+  {
+   "a": "Thứ Hai",
+   "b": "Tăng Ca",
+   "result": "Nhìn Xa Xăm",
+   "best": false
+  },
+  {
+   "a": "Nhìn Xa Xăm",
+   "b": "Lương Tháng Sau",
+   "result": "Hết Nước Chấm",
+   "best": false
+  },
+  {
+   "a": "Nhìn Xa Xăm",
+   "b": "Cuối Tuần",
+   "result": "Touch Grass",
+   "best": false
+  },
+  {
+   "a": "Nhìn Xa Xăm",
+   "b": "Ngồi Chờ Mòn Mỏi",
+   "result": "Chờ Về Bờ",
+   "best": false
+  },
+  {
+   "a": "Nhìn Xa Xăm",
+   "b": "Đơn Nghỉ Việc",
+   "result": "Tự Do",
+   "best": false
+  },
+  {
+   "a": "Seen Không Rep",
+   "b": "Lương Tháng Sau",
+   "result": "Ngồi Chờ Mòn Mỏi",
+   "best": false
+  },
+  {
+   "a": "Ngồi Chờ Mòn Mỏi",
+   "b": "Cuối Tháng",
+   "result": "Lương Về",
+   "best": false
+  },
+  {
+   "a": "Ngồi Chờ Mòn Mỏi",
+   "b": "Thả Thính",
+   "result": "Friendzone",
+   "best": false
+  },
+  {
+   "a": "Ngồi Chờ Mòn Mỏi",
+   "b": "Mạng Lag",
+   "result": "AFK",
+   "best": false
+  },
+  {
+   "a": "Để Mai Tính",
+   "b": "Hứa Lèo",
+   "result": "Kế Hoạch Hoàn Hảo",
+   "best": false
+  },
+  {
+   "a": "Kế Hoạch Hoàn Hảo",
+   "b": "Săn Sale",
+   "result": "Cháy Túi",
+   "best": false
+  },
+  {
+   "a": "Kế Hoạch Hoàn Hảo",
+   "b": "Toang",
+   "result": "Plot Twist",
+   "best": false
+  },
+  {
+   "a": "Kế Hoạch Hoàn Hảo",
+   "b": "Đồ Án",
+   "result": "Dự Án Ma",
+   "best": false
+  },
+  {
+   "a": "Kế Hoạch Hoàn Hảo",
+   "b": "Thứ Hai",
+   "result": "Để Mai Tính",
+   "best": false
+  },
+  {
+   "a": "Đơn Nghỉ Việc",
+   "b": "Lương Tháng Sau",
+   "result": "Hai Nút Bấm",
+   "best": false
+  },
+  {
+   "a": "Hai Nút Bấm",
+   "b": "Nhậu",
+   "result": "Một Hai Ba Dzô",
+   "best": false
+  },
+  {
+   "a": "Hai Nút Bấm",
+   "b": "Crush",
+   "result": "Thả Thính",
+   "best": false
+  },
+  {
+   "a": "Hai Nút Bấm",
+   "b": "Deadline",
+   "result": "Ét O Ét",
+   "best": false
+  },
+  {
+   "a": "Ngập",
+   "b": "Họp",
+   "result": "Ngồi Co Ro",
+   "best": false
+  },
+  {
+   "a": "Ngồi Co Ro",
+   "b": "Nồi Lẩu",
+   "result": "Trời Lạnh Ăn Lẩu",
+   "best": false
+  },
+  {
+   "a": "Ngồi Co Ro",
+   "b": "Cuối Tuần",
+   "result": "Chill",
+   "best": false
+  },
+  {
+   "a": "Ngồi Co Ro",
+   "b": "Kẹt Xe",
+   "result": "Bơi Đi Làm",
+   "best": false
+  },
+  {
+   "a": "Ủa Alo",
+   "b": "Cười Xã Giao",
+   "result": "Lảng Đi Chỗ Khác",
+   "best": false
+  },
+  {
+   "a": "Lảng Đi Chỗ Khác",
+   "b": "Bao Giờ Cưới",
+   "result": "Ế",
+   "best": false
+  },
+  {
+   "a": "Lảng Đi Chỗ Khác",
+   "b": "Lương Bao Nhiêu",
+   "result": "Cười Xã Giao",
+   "best": false
+  },
+  {
+   "a": "Lảng Đi Chỗ Khác",
+   "b": "Sếp",
+   "result": "Quiet Quitting",
+   "best": false
+  },
+  {
+   "a": "Lảng Đi Chỗ Khác",
+   "b": "Họp",
+   "result": "Ngủ Gật",
+   "best": false
+  },
+  {
+   "a": "Cười Xã Giao",
+   "b": "Hết Cứu",
+   "result": "Cười Mà Đau",
+   "best": false
+  },
+  {
+   "a": "Cười Mà Đau",
+   "b": "Thứ Hai",
+   "result": "Thánh Nhọ",
+   "best": false
+  },
+  {
+   "a": "Cười Mà Đau",
+   "b": "Lương Tháng Sau",
+   "result": "This Is Fine",
+   "best": false
+  },
+  {
+   "a": "Cười Mà Đau",
+   "b": "Deadline",
+   "result": "Chạy Deadline",
+   "best": false
+  },
+  {
+   "a": "Cười Mà Đau",
+   "b": "Cà Khịa",
+   "result": "Khẩu Nghiệp",
+   "best": false
+  },
+  {
+   "a": "This Is Fine",
+   "b": "Báo Thủ",
+   "result": "Cháy Nhà Cười Tươi",
+   "best": false
+  },
+  {
+   "a": "Cháy Nhà Cười Tươi",
+   "b": "Biến Căng",
+   "result": "Hóng Biến",
+   "best": false
+  },
+  {
+   "a": "Cháy Nhà Cười Tươi",
+   "b": "Đổ Lỗi Cho Nhau",
+   "result": "Báo Thủ",
+   "best": false
+  },
+  {
+   "a": "Cháy Nhà Cười Tươi",
+   "b": "Sếp",
+   "result": "Đơn Nghỉ Việc",
+   "best": false
+  },
+  {
+   "a": "Báo Thủ",
+   "b": "Họp",
+   "result": "Đổ Lỗi Cho Nhau",
+   "best": false
+  },
+  {
+   "a": "Đổ Lỗi Cho Nhau",
+   "b": "Báo Thủ",
+   "result": "GG",
+   "best": false
+  },
+  {
+   "a": "Đổ Lỗi Cho Nhau",
+   "b": "Sếp",
+   "result": "Tâm Thư Xin Lỗi",
+   "best": false
+  },
+  {
+   "a": "Đổ Lỗi Cho Nhau",
+   "b": "Bóc Phốt",
+   "result": "Biến Căng",
+   "best": false
+  },
+  {
+   "a": "Cười Xã Giao",
+   "b": "U Là Trời",
+   "result": "Mèo Khóc",
+   "best": false
+  },
+  {
+   "a": "Mèo Khóc",
+   "b": "Chill",
+   "result": "Mèo Chui Hộp",
+   "best": false
+  },
+  {
+   "a": "Mèo Khóc",
+   "b": "Cà Khịa",
+   "result": "Mèo Khinh Bỉ",
+   "best": false
+  },
+  {
+   "a": "Mèo Khóc",
+   "b": "Nhạc Suy",
+   "result": "Hồi Chiều Trời Mưa",
+   "best": false
+  },
+  {
+   "a": "Mèo Khóc",
+   "b": "Chia Tay",
+   "result": "Ế",
+   "best": false
+  },
+  {
+   "a": "Mèo Khinh Bỉ",
+   "b": "Biến Căng",
+   "result": "Gào Thét Với Mèo",
+   "best": false
+  },
+  {
+   "a": "Mèo Khinh Bỉ",
+   "b": "Khẩu Nghiệp",
+   "result": "Anh Hùng Bàn Phím",
+   "best": false
+  },
+  {
+   "a": "Mèo Khinh Bỉ",
+   "b": "Delulu",
+   "result": "Touch Grass",
+   "best": false
+  },
+  {
+   "a": "Mèo Khinh Bỉ",
+   "b": "Flex",
+   "result": "Phông Bạt",
+   "best": false
+  },
+  {
+   "a": "Mèo Chui Hộp",
+   "b": "Shipper",
+   "result": "Mua Rồi Để Đó",
+   "best": false
+  },
+  {
+   "a": "Mèo Chui Hộp",
+   "b": "Để Mai Tính",
+   "result": "AFK",
+   "best": false
+  },
+  {
+   "a": "Mèo Chui Hộp",
+   "b": "Mạng Lag",
+   "result": "Ngủ Gật",
+   "best": false
+  },
+  {
+   "a": "Mèo Chui Hộp",
+   "b": "Doge",
+   "result": "Cheems",
+   "best": false
+  },
+  {
+   "a": "Gào Thét Với Mèo",
+   "b": "Seen Không Rep",
+   "result": "Khum",
+   "best": false
+  },
+  {
+   "a": "Gào Thét Với Mèo",
+   "b": "Ổn Áp",
+   "result": "This Is Fine",
+   "best": false
+  },
+  {
+   "a": "Gào Thét Với Mèo",
+   "b": "Họp",
+   "result": "Biến Căng",
+   "best": false
+  },
+  {
+   "a": "Plot Twist",
+   "b": "Ổn Áp",
+   "result": "Ngạc Nhiên Giả Trân",
+   "best": false
+  },
+  {
+   "a": "Ngạc Nhiên Giả Trân",
+   "b": "Đu Đỉnh",
+   "result": "Cắt Lỗ",
+   "best": false
+  },
+  {
+   "a": "Ngạc Nhiên Giả Trân",
+   "b": "Bom Hàng",
+   "result": "U Là Trời",
+   "best": false
+  },
+  {
+   "a": "Ngạc Nhiên Giả Trân",
+   "b": "Cười",
+   "result": "Cười Xã Giao",
+   "best": false
+  },
+  {
+   "a": "Brainrot",
+   "b": "Để Mai Tính",
+   "result": "Logic Lỏ",
+   "best": false
+  },
+  {
+   "a": "Logic Lỏ",
+   "b": "Logic Lỏ",
+   "result": "Galaxy Brain",
+   "best": false
+  },
+  {
+   "a": "Logic Lỏ",
+   "b": "Stonks",
+   "result": "Đu Đỉnh",
+   "best": false
+  },
+  {
+   "a": "Logic Lỏ",
+   "b": "Cuối Tháng",
+   "result": "Mì Tôm",
+   "best": false
+  },
+  {
+   "a": "Logic Lỏ",
+   "b": "Học Tủ",
+   "result": "Trật Tủ",
+   "best": false
+  },
+  {
+   "a": "Galaxy Brain",
+   "b": "Ctrl Z",
+   "result": "Debug Ba Giờ Sáng",
+   "best": false
+  },
+  {
+   "a": "Galaxy Brain",
+   "b": "Stonks",
+   "result": "Not Stonks",
+   "best": false
+  },
+  {
+   "a": "Galaxy Brain",
+   "b": "Họp",
+   "result": "Họp Bàn Lịch Họp",
+   "best": false
+  },
+  {
+   "a": "Săn Sale",
+   "b": "Khum",
+   "result": "Chê Kèo Thơm",
+   "best": false
+  },
+  {
+   "a": "Chê Kèo Thơm",
+   "b": "Crush",
+   "result": "Friendzone",
+   "best": false
+  },
+  {
+   "a": "Chê Kèo Thơm",
+   "b": "Lương Về",
+   "result": "Cháy Túi",
+   "best": false
+  },
+  {
+   "a": "Chê Kèo Thơm",
+   "b": "Đơn Nghỉ Việc",
+   "result": "Hai Nút Bấm",
+   "best": false
+  },
+  {
+   "a": "Chê Kèo Thơm",
+   "b": "Cười",
+   "result": "Cà Khịa",
+   "best": false
+  },
+  {
+   "a": "Có Gấu",
+   "b": "Thả Thính",
+   "result": "Trông Núi Nọ",
+   "best": false
+  },
+  {
+   "a": "Trông Núi Nọ",
+   "b": "Bóc Phốt",
+   "result": "Chia Tay",
+   "best": false
+  },
+  {
+   "a": "Trông Núi Nọ",
+   "b": "Crush",
+   "result": "Red Flag",
+   "best": false
+  },
+  {
+   "a": "Trông Núi Nọ",
+   "b": "Săn Sale",
+   "result": "Mua Rồi Để Đó",
+   "best": false
+  },
+  {
+   "a": "Toang",
+   "b": "Gét Gô",
+   "result": "Coffin Dance",
+   "best": false
+  },
+  {
+   "a": "Coffin Dance",
+   "b": "Đu Đỉnh",
+   "result": "Cắt Lỗ",
+   "best": false
+  },
+  {
+   "a": "Coffin Dance",
+   "b": "Stonks",
+   "result": "Not Stonks",
+   "best": false
+  },
+  {
+   "a": "Coffin Dance",
+   "b": "Leo Rank",
+   "result": "GG",
+   "best": false
+  },
+  {
+   "a": "Trúng Tủ",
+   "b": "Cười",
+   "result": "Chiến Thắng Nhỏ",
+   "best": false
+  },
+  {
+   "a": "Chiến Thắng Nhỏ",
+   "b": "Lương Về",
+   "result": "Flex",
+   "best": false
+  },
+  {
+   "a": "Chiến Thắng Nhỏ",
+   "b": "Leo Rank",
+   "result": "Gánh Team",
+   "best": false
+  },
+  {
+   "a": "Chiến Thắng Nhỏ",
+   "b": "Săn Sale",
+   "result": "Chốt Đơn",
+   "best": false
+  },
+  {
+   "a": "GG",
+   "b": "U Là Trời",
+   "result": "Khóc Ròng",
+   "best": false
+  },
+  {
+   "a": "Khóc Ròng",
+   "b": "Đu Đỉnh",
+   "result": "Chờ Về Bờ",
+   "best": false
+  },
+  {
+   "a": "Khóc Ròng",
+   "b": "Mùa Thi",
+   "result": "Trật Tủ",
+   "best": false
+  },
+  {
+   "a": "Khóc Ròng",
+   "b": "Cười",
+   "result": "Cười Mà Đau",
+   "best": false
+  },
+  {
+   "a": "Một Hai Ba Dzô",
+   "b": "Cà Khịa",
+   "result": "Cạn Ly Mỉa Mai",
+   "best": false
+  },
+  {
+   "a": "Cạn Ly Mỉa Mai",
+   "b": "Thưởng Bằng Niềm Tin",
+   "result": "Lương Tháng Sau",
+   "best": false
+  },
+  {
+   "a": "Cạn Ly Mỉa Mai",
+   "b": "Báo Thủ",
+   "result": "GG",
+   "best": false
+  },
+  {
+   "a": "Cạn Ly Mỉa Mai",
+   "b": "Nhậu",
+   "result": "Tiếp Khách",
+   "best": false
+  },
+  {
+   "a": "Ctrl Z",
+   "b": "Toang",
+   "result": "Máy Em Chạy Mà",
+   "best": false
+  },
+  {
+   "a": "Máy Em Chạy Mà",
+   "b": "Thức Trắng",
+   "result": "Debug Ba Giờ Sáng",
+   "best": false
+  },
+  {
+   "a": "Máy Em Chạy Mà",
+   "b": "Sếp",
+   "result": "Ét O Ét",
+   "best": false
+  },
+  {
+   "a": "Máy Em Chạy Mà",
+   "b": "Khum",
+   "result": "Skill Issue",
+   "best": false
+  },
+  {
+   "a": "Máy Em Chạy Mà",
+   "b": "Đổ Lỗi Cho Nhau",
+   "result": "Báo Thủ",
+   "best": false
+  },
+  {
+   "a": "NPC",
+   "b": "Ủa Alo",
+   "result": "Gọi Nhầm Tên",
+   "best": false
+  },
+  {
+   "a": "Gọi Nhầm Tên",
+   "b": "Crush",
+   "result": "Chia Tay",
+   "best": false
+  },
+  {
+   "a": "Gọi Nhầm Tên",
+   "b": "Họp",
+   "result": "Cười Xã Giao",
+   "best": false
+  },
+  {
+   "a": "Gọi Nhầm Tên",
+   "b": "Sếp",
+   "result": "Ăn Hành",
+   "best": false
+  },
+  {
+   "a": "Thức Trắng",
+   "b": "Ctrl Z",
+   "result": "Debug Ba Giờ Sáng",
+   "best": false
+  },
+  {
+   "a": "Debug Ba Giờ Sáng",
+   "b": "Cà Phê Sữa Đá",
+   "result": "Tăng Ca",
+   "best": false
+  },
+  {
+   "a": "Debug Ba Giờ Sáng",
+   "b": "Deadline",
+   "result": "Chạy Deadline",
+   "best": false
+  },
+  {
+   "a": "Debug Ba Giờ Sáng",
+   "b": "Ổn Áp",
+   "result": "This Is Fine",
+   "best": false
+  },
+  {
+   "a": "Khum",
+   "b": "Deadline",
+   "result": "Quiet Quitting",
    "best": false
   }
  ],

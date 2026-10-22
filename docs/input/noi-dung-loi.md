@@ -3,7 +3,7 @@
 > Trạng thái: **bản lõi chờ duyệt** (giọng mặn, tỉ lệ Việt/quốc tế ~7/3). Sinh bởi `tools/noi_dung.py` - sửa dữ liệu ở đó rồi chạy lại,
 > không sửa tay file này. Bản máy đọc: `noi-dung-loi.json` (pipeline nạp làm lõi classic).
 
-Tổng: **139 phần tử**, **363 công thức**, 40 câu "Nồi trào", 3 ví dụ Món đặc biệt. Tự kiểm (script): mọi phần tử tới được từ 4 phần tử khởi đầu, không trùng cặp, không trùng tên sau khi bỏ dấu, không trùng emoji, tên ≤ 4 từ.
+Tổng: **174 phần tử**, **518 công thức**, 40 câu "Nồi trào", 3 ví dụ Món đặc biệt. Tự kiểm (script): mọi phần tử tới được từ 4 phần tử khởi đầu, không trùng cặp, không trùng tên sau khi bỏ dấu, không trùng emoji, tên ≤ 4 từ.
 
 ## 1. Bốn phần tử khởi đầu
 
@@ -70,34 +70,49 @@ Cột Ảnh = gợi ý cho bước vẽ minh họa: vẽ **khái niệm**, khôn
 | 2 | 📞 | Ủa Alo | Việt | chiếc điện thoại bàn tự nhấc máy hỏi |
 | 3 | 💤 | AFK | Quốc tế | ghế chơi game trống, tay cầm rơi xuống sàn |
 | 3 | 🧠 | Brainrot | Quốc tế | bộ não tan chảy thành video ngắn |
+| 3 | 🐉 | Bá Khí | Việt | con rồng nhỏ khoanh tay ưỡn ngực, gió thổi tung bờm |
 | 3 | 🧾 | Bóc Phốt | Việt | tờ hóa đơn dài lê thê bị bóc ra |
 | 3 | 🏊 | Bơi Đi Làm | Việt | người đeo cặp táp bơi sải |
 | 3 | 🍔 | Cheems | Quốc tế | chú shiba nhỏ ôm cái bánh mì kẹp |
 | 3 | 😎 | Chill Guy | Quốc tế | nhân vật tự vẽ đút tay túi quần, mặt thản nhiên (không chép nhân vật gốc) |
+| 3 | 😈 | Cháy Nhà Cười Tươi | Quốc tế | con quỷ nhỏ cười tủm tỉm trước căn nhà đồ chơi bốc khói |
+| 3 | ⚰️ | Coffin Dance | Quốc tế | cỗ hòm bằng hộp giấy tự nhún nhảy theo nốt nhạc, không vẽ người |
 | 3 | ↩️ | Ctrl Z | Quốc tế | phím Ctrl và Z khổng lồ bị bấm điên cuồng |
 | 3 | 📆 | Cuối Tháng | Việt | tờ lịch ngày 30, ví mỏng dính |
 | 3 | 🎉 | Cuối Tuần | Việt | tờ lịch thứ Bảy nhảy múa |
 | 3 | 👖 | Còn Cái Nịt | Việt | chiếc thắt lưng nằm cô đơn trong ví rỗng |
+| 3 | 🫠 | Cười Mà Đau | Quốc tế | cốc trà nóng mỉm cười trong khi nứt dần |
+| 3 | 🤭 | Cười Đểu | Quốc tế | cái miệng che tay khúc khích, ánh mắt biết tuốt |
 | 3 | 🦄 | Delulu | Quốc tế | kỳ lân mơ màng trên mây |
 | 3 | 🚧 | Friendzone | Quốc tế | rào chắn ghi 'chỉ là bạn' |
 | 3 | 🏋️ | Gánh Team | Việt | người gánh cả đội trên đòn gánh |
 | 3 | 🙂 | Gật Gù Cho Có | Việt | dãy đầu gật gù như lò xo |
+| 3 | 🔘 | Hai Nút Bấm | Quốc tế | hai nút đỏ to, giọt mồ hôi khổng lồ lơ lửng phía trên |
 | 3 | 💑 | Hẹn Hò | Việt | hai đôi đũa gắp chung một miếng |
 | 3 | 🗄️ | Học Tủ | Việt | tủ hồ sơ có dán chữ 'chắc chắn ra' |
 | 3 | 🔁 | Họp Bàn Lịch Họp | Việt | lịch họp lồng trong lịch họp, vòng xoáy |
+| 3 | ☔ | Hồi Chiều Trời Mưa | Việt | khung cửa sổ chiều mưa, chiếc ô nhỏ rưng rưng, không vẽ người |
 | 3 | 🎈 | Hứa Lèo | Việt | quả bóng bay ghi 'tăng lương' bay mất |
 | 3 | 🙅 | Khum | Việt | bàn tay nhỏ xua xua dễ thương |
+| 3 | 😭 | Khóc Ròng | Quốc tế | quả bóng xì hơi khóc thành vòi nước |
 | 3 | 🚗 | Kẹt Xe | Việt | dòng xe máy kín đường như hộp cá |
+| 3 | 🤨 | Liếc Xéo | Quốc tế | đôi mắt hoạt hình liếc ngang, một bên chân mày nhướn cao |
 | 3 | 🆓 | Làm Không Công | Việt | bảng lương ghi số 0 to đùng |
+| 3 | 🐒 | Lảng Đi Chỗ Khác | Quốc tế | con rối khỉ nhồi bông liếc mắt sang bên, mồ hôi nhỏ giọt |
 | 3 | 🥘 | Lẩu Meme | Việt | nồi lẩu thả đủ thứ biểu tượng cảm xúc |
 | 3 | 🖼️ | Meme | Quốc tế | khung tranh có chữ trắng viền đen |
+| 3 | 😿 | Mèo Khóc | Quốc tế | chú mèo hoạt hình mắt rưng rưng hai giọt lệ to mà vẫn cố gượng |
 | 3 | 🥂 | Một Hai Ba Dzô | Việt | nhiều cốc giơ cao, chữ DZÔ |
 | 3 | 🤖 | NPC | Quốc tế | dãy người giống hệt nhau nói cùng một câu |
 | 3 | 🌊 | Ngập | Việt | xe máy chìm nửa bánh, nước ngang gối |
+| 3 | 🪑 | Ngồi Chờ Mòn Mỏi | Quốc tế | chiếc ghế phủ mạng nhện cạnh đồng hồ quay vòng |
 | 3 | 😴 | Ngủ Gật | Việt | đầu gục xuống bàn phím, chữ zzz |
+| 3 | 🫥 | Nhìn Xa Xăm | Quốc tế | chiếc ghế văn phòng quay về phía cửa sổ, đám mây trôi vô định |
 | 3 | 🎧 | Nhạc Suy | Việt | tai nghe nhỏ giọt mưa |
+| 3 | 🦜 | Nhại Lại | Quốc tế | con vẹt chống nạnh nhại giọng, bong bóng thoại méo mó, không có chữ |
 | 3 | 🌀 | Plot Twist | Quốc tế | con đường cong ngoặt 180 độ |
 | 3 | 🚩 | Red Flag | Quốc tế | lá cờ đỏ phấp phới trên đầu |
+| 3 | 🐍 | Rắn Độc Văn Phòng | Việt | con rắn đeo thẻ nhân viên, cười mỉm sau tập hồ sơ |
 | 3 | 🗺️ | Side Quest | Quốc tế | tấm bản đồ đầy dấu chấm than phụ |
 | 3 | 🎯 | Skill Issue | Quốc tế | bia tập bắn, mũi tên cắm ngược vào người bắn |
 | 3 | ⏱️ | Speedrun | Quốc tế | đồng hồ bấm giờ có cánh |
@@ -113,14 +128,32 @@ Cột Ảnh = gợi ý cho bước vẽ minh họa: vẽ **khái niệm**, khôn
 | 3 | ✉️ | Tâm Thư Xin Lỗi | Việt | lá thư viết tay có giọt nước mắt |
 | 3 | 🕊️ | Tự Do | Quốc tế | chim bồ câu bay ra khỏi cửa văn phòng |
 | 3 | 📚 | Đồ Án | Việt | cuốn đồ án dày cộp có quầng thâm |
+| 3 | 👉 | Đổ Lỗi Cho Nhau | Quốc tế | hai ngón tay giống hệt nhau chỉ thẳng vào nhau |
 | 3 | 😢 | Ế | Việt | một ghế đá công viên, một người, một cái bánh mì |
+| 4 | 💔 | Chia Tay | Quốc tế | trái tim xé đôi, mỗi nửa đi một ngả |
+| 4 | ✊ | Chiến Thắng Nhỏ | Quốc tế | nắm tay nhỏ xíu giơ lên trước bãi cát, cờ chiến thắng tí hon |
+| 4 | 🏖️ | Chờ Về Bờ | Việt | người ôm phao nhìn bờ biển xa tít |
 | 4 | 🎆 | Cuối Năm | Việt | pháo hoa trên tờ lịch tháng 12 |
 | 4 | 🧸 | Có Gấu | Việt | gấu bông ôm điện thoại nhắn tin |
+| 4 | 👑 | Công Chúa Phòng Trọ | Việt | vương miện lấp lánh đặt trên gói mì tôm trong căn phòng trọ chật |
+| 4 | 🍸 | Cạn Ly Mỉa Mai | Quốc tế | ly cocktail giơ cao, nháy mắt đầy ẩn ý |
+| 4 | 🪲 | Debug Ba Giờ Sáng | Quốc tế | con bọ ngồi trên bàn phím dưới ánh trăng, đồng hồ chỉ 3 giờ |
+| 4 | 👻 | Dự Án Ma | Việt | bóng ma ôm bản kế hoạch trắng trơn, bay lơ lửng |
 | 4 | 🧍 | FA | Quốc tế | người đứng giữa đám đông các cặp đôi |
 | 4 | 🔄 | Fan Quay Xe | Việt | đoàn xe máy gắn cờ cổ vũ quay đầu đồng loạt |
+| 4 | 🗿 | Farm Aura | Việt | tượng đá cố nghiêng mặt góc 45 độ dưới đèn chiếu |
+| 4 | 🦋 | Gọi Nhầm Tên | Quốc tế | con bướm bị chỉ vào bởi tấm biển có dấu hỏi to |
+| 4 | 📋 | Kế Hoạch Hoàn Hảo | Quốc tế | bảng kế hoạch bốn ô, ô cuối có cái bẫy tự sập |
 | 4 | 🧗 | Leo Rank | Quốc tế | người leo bậc thang huy hiệu |
+| 4 | 🤓 | Logic Lỏ | Quốc tế | ngón tay chỉ vào thái dương bằng giấy, sau lưng là phép tính sai |
 | 4 | 🤑 | Lương Về | Việt | tin nhắn biến động số dư phát sáng |
+| 4 | 💻 | Máy Em Chạy Mà | Quốc tế | chiếc laptop cười tươi, phía sau màn hình server cháy đỏ |
+| 4 | 🐈 | Mèo Chui Hộp | Quốc tế | chú mèo nhét mình vào hộp giấy quá nhỏ, cạnh giường êm bỏ trống |
+| 4 | 😼 | Mèo Khinh Bỉ | Quốc tế | chú mèo nheo mắt khinh khỉnh nhìn xuống từ nóc tủ |
 | 4 | 🍜 | Mì Tôm | Việt | gói mì tôm phát sáng như báu vật |
+| 4 | 😲 | Ngạc Nhiên Giả Trân | Quốc tế | quả trứng hoạt hình há hốc mồm trước tờ hóa đơn ai cũng đoán được |
+| 4 | 🧤 | Ngồi Co Ro | Quốc tế | đôi găng len to sụ ôm lấy chiếc ghế xếp giữa gió lạnh |
+| 4 | 🎮 | Nhiệm Vụ Hệ Thống | Việt | khung thông báo nhiệm vụ kiểu game lơ lửng trên chiếc bàn chải đánh răng |
 | 4 | 💘 | Rizz | Quốc tế | cây đũa phép bắn ra tim |
 | 4 | 🐺 | Sigma | Quốc tế | con sói đeo tai nghe đi một mình |
 | 4 | 📈 | Stonks | Quốc tế | biểu đồ đi lên, nhân vật đầu tượng 3D mặc vest (tự vẽ, không chép) |
@@ -128,28 +161,30 @@ Cột Ảnh = gợi ý cho bước vẽ minh họa: vẽ **khái niệm**, khôn
 | 4 | ⛏️ | Đào Mả Phốt | Việt | cái xẻng đào lên một chồng ảnh chụp màn hình cũ phủ bụi |
 | 5 | 🌈 | Aura | Quốc tế | vầng hào quang +1000 trên đầu |
 | 5 | 💍 | Bao Giờ Cưới | Việt | chiếc nhẫn kèm dấu hỏi khổng lồ |
-| 5 | 💔 | Chia Tay | Quốc tế | trái tim xé đôi, mỗi nửa đi một ngả |
 | 5 | 💸 | Cháy Túi | Việt | chiếc ví bốc cháy, tiền bay |
 | 5 | 🍚 | Cơm Chó | Việt | bát cơm đầy tràn, chú chó nhìn tủi thân |
 | 5 | ✂️ | Cắt Lỗ | Việt | cây kéo cắt đường biểu đồ đỏ |
 | 5 | 💎 | Flex | Quốc tế | viên kim cương đeo kính râm |
+| 5 | 🌌 | Galaxy Brain | Quốc tế | bộ não phát sáng thành dải ngân hà, nổ pháo hoa |
+| 5 | 🙀 | Gào Thét Với Mèo | Quốc tế | bong bóng thoại đỏ rực gào vào chú mèo đang ngồi thản nhiên liếm chân |
 | 5 | 🥶 | Not Stonks | Quốc tế | biểu đồ cắm đầu xuống, nhân vật vest run cầm cập |
+| 5 | 🎭 | Phông Bạt | Việt | tấm phông nền hình siêu xe, phía sau là xe đạp |
 | 5 | 🛒 | Săn Sale | Việt | giỏ hàng lao vun vút lúc 0 giờ |
 | 5 | 💰 | Thưởng Tết | Việt | túi tiền có dây buộc |
 | 5 | 🍹 | Trà Sữa Full Topping | Việt | ly trà sữa đầy trân châu tràn miệng |
+| 5 | ⛰️ | Trông Núi Nọ | Quốc tế | hai ngọn núi, cái gần ngoái cổ nhìn ngọn núi xa lấp lánh |
 | 5 | 🌸 | Tết | Việt | cành hoa đào, bánh chưng |
 | 5 | 🍖 | Ăn Buffet Gỡ Vốn | Việt | đĩa thức ăn chồng cao như núi |
 | 5 | 🏔️ | Đu Đỉnh | Việt | người cắm cờ trên đỉnh núi biểu đồ, phía sau là vực |
+| 6 | 💣 | Bom Hàng | Việt | gói hàng có ngòi nổ, shipper ôm đầu |
+| 6 | 🫷 | Chê Kèo Thơm | Quốc tế | bàn tay xua đi đĩa cơm ngon, quay sang ôm hộp quà giảm giá |
 | 6 | ✅ | Chốt Đơn | Việt | nút chốt đơn bị bấm lún |
-| 6 | 🏖️ | Chờ Về Bờ | Việt | người ôm phao nhìn bờ biển xa tít |
 | 6 | 🏅 | Con Nhà Người Ta | Việt | huy chương vàng treo nhà hàng xóm, tỏa sáng |
 | 6 | 🍵 | Hỏi Thăm Ngày Tết | Việt | ấm trà và những dấu hỏi bay quanh |
 | 6 | 🧧 | Lì Xì | Việt | phong bao đỏ nhỏ xíu |
 | 6 | 🌟 | Main Character | Quốc tế | ánh đèn sân khấu chiếu một người giữa phố |
 | 6 | 📦 | Mua Rồi Để Đó | Việt | chồng hộp hàng chưa bóc trong góc phòng |
-| 6 | 🎭 | Phông Bạt | Việt | tấm phông nền hình siêu xe, phía sau là xe đạp |
 | 6 | 📸 | Sống Ảo | Việt | điện thoại có 12 bộ lọc chồng lên nhau |
-| 7 | 💣 | Bom Hàng | Việt | gói hàng có ngòi nổ, shipper ôm đầu |
 | 7 | 💵 | Lương Bao Nhiêu | Việt | máy tính cầm tay bị soi đèn |
 | 7 | 👛 | Mẹ Giữ Hộ | Việt | chiếc ví khóa ba lớp |
 | 7 | 🛵 | Shipper | Việt | xe máy chất hàng cao ngất |
@@ -524,6 +559,161 @@ Cột Ảnh = gợi ý cho bước vẽ minh họa: vẽ **khái niệm**, khôn
 | 361 | 🍲 Nồi Lẩu | 🍲 Nồi Lẩu | 🥘 Lẩu Meme |
 | 362 | 🍲 Nồi Lẩu | 🧸 Có Gấu | 💑 Hẹn Hò |
 | 363 | 🍲 Nồi Lẩu | 💀 Toang | 🥢 Hết Nước Chấm |
+| 364 | 🗺️ Side Quest | ⏰ Deadline | 🎮 Nhiệm Vụ Hệ Thống |
+| 365 | 🎮 Nhiệm Vụ Hệ Thống | 😩 Thứ Hai | 🏊 Bơi Đi Làm |
+| 366 | 🎮 Nhiệm Vụ Hệ Thống | ⏰ Deadline | ⏱️ Speedrun |
+| 367 | 🎮 Nhiệm Vụ Hệ Thống | 🐌 Để Mai Tính | 👻 Dự Án Ma |
+| 368 | 🎮 Nhiệm Vụ Hệ Thống | 🏋️ Gánh Team | 🐉 Bá Khí |
+| 369 | 🌧️ Mưa | 😫 U Là Trời | ☔ Hồi Chiều Trời Mưa |
+| 370 | ☔ Hồi Chiều Trời Mưa | 😍 Crush | 💔 Chia Tay |
+| 371 | ☔ Hồi Chiều Trời Mưa | 😂 Cười | 🫠 Cười Mà Đau |
+| 372 | ☔ Hồi Chiều Trời Mưa | 😢 Ế | 🎧 Nhạc Suy |
+| 373 | ☔ Hồi Chiều Trời Mưa | 🍿 Hóng Biến | 🌪️ Biến Căng |
+| 374 | 👖 Còn Cái Nịt | 🦄 Delulu | 👑 Công Chúa Phòng Trọ |
+| 375 | 👑 Công Chúa Phòng Trọ | 🛒 Săn Sale | 💣 Bom Hàng |
+| 376 | 👑 Công Chúa Phòng Trọ | 🍜 Mì Tôm | 🎭 Phông Bạt |
+| 377 | 👑 Công Chúa Phòng Trọ | 🍹 Trà Sữa Full Topping | 💸 Cháy Túi |
+| 378 | 👑 Công Chúa Phòng Trọ | 📆 Cuối Tháng | 👖 Còn Cái Nịt |
+| 379 | 🔥 Tới Công Chuyện | 🚀 Gét Gô | 🐉 Bá Khí |
+| 380 | 🐉 Bá Khí | 🧗 Leo Rank | 🏋️ Gánh Team |
+| 381 | 🐉 Bá Khí | 💀 Toang | 🧅 Ăn Hành |
+| 382 | 🐉 Bá Khí | 🗿 Farm Aura | 🌈 Aura |
+| 383 | 🐉 Bá Khí | 👔 Sếp | 🏢 Sếp Tổng |
+| 384 | 😎 Chill Guy | 🚀 Gét Gô | 🗿 Farm Aura |
+| 385 | 🗿 Farm Aura | 📸 Sống Ảo | 🌟 Main Character |
+| 386 | 🗿 Farm Aura | 💀 Toang | 📉 Âm Aura |
+| 387 | 🗿 Farm Aura | 🌿 Chill | 😎 Chill Guy |
+| 388 | 🗿 Farm Aura | 😂 Cười | 🤭 Cười Đểu |
+| 389 | 😏 Cà Khịa | 🍿 Hóng Biến | 🤭 Cười Đểu |
+| 390 | 🤭 Cười Đểu | 🧾 Bóc Phốt | 🍿 Hóng Biến |
+| 391 | 🤭 Cười Đểu | 😍 Crush | 🎣 Thả Thính |
+| 392 | 🤭 Cười Đểu | 👔 Sếp | 🍯 Nịnh Sếp |
+| 393 | 😏 Cà Khịa | 📧 Như Email Trước | 🦜 Nhại Lại |
+| 394 | 🦜 Nhại Lại | 👔 Sếp | 🙂 Gật Gù Cho Có |
+| 395 | 🦜 Nhại Lại | 👄 Khẩu Nghiệp | ⌨️ Anh Hùng Bàn Phím |
+| 396 | 🦜 Nhại Lại | 😍 Crush | 😏 Cà Khịa |
+| 397 | 😏 Cà Khịa | 👀 Seen Không Rep | 🤨 Liếc Xéo |
+| 398 | 🤨 Liếc Xéo | 🎭 Phông Bạt | 🧾 Bóc Phốt |
+| 399 | 🤨 Liếc Xéo | 😍 Crush | 🎣 Thả Thính |
+| 400 | 🤨 Liếc Xéo | 🚩 Red Flag | 💔 Chia Tay |
+| 401 | 🤨 Liếc Xéo | 📧 Như Email Trước | 🤭 Cười Đểu |
+| 402 | 🎈 Hứa Lèo | 📚 Đồ Án | 👻 Dự Án Ma |
+| 403 | 👻 Dự Án Ma | 👔 Sếp | 🎈 Hứa Lèo |
+| 404 | 👻 Dự Án Ma | ⏰ Deadline | 🥀 Hết Cứu |
+| 405 | 👻 Dự Án Ma | 📅 Họp | 🔁 Họp Bàn Lịch Họp |
+| 406 | 👻 Dự Án Ma | 📈 Stonks | 🥶 Not Stonks |
+| 407 | 🍯 Nịnh Sếp | 👄 Khẩu Nghiệp | 🐍 Rắn Độc Văn Phòng |
+| 408 | 🐍 Rắn Độc Văn Phòng | 📅 Họp | 👉 Đổ Lỗi Cho Nhau |
+| 409 | 🐍 Rắn Độc Văn Phòng | 👔 Sếp | 🍯 Nịnh Sếp |
+| 410 | 🐍 Rắn Độc Văn Phòng | 🤫 Quiet Quitting | 📩 Đơn Nghỉ Việc |
+| 411 | 🐍 Rắn Độc Văn Phòng | 🧾 Bóc Phốt | 🌪️ Biến Căng |
+| 412 | 😩 Thứ Hai | 🌃 Tăng Ca | 🫥 Nhìn Xa Xăm |
+| 413 | 🫥 Nhìn Xa Xăm | ⏳ Lương Tháng Sau | 🥢 Hết Nước Chấm |
+| 414 | 🫥 Nhìn Xa Xăm | 🎉 Cuối Tuần | 🌱 Touch Grass |
+| 415 | 🫥 Nhìn Xa Xăm | 🪑 Ngồi Chờ Mòn Mỏi | 🏖️ Chờ Về Bờ |
+| 416 | 🫥 Nhìn Xa Xăm | 📩 Đơn Nghỉ Việc | 🕊️ Tự Do |
+| 417 | 👀 Seen Không Rep | ⏳ Lương Tháng Sau | 🪑 Ngồi Chờ Mòn Mỏi |
+| 418 | 🪑 Ngồi Chờ Mòn Mỏi | 📆 Cuối Tháng | 🤑 Lương Về |
+| 419 | 🪑 Ngồi Chờ Mòn Mỏi | 🎣 Thả Thính | 🚧 Friendzone |
+| 420 | 🪑 Ngồi Chờ Mòn Mỏi | 🐢 Mạng Lag | 💤 AFK |
+| 421 | 🐌 Để Mai Tính | 🎈 Hứa Lèo | 📋 Kế Hoạch Hoàn Hảo |
+| 422 | 📋 Kế Hoạch Hoàn Hảo | 🛒 Săn Sale | 💸 Cháy Túi |
+| 423 | 📋 Kế Hoạch Hoàn Hảo | 💀 Toang | 🌀 Plot Twist |
+| 424 | 📋 Kế Hoạch Hoàn Hảo | 📚 Đồ Án | 👻 Dự Án Ma |
+| 425 | 📋 Kế Hoạch Hoàn Hảo | 😩 Thứ Hai | 🐌 Để Mai Tính |
+| 426 | 📩 Đơn Nghỉ Việc | ⏳ Lương Tháng Sau | 🔘 Hai Nút Bấm |
+| 427 | 🔘 Hai Nút Bấm | 🍻 Nhậu | 🥂 Một Hai Ba Dzô |
+| 428 | 🔘 Hai Nút Bấm | 😍 Crush | 🎣 Thả Thính |
+| 429 | 🔘 Hai Nút Bấm | ⏰ Deadline | 🆘 Ét O Ét |
+| 430 | 🌊 Ngập | 📅 Họp | 🧤 Ngồi Co Ro |
+| 431 | 🧤 Ngồi Co Ro | 🍲 Nồi Lẩu | ❄️ Trời Lạnh Ăn Lẩu |
+| 432 | 🧤 Ngồi Co Ro | 🎉 Cuối Tuần | 🌿 Chill |
+| 433 | 🧤 Ngồi Co Ro | 🚗 Kẹt Xe | 🏊 Bơi Đi Làm |
+| 434 | 📞 Ủa Alo | 😬 Cười Xã Giao | 🐒 Lảng Đi Chỗ Khác |
+| 435 | 🐒 Lảng Đi Chỗ Khác | 💍 Bao Giờ Cưới | 😢 Ế |
+| 436 | 🐒 Lảng Đi Chỗ Khác | 💵 Lương Bao Nhiêu | 😬 Cười Xã Giao |
+| 437 | 🐒 Lảng Đi Chỗ Khác | 👔 Sếp | 🤫 Quiet Quitting |
+| 438 | 🐒 Lảng Đi Chỗ Khác | 📅 Họp | 😴 Ngủ Gật |
+| 439 | 😬 Cười Xã Giao | 🥀 Hết Cứu | 🫠 Cười Mà Đau |
+| 440 | 🫠 Cười Mà Đau | 😩 Thứ Hai | 🙈 Thánh Nhọ |
+| 441 | 🫠 Cười Mà Đau | ⏳ Lương Tháng Sau | ☕ This Is Fine |
+| 442 | 🫠 Cười Mà Đau | ⏰ Deadline | 🏃 Chạy Deadline |
+| 443 | 🫠 Cười Mà Đau | 😏 Cà Khịa | 👄 Khẩu Nghiệp |
+| 444 | ☕ This Is Fine | 🐆 Báo Thủ | 😈 Cháy Nhà Cười Tươi |
+| 445 | 😈 Cháy Nhà Cười Tươi | 🌪️ Biến Căng | 🍿 Hóng Biến |
+| 446 | 😈 Cháy Nhà Cười Tươi | 👉 Đổ Lỗi Cho Nhau | 🐆 Báo Thủ |
+| 447 | 😈 Cháy Nhà Cười Tươi | 👔 Sếp | 📩 Đơn Nghỉ Việc |
+| 448 | 🐆 Báo Thủ | 📅 Họp | 👉 Đổ Lỗi Cho Nhau |
+| 449 | 👉 Đổ Lỗi Cho Nhau | 🐆 Báo Thủ | 🏳️ GG |
+| 450 | 👉 Đổ Lỗi Cho Nhau | 👔 Sếp | ✉️ Tâm Thư Xin Lỗi |
+| 451 | 👉 Đổ Lỗi Cho Nhau | 🧾 Bóc Phốt | 🌪️ Biến Căng |
+| 452 | 😬 Cười Xã Giao | 😫 U Là Trời | 😿 Mèo Khóc |
+| 453 | 😿 Mèo Khóc | 🌿 Chill | 🐈 Mèo Chui Hộp |
+| 454 | 😿 Mèo Khóc | 😏 Cà Khịa | 😼 Mèo Khinh Bỉ |
+| 455 | 😿 Mèo Khóc | 🎧 Nhạc Suy | ☔ Hồi Chiều Trời Mưa |
+| 456 | 😿 Mèo Khóc | 💔 Chia Tay | 😢 Ế |
+| 457 | 😼 Mèo Khinh Bỉ | 🌪️ Biến Căng | 🙀 Gào Thét Với Mèo |
+| 458 | 😼 Mèo Khinh Bỉ | 👄 Khẩu Nghiệp | ⌨️ Anh Hùng Bàn Phím |
+| 459 | 😼 Mèo Khinh Bỉ | 🦄 Delulu | 🌱 Touch Grass |
+| 460 | 😼 Mèo Khinh Bỉ | 💎 Flex | 🎭 Phông Bạt |
+| 461 | 🐈 Mèo Chui Hộp | 🛵 Shipper | 📦 Mua Rồi Để Đó |
+| 462 | 🐈 Mèo Chui Hộp | 🐌 Để Mai Tính | 💤 AFK |
+| 463 | 🐈 Mèo Chui Hộp | 🐢 Mạng Lag | 😴 Ngủ Gật |
+| 464 | 🐈 Mèo Chui Hộp | 🐕 Doge | 🍔 Cheems |
+| 465 | 🙀 Gào Thét Với Mèo | 👀 Seen Không Rep | 🙅 Khum |
+| 466 | 🙀 Gào Thét Với Mèo | 👌 Ổn Áp | ☕ This Is Fine |
+| 467 | 🙀 Gào Thét Với Mèo | 📅 Họp | 🌪️ Biến Căng |
+| 468 | 🌀 Plot Twist | 👌 Ổn Áp | 😲 Ngạc Nhiên Giả Trân |
+| 469 | 😲 Ngạc Nhiên Giả Trân | 🏔️ Đu Đỉnh | ✂️ Cắt Lỗ |
+| 470 | 😲 Ngạc Nhiên Giả Trân | 💣 Bom Hàng | 😫 U Là Trời |
+| 471 | 😲 Ngạc Nhiên Giả Trân | 😂 Cười | 😬 Cười Xã Giao |
+| 472 | 🧠 Brainrot | 🐌 Để Mai Tính | 🤓 Logic Lỏ |
+| 473 | 🤓 Logic Lỏ | 🤓 Logic Lỏ | 🌌 Galaxy Brain |
+| 474 | 🤓 Logic Lỏ | 📈 Stonks | 🏔️ Đu Đỉnh |
+| 475 | 🤓 Logic Lỏ | 📆 Cuối Tháng | 🍜 Mì Tôm |
+| 476 | 🤓 Logic Lỏ | 🗄️ Học Tủ | 🗑️ Trật Tủ |
+| 477 | 🌌 Galaxy Brain | ↩️ Ctrl Z | 🪲 Debug Ba Giờ Sáng |
+| 478 | 🌌 Galaxy Brain | 📈 Stonks | 🥶 Not Stonks |
+| 479 | 🌌 Galaxy Brain | 📅 Họp | 🔁 Họp Bàn Lịch Họp |
+| 480 | 🛒 Săn Sale | 🙅 Khum | 🫷 Chê Kèo Thơm |
+| 481 | 🫷 Chê Kèo Thơm | 😍 Crush | 🚧 Friendzone |
+| 482 | 🫷 Chê Kèo Thơm | 🤑 Lương Về | 💸 Cháy Túi |
+| 483 | 🫷 Chê Kèo Thơm | 📩 Đơn Nghỉ Việc | 🔘 Hai Nút Bấm |
+| 484 | 🫷 Chê Kèo Thơm | 😂 Cười | 😏 Cà Khịa |
+| 485 | 🧸 Có Gấu | 🎣 Thả Thính | ⛰️ Trông Núi Nọ |
+| 486 | ⛰️ Trông Núi Nọ | 🧾 Bóc Phốt | 💔 Chia Tay |
+| 487 | ⛰️ Trông Núi Nọ | 😍 Crush | 🚩 Red Flag |
+| 488 | ⛰️ Trông Núi Nọ | 🛒 Săn Sale | 📦 Mua Rồi Để Đó |
+| 489 | 💀 Toang | 🚀 Gét Gô | ⚰️ Coffin Dance |
+| 490 | ⚰️ Coffin Dance | 🏔️ Đu Đỉnh | ✂️ Cắt Lỗ |
+| 491 | ⚰️ Coffin Dance | 📈 Stonks | 🥶 Not Stonks |
+| 492 | ⚰️ Coffin Dance | 🧗 Leo Rank | 🏳️ GG |
+| 493 | 🍀 Trúng Tủ | 😂 Cười | ✊ Chiến Thắng Nhỏ |
+| 494 | ✊ Chiến Thắng Nhỏ | 🤑 Lương Về | 💎 Flex |
+| 495 | ✊ Chiến Thắng Nhỏ | 🧗 Leo Rank | 🏋️ Gánh Team |
+| 496 | ✊ Chiến Thắng Nhỏ | 🛒 Săn Sale | ✅ Chốt Đơn |
+| 497 | 🏳️ GG | 😫 U Là Trời | 😭 Khóc Ròng |
+| 498 | 😭 Khóc Ròng | 🏔️ Đu Đỉnh | 🏖️ Chờ Về Bờ |
+| 499 | 😭 Khóc Ròng | 📝 Mùa Thi | 🗑️ Trật Tủ |
+| 500 | 😭 Khóc Ròng | 😂 Cười | 🫠 Cười Mà Đau |
+| 501 | 🥂 Một Hai Ba Dzô | 😏 Cà Khịa | 🍸 Cạn Ly Mỉa Mai |
+| 502 | 🍸 Cạn Ly Mỉa Mai | 🙏 Thưởng Bằng Niềm Tin | ⏳ Lương Tháng Sau |
+| 503 | 🍸 Cạn Ly Mỉa Mai | 🐆 Báo Thủ | 🏳️ GG |
+| 504 | 🍸 Cạn Ly Mỉa Mai | 🍻 Nhậu | 🤝 Tiếp Khách |
+| 505 | ↩️ Ctrl Z | 💀 Toang | 💻 Máy Em Chạy Mà |
+| 506 | 💻 Máy Em Chạy Mà | 🌙 Thức Trắng | 🪲 Debug Ba Giờ Sáng |
+| 507 | 💻 Máy Em Chạy Mà | 👔 Sếp | 🆘 Ét O Ét |
+| 508 | 💻 Máy Em Chạy Mà | 🙅 Khum | 🎯 Skill Issue |
+| 509 | 💻 Máy Em Chạy Mà | 👉 Đổ Lỗi Cho Nhau | 🐆 Báo Thủ |
+| 510 | 🤖 NPC | 📞 Ủa Alo | 🦋 Gọi Nhầm Tên |
+| 511 | 🦋 Gọi Nhầm Tên | 😍 Crush | 💔 Chia Tay |
+| 512 | 🦋 Gọi Nhầm Tên | 📅 Họp | 😬 Cười Xã Giao |
+| 513 | 🦋 Gọi Nhầm Tên | 👔 Sếp | 🧅 Ăn Hành |
+| 514 | 🌙 Thức Trắng | ↩️ Ctrl Z | 🪲 Debug Ba Giờ Sáng |
+| 515 | 🪲 Debug Ba Giờ Sáng | 🥤 Cà Phê Sữa Đá | 🌃 Tăng Ca |
+| 516 | 🪲 Debug Ba Giờ Sáng | ⏰ Deadline | 🏃 Chạy Deadline |
+| 517 | 🪲 Debug Ba Giờ Sáng | 👌 Ổn Áp | ☕ This Is Fine |
+| 518 | 🙅 Khum | ⏰ Deadline | 🤫 Quiet Quitting |
 
 ## 4. Câu "Nồi trào / Khét rồi"
 
@@ -600,7 +790,7 @@ Cùng một cặp luôn ra cùng một câu (chọn theo băm của cặp).
 
 ## 6. Chỉ số
 
-- Ghép trượt khi chơi ngẫu nhiên 100 lượt (mô phỏng 2.000 ván): **≈ 67%** (20 lượt đầu ≈ 41%). NFR đã chốt (Q13): 20 lượt đầu ≤ 45%, cả ván ≤ 70% - **đạt**.
+- Ghép trượt khi chơi ngẫu nhiên 100 lượt (mô phỏng 2.000 ván): **≈ 66%** (20 lượt đầu ≈ 41%). NFR đã chốt (Q13): 20 lượt đầu ≤ 45%, cả ván ≤ 70% - **đạt**.
 - Người chơi thật không ghép ngẫu nhiên (họ thử theo nghĩa), nên tỉ lệ thực tế thấp hơn; mô phỏng này là cận trên để so sánh giữa các bản.
 
 ## 7. Vì sao không dùng mốc ≤ 40% (đã chốt Q13)
