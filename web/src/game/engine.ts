@@ -15,6 +15,8 @@ export type Progress = {
   table: TableItem[]
   sort: SortMode
   tutorial_seen: boolean
+  /** The "hold to drag, swipe the gaps to scroll" hint on touch screens was dismissed (AC-GAME-21). */
+  touch_hint_seen: boolean
   miss_streak: number
 }
 export type Starter = { id: string; name: string; emoji: string }
@@ -56,6 +58,7 @@ export function initialProgress(manifest: Manifest, now: Date): Progress {
     table: [],
     sort: 'newest',
     tutorial_seen: false,
+    touch_hint_seen: false,
     miss_streak: 0,
   }
 }
@@ -106,6 +109,7 @@ export function loadProgress(storage: Storage): Progress | null {
     table: Array.isArray(data.table) ? data.table.filter(isTableItem) : [],
     sort: SORT_MODES.includes(data.sort as SortMode) ? (data.sort as SortMode) : 'newest',
     tutorial_seen: data.tutorial_seen === true,
+    touch_hint_seen: data.touch_hint_seen === true,
     miss_streak: typeof data.miss_streak === 'number' ? data.miss_streak : 0,
   }
 }
