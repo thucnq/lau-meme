@@ -41,11 +41,13 @@ Cấu hình tài khoản lần đầu (DNS, Redirect Rule, SSL, deploy productio
   - URL preview do Workers Builds cấp theo nhánh: `https://<tên-nhánh>-lau-meme.thucnguyenquy.workers.dev` (dấu `/` trong tên nhánh thành `-`), ví dụ nhánh `docs/release-staging-20261021-1832` → `https://docs-release-staging-20261021-1832-lau-meme.thucnguyenquy.workers.dev`. Game nằm dưới `/lau-meme/`; kiểm tra bằng `/lau-meme/api/health` (phải có `"env":"preview"`). Link cũng có ở cuối log build và trong check "Workers Builds: lau-meme" của PR.
   - Cài đặt build của preview: Root directory `worker`, Build command `npm --prefix ../web ci && npm --prefix ../web run build` (tạo `web/dist` mà `assets.directory` trỏ tới), Deploy/Preview command `npx wrangler preview`. Cài đặt trong tab **Previews Base** chỉ áp cho preview **tạo mới**; preview đã có (nhánh từng build trước đó, ví dụ `feat/art`) giữ bản cài đặt riêng.
   - Dấu hiệu sai cài đặt: check "Workers Builds: lau-meme" của PR đỏ, cài đặt của build là Root directory `/`, Build command `None`; log báo `missing a previews block` và `npx` phải tải wrangler về (lệnh không chạy trong `worker/`).
-  - Cách sửa (người làm trên dashboard, đã dùng cho PR #51 và PR #53):
+  - Phân biệt nhanh bằng link "Details" của check: build đúng nằm ở `.../lau-meme/production/previews/<tên-nhánh>/builds/<id>`; build dùng cài đặt cũ nằm ở `.../lau-meme/production/builds/<id>` (không có `previews/`). Ví dụ nhánh `docs/preview-url`: PR #48, #49 ở `/builds/` (đỏ), sau khi sửa cài đặt riêng của nhánh thì PR #50 ở `/previews/docs-preview-url/` (xanh). Nhánh tạo mới sau khi bật Previews (`docs/previews-base-note`, PR #51) vào thẳng `/previews/`.
+  - Cách sửa (người làm trên dashboard, đã dùng cho nhánh `docs/preview-url`, PR #50):
     1. Mở Worker `lau-meme`, đổi ô **Production ⌄** ở đầu trang sang preview của nhánh lỗi.
     2. Vào **Settings > Build**, sửa ba ô cho khớp cài đặt trên. Kiểm tra luôn tab **Previews Base** để nhánh mới không lỗi lại.
-    3. Push một commit mới lên nhánh (commit rỗng cũng được: `git commit --allow-empty -m "chore: chạy lại build preview"`). **Không** bấm Retry build cũ: Retry dùng lại cài đặt cũ.
-    4. Khi check xanh, mở `https://<tên-nhánh>-lau-meme.thucnguyenquy.workers.dev/lau-meme/api/health`, phải có `"env":"preview"`; `/lau-meme/` trả 200.
+    3. Cách khác khi không tìm thấy nhánh trong ô **Production ⌄**: tạo nhánh mới từ nhánh lỗi (`git switch -c <tên-mới>`), push và mở PR mới; nhánh mới nhận cài đặt Previews Base.
+    4. Push một commit mới lên nhánh (commit rỗng cũng được: `git commit --allow-empty -m "chore: chạy lại build preview"`). **Không** bấm Retry build cũ: Retry dùng lại cài đặt cũ.
+    5. Khi check xanh, mở `https://<tên-nhánh>-lau-meme.thucnguyenquy.workers.dev/lau-meme/api/health`, phải có `"env":"preview"`; `/lau-meme/` trả 200.
 
 ## Triển khai và quay lại
 - Staging: `/dk:ship staging` (build web, migrate D1, deploy, kiểm tra `/lau-meme/api/health`, tự rollback khi lỗi).
