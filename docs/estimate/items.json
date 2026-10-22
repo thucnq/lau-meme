@@ -65,7 +65,24 @@
         "GRAPH"
       ],
       "ac": [
-        "AC-GAME"
+        "AC-GAME-01",
+        "AC-GAME-02",
+        "AC-GAME-03",
+        "AC-GAME-04",
+        "AC-GAME-05",
+        "AC-GAME-06",
+        "AC-GAME-07",
+        "AC-GAME-08",
+        "AC-GAME-09",
+        "AC-GAME-10",
+        "AC-GAME-11",
+        "AC-GAME-12",
+        "AC-GAME-13",
+        "AC-GAME-14",
+        "AC-GAME-15",
+        "AC-GAME-16",
+        "AC-GAME-17",
+        "AC-GAME-18"
       ],
       "risk": "MEDIUM",
       "owner": "Thuc"
@@ -134,7 +151,21 @@
         "PIPE"
       ],
       "ac": [
-        "AC-DAILY"
+        "AC-DAILY-01",
+        "AC-DAILY-02",
+        "AC-DAILY-03",
+        "AC-DAILY-04",
+        "AC-DAILY-05",
+        "AC-DAILY-06",
+        "AC-DAILY-07",
+        "AC-DAILY-08",
+        "AC-DAILY-09",
+        "AC-DAILY-10",
+        "AC-DAILY-11",
+        "AC-DAILY-12",
+        "AC-DAILY-13",
+        "AC-DAILY-14",
+        "AC-DAILY-15"
       ],
       "risk": "MEDIUM",
       "owner": "Thuc"
@@ -178,6 +209,26 @@
       ],
       "risk": "MEDIUM",
       "owner": "Thuc"
+    },
+    {
+      "module": "Trò chơi",
+      "owner": "Thuc",
+      "id": "UI2",
+      "name": "Giao diện - góp ý sau staging",
+      "points": 5.5,
+      "ac": [
+        "AC-GAME-19",
+        "AC-GAME-20",
+        "AC-GAME-21",
+        "AC-DAILY-16",
+        "AC-DAILY-17"
+      ],
+      "deps": [
+        "DAILY2",
+        "AUTH"
+      ],
+      "risk": "LOW",
+      "desc": "GAME + DAILY · AC-GAME-19..21, AC-DAILY-16, 17 (thêm 2026-10-22) · nút Dọn bàn/Chơi lại/? vào khu bàn lẩu, đăng nhập lên đầu trang (1); lửa không bị cắt, quai ngang thân nồi, test trình duyệt thật (1); vuốt chỗ trống để cuộn, gợi ý lần đầu trên cảm ứng (1.5); thẻ thử thách nổi bật (0.5); tab Bảng xếp hạng, huy chương top 3, tô dòng của mình (1.5)"
     },
     {
       "id": "SHARE",
@@ -278,8 +329,8 @@
       "id": "UAT",
       "module": "Kiểm thử",
       "name": "Kiểm thử nghiệm thu & sửa lỗi (giai đoạn 1)",
-      "desc": "15% điểm tính năng giai đoạn 1; chạy cron chế độ lõi vài ngày trên staging, kiểm trên 2–3 điện thoại; gồm thêm AUTH, DAILY làm lại, AC-GAME-18",
-      "points": 14,
+      "desc": "15% điểm tính năng giai đoạn 1; chạy cron chế độ lõi vài ngày trên staging, kiểm trên 2–3 điện thoại; gồm thêm AUTH, DAILY làm lại, AC-GAME-18; thêm góp ý giao diện 2026-10-22 (UI2)",
+      "points": 15,
       "deps": [
         "*"
       ],

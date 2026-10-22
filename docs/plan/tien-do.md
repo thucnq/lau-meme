@@ -1,7 +1,7 @@
 # Tiến độ — ƯỚC LƯỢNG - LẨU MEME
 
 > Sinh bởi `/dk:plan` (gen-plan.py) từ `docs/estimate/items.json`. **Người sửa trực tiếp file này**: dấu `[x]` (hạng mục hoặc AC), `tiến độ: N%`, `người`, `bắt đầu`, `xong` (YYYY-MM-DD), `ghi chú` — giữ nguyên dấu ` · ` giữa các trường. Chạy lại `/dk:plan` để tính dự báo và vẽ lại `gantt.html`. `KH` là kế hoạch gốc, chỉ đổi bằng `/dk:plan rebaseline`.
-> Bắt đầu dự án: 2026-10-20 · Kỹ sư: 1 (Thuc) · Giờ/tuần: 20 · Nghiệm thu KH: 2027-11-23 · Dự báo: 2027-01-18 · Cập nhật: 2026-10-22
+> Bắt đầu dự án: 2026-10-20 · Kỹ sư: 1 (Thuc) · Giờ/tuần: 20 · Nghiệm thu KH: 2027-11-23 · Dự báo: 2027-02-15 · Cập nhật: 2026-10-22
 
 
 ## Nền tảng
@@ -126,6 +126,12 @@
   - [x] AC-DAILY-11 Bảng xếp hạng streak
   - [x] AC-DAILY-14 Bảng xếp hạng tuần và tháng (thêm 2026-10-21)
   - [x] AC-DAILY-15 Bảng xếp hạng trên giao diện, chưa đăng nhập và bảng rỗng (thêm 2026-10-21)
+- [ ] **UI2** Giao diện - góp ý sau staging · 5.5đ · rủi ro: LOW · KH: 2027-06-04 → 2027-06-22 · tiến độ: 0% (theo AC) · người: Thuc · bắt đầu:  · xong:  · ghi chú: 
+  - [ ] AC-DAILY-16 Thẻ thử thách nổi bật (thêm 2026-10-22)
+  - [ ] AC-DAILY-17 Bảng xếp hạng ở tab riêng (thêm 2026-10-22)
+  - [ ] AC-GAME-19 Nút điều khiển nằm ở khu bàn lẩu, đăng nhập ở đầu trang (thêm 2026-10-22)
+  - [ ] AC-GAME-20 Nồi lẩu vẽ trọn, quai ngang thân nồi (thêm 2026-10-22)
+  - [ ] AC-GAME-21 Vuốt cuộn trang trên màn hình cảm ứng (thêm 2026-10-22)
 
 ## Cộng đồng
 - [ ] **SHARE** Thẻ chia sẻ · 4đ · rủi ro: MEDIUM · KH: 2027-04-07 → 2027-04-19 · tiến độ: 0% · người: Thuc · bắt đầu:  · xong:  · ghi chú: 
@@ -200,7 +206,7 @@
   - [x] AC-SUBPATH-12 Pipeline gọi API dưới tiền tố
 
 ## Kiểm thử
-- [ ] **UAT** Kiểm thử nghiệm thu & sửa lỗi (giai đoạn 1) · 14đ · rủi ro: MEDIUM · KH: 2027-07-01 → 2027-08-04 · tiến độ: 0% · người: Thuc · bắt đầu:  · xong:  · ghi chú: 
+- [ ] **UAT** Kiểm thử nghiệm thu & sửa lỗi (giai đoạn 1) · 15đ · rủi ro: MEDIUM · KH: 2027-07-01 → 2027-08-04 · tiến độ: 0% · người: Thuc · bắt đầu:  · xong:  · ghi chú: 
   - [x] AC-GAME-01 Bàn chơi lần đầu
   - [x] AC-GAME-02 Nhúng lẩu qua nồi - ghép thành công
   - [x] AC-GAME-03 Thả chồng trên mặt bàn
@@ -219,6 +225,9 @@
   - [x] AC-GAME-16 Lỗi tải graph
   - [x] AC-GAME-17 Đổi version graph giữ tiến độ
   - [x] AC-GAME-18 Nồi lẩu nằm trong màn hình đầu tiên (thêm 2026-10-21)
+  - [ ] AC-GAME-19 Nút điều khiển nằm ở khu bàn lẩu, đăng nhập ở đầu trang (thêm 2026-10-22)
+  - [ ] AC-GAME-20 Nồi lẩu vẽ trọn, quai ngang thân nồi (thêm 2026-10-22)
+  - [ ] AC-GAME-21 Vuốt cuộn trang trên màn hình cảm ứng (thêm 2026-10-22)
 
 ## Nội dung
 - [x] **MOD** Kiểm duyệt nội dung tự động (giai đoạn 2) · 9đ · rủi ro: HIGH · KH: 2027-08-05 → 2027-09-01 · tiến độ: 100% · người: Thuc · bắt đầu: 2026-10-20 · xong: 2026-10-20 · ghi chú: 
