@@ -121,7 +121,7 @@
 ### AC-GAME-20: Nồi lẩu vẽ trọn, quai ngang thân nồi (thêm 2026-10-22)
 - **Cho** nồi lẩu ở các khung nhìn của AC-GAME-18, giao diện sáng và tối
 - **Khi** trang vừa tải xong; và khi nồi đang sôi
-- **Thì** hàng lửa dưới nồi hiện trọn chiều cao, không bị mép dưới mặt bàn hay khung nào cắt; hai quai nồi gắn vào nửa trên của thân nồi (ngay dưới miệng nồi), không thấp hơn giữa thân. Kiểm bằng Vitest browser mode như AC-GAME-18: hộp bao của hàng lửa nằm trọn trong mặt bàn, tâm quai nằm trên đường giữa thân nồi
+- **Thì** mọi ngọn lửa trong hàng lửa dưới nồi hiện trọn, không ngọn nào bị cắt ngang (ngọn ngoài cùng hai bên đủ bề rộng như các ngọn khác - góp ý 2026-10-22: ngọn ngoài cùng bên phải bị cắt), và hàng lửa không bị mép dưới mặt bàn hay khung nào cắt; hai quai nồi gắn vào nửa trên của thân nồi (ngay dưới miệng nồi), không thấp hơn giữa thân. Kiểm bằng Vitest browser mode như AC-GAME-18: hộp bao của hàng lửa nằm trọn trong mặt bàn, hàng lửa chỉ vẽ số nguyên ngọn lửa (bề rộng hàng chia hết cho bề rộng một ngọn, hoặc lặp kiểu `space`), tâm quai nằm trên đường giữa thân nồi
 - Ưu tiên: Bắt buộc
 
 ### AC-GAME-21: Vuốt cuộn trang trên màn hình cảm ứng (thêm 2026-10-22)

@@ -1,73 +1,61 @@
 {
  "red": {
-  "ts": "2026-10-21T05:53:23+00:00",
-  "commit": "79059cf",
+  "ts": "2026-10-22T02:47:41+00:00",
+  "commit": "29be42a",
   "results": {
-   "AC-DAILY-01": {
-    "status": "FAIL",
-    "test": "(không biên dịch)"
-   },
-   "AC-DAILY-02": {
-    "status": "FAIL",
-    "test": "(không biên dịch)"
-   },
    "AC-DAILY-03": {
-    "status": "FAIL",
-    "test": "(không biên dịch)"
+    "status": "SKIP",
+    "test": "daily.ui.test.tsx#daily ui: thẻ Món đặc biệt và đồng hồ > AC-DAILY-03: thẻ hiện emoji, gợi ý và tên \"???\", không lộ tên món, không có nút \"Thử thách\" hay bàn thử thách"
    },
    "AC-DAILY-04": {
-    "status": "FAIL",
-    "test": "(không biên dịch)"
+    "status": "SKIP",
+    "test": "daily.ui.test.tsx#daily ui: thẻ Món đặc biệt và đồng hồ > AC-DAILY-04: khi đã giải thẻ lộ tên \"Stonks\" và hiện \"Đã giải\", không còn \"???\""
    },
    "AC-DAILY-05": {
-    "status": "FAIL",
-    "test": "(không biên dịch)"
+    "status": "SKIP",
+    "test": "daily.ui.test.tsx#daily ui: gửi kết quả > AC-DAILY-05: thẻ vẫn \"Đã giải\" kèm tên khi chưa gửi được; dựng lại ở mẻ khác "
    },
    "AC-DAILY-06": {
-    "status": "FAIL",
-    "test": "(không biên dịch)"
-   },
-   "AC-DAILY-07": {
-    "status": "FAIL",
-    "test": "(không biên dịch)"
+    "status": "SKIP",
+    "test": "api.test.ts#submitDailyResult > AC-DAILY-06: 201 trả { result, already: false }; POST đúng đường dẫn, JSON { a, b } và X-Player-Id"
    },
    "AC-DAILY-08": {
-    "status": "FAIL",
-    "test": "(không biên dịch)"
+    "status": "SKIP",
+    "test": "api.test.ts#submitDailyResult > AC-DAILY-08: 409 trả { result: kết quả đã lưu, already: true }"
    },
    "AC-DAILY-09": {
-    "status": "FAIL",
-    "test": "(không biên dịch)"
-   },
-   "AC-DAILY-10": {
-    "status": "FAIL",
-    "test": "(không biên dịch)"
-   },
-   "AC-DAILY-11": {
-    "status": "FAIL",
-    "test": "(không biên dịch)"
+    "status": "SKIP",
+    "test": "api.test.ts#leaderboards "
    },
    "AC-DAILY-12": {
-    "status": "FAIL",
-    "test": "(không biên dịch)"
+    "status": "SKIP",
+    "test": "countdown.test.ts#countdown > AC-DAILY-12: lúc 17:30 UTC đếm tới mốc 05:00 UTC kế tiếp sau batch_at "
    },
    "AC-DAILY-13": {
-    "status": "FAIL",
-    "test": "(không biên dịch)"
+    "status": "SKIP",
+    "test": "daily.ui.test.tsx#daily ui: gửi kết quả > AC-DAILY-13: máy chủ trả 429 thì hiện \"Gửi quá nhanh, thử lại sau.\" và không hiện hạng"
    },
    "AC-DAILY-14": {
-    "status": "FAIL",
-    "test": "(không biên dịch)"
+    "status": "SKIP",
+    "test": "api.test.ts#leaderboards "
    },
    "AC-DAILY-15": {
+    "status": "SKIP",
+    "test": "daily.ui.test.tsx#daily ui: gửi kết quả > AC-DAILY-15: giải khi chưa đăng nhập thì hiện lời mời đăng nhập, không gửi gì; đăng nhập xong tự gửi ngay "
+   },
+   "AC-DAILY-16": {
     "status": "FAIL",
-    "test": "(không biên dịch)"
+    "test": "ui2.ui.test.tsx#ui2: thẻ thử thách nổi bật "
+   },
+   "AC-DAILY-17": {
+    "status": "FAIL",
+    "test": "ui2.ui.test.tsx#ui2: bảng xếp hạng ở tab riêng "
    }
   }
  },
  "green": {
-  "ts": "2026-10-21T06:15:05+00:00",
-  "commit": "732bb73",
+  "ts": "2026-10-22T03:22:23+00:00",
+  "commit": "7d8d78f",
   "results": {
    "AC-DAILY-01": {
     "status": "PASS",
@@ -128,6 +116,14 @@
    "AC-DAILY-15": {
     "status": "PASS",
     "test": "daily.ui.test.tsx#daily ui: gửi kết quả > AC-DAILY-15: giải khi chưa đăng nhập thì hiện lời mời đăng nhập, không gửi gì; đăng nhập xong tự gửi ngay "
+   },
+   "AC-DAILY-16": {
+    "status": "PASS",
+    "test": "ui2.browser.test.tsx#ui2 thẻ thử thách nổi bật "
+   },
+   "AC-DAILY-17": {
+    "status": "PASS",
+    "test": "ui2.browser.test.tsx#ui2 tab bảng xếp hạng "
    },
    "AC-DAILY-TENANT": {
     "status": "PASS",

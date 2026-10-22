@@ -7,9 +7,10 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import type { PointerEvent as ReactPointerEvent } from 'react'
 import { getGraph, getManifest } from '../api'
 import { DiscoveryZoom } from '../art/DiscoveryZoom'
+import { AuthBar } from '../auth/AuthBar'
 import { ElementIcon } from '../art/ElementIcon'
 import { startManifestWatch } from '../daily/countdown'
-import { DailyPanel } from '../daily/DailyPanel'
+import { DailyPanel, Leaderboards } from '../daily/DailyPanel'
 import { loadSolved, saveSolved, type SolvedDaily } from '../daily/solved'
 import { BLOCKLIST_POLL_MS, loadBlocklist } from '../report/blocklist'
 import type { Graph } from '../graph/crypto'
@@ -85,6 +86,11 @@ function onTable(item: Item, x: number, y: number): TableItem {
 /** A combine that gave the player an element they did not have (AC-DISC-05): names as typed, id of the result. */
 export type NewDiscovery = { a: string; b: string; result: string; id: string }
 
+const VIEWS = [
+  ['table', 'Bàn lẩu'],
+  ['board', 'Bảng xếp hạng'],
+] as const
+
 type Props = {
   onDiscover?: (d: NewDiscovery) => void
   /** Ids on the plate, so the page can look up who first found them (AC-DISC-09). */
@@ -111,6 +117,9 @@ export function Game({ onDiscover, onItems, heirlooms = {}, onReport, blocklistR
   const progressRef = useRef(progress)
   const [tutorialOpen, setTutorialOpen] = useState(() => !progress?.tutorial_seen)
   const tutorialSeenRef = useRef(progress?.tutorial_seen ?? false)
+  // Touch screens get a one-time "hold to drag, swipe the gaps to scroll" hint (AC-GAME-21).
+  const [coarse] = useState(() => typeof window.matchMedia === 'function' && window.matchMedia('(pointer: coarse)').matches)
+  const [view, setView] = useState<'table' | 'board'>('table')
   const [loaded, setLoaded] = useState<Loaded | null>(null)
   const [loadError, setLoadError] = useState(false)
   const [reloadKey, setReloadKey] = useState(0)
@@ -306,6 +315,11 @@ export function Game({ onDiscover, onItems, heirlooms = {}, onReport, blocklistR
   }
 
   // ---------------------------------------------------------------- drag and drop
+  const dismissTouchHint = () => {
+    const p = progressRef.current
+    if (p && !p.touch_hint_seen) commit({ ...p, touch_hint_seen: true })
+  }
+
   const drop = (source: Source, el: Element | null, clientX: number, clientY: number) => {
     const p = progressRef.current
     if (!el || !p || boilingRef.current || busyRef.current) return
@@ -316,6 +330,7 @@ export function Game({ onDiscover, onItems, heirlooms = {}, onReport, blocklistR
       const next: [Item | null, Item | null] = [...slots]
       next[n] = source.item
       if (source.uid) commit({ ...p, table: p.table.filter((t) => t.uid !== source.uid) })
+      dismissTouchHint()
       setSlots(next)
       if (next[0] && next[1]) boil(next[0], next[1])
       return
@@ -330,12 +345,14 @@ export function Game({ onDiscover, onItems, heirlooms = {}, onReport, blocklistR
     const [x, y] = [Math.max(0, clientX - rect.left - CHIP_HALF.x), Math.max(0, clientY - rect.top - CHIP_HALF.y)]
     const targetUid = el.closest('[data-uid]')?.getAttribute('data-uid')
     const target = p.table.find((t) => t.uid === targetUid && t.uid !== source.uid)
+    dismissTouchHint() // before `stack`, which builds on the current progress
     if (target && ready) {
       void stack(source, target, x, y)
       return
     }
-    const rest = p.table.filter((t) => t.uid !== source.uid)
-    commit({ ...p, table: [...rest, onTable(source.item, x, y)] })
+    const cur = progressRef.current ?? p
+    const rest = cur.table.filter((t) => t.uid !== source.uid)
+    commit({ ...cur, table: [...rest, onTable(source.item, x, y)] })
   }
 
   const dragHandlers = (source: Source) => ({
@@ -444,23 +461,28 @@ export function Game({ onDiscover, onItems, heirlooms = {}, onReport, blocklistR
 
   return (
     <div className="game">
+      {/* Title, account and theme only (AC-GAME-19); the table controls live with the table. */}
       <header className="game-bar">
         <h1>Lẩu Meme</h1>
         <div className="game-actions">
-          <button type="button" onClick={clearTable}>
-            Dọn bàn
-          </button>
-          <button type="button" onClick={() => setConfirmReset(true)}>
-            Chơi lại <span className="wide-only">từ đầu</span>
-          </button>
-          <button type="button" onClick={() => setTutorialOpen(true)} title="Hướng dẫn">
-            ?
-          </button>
+          {loaded && <AuthBar policyVersion={loaded.manifest.policy_version} storage={storage()} />}
           <button type="button" className="icon-button" onClick={toggleTheme} aria-label="Chuyển chế độ sáng/tối">
             <ThemeIcon dark={theme === 'dark'} />
           </button>
         </div>
       </header>
+
+      {/* Two screens: the table and the leaderboards (AC-DAILY-17); the table keeps its state while hidden. */}
+      {/* No leaderboards without a manifest: after a load error the table (and its retry) stays in view. */}
+      {loaded && (
+        <div role="tablist" aria-label="Màn hình" className="view-tabs">
+          {VIEWS.map(([key, label]) => (
+            <button key={key} type="button" role="tab" aria-selected={view === key} onClick={() => setView(key)}>
+              {label}
+            </button>
+          ))}
+        </div>
+      )}
 
       {loadError && (
         <div role="alert" className="game-error">
@@ -477,11 +499,26 @@ export function Game({ onDiscover, onItems, heirlooms = {}, onReport, blocklistR
           manifest={loaded.manifest}
           solved={solved.value}
           storage={storage()}
+          onShowBoard={() => setView('board')}
         />
       )}
 
-      <div className="game-board">
-        <section ref={tableRef} className="game-table" data-testid="table" aria-label="Mặt bàn">
+      {view === 'board' && loaded && <Leaderboards version={loaded.manifest.version} />}
+
+      <div className="game-board" hidden={loaded !== null && view !== 'table'}>
+        <div className="table-area">
+          <div className="table-tools">
+            <button type="button" onClick={clearTable}>
+              Dọn bàn
+            </button>
+            <button type="button" onClick={() => setConfirmReset(true)} aria-label="Chơi lại từ đầu">
+              Chơi lại <span className="wide-only">từ đầu</span>
+            </button>
+            <button type="button" onClick={() => setTutorialOpen(true)} title="Hướng dẫn">
+              ?
+            </button>
+          </div>
+          <section ref={tableRef} className="game-table" data-testid="table" aria-label="Mặt bàn">
           {table.map((t) => (
             <div
               key={t.uid}
@@ -523,8 +560,11 @@ export function Game({ onDiscover, onItems, heirlooms = {}, onReport, blocklistR
                 )
               })}
             </div>
-            <span className="pot-body" aria-hidden="true" />
-            <span className="pot-burner" aria-hidden="true" />
+            <span className="pot-body" data-testid="pot-body" aria-hidden="true">
+              <i className="pot-handle left" data-testid="pot-handle-left" />
+              <i className="pot-handle right" data-testid="pot-handle-right" />
+            </span>
+            <span className="pot-burner" data-testid="pot-flames" aria-hidden="true" />
           </div>
           {zoom && (
             <DiscoveryZoom
@@ -543,6 +583,15 @@ export function Game({ onDiscover, onItems, heirlooms = {}, onReport, blocklistR
             {miss?.hint && <p data-testid="miss-hint">{miss.hint}</p>}
           </div>
         </section>
+          {coarse && progress && !progress.touch_hint_seen && (
+            <p className="touch-hint">
+              <span>Giữ món để kéo, vuốt chỗ trống để cuộn</span>
+              <button type="button" className="icon-button" onClick={dismissTouchHint} aria-label="Đóng gợi ý">
+                ×
+              </button>
+            </p>
+          )}
+        </div>
 
         <aside className="plate">
           <input

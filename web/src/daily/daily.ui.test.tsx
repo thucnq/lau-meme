@@ -22,7 +22,8 @@ import type { Manifest } from '../game/engine'
 import { fold } from '../graph/crypto'
 import { saveConsent } from '../privacy/consent'
 import { getPlayerId } from '../privacy/player'
-import { DailyPanel } from './DailyPanel'
+import { useState } from 'react'
+import { DailyPanel, Leaderboards } from './DailyPanel'
 
 // ---------------------------------------------------------------- fixtures
 const sha = (s: string): string => createHash('sha256').update(s, 'utf8').digest('base64url')
@@ -112,8 +113,18 @@ afterEach(() => {
 })
 
 // ---------------------------------------------------------------- helpers
+/** The card, plus the leaderboard screen it opens (AC-DAILY-17 moved the boards out of the card). */
+function Panel({ manifest, solved }: { manifest: Manifest; solved: typeof SOLVED | null }) {
+  const [board, setBoard] = useState(false)
+  return (
+    <>
+      <DailyPanel manifest={manifest} storage={localStorage} solved={solved} onShowBoard={() => setBoard(true)} />
+      {board && <Leaderboards version={manifest.version} />}
+    </>
+  )
+}
 function panel(opts: { manifest?: Manifest; solved?: typeof SOLVED | null } = {}) {
-  return <DailyPanel manifest={opts.manifest ?? manifestOf()} storage={localStorage} solved={opts.solved === undefined ? null : opts.solved} />
+  return <Panel manifest={opts.manifest ?? manifestOf()} solved={opts.solved === undefined ? null : opts.solved} />
 }
 const signIn = () => act(() => setCurrentSession(SESSION))
 const signOut = () => act(() => setCurrentSession(null))
@@ -123,10 +134,13 @@ const hasText = (t: string): boolean => Array.from(document.body.querySelectorAl
 const hasMatch = (re: RegExp): boolean => Array.from(document.body.querySelectorAll('*')).some((e) => re.test(e.textContent ?? ''))
 const seeText = (t: string) => waitFor(() => expect(hasText(t), `thiếu dòng "${t}"`).toBe(true))
 const seeMatch = (re: RegExp) => waitFor(() => expect(hasMatch(re), `thiếu ${String(re)}`).toBe(true))
+/** A leaderboard row: exactly `t`, after the medal ranks 1-3 carry since AC-DAILY-17. */
+const seeRow = (t: string) =>
+  seeMatch(new RegExp(`^(?:[🥇🥈🥉] )?${t.replace(/[.*+?^${}()|[\]\\/]/g, '\\$&')}$`, 'u'))
 const INVITE = 'Đăng nhập bằng Google để lên bảng xếp hạng'
 const BOARD_INVITE = 'Đăng nhập bằng Google để có tên trên bảng xếp hạng'
 async function openBoard(): Promise<void> {
-  fireEvent.click(screen.getByRole('button', { name: 'Bảng xếp hạng' }))
+  fireEvent.click(screen.getByRole('button', { name: 'Xem bảng xếp hạng' }))
   await screen.findByRole('tab', { name: 'Mẻ này' })
 }
 
@@ -288,8 +302,8 @@ describe('daily ui: bảng xếp hạng', () => {
       })
     render(panel())
     await openBoard()
-    await seeText('#1 Bếp Trưởng - 5 phút 12 giây')
-    await seeText('#2 Thực khách ẩn danh - 1 giờ 05 phút 12 giây')
+    await seeRow('#1 Bếp Trưởng - 5 phút 12 giây')
+    await seeRow('#2 Thực khách ẩn danh - 1 giờ 05 phút 12 giây')
   })
 
   it('AC-DAILY-09: me nằm ngoài rows thì thêm dòng "Bạn: #25 ..."; me đã trong rows hoặc null thì không có dòng "Bạn:"', async () => {
@@ -308,14 +322,14 @@ describe('daily ui: bảng xếp hạng', () => {
       json({ version: VERSION, rows: [{ rank: 1, nickname: 'A', value: 4_000 }], me: { rank: 1, nickname: 'A', value: 4_000 } })
     const second = render(panel())
     await openBoard()
-    await seeText('#1 A - 0 phút 04 giây')
+    await seeRow('#1 A - 0 phút 04 giây')
     expect(hasMatch(/Bạn:/)).toBe(false)
     second.unmount()
 
     batchBoardReply = () => json({ version: VERSION, rows: [{ rank: 1, nickname: 'A', value: 4_000 }], me: null })
     render(panel())
     await openBoard()
-    await seeText('#1 A - 0 phút 04 giây')
+    await seeRow('#1 A - 0 phút 04 giây')
     expect(hasMatch(/Bạn:/)).toBe(false)
   })
 
@@ -341,8 +355,8 @@ describe('daily ui: bảng xếp hạng', () => {
     render(panel())
     await openBoard()
     fireEvent.click(screen.getByRole('tab', { name: 'Tuần' }))
-    await seeText('#1 Bếp Phó B - 3/4 mẻ - 20 giờ 00 phút 00 giây')
-    await seeText('#2 Thực khách ẩn danh - 2/4 mẻ - 1 giờ 05 phút 12 giây')
+    await seeRow('#1 Bếp Phó B - 3/4 mẻ - 20 giờ 00 phút 00 giây')
+    await seeRow('#2 Thực khách ẩn danh - 2/4 mẻ - 1 giờ 05 phút 12 giây')
     await seeMatch(/^Bạn: #30 /)
     expect(periodGets().length).toBeGreaterThanOrEqual(1)
     expect(periodGets()[0]!.url).toContain('period=2026-W43')

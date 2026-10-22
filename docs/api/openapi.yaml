@@ -178,7 +178,7 @@ paths:
       summary: Phiên hiện tại (sau khi tải lại trang)
       description: Phiên hợp lệ thì gia hạn (90 ngày kể từ lần dùng này) và đặt lại cookie; không có hoặc hết hạn → 401.
       security: [{ Session: [] }]
-      x-ac: [AC-AUTH-02, AC-AUTH-04]
+      x-ac: [AC-AUTH-02, AC-AUTH-04, AC-GAME-19]
       responses:
         '200':
           description: Đang đăng nhập
@@ -417,8 +417,10 @@ paths:
         Xếp theo `solved_at` tăng dần, hòa tới ms thì theo thứ tự ghi. `value` = `solve_ms`. Phiên tùy chọn - có thì
         `me` là hạng của tài khoản kể cả ngoài top 20 (chưa nộp → null). Không có id tài khoản/UUID trong phản hồi.
         Chỉ đọc phiên, không gia hạn và không đặt lại cookie (đọc công khai, không giới hạn tần suất).
+        Tab "Bảng xếp hạng" (AC-DAILY-17) tô dòng của mình bằng `me.rank` (dòng trong `rows` có cùng `rank`), không
+        cần trường mới.
       security: [{}, { Session: [] }]
-      x-ac: [AC-DAILY-09, AC-DAILY-15]
+      x-ac: [AC-DAILY-09, AC-DAILY-15, AC-DAILY-17]
       parameters:
         - $ref: '#/components/parameters/Version'
       responses:
@@ -439,9 +441,9 @@ paths:
         Mẻ thuộc kỳ theo ngày GMT+7 của `batch_at`. Xếp theo số mẻ đã giải giảm dần, rồi tổng `solve_ms` tăng dần,
         rồi `solved_at` của kết quả cuối cùng trong kỳ tăng dần. `period` vắng thì là tuần hiện tại; kỳ trong tương
         lai hoặc bắt đầu trước hôm nay quá 3 tháng → 400. Phiên tùy chọn - có thì kèm hạng của mình; chỉ đọc phiên,
-        không gia hạn và không đặt lại cookie.
+        không gia hạn và không đặt lại cookie. Tab "Bảng xếp hạng" (AC-DAILY-17) tô dòng của mình theo `me.rank`.
       security: [{}, { Session: [] }]
-      x-ac: [AC-DAILY-14, AC-DAILY-15]
+      x-ac: [AC-DAILY-14, AC-DAILY-15, AC-DAILY-17]
       parameters:
         - name: period
           in: query
