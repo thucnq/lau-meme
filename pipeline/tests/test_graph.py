@@ -123,7 +123,7 @@ def test_ac_graph_02_giai_ma_dung_ket_qua_hai_chieu():
     depths = bfs_depths(core)
     emoji = {e["name"]: e["emoji"] for e in core["elements"]}
     graph = export_graph(build_store(), 3)
-    assert len(core["recipes"]) == 363
+    assert len(core["recipes"]) == 518
     for r in core["recipes"]:
         for first, second in ((r["a"], r["b"]), (r["b"], r["a"])):
             got = decrypt_entry(graph, first, second)

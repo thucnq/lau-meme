@@ -10,7 +10,7 @@ from lau_meme_pipeline.seed import ContentStore, SeedError, load_core, main
 ROOT = Path(__file__).resolve().parents[2]
 CORE_PATH = ROOT / "docs" / "input" / "noi-dung-loi.json"
 STARTERS = ["Cay", "Cười", "Toang", "Deadline"]
-SUMMARY_PARTS = ("139 phần tử", "363 công thức", "40 câu Nồi trào", "4 phần tử khởi đầu")
+SUMMARY_PARTS = ("174 phần tử", "518 công thức", "40 câu Nồi trào", "4 phần tử khởi đầu")
 ORPHAN = {"name": "Lạc Trôi Mất Tiêu", "emoji": "🛸", "origin": "V", "depth": 3, "image_hint": "x"}
 
 
@@ -73,8 +73,8 @@ def test_ac_seed_01_nap_loi_hop_le():
     core = real_core()
     result = load_core(core, ContentStore.empty())
     store = result.store
-    assert len(store.elements) == 139
-    assert len(store.recipes) == 363
+    assert len(store.elements) == 174
+    assert len(store.recipes) == 518
     assert len(store.miss_lines) == 40
     assert len(store.starters) == 4
     assert store.starters == tuple(element_id(s) for s in STARTERS)
@@ -97,7 +97,7 @@ def test_ac_seed_01_cli_in_tom_tat(tmp_path, capsys):
     for frag in SUMMARY_PARTS:
         assert frag in out
     loaded = ContentStore.from_json(store_path.read_text(encoding="utf-8"))
-    assert len(loaded.elements) == 139 and len(loaded.recipes) == 363
+    assert len(loaded.elements) == 174 and len(loaded.recipes) == 518
 
 
 def test_ac_seed_02_phan_tu_khong_toi_duoc():
@@ -255,7 +255,7 @@ def test_ac_seed_08_nap_lai_idempotent():
     assert "không có thay đổi" in second.summary
     assert second.store == first.store
     assert second.store.to_json() == snapshot
-    assert len(second.store.elements) == 139
+    assert len(second.store.elements) == 174
     assert {k: v.depth for k, v in second.store.elements.items()} == {
         k: v.depth for k, v in first.store.elements.items()
     }

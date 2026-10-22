@@ -284,7 +284,7 @@ def test_golden_files_khop_generator_va_expected():
         assert exp["elements"] == len(core["elements"])
         assert exp["recipes"] == len(core["recipes"]) == exp["unique_pairs"]
         assert exp["unreachable"] == []
-    assert expected_of("classic")["elements"] == 139 and expected_of("classic")["recipes"] == 363
+    assert expected_of("classic")["elements"] == 174 and expected_of("classic")["recipes"] == 518
 
 
 # ================================================================ AC-INV-01

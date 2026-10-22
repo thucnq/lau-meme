@@ -271,7 +271,7 @@ def test_ac_pipe_01_content_phan_tu_cong_thuc_va_khoi_dau_khop_kho_loi():
         )
         if "origin" in got:
             assert got["origin"] in ("vn", "intl")
-    assert len(content["recipes"]) == len(core["recipes"]) == 363
+    assert len(content["recipes"]) == len(core["recipes"]) == 518
     expected = {recipe_id(r["a"], r["b"]): eid(r["result"]) for r in core["recipes"]}
     assert {r["id"]: r["result"] for r in content["recipes"]} == expected
     for r in content["recipes"]:

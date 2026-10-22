@@ -82,7 +82,7 @@
 - Ưu tiên: Bắt buộc
 
 ### AC-GAME-14: Ghép tra trong bộ nhớ dưới 50 ms
-- **Cho** graph của lõi (363 công thức) đã tải vào bộ nhớ
+- **Cho** graph của lõi (518 công thức) đã tải vào bộ nhớ
 - **Khi** thực hiện 1 000 lượt tra + giải mã cặp ngẫu nhiên (seed cố định)
 - **Thì** không có lượt nào gọi mạng; p95 thời gian một lượt < 50 ms trong môi trường test
 - Ưu tiên: Bắt buộc
