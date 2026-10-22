@@ -1,12 +1,12 @@
 # Gantt — ƯỚC LƯỢNG - LẨU MEME
 
-Tiến độ 55% · nghiệm thu KH 2027-11-23 · dự báo 2027-03-17. Bản tương tác: `gantt.html`.
+Tiến độ 82% · nghiệm thu KH 2027-11-23 · dự báo 2027-01-18. Bản tương tác: `gantt.html`.
 
 ```mermaid
 gantt
     title ƯỚC LƯỢNG - LẨU MEME
     dateFormat YYYY-MM-DD
-    excludes weekends, 2027-01-01, 2027-02-04, 2027-02-05, 2027-02-06, 2027-02-07, 2027-02-08, 2027-02-09, 2027-02-10, 2027-04-30, 2027-05-01
+    excludes weekends, 2027-01-01, 2027-02-04, 2027-02-05, 2027-02-06, 2027-02-07, 2027-02-08, 2027-02-09, 2027-02-10
     todayMarker stroke-width:2px,stroke:#d33
     section Nền tảng
     NEN Khởi tạo dự án & hạ tầng (100%) :done, NEN, 2026-10-19, 1d
@@ -24,29 +24,29 @@ gantt
     section Trò chơi
     DAILY Món đặc biệt hôm nay (100%) :done, DAILY, 2026-10-20, 2d
     section Cộng đồng
-    AUTH Đăng nhập bằng Google (0%) :AUTH, 2026-10-21, 19d
+    AUTH Đăng nhập bằng Google (100%) :done, AUTH, 2026-10-21, 1d
     section Trò chơi
-    DAILY2 Món đặc biệt - làm lại theo thời gian và tài khoản (0%) :DAILY2, 2026-11-17, 19d
+    DAILY2 Món đặc biệt - làm lại theo thời gian và tài khoản (100%) :done, DAILY2, 2026-10-21, 1d
     section Cộng đồng
-    SHARE Thẻ chia sẻ (0%) :SHARE, 2026-12-14, 9d
+    SHARE Thẻ chia sẻ (0%) :SHARE, 2026-10-22, 9d
     section An toàn
     REPORT Báo cáo + chặn nóng (100%) :done, REPORT, 2026-10-20, 1d
     ADMIN Trang quản trị tối giản (100%) :done, ADMIN, 2026-10-20, 1d
     section Vận hành
-    METRIC Đo chỉ số thành công (0%) :METRIC, 2026-12-25, 10d
+    METRIC Đo chỉ số thành công (0%) :METRIC, 2026-11-04, 10d
     section Kiểm thử
     INV Bất biến nội dung và trò chơi (100%) :done, INV, 2026-10-20, 1d
     section Nền tảng
     SUBPATH Chạy dưới đường dẫn con dinoduct.fun/lau-meme (100%) :done, SUBPATH, 2026-10-20, 1d
     section Kiểm thử
-    UAT Kiểm thử nghiệm thu & sửa lỗi (giai đoạn 1) (0%) :UAT, 2027-01-11, 31d
+    UAT Kiểm thử nghiệm thu & sửa lỗi (giai đoạn 1) (0%) :UAT, 2026-11-18, 31d
     section Nội dung
     MOD Kiểm duyệt nội dung tự động (giai đoạn 2) (100%) :done, MOD, 2026-10-20, 1d
-    PIPE2 Pipeline Mẻ nhúng - crawl và tự động đăng (giai đoạn 2) (0%) :PIPE2, 2026-11-18, 31d
-    ART Ảnh minh họa tự tạo (giai đoạn 2) (0%) :active, ART, 2026-10-21, 20d
+    PIPE2 Pipeline Mẻ nhúng - crawl và tự động đăng (giai đoạn 2) (100%) :done, PIPE2, 2026-10-21, 1d
+    ART Ảnh minh họa tự tạo (giai đoạn 2) (100%) :done, ART, 2026-10-21, 2d
     section Kiểm thử
-    UAT2 Kiểm thử nghiệm thu & sửa lỗi (giai đoạn 2) (0%) :UAT2, 2027-03-02, 11d
+    UAT2 Kiểm thử nghiệm thu & sửa lỗi (giai đoạn 2) (0%) :UAT2, 2026-12-31, 11d
     section Bàn giao
-    UAT 0 tuần :uat, 2027-03-17, 0d
-    Nghiệm thu :milestone, 2027-03-17, 0d
+    UAT 0 tuần :uat, 2027-01-18, 0d
+    Nghiệm thu :milestone, 2027-01-18, 0d
 ```
