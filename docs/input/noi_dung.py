@@ -4,6 +4,8 @@ from collections import deque
 from pathlib import Path
 
 # tên: (emoji, nguồn V=Việt / Q=quốc tế, gợi ý ảnh minh họa - vẽ khái niệm, không chép ảnh gốc, không người thật)
+# Emoji: kiểm trước khi thêm - chỉ dùng emoji từ Emoji 12.0 trở xuống (cột E trong unicode.org/Public/emoji/latest/emoji-test.txt)
+# và mở thử trên trình duyệt/điện thoại cũ; emoji mới (vd 🫠 🫥 🫷 🪲, Emoji 13-15) hiện thành ô vuông trên máy cũ.
 E = {
  "Cay": ("🌶️", "V", "quả ớt đỏ bốc khói, mặt cau có"),
  "Cười": ("😂", "Q", "mặt cười chảy nước mắt"),
@@ -171,11 +173,11 @@ E = {
  "Ngạc Nhiên Giả Trân": ("😲", "Q", "quả trứng hoạt hình há hốc mồm trước tờ hóa đơn ai cũng đoán được"),
  "Liếc Xéo": ("🤨", "Q", "đôi mắt hoạt hình liếc ngang, một bên chân mày nhướn cao"),
  "Lảng Đi Chỗ Khác": ("🐒", "Q", "con rối khỉ nhồi bông liếc mắt sang bên, mồ hôi nhỏ giọt"),
- "Cười Mà Đau": ("🫠", "Q", "cốc trà nóng mỉm cười trong khi nứt dần"),
+ "Cười Mà Đau": ("🙃", "Q", "cốc trà nóng mỉm cười trong khi nứt dần"),
  "Logic Lỏ": ("🤓", "Q", "ngón tay chỉ vào thái dương bằng giấy, sau lưng là phép tính sai"),
- "Chê Kèo Thơm": ("🫷", "Q", "bàn tay xua đi đĩa cơm ngon, quay sang ôm hộp quà giảm giá"),
+ "Chê Kèo Thơm": ("👎", "Q", "bàn tay xua đi đĩa cơm ngon, quay sang ôm hộp quà giảm giá"),
  "Trông Núi Nọ": ("⛰️", "Q", "hai ngọn núi, cái gần ngoái cổ nhìn ngọn núi xa lấp lánh"),
- "Nhìn Xa Xăm": ("🫥", "Q", "chiếc ghế văn phòng quay về phía cửa sổ, đám mây trôi vô định"),
+ "Nhìn Xa Xăm": ("😶", "Q", "chiếc ghế văn phòng quay về phía cửa sổ, đám mây trôi vô định"),
  "Ngồi Chờ Mòn Mỏi": ("🪑", "Q", "chiếc ghế phủ mạng nhện cạnh đồng hồ quay vòng"),
  "Kế Hoạch Hoàn Hảo": ("📋", "Q", "bảng kế hoạch bốn ô, ô cuối có cái bẫy tự sập"),
  "Hai Nút Bấm": ("🔘", "Q", "hai nút đỏ to, giọt mồ hôi khổng lồ lơ lửng phía trên"),
@@ -190,7 +192,7 @@ E = {
  "Cạn Ly Mỉa Mai": ("🍸", "Q", "ly cocktail giơ cao, nháy mắt đầy ẩn ý"),
  "Máy Em Chạy Mà": ("💻", "Q", "chiếc laptop cười tươi, phía sau màn hình server cháy đỏ"),
  "Gọi Nhầm Tên": ("🦋", "Q", "con bướm bị chỉ vào bởi tấm biển có dấu hỏi to"),
- "Debug Ba Giờ Sáng": ("🪲", "Q", "con bọ ngồi trên bàn phím dưới ánh trăng, đồng hồ chỉ 3 giờ"),
+ "Debug Ba Giờ Sáng": ("🐛", "Q", "con bọ ngồi trên bàn phím dưới ánh trăng, đồng hồ chỉ 3 giờ"),
  "Cười Đểu": ("🤭", "Q", "cái miệng che tay khúc khích, ánh mắt biết tuốt"),
 }
 

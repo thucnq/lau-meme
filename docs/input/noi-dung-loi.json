@@ -1132,7 +1132,7 @@
   },
   {
    "name": "Cười Mà Đau",
-   "emoji": "🫠",
+   "emoji": "🙃",
    "origin": "Q",
    "depth": 3,
    "image_hint": "cốc trà nóng mỉm cười trong khi nứt dần",
@@ -1148,7 +1148,7 @@
   },
   {
    "name": "Chê Kèo Thơm",
-   "emoji": "🫷",
+   "emoji": "👎",
    "origin": "Q",
    "depth": 6,
    "image_hint": "bàn tay xua đi đĩa cơm ngon, quay sang ôm hộp quà giảm giá",
@@ -1164,7 +1164,7 @@
   },
   {
    "name": "Nhìn Xa Xăm",
-   "emoji": "🫥",
+   "emoji": "😶",
    "origin": "Q",
    "depth": 3,
    "image_hint": "chiếc ghế văn phòng quay về phía cửa sổ, đám mây trôi vô định",
@@ -1284,7 +1284,7 @@
   },
   {
    "name": "Debug Ba Giờ Sáng",
-   "emoji": "🪲",
+   "emoji": "🐛",
    "origin": "Q",
    "depth": 4,
    "image_hint": "con bọ ngồi trên bàn phím dưới ánh trăng, đồng hồ chỉ 3 giờ",

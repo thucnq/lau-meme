@@ -1,6 +1,7 @@
 # Meme bổ sung vào lõi classic - 2026-10-22
 
 > Nguồn: `50_meme_lau_meme.md` (danh sách thô 50 meme). Dữ liệu thật nằm ở `docs/input/noi_dung.py` (mục "meme bổ sung 2026-10-22"); `noi-dung-loi.json` và `noi-dung-loi.md` sinh lại bằng `python3 docs/input/noi_dung.py docs/input`. File này chỉ để duyệt, không phải nguồn dữ liệu.
+> Kiểm emoji trước khi áp vào lõi: chỉ dùng emoji từ Emoji 12.0 trở xuống (cột E trong `emoji-test.txt` của unicode.org) và mở thử trên trình duyệt/điện thoại cũ. Ngày 2026-10-22 đã đổi 4 emoji không hiện trên trình duyệt cũ: Chê Kèo Thơm 🫷 → 👎, Debug Ba Giờ Sáng 🪲 → 🐛, Nhìn Xa Xăm 🫥 → 😶, Cười Mà Đau 🫠 → 🙃.
 > Quyết định đã chốt: vào lõi classic (không qua mẻ nhúng); chấp nhận tỉ lệ Việt/quốc tế giảm dưới 70/30; giữ "Hồi chiều trời mưa" như tiếng lóng chung.
 
 ## 1. Kết quả
@@ -43,12 +44,12 @@ Phân loại: MOI = thêm mới giữ tên; DOI_TEN = thêm mới nhưng đặt 
 | 16 | This Is Fine | TRUNG_LOI | This Is Fine | ☕ | Quốc tế | Đã có (depth 1); thêm công thức ra This Is Fine từ meme mới | [tìm](https://www.google.com/search?tbm=isch&q=this+is+fine+dog+meme) |
 | 17 | Side Eye Chloe | DOI_TEN | Liếc Xéo | 🤨 | Quốc tế | Người thật | [tìm](https://www.google.com/search?tbm=isch&q=side+eye+Chloe+meme) |
 | 18 | Monkey Puppet | DOI_TEN | Lảng Đi Chỗ Khác | 🐒 | Quốc tế | Nhân vật rối có bản quyền; vẽ rối khỉ chung chung | [tìm](https://www.google.com/search?tbm=isch&q=awkward+monkey+puppet+meme) |
-| 19 | Hide the Pain Harold | DOI_TEN | Cười Mà Đau | 🫠 | Quốc tế | Người thật | [tìm](https://www.google.com/search?tbm=isch&q=Hide+the+Pain+Harold+meme) |
+| 19 | Hide the Pain Harold | DOI_TEN | Cười Mà Đau | 🙃 | Quốc tế | Người thật | [tìm](https://www.google.com/search?tbm=isch&q=Hide+the+Pain+Harold+meme) |
 | 20 | Roll Safe | DOI_TEN | Logic Lỏ | 🤓 | Quốc tế | Người thật | [tìm](https://www.google.com/search?tbm=isch&q=Roll+Safe+meme) |
-| 21 | Drake Hotline Bling | DOI_TEN | Chê Kèo Thơm | 🫷 | Quốc tế | Người thật; gộp #36, #49 | [tìm](https://www.google.com/search?tbm=isch&q=Drake+Hotline+Bling+meme) |
+| 21 | Drake Hotline Bling | DOI_TEN | Chê Kèo Thơm | 👎 | Quốc tế | Người thật; gộp #36, #49 | [tìm](https://www.google.com/search?tbm=isch&q=Drake+Hotline+Bling+meme) |
 | 22 | Distracted Boyfriend | DOI_TEN | Trông Núi Nọ | ⛰️ | Quốc tế | Người thật (ảnh stock); dùng thành ngữ Việt | [tìm](https://www.google.com/search?tbm=isch&q=distracted+boyfriend+meme) |
 | 23 | Stonks | TRUNG_LOI | Stonks | 📈 | Quốc tế | Đã có (depth 4) | [tìm](https://www.google.com/search?tbm=isch&q=stonks+meme) |
-| 24 | Người đàn ông nhìn xa xăm | MOI | Nhìn Xa Xăm | 🫥 | Quốc tế | Tình huống chung, không vẽ người | [tìm](https://www.google.com/search?tbm=isch&q=man+staring+into+distance+meme) |
+| 24 | Người đàn ông nhìn xa xăm | MOI | Nhìn Xa Xăm | 😶 | Quốc tế | Tình huống chung, không vẽ người | [tìm](https://www.google.com/search?tbm=isch&q=man+staring+into+distance+meme) |
 | 25 | Pablo Escobar Waiting | DOI_TEN | Ngồi Chờ Mòn Mỏi | 🪑 | Quốc tế | Người thật + ảnh phim có bản quyền | [tìm](https://www.google.com/search?tbm=isch&q=Pablo+Escobar+waiting+meme) |
 | 26 | Gru's Plan | DOI_TEN | Kế Hoạch Hoàn Hảo | 📋 | Quốc tế | Nhân vật có bản quyền | [tìm](https://www.google.com/search?tbm=isch&q=Gru%27s+plan+meme) |
 | 27 | Two Buttons | MOI | Hai Nút Bấm | 🔘 | Quốc tế | Tranh gốc có bản quyền; vẽ khái niệm | [tìm](https://www.google.com/search?tbm=isch&q=two+buttons+sweating+meme) |
@@ -60,7 +61,7 @@ Phân loại: MOI = thêm mới giữ tên; DOI_TEN = thêm mới nhưng đặt 
 | 33 | Disaster Girl | DOI_TEN | Cháy Nhà Cười Tươi | 😈 | Quốc tế | Ảnh gốc là trẻ em thật | [tìm](https://www.google.com/search?tbm=isch&q=Disaster+Girl+meme) |
 | 34 | Doge | TRUNG_LOI | Doge | 🐕 | Quốc tế | Đã có (depth 2); thêm Mèo Chui Hộp + Doge = Cheems | [tìm](https://www.google.com/search?tbm=isch&q=Doge+meme) |
 | 35 | Spongebob chế giễu | DOI_TEN | Nhại Lại | 🦜 | Quốc tế | Nhân vật có bản quyền | [tìm](https://www.google.com/search?tbm=isch&q=mocking+Spongebob+meme) |
-| 36 | Drake phản đối và đồng ý | TRUNG_DS | Chê Kèo Thơm | 🫷 | Quốc tế | Cùng danh tính #21 | [tìm](https://www.google.com/search?tbm=isch&q=Drake+Hotline+Bling+meme) |
+| 36 | Drake phản đối và đồng ý | TRUNG_DS | Chê Kèo Thơm | 👎 | Quốc tế | Cùng danh tính #21 | [tìm](https://www.google.com/search?tbm=isch&q=Drake+Hotline+Bling+meme) |
 | 37 | Người nhện chỉ tay nhau | DOI_TEN | Đổ Lỗi Cho Nhau | 👉 | Quốc tế | Nhân vật có bản quyền; gộp #41 | [tìm](https://www.google.com/search?tbm=isch&q=Spider-Man+pointing+at+Spider-Man+meme) |
 | 38 | Leonardo DiCaprio nâng ly | DOI_TEN | Cạn Ly Mỉa Mai | 🍸 | Quốc tế | Người thật; khác Một Hai Ba Dzô đã có (cụng ly thật lòng) | [tìm](https://www.google.com/search?tbm=isch&q=Leonardo+DiCaprio+cheers+meme) |
 | 39 | Programmer Humor | MOI | Máy Em Chạy Mà | 💻 | Quốc tế | Câu cửa miệng dân lập trình | [tìm](https://www.google.com/search?tbm=isch&q=programmer+humor+production+works+on+my+machine+meme) |
@@ -68,12 +69,12 @@ Phân loại: MOI = thêm mới giữ tên; DOI_TEN = thêm mới nhưng đặt 
 | 41 | Người nhện lỗi hệ thống | TRUNG_DS | Đổ Lỗi Cho Nhau | 👉 | Quốc tế | Cùng danh tính #37 | [tìm](https://www.google.com/search?tbm=isch&q=Spider-Man+pointing+meme) |
 | 42 | Galaxy Brain | TRUNG_DS | Galaxy Brain | 🌌 | Quốc tế | Cùng danh tính #28 | [tìm](https://www.google.com/search?tbm=isch&q=galaxy+brain+meme) |
 | 43 | Is This a Pigeon? | DOI_TEN | Gọi Nhầm Tên | 🦋 | Quốc tế | Ảnh gốc từ anime có bản quyền | [tìm](https://www.google.com/search?tbm=isch&q=is+this+a+pigeon+meme) |
-| 44 | Người ngồi trước máy tính lúc 3 giờ sáng | MOI | Debug Ba Giờ Sáng | 🪲 | Quốc tế | - | [tìm](https://www.google.com/search?tbm=isch&q=debugging+at+3am+programmer+meme) |
+| 44 | Người ngồi trước máy tính lúc 3 giờ sáng | MOI | Debug Ba Giờ Sáng | 🐛 | Quốc tế | - | [tìm](https://www.google.com/search?tbm=isch&q=debugging+at+3am+programmer+meme) |
 | 45 | Leonardo DiCaprio cười đểu | DOI_TEN | Cười Đểu | 🤭 | Quốc tế | Người thật | [tìm](https://www.google.com/search?tbm=isch&q=Leonardo+DiCaprio+smirk+meme) |
 | 46 | Pikachu bất ngờ | TRUNG_DS | Ngạc Nhiên Giả Trân | 😲 | Quốc tế | Cùng danh tính #15 | [tìm](https://www.google.com/search?tbm=isch&q=surprised+Pikachu+meme) |
 | 47 | Woman Yelling at Cat phiên bản gia đình | TRUNG_DS | Gào Thét Với Mèo | 🙀 | Quốc tế | Cùng danh tính #14 | [tìm](https://www.google.com/search?tbm=isch&q=woman+yelling+at+cat+meme) |
 | 48 | Mèo ngồi trong hộp | MOI | Mèo Chui Hộp | 🐈 | Quốc tế | - | [tìm](https://www.google.com/search?tbm=isch&q=cat+sitting+in+box+meme) |
-| 49 | Drake chọn thứ vô lý | TRUNG_DS | Chê Kèo Thơm | 🫷 | Quốc tế | Cùng danh tính #21 | [tìm](https://www.google.com/search?tbm=isch&q=Drake+Hotline+Bling+meme) |
+| 49 | Drake chọn thứ vô lý | TRUNG_DS | Chê Kèo Thơm | 👎 | Quốc tế | Cùng danh tính #21 | [tìm](https://www.google.com/search?tbm=isch&q=Drake+Hotline+Bling+meme) |
 | 50 | Awkward Look Monkey Puppet | TRUNG_DS | Lảng Đi Chỗ Khác | 🐒 | Quốc tế | Cùng danh tính #18 | [tìm](https://www.google.com/search?tbm=isch&q=awkward+monkey+puppet+meme) |
 
 Tổng: 16 MOI, 19 DOI_TEN, 4 TRUNG_LOI, 7 TRUNG_DS, 4 LOAI ⇒ 35 phần tử mới.
@@ -98,11 +99,11 @@ Tổng: 16 MOI, 19 DOI_TEN, 4 TRUNG_LOI, 7 TRUNG_DS, 4 LOAI ⇒ 35 phần tử m
 | 😲 | Ngạc Nhiên Giả Trân | Quốc tế | 4 | quả trứng hoạt hình há hốc mồm trước tờ hóa đơn ai cũng đoán được | có |
 | 🤨 | Liếc Xéo | Quốc tế | 3 | đôi mắt hoạt hình liếc ngang, một bên chân mày nhướn cao | không |
 | 🐒 | Lảng Đi Chỗ Khác | Quốc tế | 3 | con rối khỉ nhồi bông liếc mắt sang bên, mồ hôi nhỏ giọt | không |
-| 🫠 | Cười Mà Đau | Quốc tế | 3 | cốc trà nóng mỉm cười trong khi nứt dần | không |
+| 🙃 | Cười Mà Đau | Quốc tế | 3 | cốc trà nóng mỉm cười trong khi nứt dần | không |
 | 🤓 | Logic Lỏ | Quốc tế | 4 | ngón tay chỉ vào thái dương bằng giấy, sau lưng là phép tính sai | có |
-| 🫷 | Chê Kèo Thơm | Quốc tế | 6 | bàn tay xua đi đĩa cơm ngon, quay sang ôm hộp quà giảm giá | có |
+| 👎 | Chê Kèo Thơm | Quốc tế | 6 | bàn tay xua đi đĩa cơm ngon, quay sang ôm hộp quà giảm giá | có |
 | ⛰️ | Trông Núi Nọ | Quốc tế | 5 | hai ngọn núi, cái gần ngoái cổ nhìn ngọn núi xa lấp lánh | có |
-| 🫥 | Nhìn Xa Xăm | Quốc tế | 3 | chiếc ghế văn phòng quay về phía cửa sổ, đám mây trôi vô định | không |
+| 😶 | Nhìn Xa Xăm | Quốc tế | 3 | chiếc ghế văn phòng quay về phía cửa sổ, đám mây trôi vô định | không |
 | 🪑 | Ngồi Chờ Mòn Mỏi | Quốc tế | 3 | chiếc ghế phủ mạng nhện cạnh đồng hồ quay vòng | không |
 | 📋 | Kế Hoạch Hoàn Hảo | Quốc tế | 4 | bảng kế hoạch bốn ô, ô cuối có cái bẫy tự sập | có |
 | 🔘 | Hai Nút Bấm | Quốc tế | 3 | hai nút đỏ to, giọt mồ hôi khổng lồ lơ lửng phía trên | không |
@@ -117,7 +118,7 @@ Tổng: 16 MOI, 19 DOI_TEN, 4 TRUNG_LOI, 7 TRUNG_DS, 4 LOAI ⇒ 35 phần tử m
 | 🍸 | Cạn Ly Mỉa Mai | Quốc tế | 4 | ly cocktail giơ cao, nháy mắt đầy ẩn ý | có |
 | 💻 | Máy Em Chạy Mà | Quốc tế | 4 | chiếc laptop cười tươi, phía sau màn hình server cháy đỏ | có |
 | 🦋 | Gọi Nhầm Tên | Quốc tế | 4 | con bướm bị chỉ vào bởi tấm biển có dấu hỏi to | có |
-| 🪲 | Debug Ba Giờ Sáng | Quốc tế | 4 | con bọ ngồi trên bàn phím dưới ánh trăng, đồng hồ chỉ 3 giờ | có |
+| 🐛 | Debug Ba Giờ Sáng | Quốc tế | 4 | con bọ ngồi trên bàn phím dưới ánh trăng, đồng hồ chỉ 3 giờ | có |
 | 🤭 | Cười Đểu | Quốc tế | 3 | cái miệng che tay khúc khích, ánh mắt biết tuốt | không |
 
 ## 4. Công thức mới
