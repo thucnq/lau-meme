@@ -473,13 +473,16 @@ export function Game({ onDiscover, onItems, heirlooms = {}, onReport, blocklistR
       </header>
 
       {/* Two screens: the table and the leaderboards (AC-DAILY-17); the table keeps its state while hidden. */}
-      <div role="tablist" aria-label="Màn hình" className="view-tabs">
-        {VIEWS.map(([key, label]) => (
-          <button key={key} type="button" role="tab" aria-selected={view === key} onClick={() => setView(key)}>
-            {label}
-          </button>
-        ))}
-      </div>
+      {/* No leaderboards without a manifest: after a load error the table (and its retry) stays in view. */}
+      {loaded && (
+        <div role="tablist" aria-label="Màn hình" className="view-tabs">
+          {VIEWS.map(([key, label]) => (
+            <button key={key} type="button" role="tab" aria-selected={view === key} onClick={() => setView(key)}>
+              {label}
+            </button>
+          ))}
+        </div>
+      )}
 
       {loadError && (
         <div role="alert" className="game-error">
@@ -502,7 +505,7 @@ export function Game({ onDiscover, onItems, heirlooms = {}, onReport, blocklistR
 
       {view === 'board' && loaded && <Leaderboards version={loaded.manifest.version} />}
 
-      <div className="game-board" hidden={view !== 'table'}>
+      <div className="game-board" hidden={loaded !== null && view !== 'table'}>
         <div className="table-area">
           <div className="table-tools">
             <button type="button" onClick={clearTable}>

@@ -275,3 +275,19 @@ describe('ui2 thẻ thử thách nổi bật (AC-DAILY-16)', () => {
     expect(within(card).getByText(/Mẻ mới sau/)).toBeTruthy()
   })
 })
+
+// ================================================================ AC-DAILY-17 (CSS thật: thuộc tính hidden phải ẩn được khu bàn)
+describe('ui2 tab bảng xếp hạng (AC-DAILY-17)', () => {
+  it('AC-DAILY-17: chọn tab "Bảng xếp hạng" thì mặt bàn và Đĩa không còn hiển thị; quay lại "Bàn lẩu" thì hiện lại', async () => {
+    await open({ width: 1366, height: 768 })
+    const table = screen.getByTestId('table')
+    expect(rect(table).height).toBeGreaterThan(0)
+    screen.getByRole('tab', { name: 'Bảng xếp hạng' }).click()
+    await waitFor(() => expect(screen.getByRole('tab', { name: 'Bảng xếp hạng' }).getAttribute('aria-selected')).toBe('true'))
+    const box = rect(table)
+    expect(box.width * box.height, 'mặt bàn vẫn hiện dưới tab Bảng xếp hạng').toBe(0)
+    expect(table.checkVisibility()).toBe(false)
+    screen.getByRole('tab', { name: 'Bàn lẩu' }).click()
+    await waitFor(() => expect(rect(screen.getByTestId('table')).height).toBeGreaterThan(0))
+  })
+})
