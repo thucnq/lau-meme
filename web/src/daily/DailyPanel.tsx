@@ -36,7 +36,7 @@ const GMT7_MS = 7 * 3_600_000
 
 /**
  * The Daily share card (AC-SHARE-01): batch day and hour in GMT+7, the server's solve time and rank. Only shown with
- * a server result: an unsigned player has no server time yet (open question 58).
+ * a server result: only signed-in solves are recorded, so an unsigned player gets no card (open question 58).
  */
 function dailyCard(batchAt: string, emoji: string, result: DailyResult): DailyCardData {
   const local = new Date(Date.parse(batchAt) + GMT7_MS)

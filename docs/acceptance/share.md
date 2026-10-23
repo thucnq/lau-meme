@@ -11,7 +11,7 @@
   📈 giải sau 1 giờ 05 phút · hạng #12
   <link trang chủ>?ref=daily
   ```
-  không chứa tên món đích và không chứa tên 2 phần tử đã ghép ra món; chưa nộp được kết quả (chưa đăng nhập) thì bỏ phần hạng
+  không chứa tên món đích và không chứa tên 2 phần tử đã ghép ra món; chưa đăng nhập thì không có thẻ chia sẻ Daily, vì chỉ lời giải đã đăng nhập mới được ghi nhận (cập nhật 2026-10-23, câu hỏi mở 58)
 - Ưu tiên: Bắt buộc
 
 ### AC-SHARE-02: Thời gian giải trên thẻ (cập nhật 2026-10-21, thay chuỗi emoji các bước)
@@ -41,5 +41,5 @@
 ### AC-SHARE-06: Ghi sự kiện chia sẻ
 - **Cho** thực khách đã đồng ý gửi dữ liệu
 - **Khi** chia sẻ hoặc sao chép thành công thẻ Daily / thẻ Công thức gia truyền
-- **Thì** client gửi sự kiện `share` với `card: daily|disc` và `method: native|copy|image` (AC-METRIC-02); chưa đồng ý thì không gửi
+- **Thì** client gửi sự kiện `share` với `card: daily|discovery` (theo contract, cập nhật 2026-10-23) và `method: native|copy|image` (AC-METRIC-02); chưa đồng ý thì không gửi
 - Ưu tiên: Bắt buộc
