@@ -87,7 +87,7 @@ function onTable(item: Item, x: number, y: number): TableItem {
 }
 
 /** A combine that gave the player an element they did not have (AC-DISC-05): names as typed, id of the result. */
-export type NewDiscovery = { a: string; b: string; result: string; id: string }
+export type NewDiscovery = { a: string; b: string; result: string; id: string; emoji: string }
 
 const VIEWS = [
   ['table', 'Bàn lẩu'],
@@ -266,7 +266,7 @@ export function Game({ onDiscover, onItems, heirlooms = {}, onReport, blocklistR
             commit({ ...out.progress, table: [...table, onTable(item, pa.x, pa.y)] })
             checkDaily(a.name, b.name, item)
             if (out.isNew) {
-              onDiscoverRef.current?.({ a: a.name, b: b.name, result: item.name, id: item.id })
+              onDiscoverRef.current?.({ a: a.name, b: b.name, result: item.name, id: item.id, emoji: item.emoji })
               showZoom(item)
             }
           } else {
@@ -303,7 +303,7 @@ export function Game({ onDiscover, onItems, heirlooms = {}, onReport, blocklistR
         commit({ ...out.progress, table: [...rest, onTable(item, target.x, target.y)] })
         checkDaily(source.item.name, target.name, item)
         if (out.isNew) {
-          onDiscoverRef.current?.({ a: source.item.name, b: target.name, result: item.name, id: item.id })
+          onDiscoverRef.current?.({ a: source.item.name, b: target.name, result: item.name, id: item.id, emoji: item.emoji })
           showZoom(item)
         }
         setSteam({ x: target.x, y: target.y })

@@ -263,7 +263,7 @@ def _render_report(
 
 
 def metrics_day(batch_at: datetime) -> str:
-    """The last whole GMT+7 day before the batch (open question 60): the batch's own day has barely started."""
+    """The last whole GMT+7 day before the batch (open question 61): the batch's own day has barely started."""
     return (batch_at.astimezone(GMT7).date() - timedelta(days=1)).isoformat()
 
 
@@ -287,7 +287,7 @@ def _metric_lines(metrics: Mapping | None) -> list[str]:
 
 
 def _metrics(client: BatchClient, batch_at: datetime, log: Callable[[str], None]) -> dict | None:
-    """A failed call is only logged: the batch and its Issue never depend on the numbers (open question 60)."""
+    """A failed call is only logged: the batch and its Issue never depend on the numbers (open question 61)."""
     try:
         return client.get_metrics_summary(metrics_day(batch_at))
     except Exception as exc:

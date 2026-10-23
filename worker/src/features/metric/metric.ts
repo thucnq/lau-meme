@@ -118,7 +118,7 @@ type CohortRow = { first: string; n: number; back: number }
 
 /**
  * GET /api/metrics/summary?day= - one GMT+7 day as aggregate numbers only, never a UUID or a raw event
- * (AC-METRIC-05/06). D1/D7: players whose first `session_start` was D-1/D-7 and who have one on D (open question 59).
+ * (AC-METRIC-05/06). D1/D7: players whose first `session_start` was D-1/D-7 and who have one on D (open question 60).
  */
 export async function getMetricsSummary(req: Request, env: Env): Promise<Response> {
   const [pipeline, admin] = await Promise.all([hasBearer(req, env.PIPELINE_TOKEN), hasBearer(req, env.ADMIN_TOKEN)])

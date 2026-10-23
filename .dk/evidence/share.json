@@ -1,0 +1,62 @@
+{
+ "red": {
+  "ts": "2026-10-23T12:51:58+00:00",
+  "commit": "f8d85be",
+  "results": {
+   "AC-SHARE-01": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-SHARE-02": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-SHARE-03": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-SHARE-04": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-SHARE-05": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-SHARE-06": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   }
+  }
+ },
+ "green": {
+  "ts": "2026-10-23T12:53:49+00:00",
+  "commit": "f8d85be",
+  "results": {
+   "AC-SHARE-01": {
+    "status": "PASS",
+    "test": "share.entry.test.tsx#share entry: thẻ Daily trong DailyPanel > AC-SHARE-01: đã đăng nhập và có kết quả thì hiện thẻ chia sẻ Daily, chữ đúng định dạng, không lộ đáp án"
+   },
+   "AC-SHARE-02": {
+    "status": "PASS",
+    "test": "share.test.tsx#SHARE > AC-SHARE-02: làm tròn xuống phút, dưới 1 phút, mẻ kéo dài"
+   },
+   "AC-SHARE-03": {
+    "status": "PASS",
+    "test": "share.test.tsx#SHARE > AC-SHARE-03: PNG Daily 1080x1080 có logo, ngày + mẻ, emoji, thời gian, hạng, link; không lộ đáp án"
+   },
+   "AC-SHARE-04": {
+    "status": "PASS",
+    "test": "share.entry.test.tsx#share entry: thẻ Công thức gia truyền trong Root > AC-SHARE-04: người đầu tiên khám phá thì hiện thẻ chia sẻ, chữ đúng, không lộ 2 phần tử đầu vào"
+   },
+   "AC-SHARE-05": {
+    "status": "PASS",
+    "test": "share.test.tsx#SHARE > AC-SHARE-05: có navigator.share, canShare cho file thì chia sẻ chữ kèm ảnh"
+   },
+   "AC-SHARE-06": {
+    "status": "PASS",
+    "test": "share.test.tsx#SHARE > AC-SHARE-06: chia sẻ hệ thống thành công gửi share/daily/native qua client có kiểm đồng ý"
+   }
+  }
+ }
+}

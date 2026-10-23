@@ -204,6 +204,12 @@ a { color: var(--accent-2); }
 .my-data { padding-top: 0.75rem; }
 .nickname-form { display: grid; gap: 0.4rem; margin-bottom: 0.75rem; max-width: 24rem; }
 .heirloom { color: var(--accent); font-weight: 600; }
+.heirloom p { margin: 0 0 0.4rem; }
+/* Share card buttons (SHARE) */
+.share-card { display: flex; flex-wrap: wrap; gap: 0.4rem; align-items: center; margin-top: 0.4rem; font-weight: 400; }
+.share-card button { padding: 0.3rem 0.75rem; font-size: 0.875rem; }
+.share-card [role='status'] { color: var(--accent); font-size: 0.875rem; }
+.share-card [role='alert'] { color: var(--broth-a); font-size: 0.875rem; }
 .site-links { display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; font-size: 0.85rem; }
 .site-links a, .policy a, .consent a, .consent-prompt a { color: var(--accent-2); font-weight: 600; }
 .policy { max-width: 44rem; margin: 0 auto; padding: 1rem; line-height: 1.55; }
