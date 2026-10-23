@@ -54,7 +54,7 @@
 ### AC-CONTRIB-09: Ảnh và biểu tượng của meme đóng góp
 - **Cho** phần tử đóng góp đã duyệt, có biểu tượng "☕" và gợi ý ảnh do admin viết; một phần tử đóng góp khác không có biểu tượng
 - **Khi** mẻ `full` kế tiếp chạy; và khi client hiện phần tử
-- **Thì** phần tử hiện biểu tượng người gửi (hoặc admin đã sửa) làm emoji; không có biểu tượng thì dùng emoji mặc định "🍲"; trùng emoji với phần tử đã có vẫn được (ngoại lệ của luật emoji duy nhất của lõi - mặc định - câu hỏi mở 52); ảnh vẽ tay chỉ vẽ từ gợi ý ảnh do admin viết theo AC-ART (ART vẽ như phần tử mới), không dùng link ảnh của người gửi; pipeline không gửi tên, mô tả, link ảnh gốc hay nickname người gửi cho Gemini; sau khi duyệt, tên và gợi ý ảnh là nội dung game và được dùng như phần tử khác (mặc định - câu hỏi mở 55)
+- **Thì** phần tử hiện biểu tượng người gửi (hoặc admin đã sửa) làm emoji; không có biểu tượng thì dùng emoji mặc định "🍲"; trùng emoji với phần tử đã có vẫn được (ngoại lệ của luật emoji duy nhất của lõi - mặc định - câu hỏi mở 52); ảnh vẽ tay chỉ vẽ từ gợi ý ảnh do admin viết theo AC-ART (ART vẽ như phần tử mới), không dùng link ảnh của người gửi; pipeline không gửi tên, mô tả, link ảnh gốc hay nickname người gửi cho Gemini; sau khi duyệt, tên và gợi ý ảnh là nội dung game và được dùng như phần tử khác (câu hỏi mở 55, đã chốt)
 - Ưu tiên: Bắt buộc
 
 ### AC-CONTRIB-10: Hiện người tạo trên phần tử

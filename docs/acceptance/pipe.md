@@ -17,7 +17,7 @@
 - Ưu tiên: Bắt buộc
 
 ### AC-PIPE-03: Một nguồn lỗi không làm hỏng cả đợt
-- **Cho** các adapter (Reddit, Know Your Meme, Google Trends VN, YouTube trending, RSS, Tuổi Trẻ - AC-PIPE-15) trong đó adapter Reddit ném lỗi / hết thời gian
+- **Cho** các adapter (Reddit, Know Your Meme, Google Trends VN, YouTube trending, RSS, Tuổi Trẻ - AC-PIPE-15, Threads - AC-PIPE-17) trong đó adapter Reddit ném lỗi / hết thời gian
 - **Khi** bước crawl chạy
 - **Thì** khái niệm từ 4 adapter còn lại vẫn đi tiếp; báo cáo đợt ghi "Reddit: lỗi <loại lỗi>"; đợt không bị đánh dấu thất bại chỉ vì một nguồn
 - Ưu tiên: Bắt buộc
@@ -98,4 +98,10 @@
 - **Cho** kho có "Còn Cái Nịt" (`trend_peak` = 2) và "Stonks" (`trend_peak` = 0); đợt crawl thu được 4 khái niệm khử trùng (AC-PIPE-05) về "Còn Cái Nịt" từ 3 nguồn khác nhau, 1 khái niệm về "Stonks", và meme mới M được thêm từ 2 khái niệm
 - **Khi** đợt kết thúc thành công; rồi đợt sau crawl được 1 khái niệm về "Còn Cái Nịt"
 - **Thì** mức trending của một phần tử trong một đợt = số khái niệm crawl của đợt đó trùng với phần tử (khớp `fold` hoặc LLM nói trùng ở AC-PIPE-05; với phần tử mới: số khái niệm gộp lại thành nó); `trend_peak` = mức cao nhất từng ghi nhận, gồm cả đợt hiện tại (câu hỏi mở 42): sau đợt 1 "Còn Cái Nịt" = 4, "Stonks" = 1, M = 2; sau đợt 2 "Còn Cái Nịt" vẫn = 4; phần tử chưa từng được crawl thấy có `trend_peak` = 0; mẻ `core` và đợt lỗi không đổi `trend_peak`; chạy lại cùng đợt (AC-PIPE-10) không cộng dồn; báo cáo đợt liệt kê 5 phần tử có mức trending cao nhất của đợt (tên không xuất hiện trong tiêu đề Issue)
+- Ưu tiên: Bắt buộc
+
+### AC-PIPE-17: Nguồn Threads qua API chính thức (thêm 2026-10-23)
+- **Cho** mẻ `full` có GitHub Secret `THREADS_ACCESS_TOKEN` và variable `THREADS_KEYWORDS` (danh sách phân tách bằng dấu phẩy, vd. `meme,trend`); phản hồi mẫu của API tìm theo từ khóa của Threads (lưu trong test, không gọi mạng) có 15 bài công khai, mỗi bài có nội dung chữ, permalink, tên người đăng, ảnh/video
+- **Khi** adapter Threads chạy
+- **Thì** chỉ gọi API chính thức của Meta (không scrape trang threads.net); trả khái niệm theo AC-PIPE-04: tên/câu nói lấy từ nội dung bài, link nguồn = permalink, tên nguồn "Threads"; **không** lưu hay gửi LLM tên người đăng, ảnh đại diện, link hồ sơ; không tải ảnh/video; thiếu `THREADS_ACCESS_TOKEN` hoặc `THREADS_KEYWORDS` rỗng thì adapter không thu gì và báo cáo đợt cảnh báo thiếu cấu hình, đợt không thất bại; API trả 401/403 (token hết hạn, quyền chưa được duyệt) hoặc 429 thì ghi lỗi nguồn "Threads: <loại lỗi>" theo AC-PIPE-03; tối đa 50 bài mỗi đợt (mặc định)
 - Ưu tiên: Bắt buộc
