@@ -6,10 +6,14 @@ Exit 1 when a mandatory AC has no test (this is the deterministic FR gate).
 --started-only: only enforce features (docs/acceptance/<file>.md) that already have at least one AC
 referenced by a test. CI uses it so the gate matches the project phase: before /dk:build starts a
 feature, its ACs are reported but do not fail the build. /dk:review and /dk:ship run without it.
+Same for an AC added later to a started file: when docs/estimate/items.json lists it by exact id only under items
+that have not started (no AC listed by exact id under that item alone is referenced by a test), it is reported as
+planned and not enforced yet. A prefix such as "AC-ART" does not schedule an AC; only exact ids do.
 With .dk/stack.toml (dk 0.7.0) the test files come from each component's test_dirs; Python tests may name the AC
 in snake case (test_ac_graph_01_x ⇒ AC-GRAPH-01) because function names cannot hold dashes. This file is copied
 into projects (tools/ac-trace.py), so it reads the profile itself instead of importing the plugin.
 """
+import json
 import re
 import signal
 import sys
@@ -75,6 +79,22 @@ def load_refs():
     return refs
 
 
+def planned_later(acs, refs):
+    """Untested ACs that docs/estimate/items.json schedules only under items not started yet."""
+    f = Path("docs/estimate/items.json")
+    try:
+        items = json.loads(f.read_text(encoding="utf-8")).get("items", []) if f.is_file() else []
+    except (OSError, ValueError, AttributeError):
+        return {}
+    owners = {}
+    for it in items:
+        for a in it.get("ac") or []:
+            if a in acs:
+                owners.setdefault(a, set()).add(it.get("id", "?"))
+    started = {i for a, ids in owners.items() if len(ids) == 1 and a in refs for i in ids}
+    return {a: sorted(ids) for a, ids in owners.items() if a not in refs and not ids & started}
+
+
 def main():
     md = "--markdown" in sys.argv
     feature = sys.argv[sys.argv.index("--feature") + 1] if "--feature" in sys.argv else None
@@ -85,7 +105,8 @@ def main():
         return 0
     started = {v["file"] for a, v in acs.items() if a in refs}
     not_started = sorted({v["file"] for v in acs.values()} - started)
-    missing = [a for a, v in acs.items() if not v["optional"] and a not in refs
+    later = planned_later(acs, refs) if started_only else {}
+    missing = [a for a, v in acs.items() if not v["optional"] and a not in refs and a not in later
                and (not started_only or v["file"] in started)]
     orphans = sorted(r for r in refs if r not in acs and not r.endswith(("-TENANT", "-VALIDATION", "-ABUSE"))
                      and (not feature or f"-{feature.upper()}-" in r))
@@ -100,6 +121,10 @@ def main():
         print(f"ac-trace: {covered}/{len(acs)} ACs referenced by tests; {len(missing)} mandatory missing")
         if started_only and not_started:
             print(f"  not started (not enforced yet): {len(not_started)} feature file(s): {', '.join(Path(f).stem for f in not_started)}")
+        planned = [a for a in later if acs[a]["file"] in started and not acs[a]["optional"]]
+        if planned:
+            listed = ", ".join(f"{a} ({'/'.join(later[a])})" for a in planned)
+            print(f"  planned (not enforced yet): {listed}")
         for a in missing:
             print(f"  MISSING {a} ({acs[a]['file']}): {acs[a]['title']}")
     for o in orphans:
