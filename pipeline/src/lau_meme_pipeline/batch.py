@@ -268,7 +268,7 @@ def metrics_day(batch_at: datetime) -> str:
 
 
 def _rate(value: object) -> str:
-    return f"{value:.0%}" if isinstance(value, int | float) else "-"
+    return f"{value:.1%}" if isinstance(value, int | float) else "-"
 
 
 def _metric_lines(metrics: Mapping | None) -> list[str]:

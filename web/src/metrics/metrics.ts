@@ -44,7 +44,8 @@ export function createMetrics(opts: { getPlayerId: () => string | null }): Metri
   function send(player: string, events: unknown[]): void {
     const url = withBase('api/events')
     if (typeof navigator.sendBeacon === 'function') {
-      // sendBeacon cannot set headers: a string body goes as text/plain with the id inside (ADR 0004)
+      // sendBeacon cannot set headers: a string body goes as text/plain with the id inside (ADR 0004). `true` only
+      // means queued: a refused batch (4xx/429) is lost, accepted for best-effort metrics.
       if (navigator.sendBeacon(url, JSON.stringify({ player_id: player, events }))) return
     }
     void fetch(url, {

@@ -7,7 +7,8 @@ import { arr, fail, int, obj, oneOf } from '../../validate'
 import { playConsentStatement, requirePlayConsent, type ConsentRow } from '../player/consent'
 
 /** Anonymous play events and their daily summary (AC-METRIC-02..06, ADR 0004). */
-const EVENTS_LIMIT: Limit = { scope: 'events', windowMs: 60_000, perPlayer: 20, perIp: 200 }
+// 20 batches/min/UUID (AC-METRIC-03); per IP: room for a few players behind one NAT, not for UUID farming
+const EVENTS_LIMIT: Limit = { scope: 'events', windowMs: 60_000, perPlayer: 20, perIp: 60 }
 const MAX_EVENTS = 50
 const DAY_MS = 86_400_000
 const UUID_V4 = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
@@ -119,6 +120,7 @@ type CohortRow = { first: string; n: number; back: number }
 /**
  * GET /api/metrics/summary?day= - one GMT+7 day as aggregate numbers only, never a UUID or a raw event
  * (AC-METRIC-05/06). D1/D7: players whose first `session_start` was D-1/D-7 and who have one on D (open question 60).
+ * Events live 90 days (AC-METRIC-07), so "first" means first within that window: enough for D7.
  */
 export async function getMetricsSummary(req: Request, env: Env): Promise<Response> {
   const [pipeline, admin] = await Promise.all([hasBearer(req, env.PIPELINE_TOKEN), hasBearer(req, env.ADMIN_TOKEN)])
@@ -148,7 +150,7 @@ export async function getMetricsSummary(req: Request, env: Env): Promise<Respons
     db
       .prepare(
         `WITH firsts AS (
-           SELECT player_id, MIN(day) AS first FROM event WHERE type = 'session_start' GROUP BY player_id)
+           SELECT player_id, MIN(day) AS first FROM event WHERE type = 'session_start' AND day <= ?1 GROUP BY player_id)
          SELECT f.first, COUNT(*) AS n,
                 SUM(EXISTS (SELECT 1 FROM event e WHERE e.player_id = f.player_id AND e.type = 'session_start' AND e.day = ?1)) AS back
          FROM firsts f WHERE f.first IN (?2, ?3) GROUP BY f.first`,
