@@ -8,7 +8,7 @@ import { withBase } from '../base'
 export type MetricEvent =
   | { type: 'session_start' }
   | { type: 'daily_start'; version: number }
-  | { type: 'daily_complete'; version: number; steps: number }
+  | { type: 'daily_complete'; version: number }
   | { type: 'share'; card: 'daily' | 'discovery'; method: 'copy' | 'native' | 'image' }
   | { type: 'report'; target: 'element' | 'image' }
   | { type: 'feedback'; value: 'ngon' | 'nhat' }

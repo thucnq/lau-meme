@@ -1,11 +1,11 @@
 {
  "red": {
-  "ts": "2026-10-23T13:07:19+00:00",
-  "commit": "f8d85be",
+  "ts": "2026-10-23T16:56:54+00:00",
+  "commit": "dc10a1a",
   "results": {
    "AC-METRIC-01": {
-    "status": "FAIL",
-    "test": "beacon.test.ts#cloudflare web analytics beacon > AC-METRIC-01: token beacon lấy từ biến build "
+    "status": "PASS",
+    "test": "beacon.test.ts#cloudflare web analytics beacon > AC-METRIC-01: HTML có script beacon Cloudflare Web Analytics với data-cf-beacon"
    },
    "AC-METRIC-02": {
     "status": "FAIL",
@@ -16,30 +16,34 @@
     "test": "metric.test.ts#metric events "
    },
    "AC-METRIC-04": {
-    "status": "FAIL",
-    "test": "metrics.test.ts#metrics client > other events share the same batching > AC-METRIC-04: sự kiện khác "
+    "status": "PASS",
+    "test": "metrics.test.ts#metrics client > AC-METRIC-04: ghép 40 lượt trong phiên không gửi yêu cầu nào cho từng lượt"
    },
    "AC-METRIC-05": {
-    "status": "FAIL",
+    "status": "PASS",
     "test": "metric.test.ts#metric summary "
    },
    "AC-METRIC-06": {
-    "status": "FAIL",
+    "status": "PASS",
     "test": "metric.test.ts#metric summary "
    },
    "AC-METRIC-07": {
     "status": "PASS",
     "test": "metric.test.ts#metric retention job > AC-METRIC-07: Cron hằng ngày xóa sự kiện cũ hơn 90 ngày, giữ sự kiện trong 90 ngày và ghi số dòng đã xóa vào log"
    },
-   "AC-METRIC-VALIDATION": {
+   "AC-METRIC-08": {
     "status": "FAIL",
-    "test": "metric.test.ts#metric summary "
+    "test": "daily-events.ui.test.tsx#AC-METRIC-08: sự kiện Món đặc biệt phía client > AC-METRIC-08: tải lại khi món đã giải rồi ghép lại thì không gửi daily_complete; thẻ hiện lại cũng không thêm daily_start"
+   },
+   "AC-METRIC-VALIDATION": {
+    "status": "PASS",
+    "test": "metric.test.ts#metric events "
    }
   }
  },
  "green": {
-  "ts": "2026-10-23T15:45:30+00:00",
-  "commit": "0abcd47",
+  "ts": "2026-10-23T17:02:46+00:00",
+  "commit": "dc10a1a",
   "results": {
    "AC-METRIC-01": {
     "status": "PASS",
@@ -68,6 +72,10 @@
    "AC-METRIC-07": {
     "status": "PASS",
     "test": "metric.test.ts#metric retention job > AC-METRIC-07: Cron hằng ngày xóa sự kiện cũ hơn 90 ngày, giữ sự kiện trong 90 ngày và ghi số dòng đã xóa vào log"
+   },
+   "AC-METRIC-08": {
+    "status": "PASS",
+    "test": "daily-events.ui.test.tsx#AC-METRIC-08: sự kiện Món đặc biệt phía client > AC-METRIC-08: thẻ Món đặc biệt hiện lần đầu thì xếp đúng một daily_start { version } dù thẻ hiện lại "
    },
    "AC-METRIC-VALIDATION": {
     "status": "PASS",

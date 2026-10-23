@@ -34,8 +34,9 @@ function parseEvent(value: unknown, path: string): Event {
       return { type, props: { version: int(o.version, `${path}.version`, 1) } }
     }
     case 'daily_complete': {
-      const o = obj(value, path, ['type', 'version', 'steps'])
-      return { type, props: { version: int(o.version, `${path}.version`, 1), steps: int(o.steps, `${path}.steps`, 1, 200) } }
+      // no step count (open question 62)
+      const o = obj(value, path, ['type', 'version'])
+      return { type, props: { version: int(o.version, `${path}.version`, 1) } }
     }
     case 'share': {
       const o = obj(value, path, ['type', 'card', 'method'])

@@ -3,6 +3,7 @@ import { useSession } from '../auth/session'
 import { SITE_URL } from '../base'
 import { SendError } from '../disc/api'
 import type { Manifest } from '../game/engine'
+import { trackDailyStart } from '../metrics/app'
 import { ConsentRequiredError } from '../privacy/client'
 import { ConsentPrompt } from '../privacy/ConsentPrompt'
 import { ShareCard, type DailyCardData } from '../share'
@@ -62,6 +63,8 @@ export function DailyPanel({ manifest, storage, solved, onShowBoard }: Props) {
   const session = useSession()
   const [sent, setSent] = useState<Sent | null>(null)
   const [now, setNow] = useState(() => new Date())
+
+  useEffect(() => trackDailyStart(version), [version])
 
   useEffect(() => {
     const timer = window.setInterval(() => setNow(new Date()), 1000)
