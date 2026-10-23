@@ -10,6 +10,7 @@ from dataclasses import dataclass, field, replace
 from datetime import date, datetime, timedelta, timezone
 
 from lau_meme_pipeline.art import ArtItem, ArtResult, apply_images, order_for_drawing
+from lau_meme_pipeline.contrib import add_contributions
 from lau_meme_pipeline.crawl import CrawlResult, crawl_report_line
 from lau_meme_pipeline.daily import build_daily_block, select_daily
 from lau_meme_pipeline.dedupe import dedupe, dedupe_key
@@ -28,8 +29,9 @@ from lau_meme_pipeline.linking import (
 from lau_meme_pipeline.linkqueue import next_queue
 from lau_meme_pipeline.llm import CachedLlm, QuotaExhausted
 from lau_meme_pipeline.moderation import Concept, ModLists, is_held, moderate
-from lau_meme_pipeline.seed import ACTIVE, CLASSIC, ContentStore, StoredElement, StoredRecipe, load_core
+from lau_meme_pipeline.seed import ACTIVE, CLASSIC, INACTIVE, ContentStore, StoredElement, StoredRecipe, load_core
 from lau_meme_pipeline.text import fold
+from lau_meme_pipeline.tier import apply_tiers
 
 GMT7 = timezone(timedelta(hours=7))
 MAX_ART_ATTEMPTS = 3  # batches an element may fail with transient errors before it keeps its emoji (ADR 0012)
@@ -37,7 +39,6 @@ MAX_ART_PENDING = 2000  # stored backlog; anything beyond is found again from th
 MAX_NAME = 100  # D1/Worker limit of element name and fold (UTF-16 units, as the Worker counts)
 MAX_EMOJI = 16
 TREND = "trend"
-INACTIVE = "inactive"
 # Where a source's memes come from (D1 element.origin).
 ORIGIN_BY_SOURCE = {"Google Trends VN": "vn", "YouTube": "vn", "RSS": "vn", "Reddit": "intl", "Know Your Meme": "intl"}
 
@@ -120,6 +121,9 @@ def run_full(
     blocked: frozenset[str] = frozenset(),
     daily_history: Sequence[Mapping] = (),
     draw: Callable[[list[ArtItem]], ArtResult] | None = None,
+    tiers: Sequence[Mapping] = (),
+    contributions: Sequence[Mapping] = (),
+    first_versions: Mapping[str, int] | None = None,
 ) -> FullOutcome:
     version = _version(batch_at)
     batch_date: date = batch_at.astimezone(GMT7).date()
@@ -309,6 +313,12 @@ def run_full(
     # 6. Depth by BFS over everything; trend elements that lost every path are inactive (AC-INV-03).
     out_store = _store_of(trend, trend_recipes)
     content = _combined(core, out_store)
+    # Approved contributions live in D1, not in the store (ADR 0013); the BFS below sets their depth.
+    joined = add_contributions(
+        content, contributions, version=version, first_versions=first_versions or {}, blocked=frozenset(blocked)
+    )
+    content = joined.store
+    report["contributions_waiting"] = joined.waiting
     depths = bfs_depths(_graph(content, frozenset(blocked)))
     elements = {}
     for eid, e in content.elements.items():
@@ -347,6 +357,7 @@ def run_full(
     chosen = select_daily(candidates_daily, history, version)
     daily = build_daily_block(chosen, chosen["hint"])
 
+    content = apply_tiers(content, tiers)
     graph_out = export_graph(content, version)
     manifest = build_manifest(content, version=version, batch_at=batch_at, daily=daily, previous_version=None)
     check_all(graph_out, manifest, content, lists)  # raises InvariantError: nothing of this batch is published

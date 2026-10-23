@@ -58,6 +58,7 @@ def _plaintext(element: StoredElement) -> dict:
         "depth": element.depth,
         "added_version": _added_version(element.batch),
         "image_key": element.image_key,
+        "tier": element.tier,
     }
 
 

@@ -17,6 +17,7 @@ from lau_meme_pipeline.text import fold
 
 CLASSIC = "classic"
 ACTIVE = "active"
+INACTIVE = "inactive"
 MAX_NAME_WORDS = 4
 # Source file codes → values accepted by D1 `element.origin` (worker/migrations/0002_content.sql).
 ORIGINS = {"V": "vn", "Q": "intl"}
@@ -34,6 +35,7 @@ class StoredElement:
     batch: str
     status: str
     image_key: str | None = None  # '<sha256-12>.webp' once drawn (AC-ART-04)
+    tier: int = 1  # set by the admin, read from /pipeline/state every batch (AC-TIER-01, ADR 0013)
 
 
 @dataclass(frozen=True)
