@@ -126,12 +126,12 @@
   - [x] AC-DAILY-11 Bảng xếp hạng streak
   - [x] AC-DAILY-14 Bảng xếp hạng tuần và tháng (thêm 2026-10-21)
   - [x] AC-DAILY-15 Bảng xếp hạng trên giao diện, chưa đăng nhập và bảng rỗng (thêm 2026-10-21)
-- [ ] **UI2** Giao diện - góp ý sau staging · 5.5đ · rủi ro: LOW · KH: 2027-06-04 → 2027-06-22 · tiến độ: 0% (theo AC) · người: Thuc · bắt đầu:  · xong:  · ghi chú: 
-  - [ ] AC-DAILY-16 Thẻ thử thách nổi bật (thêm 2026-10-22)
-  - [ ] AC-DAILY-17 Bảng xếp hạng ở tab riêng (thêm 2026-10-22)
-  - [ ] AC-GAME-19 Nút điều khiển nằm ở khu bàn lẩu, đăng nhập ở đầu trang (thêm 2026-10-22)
-  - [ ] AC-GAME-20 Nồi lẩu vẽ trọn, quai ngang thân nồi (thêm 2026-10-22)
-  - [ ] AC-GAME-21 Vuốt cuộn trang trên màn hình cảm ứng (thêm 2026-10-22)
+- [x] **UI2** Giao diện - góp ý sau staging · 5.5đ · rủi ro: LOW · KH: 2027-06-04 → 2027-06-22 · tiến độ: 0% (theo AC) · người: Thuc · bắt đầu:  · xong:  · ghi chú: 
+  - [x] AC-DAILY-16 Thẻ thử thách nổi bật (thêm 2026-10-22)
+  - [x] AC-DAILY-17 Bảng xếp hạng ở tab riêng (thêm 2026-10-22)
+  - [x] AC-GAME-19 Nút điều khiển nằm ở khu bàn lẩu, đăng nhập ở đầu trang (thêm 2026-10-22)
+  - [x] AC-GAME-20 Nồi lẩu vẽ trọn, quai ngang thân nồi (thêm 2026-10-22)
+  - [x] AC-GAME-21 Vuốt cuộn trang trên màn hình cảm ứng (thêm 2026-10-22)
 
 ## Cộng đồng
 - [ ] **SHARE** Thẻ chia sẻ · 4đ · rủi ro: MEDIUM · KH: 2027-04-07 → 2027-04-19 · tiến độ: 0% · người: Thuc · bắt đầu:  · xong:  · ghi chú: 
@@ -237,7 +237,7 @@
   - [ ] AC-CONTRIB-12 Xóa tài khoản và xuất dữ liệu
 
 ## Kiểm thử
-- [ ] **UAT** Kiểm thử nghiệm thu & sửa lỗi (giai đoạn 1) · 18đ · rủi ro: MEDIUM · KH: 2027-07-01 → 2027-08-04 · tiến độ: 0% · người: Thuc · bắt đầu:  · xong:  · ghi chú: 
+- [x] **UAT** Kiểm thử nghiệm thu & sửa lỗi (giai đoạn 1) · 15đ · rủi ro: MEDIUM · KH: 2027-07-01 → 2027-08-04 · tiến độ: 0% · người: Thuc · bắt đầu:  · xong:  · ghi chú: 
   - [x] AC-GAME-01 Bàn chơi lần đầu
   - [x] AC-GAME-02 Nhúng lẩu qua nồi - ghép thành công
   - [x] AC-GAME-03 Thả chồng trên mặt bàn
@@ -256,9 +256,9 @@
   - [x] AC-GAME-16 Lỗi tải graph
   - [x] AC-GAME-17 Đổi version graph giữ tiến độ
   - [x] AC-GAME-18 Nồi lẩu nằm trong màn hình đầu tiên (thêm 2026-10-21)
-  - [ ] AC-GAME-19 Nút điều khiển nằm ở khu bàn lẩu, đăng nhập ở đầu trang (thêm 2026-10-22)
-  - [ ] AC-GAME-20 Nồi lẩu vẽ trọn, quai ngang thân nồi (thêm 2026-10-22)
-  - [ ] AC-GAME-21 Vuốt cuộn trang trên màn hình cảm ứng (thêm 2026-10-22)
+  - [x] AC-GAME-19 Nút điều khiển nằm ở khu bàn lẩu, đăng nhập ở đầu trang (thêm 2026-10-22)
+  - [x] AC-GAME-20 Nồi lẩu vẽ trọn, quai ngang thân nồi (thêm 2026-10-22)
+  - [x] AC-GAME-21 Vuốt cuộn trang trên màn hình cảm ứng (thêm 2026-10-22)
 
 ## Nội dung
 - [x] **MOD** Kiểm duyệt nội dung tự động (giai đoạn 2) · 9đ · rủi ro: HIGH · KH: 2027-08-05 → 2027-09-01 · tiến độ: 100% · người: Thuc · bắt đầu: 2026-10-20 · xong: 2026-10-20 · ghi chú: 
