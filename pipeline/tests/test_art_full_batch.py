@@ -33,11 +33,28 @@ KEY_RE = re.compile(r"^[0-9a-f]{12}\.webp$")
 
 # ---------------------------------------------------------------- helpers
 
+CORE_DONE_KEY = "0123456789ab.webp"
+
+
+def all_core_drawn() -> list[dict]:
+    """store.core_art where every core element already has an image_key (sorted by id, one entry per core element)."""
+    from lau_meme_pipeline.ids import element_id
+
+    entries = [
+        {"id": element_id(e["name"]), "name": e["name"], "image_key": CORE_DONE_KEY} for e in real_core()["elements"]
+    ]
+    return sorted(entries, key=lambda e: e["id"])
+
 
 class ArtClient(FakeClient):
     """FakeClient plus the two upload calls. `exists=True` makes every image look already uploaded."""
 
-    def __init__(self, store=None, exists=False, fail_put=False):
+    def __init__(self, store=None, exists=False, fail_put=False, core_drawn=True):
+        # AC-ART-11: a full batch also backfills core images. Unless a test says otherwise (core_drawn=False) or
+        # brings its own store.core_art, start from a store whose 174 core elements already have an image, so only
+        # memes are drawn.
+        if core_drawn and "core_art" not in (store or {}):
+            store = {**(store or {}), "core_art": all_core_drawn()}
         super().__init__(store=store)
         self.exists = exists
         self.fail_put = fail_put
