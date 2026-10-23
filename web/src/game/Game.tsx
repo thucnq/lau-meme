@@ -12,6 +12,7 @@ import { ElementIcon } from '../art/ElementIcon'
 import { startManifestWatch } from '../daily/countdown'
 import { DailyPanel, Leaderboards } from '../daily/DailyPanel'
 import { loadSolved, saveSolved, type SolvedDaily } from '../daily/solved'
+import { recordCombine } from '../metrics/app'
 import { BLOCKLIST_POLL_MS, loadBlocklist } from '../report/blocklist'
 import type { Graph } from '../graph/crypto'
 import { localStore as storage, migrateLegacyKeys } from '../storage'
@@ -259,6 +260,7 @@ export function Game({ onDiscover, onItems, heirlooms = {}, onReport, blocklistR
         .then((out) => {
           if (gen !== generation.current) return
           const table = progressRef.current?.table ?? p.table
+          recordCombine(out.kind === 'hit')
           if (out.kind === 'hit') {
             const item = out.progress.items.find((i) => i.id === out.result.id)!
             commit({ ...out.progress, table: [...table, onTable(item, pa.x, pa.y)] })
@@ -294,6 +296,7 @@ export function Game({ onDiscover, onItems, heirlooms = {}, onReport, blocklistR
       const out = await combine(ctx, p, source.item.name, target.name)
       if (gen !== generation.current) return
       const table = (progressRef.current ?? p).table.filter((t) => t.uid !== source.uid)
+      recordCombine(out.kind === 'hit')
       if (out.kind === 'hit') {
         const item = out.progress.items.find((i) => i.id === out.result.id)!
         const rest = table.filter((t) => t.uid !== target.uid)

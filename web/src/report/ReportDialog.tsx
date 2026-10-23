@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { SendError } from '../disc/api'
 import { ConsentRequiredError } from '../privacy/client'
 import { ConsentPrompt } from '../privacy/ConsentPrompt'
+import { trackEvent } from '../metrics/app'
 import { REASONS, submitReport, type ReportReason } from './api'
 
 type Props = {
@@ -34,6 +35,7 @@ export function ReportDialog({ item, policyVersion, storage, onClose, onSent }: 
     setStatus('sending')
     submitReport(req, { storage, policyVersion }).then(
       () => {
+        trackEvent({ type: 'report', target })
         setStatus('sent')
         onSent?.()
       },

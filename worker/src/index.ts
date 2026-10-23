@@ -6,6 +6,7 @@ import { getSession, signInWithGoogle, signOut } from './features/auth/auth'
 import { getDailyLeaderboard, getDailyPeriodLeaderboard, getMyStreak, getStreakLeaderboard, submitDailyResult } from './features/daily/daily'
 import { getPipelineState, getPipelineStore, patchBatchRun, publishBatch, rollbackBatch } from './features/pipeline/batches'
 import { putPipelineImage } from './features/pipeline/images'
+import { createEvents, getMetricsSummary } from './features/metric/metric'
 import { cleanup } from './features/player/cleanup'
 import { createConsent, deleteMyData, getMyData, putNickname } from './features/player/me'
 import { createReport, getBlocklist } from './features/report/report'
@@ -50,6 +51,9 @@ const routes: Route[] = [
   { pattern: /^\/api\/me$/, methods: { GET: getMyData, DELETE: deleteMyData } },
   { pattern: /^\/api\/me\/nickname$/, methods: { PUT: putNickname } },
   { pattern: /^\/api\/me\/streak$/, methods: { GET: getMyStreak } },
+  { pattern: /^\/api\/events$/, methods: { POST: createEvents } },
+  // PIPELINE_TOKEN or ADMIN_TOKEN, checked inside (AC-METRIC-06)
+  { pattern: /^\/api\/metrics\/summary$/, methods: { GET: getMetricsSummary } },
   { pattern: /^\/api\/pipeline\/batches$/, methods: { POST: pipelineOnly(publishBatch) } },
   { pattern: /^\/api\/pipeline\/batches\/([^/]+)$/, methods: { PATCH: pipelineOnly(patchBatchRun) } },
   { pattern: /^\/api\/pipeline\/rollback$/, methods: { POST: pipelineOnly(rollbackBatch) } },
