@@ -95,7 +95,7 @@ const ALL_TYPES = [
   { type: 'session_start' },
   { type: 'combine_summary', ok: 3, miss: 1 },
   { type: 'daily_start', version: 202610210000 },
-  { type: 'daily_complete', version: 202610210000, steps: 7 },
+  { type: 'daily_complete', version: 202610210000 },
   { type: 'share', card: 'daily', method: 'copy' },
   { type: 'report', target: 'element' },
   { type: 'feedback', value: 'nhat' },
@@ -124,7 +124,8 @@ describe('metric events (POST /events)', () => {
     const props = (type: string) => JSON.parse(rows.find((r) => r.type === type)!.props_json as string) as Record<string, unknown>
     expect(props('combine_summary')).toMatchObject({ ok: 3, miss: 1 })
     expect(props('daily_start')).toMatchObject({ version: 202610210000 })
-    expect(props('daily_complete')).toMatchObject({ version: 202610210000, steps: 7 })
+    expect(props('daily_complete')).toMatchObject({ version: 202610210000 })
+    expect(Object.keys(props('daily_complete')).filter((k) => k !== 'type' && k !== 'version')).toEqual([])
     expect(props('share')).toMatchObject({ card: 'daily', method: 'copy' })
     expect(props('report')).toMatchObject({ target: 'element' })
     expect(props('feedback')).toMatchObject({ value: 'nhat' })
@@ -190,8 +191,7 @@ describe('metric events (POST /events)', () => {
     ['combine_summary ok âm', [{ type: 'combine_summary', ok: -1, miss: 0 }]],
     ['combine_summary vượt 10000', [{ type: 'combine_summary', ok: 10001, miss: 0 }]],
     ['combine_summary không phải số nguyên', [{ type: 'combine_summary', ok: 1.5, miss: 0 }]],
-    ['daily_complete steps = 0', [{ type: 'daily_complete', version: 1, steps: 0 }]],
-    ['daily_complete steps > 200', [{ type: 'daily_complete', version: 1, steps: 201 }]],
+    ['daily_complete có thuộc tính steps (ngoài schema)', [{ type: 'daily_complete', version: 1, steps: 7 }]],
     ['feedback value lạ', [{ type: 'feedback', value: '<script>alert(1)</script>' }]],
     ['report target lạ', [{ type: 'report', target: 'player' }]],
     ['chuỗi script trong loại', [{ type: '<script>alert(1)</script>' }]],
@@ -323,7 +323,7 @@ function fixtureRows() {
     // Daily on D
     ...[A!, B!, G!, M!].map((p) => e(p, 'daily_start', at(D), { version: 1 })),
     e(M!, 'daily_start', at(D, 13), { version: 1 }),
-    ...[A!, B!, M!].map((p) => e(p, 'daily_complete', at(D, 14), { version: 1, steps: 6 })),
+    ...[A!, B!, M!].map((p) => e(p, 'daily_complete', at(D, 14), { version: 1 })),
     // shares on D
     e(A!, 'share', at(D, 15), { card: 'daily', method: 'copy' }),
     e(A!, 'share', at(D, 15, 5), { card: 'daily', method: 'native' }),
@@ -342,7 +342,7 @@ function fixtureRows() {
     e(B!, 'report', at(D, 17, 5), { target: 'image' }),
     // noise on other days
     e(N!, 'daily_start', at('2026-10-11'), { version: 2 }),
-    e(A!, 'daily_complete', at('2026-10-11'), { version: 2, steps: 5 }),
+    e(A!, 'daily_complete', at('2026-10-11'), { version: 2 }),
     e(N!, 'daily_start', at('2026-10-09'), { version: 0 }),
     e(A!, 'share', at('2026-10-09'), { card: 'daily', method: 'copy' }),
     e(A!, 'share', at('2026-10-11'), { card: 'discovery', method: 'copy' }),
