@@ -1,6 +1,6 @@
 # Gantt — ƯỚC LƯỢNG - LẨU MEME
 
-Tiến độ 78% · nghiệm thu KH 2027-11-23 · dự báo 2027-02-15. Bản tương tác: `gantt.html`.
+Tiến độ 78% · nghiệm thu KH 2027-11-23 · dự báo 2027-02-16. Bản tương tác: `gantt.html`.
 
 ```mermaid
 gantt
@@ -27,27 +27,27 @@ gantt
     AUTH Đăng nhập bằng Google (100%) :done, AUTH, 2026-10-21, 1d
     section Trò chơi
     DAILY2 Món đặc biệt - làm lại theo thời gian và tài khoản (100%) :done, DAILY2, 2026-10-21, 1d
-    UI2 Giao diện - góp ý sau staging (0%) :UI2, 2026-10-22, 13d
+    UI2 Giao diện - góp ý sau staging (0%) :UI2, 2026-10-23, 13d
     section Cộng đồng
-    SHARE Thẻ chia sẻ (0%) :SHARE, 2026-11-10, 9d
+    SHARE Thẻ chia sẻ (0%) :SHARE, 2026-11-11, 9d
     section An toàn
     REPORT Báo cáo + chặn nóng (100%) :done, REPORT, 2026-10-20, 1d
     ADMIN Trang quản trị tối giản (100%) :done, ADMIN, 2026-10-20, 1d
     section Vận hành
-    METRIC Đo chỉ số thành công (0%) :METRIC, 2026-11-23, 10d
+    METRIC Đo chỉ số thành công (0%) :METRIC, 2026-11-24, 10d
     section Kiểm thử
     INV Bất biến nội dung và trò chơi (100%) :done, INV, 2026-10-20, 1d
     section Nền tảng
     SUBPATH Chạy dưới đường dẫn con dinoduct.fun/lau-meme (100%) :done, SUBPATH, 2026-10-20, 1d
     section Kiểm thử
-    UAT Kiểm thử nghiệm thu & sửa lỗi (giai đoạn 1) (0%) :UAT, 2026-12-07, 33d
+    UAT Kiểm thử nghiệm thu & sửa lỗi (giai đoạn 1) (0%) :UAT, 2026-12-08, 33d
     section Nội dung
     MOD Kiểm duyệt nội dung tự động (giai đoạn 2) (100%) :done, MOD, 2026-10-20, 1d
     PIPE2 Pipeline Mẻ nhúng - crawl và tự động đăng (giai đoạn 2) (100%) :done, PIPE2, 2026-10-21, 1d
     ART Ảnh minh họa tự tạo (giai đoạn 2) (100%) :done, ART, 2026-10-21, 2d
     section Kiểm thử
-    UAT2 Kiểm thử nghiệm thu & sửa lỗi (giai đoạn 2) (0%) :UAT2, 2027-01-22, 11d
+    UAT2 Kiểm thử nghiệm thu & sửa lỗi (giai đoạn 2) (0%) :UAT2, 2027-01-25, 11d
     section Bàn giao
-    UAT 0 tuần :uat, 2027-02-15, 0d
-    Nghiệm thu :milestone, 2027-02-15, 0d
+    UAT 0 tuần :uat, 2027-02-16, 0d
+    Nghiệm thu :milestone, 2027-02-16, 0d
 ```

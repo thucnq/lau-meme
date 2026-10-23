@@ -2,8 +2,8 @@
 phase: design
 project: lau-meme
 stack: py-ts-cloudflare
-spec: approved 2026-10-22 by nguyenquythuc at 7d8d78f
-contract: approved 2026-10-22 by nguyenquythuc at 29be42a
+spec: approved 2026-10-23 by nguyenquythuc at c016ee5
+contract: draft
 feature: ui2
 review-feat-seed: approved
 review-feat-graph: approved

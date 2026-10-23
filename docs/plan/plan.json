@@ -2,7 +2,7 @@
  "meta": {
   "title": "ƯỚC LƯỢNG - LẨU MEME",
   "start": "2026-10-20",
-  "today": "2026-10-22",
+  "today": "2026-10-23",
   "lanes": [
    "Thuc"
   ],
@@ -11,8 +11,8 @@
    "2027-11-23"
   ],
   "fcUat": [
-   "2027-02-15",
-   "2027-02-15"
+   "2027-02-16",
+   "2027-02-16"
   ],
   "holidays": [
    "2027-01-01",
@@ -1136,8 +1136,8 @@
     "2027-06-22"
    ],
    "fc": [
-    "2026-10-22",
-    "2026-11-09"
+    "2026-10-23",
+    "2026-11-10"
    ],
    "line": 128,
    "acs": [
@@ -1145,7 +1145,7 @@
      "id": "AC-DAILY-16",
      "title": "Thẻ thử thách nổi bật (thêm 2026-10-22)",
      "optional": false,
-     "tested": false,
+     "tested": true,
      "done": false,
      "line": 129
     },
@@ -1153,7 +1153,7 @@
      "id": "AC-DAILY-17",
      "title": "Bảng xếp hạng ở tab riêng (thêm 2026-10-22)",
      "optional": false,
-     "tested": false,
+     "tested": true,
      "done": false,
      "line": 130
     },
@@ -1161,7 +1161,7 @@
      "id": "AC-GAME-19",
      "title": "Nút điều khiển nằm ở khu bàn lẩu, đăng nhập ở đầu trang (thêm 2026-10-22)",
      "optional": false,
-     "tested": false,
+     "tested": true,
      "done": false,
      "line": 131
     },
@@ -1169,7 +1169,7 @@
      "id": "AC-GAME-20",
      "title": "Nồi lẩu vẽ trọn, quai ngang thân nồi (thêm 2026-10-22)",
      "optional": false,
-     "tested": false,
+     "tested": true,
      "done": false,
      "line": 132
     },
@@ -1177,7 +1177,7 @@
      "id": "AC-GAME-21",
      "title": "Vuốt cuộn trang trên màn hình cảm ứng (thêm 2026-10-22)",
      "optional": false,
-     "tested": false,
+     "tested": true,
      "done": false,
      "line": 133
     }
@@ -1207,8 +1207,8 @@
     "2027-04-19"
    ],
    "fc": [
-    "2026-11-10",
-    "2026-11-20"
+    "2026-11-11",
+    "2026-11-23"
    ],
    "line": 136,
    "acs": [
@@ -1500,8 +1500,8 @@
     "2027-06-10"
    ],
    "fc": [
-    "2026-11-23",
-    "2026-12-04"
+    "2026-11-24",
+    "2026-12-07"
    ],
    "line": 168,
    "acs": [
@@ -1844,8 +1844,8 @@
     "2027-08-04"
    ],
    "fc": [
-    "2026-12-07",
-    "2027-01-21"
+    "2026-12-08",
+    "2027-01-22"
    ],
    "line": 208,
    "acs": [
@@ -1997,7 +1997,7 @@
      "id": "AC-GAME-19",
      "title": "Nút điều khiển nằm ở khu bàn lẩu, đăng nhập ở đầu trang (thêm 2026-10-22)",
      "optional": false,
-     "tested": false,
+     "tested": true,
      "done": false,
      "line": 227
     },
@@ -2005,7 +2005,7 @@
      "id": "AC-GAME-20",
      "title": "Nồi lẩu vẽ trọn, quai ngang thân nồi (thêm 2026-10-22)",
      "optional": false,
-     "tested": false,
+     "tested": true,
      "done": false,
      "line": 228
     },
@@ -2013,7 +2013,7 @@
      "id": "AC-GAME-21",
      "title": "Vuốt cuộn trang trên màn hình cảm ứng (thêm 2026-10-22)",
      "optional": false,
-     "tested": false,
+     "tested": true,
      "done": false,
      "line": 229
     }
@@ -2368,8 +2368,8 @@
     "2027-11-22"
    ],
    "fc": [
-    "2027-01-22",
-    "2027-02-12"
+    "2027-01-25",
+    "2027-02-15"
    ],
    "line": 266,
    "acs": []
@@ -2379,7 +2379,7 @@
   "# Tiến độ — ƯỚC LƯỢNG - LẨU MEME",
   "",
   "> Sinh bởi `/dk:plan` (gen-plan.py) từ `docs/estimate/items.json`. **Người sửa trực tiếp file này**: dấu `[x]` (hạng mục hoặc AC), `tiến độ: N%`, `người`, `bắt đầu`, `xong` (YYYY-MM-DD), `ghi chú` — giữ nguyên dấu ` · ` giữa các trường. Chạy lại `/dk:plan` để tính dự báo và vẽ lại `gantt.html`. `KH` là kế hoạch gốc, chỉ đổi bằng `/dk:plan rebaseline`.",
-  "> Bắt đầu dự án: 2026-10-20 · Kỹ sư: 1 (Thuc) · Giờ/tuần: 20 · Nghiệm thu KH: 2027-11-23 · Dự báo: 2027-02-15 · Cập nhật: 2026-10-22",
+  "> Bắt đầu dự án: 2026-10-20 · Kỹ sư: 1 (Thuc) · Giờ/tuần: 20 · Nghiệm thu KH: 2027-11-23 · Dự báo: 2027-02-16 · Cập nhật: 2026-10-23",
   "",
   "",
   "## Nền tảng",
