@@ -7,12 +7,12 @@
    "Thuc"
   ],
   "khUat": [
-   "2028-05-04",
-   "2028-05-04"
+   "2028-06-06",
+   "2028-06-06"
   ],
   "fcUat": [
-   "2027-06-02",
-   "2027-06-02"
+   "2027-07-23",
+   "2027-07-23"
   ],
   "holidays": [
    "2027-01-01",
@@ -24,13 +24,14 @@
    "2027-02-09",
    "2027-02-10",
    "2027-04-30",
-   "2027-05-01"
+   "2027-05-01",
+   "2027-09-02"
   ],
-  "pct": 64.8,
+  "pct": 76.6,
   "counts": {
-   "done": 17,
+   "done": 19,
    "doing": 0,
-   "todo": 9,
+   "todo": 8,
    "late": 0
   },
   "slip": 0,
@@ -1126,9 +1127,9 @@
    ],
    "owner": "Thuc",
    "lane": "Thuc",
-   "pct": 0,
-   "pctAuto": true,
-   "status": "todo",
+   "pct": 100,
+   "pctAuto": false,
+   "status": "done",
    "slip": 0,
    "note": "",
    "startActual": "",
@@ -1138,8 +1139,8 @@
     "2027-06-22"
    ],
    "fc": [
-    "2026-10-23",
-    "2026-11-10"
+    "2027-06-04",
+    "2027-06-04"
    ],
    "line": 128,
    "acs": [
@@ -1148,7 +1149,7 @@
      "title": "Thẻ thử thách nổi bật (thêm 2026-10-22)",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 129
     },
     {
@@ -1156,7 +1157,7 @@
      "title": "Bảng xếp hạng ở tab riêng (thêm 2026-10-22)",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 130
     },
     {
@@ -1164,7 +1165,7 @@
      "title": "Nút điều khiển nằm ở khu bàn lẩu, đăng nhập ở đầu trang (thêm 2026-10-22)",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 131
     },
     {
@@ -1172,7 +1173,7 @@
      "title": "Nồi lẩu vẽ trọn, quai ngang thân nồi (thêm 2026-10-22)",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 132
     },
     {
@@ -1180,7 +1181,7 @@
      "title": "Vuốt cuộn trang trên màn hình cảm ứng (thêm 2026-10-22)",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 133
     }
    ]
@@ -1209,8 +1210,8 @@
     "2027-04-19"
    ],
    "fc": [
-    "2026-11-11",
-    "2026-11-23"
+    "2026-10-23",
+    "2026-11-04"
    ],
    "line": 136,
    "acs": [
@@ -1488,7 +1489,7 @@
      "id": "AC-ADMIN-12",
      "title": "Gán tier cho phần tử (thêm 2026-10-23)",
      "optional": false,
-     "tested": false,
+     "tested": true,
      "done": false,
      "line": 167
     }
@@ -1518,8 +1519,8 @@
     "2027-06-10"
    ],
    "fc": [
-    "2026-11-24",
-    "2026-12-07"
+    "2026-11-05",
+    "2026-11-18"
    ],
    "line": 170,
    "acs": [
@@ -1863,8 +1864,8 @@
     "2027-10-11"
    ],
    "fc": [
-    "2026-12-08",
-    "2026-12-18"
+    "2026-11-19",
+    "2026-12-01"
    ],
    "line": 210,
    "acs": [
@@ -1927,8 +1928,8 @@
     "2027-10-22"
    ],
    "fc": [
-    "2026-12-21",
-    "2026-12-31"
+    "2026-12-02",
+    "2026-12-14"
    ],
    "line": 217,
    "acs": [
@@ -1936,7 +1937,7 @@
      "id": "AC-ADMIN-12",
      "title": "Gán tier cho phần tử (thêm 2026-10-23)",
      "optional": false,
-     "tested": false,
+     "tested": true,
      "done": false,
      "line": 218
     },
@@ -1944,7 +1945,7 @@
      "id": "AC-TIER-01",
      "title": "Tier mặc định và giữ qua các mẻ",
      "optional": false,
-     "tested": false,
+     "tested": true,
      "done": false,
      "line": 219
     },
@@ -1952,7 +1953,7 @@
      "id": "AC-TIER-02",
      "title": "Hiển thị tier trên phần tử",
      "optional": false,
-     "tested": false,
+     "tested": true,
      "done": false,
      "line": 220
     },
@@ -1960,7 +1961,7 @@
      "id": "AC-TIER-03",
      "title": "Graph cũ chưa có tier",
      "optional": false,
-     "tested": false,
+     "tested": true,
      "done": false,
      "line": 221
     }
@@ -1992,8 +1993,8 @@
     "2027-12-02"
    ],
    "fc": [
-    "2027-01-04",
-    "2027-02-18"
+    "2026-12-15",
+    "2027-01-25"
    ],
    "line": 224,
    "acs": [
@@ -2107,9 +2108,9 @@
    ],
    "owner": "Thuc",
    "lane": "Thuc",
-   "pct": 0,
+   "pct": 100,
    "pctAuto": false,
-   "status": "todo",
+   "status": "done",
    "slip": 0,
    "note": "",
    "startActual": "",
@@ -2119,8 +2120,8 @@
     "2027-08-04"
    ],
    "fc": [
-    "2027-02-19",
-    "2027-04-15"
+    "2027-07-01",
+    "2027-07-01"
    ],
    "line": 239,
    "acs": [
@@ -2273,7 +2274,7 @@
      "title": "Nút điều khiển nằm ở khu bàn lẩu, đăng nhập ở đầu trang (thêm 2026-10-22)",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 258
     },
     {
@@ -2281,7 +2282,7 @@
      "title": "Nồi lẩu vẽ trọn, quai ngang thân nồi (thêm 2026-10-22)",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 259
     },
     {
@@ -2289,7 +2290,7 @@
      "title": "Vuốt cuộn trang trên màn hình cảm ứng (thêm 2026-10-22)",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 260
     }
    ]
@@ -2533,8 +2534,8 @@
     "2028-05-03"
    ],
    "fc": [
-    "2027-04-16",
-    "2027-05-11"
+    "2027-01-26",
+    "2027-02-24"
    ],
    "line": 284,
    "acs": [
@@ -2576,8 +2577,8 @@
    "id": "ART",
    "module": "Nội dung",
    "name": "Ảnh minh họa tự tạo (giai đoạn 2)",
-   "points": 10.0,
-   "days": 22,
+   "points": 9.0,
+   "days": 20,
    "risk": "HIGH",
    "deps": [
     "MOD"
@@ -2692,6 +2693,45 @@
    ]
   },
   {
+   "id": "ART2",
+   "module": "Nội dung",
+   "name": "Vẽ bù ảnh phần tử lõi (giai đoạn 2)",
+   "points": 1.0,
+   "days": 3,
+   "risk": "LOW",
+   "deps": [
+    "ART"
+   ],
+   "owner": "Thuc",
+   "lane": "Thuc",
+   "pct": 0,
+   "pctAuto": true,
+   "status": "todo",
+   "slip": 0,
+   "note": "",
+   "startActual": "",
+   "finishActual": "",
+   "kh": [
+    "2028-06-01",
+    "2028-06-05"
+   ],
+   "fc": [
+    "2027-02-25",
+    "2027-03-01"
+   ],
+   "line": 301,
+   "acs": [
+    {
+     "id": "AC-ART-11",
+     "title": "Vẽ bù ảnh cho phần tử lõi (thêm 2026-10-23)",
+     "optional": false,
+     "tested": false,
+     "done": false,
+     "line": 302
+    }
+   ]
+  },
+  {
    "id": "UAT2",
    "module": "Kiểm thử",
    "name": "Kiểm thử nghiệm thu & sửa lỗi (giai đoạn 2)",
@@ -2715,10 +2755,10 @@
     "2027-11-22"
    ],
    "fc": [
-    "2027-05-12",
-    "2027-06-01"
+    "2027-07-02",
+    "2027-07-22"
    ],
-   "line": 303,
+   "line": 305,
    "acs": []
   }
  ],
@@ -2726,7 +2766,7 @@
   "# Tiến độ — ƯỚC LƯỢNG - LẨU MEME",
   "",
   "> Sinh bởi `/dk:plan` (gen-plan.py) từ `docs/estimate/items.json`. **Người sửa trực tiếp file này**: dấu `[x]` (hạng mục hoặc AC), `tiến độ: N%`, `người`, `bắt đầu`, `xong` (YYYY-MM-DD), `ghi chú` — giữ nguyên dấu ` · ` giữa các trường. Chạy lại `/dk:plan` để tính dự báo và vẽ lại `gantt.html`. `KH` là kế hoạch gốc, chỉ đổi bằng `/dk:plan rebaseline`.",
-  "> Bắt đầu dự án: 2026-10-20 · Kỹ sư: 1 (Thuc) · Giờ/tuần: 20 · Nghiệm thu KH: 2028-05-04 · Dự báo: 2027-06-02 · Cập nhật: 2026-10-23",
+  "> Bắt đầu dự án: 2026-10-20 · Kỹ sư: 1 (Thuc) · Giờ/tuần: 20 · Nghiệm thu KH: 2028-06-06 · Dự báo: 2027-07-23 · Cập nhật: 2026-10-23",
   "",
   "",
   "## Nền tảng",
@@ -2851,12 +2891,12 @@
   "  - [x] AC-DAILY-11 Bảng xếp hạng streak",
   "  - [x] AC-DAILY-14 Bảng xếp hạng tuần và tháng (thêm 2026-10-21)",
   "  - [x] AC-DAILY-15 Bảng xếp hạng trên giao diện, chưa đăng nhập và bảng rỗng (thêm 2026-10-21)",
-  "- [ ] **UI2** Giao diện - góp ý sau staging · 5.5đ · rủi ro: LOW · KH: 2027-06-04 → 2027-06-22 · tiến độ: 0% (theo AC) · người: Thuc · bắt đầu:  · xong:  · ghi chú: ",
-  "  - [ ] AC-DAILY-16 Thẻ thử thách nổi bật (thêm 2026-10-22)",
-  "  - [ ] AC-DAILY-17 Bảng xếp hạng ở tab riêng (thêm 2026-10-22)",
-  "  - [ ] AC-GAME-19 Nút điều khiển nằm ở khu bàn lẩu, đăng nhập ở đầu trang (thêm 2026-10-22)",
-  "  - [ ] AC-GAME-20 Nồi lẩu vẽ trọn, quai ngang thân nồi (thêm 2026-10-22)",
-  "  - [ ] AC-GAME-21 Vuốt cuộn trang trên màn hình cảm ứng (thêm 2026-10-22)",
+  "- [x] **UI2** Giao diện - góp ý sau staging · 5.5đ · rủi ro: LOW · KH: 2027-06-04 → 2027-06-22 · tiến độ: 100% · người: Thuc · bắt đầu:  · xong:  · ghi chú: ",
+  "  - [x] AC-DAILY-16 Thẻ thử thách nổi bật (thêm 2026-10-22)",
+  "  - [x] AC-DAILY-17 Bảng xếp hạng ở tab riêng (thêm 2026-10-22)",
+  "  - [x] AC-GAME-19 Nút điều khiển nằm ở khu bàn lẩu, đăng nhập ở đầu trang (thêm 2026-10-22)",
+  "  - [x] AC-GAME-20 Nồi lẩu vẽ trọn, quai ngang thân nồi (thêm 2026-10-22)",
+  "  - [x] AC-GAME-21 Vuốt cuộn trang trên màn hình cảm ứng (thêm 2026-10-22)",
   "",
   "## Cộng đồng",
   "- [ ] **SHARE** Thẻ chia sẻ · 4đ · rủi ro: MEDIUM · KH: 2027-04-07 → 2027-04-19 · tiến độ: 0% · người: Thuc · bắt đầu:  · xong:  · ghi chú: ",
@@ -2962,7 +3002,7 @@
   "  - [ ] AC-CONTRIB-12 Xóa tài khoản và xuất dữ liệu",
   "",
   "## Kiểm thử",
-  "- [ ] **UAT** Kiểm thử nghiệm thu & sửa lỗi (giai đoạn 1) · 18đ · rủi ro: MEDIUM · KH: 2027-07-01 → 2027-08-04 · tiến độ: 0% · người: Thuc · bắt đầu:  · xong:  · ghi chú: ",
+  "- [x] **UAT** Kiểm thử nghiệm thu & sửa lỗi (giai đoạn 1) · 18đ · rủi ro: MEDIUM · KH: 2027-07-01 → 2027-08-04 · tiến độ: 100% · người: Thuc · bắt đầu:  · xong:  · ghi chú: ",
   "  - [x] AC-GAME-01 Bàn chơi lần đầu",
   "  - [x] AC-GAME-02 Nhúng lẩu qua nồi - ghép thành công",
   "  - [x] AC-GAME-03 Thả chồng trên mặt bàn",
@@ -2981,9 +3021,9 @@
   "  - [x] AC-GAME-16 Lỗi tải graph",
   "  - [x] AC-GAME-17 Đổi version graph giữ tiến độ",
   "  - [x] AC-GAME-18 Nồi lẩu nằm trong màn hình đầu tiên (thêm 2026-10-21)",
-  "  - [ ] AC-GAME-19 Nút điều khiển nằm ở khu bàn lẩu, đăng nhập ở đầu trang (thêm 2026-10-22)",
-  "  - [ ] AC-GAME-20 Nồi lẩu vẽ trọn, quai ngang thân nồi (thêm 2026-10-22)",
-  "  - [ ] AC-GAME-21 Vuốt cuộn trang trên màn hình cảm ứng (thêm 2026-10-22)",
+  "  - [x] AC-GAME-19 Nút điều khiển nằm ở khu bàn lẩu, đăng nhập ở đầu trang (thêm 2026-10-22)",
+  "  - [x] AC-GAME-20 Nồi lẩu vẽ trọn, quai ngang thân nồi (thêm 2026-10-22)",
+  "  - [x] AC-GAME-21 Vuốt cuộn trang trên màn hình cảm ứng (thêm 2026-10-22)",
   "",
   "## Nội dung",
   "- [x] **MOD** Kiểm duyệt nội dung tự động (giai đoạn 2) · 9đ · rủi ro: HIGH · KH: 2027-08-05 → 2027-09-01 · tiến độ: 100% · người: Thuc · bắt đầu: 2026-10-20 · xong: 2026-10-20 · ghi chú: ",
@@ -3012,7 +3052,7 @@
   "  - [ ] AC-PIPE-15 Nguồn Tuổi Trẻ chuyên mục meme (thêm 2026-10-23)",
   "  - [ ] AC-PIPE-16 Ghi mức trending (mặn) của phần tử (thêm 2026-10-23)",
   "  - [ ] AC-PIPE-17 Nguồn Threads qua API chính thức (thêm 2026-10-23)",
-  "- [x] **ART** Ảnh minh họa tự tạo (giai đoạn 2) · 10đ · rủi ro: HIGH · KH: 2027-10-18 → 2027-11-08 · tiến độ: 100% · người: Thuc · bắt đầu: 2026-10-21 · xong: 2026-10-22 · ghi chú: đã nối vào mẻ full (ADR 0012, nhánh feat/art-wiring); cần WORKERS_AI_TOKEN + CLOUDFLARE_ACCOUNT_ID để vẽ thật; hạn mức Workers AI vẫn chờ kiểm (câu hỏi mở 13)",
+  "- [x] **ART** Ảnh minh họa tự tạo (giai đoạn 2) · 9đ · rủi ro: HIGH · KH: 2027-10-18 → 2027-11-08 · tiến độ: 100% · người: Thuc · bắt đầu: 2026-10-21 · xong: 2026-10-22 · ghi chú: đã nối vào mẻ full (ADR 0012, nhánh feat/art-wiring); cần WORKERS_AI_TOKEN + CLOUDFLARE_ACCOUNT_ID để vẽ thật; hạn mức Workers AI vẫn chờ kiểm (câu hỏi mở 13)",
   "  - [x] AC-ART-01 Prompt vẽ khái niệm, không người thật",
   "  - [x] AC-ART-02 Kiểm duyệt ảnh, vẽ lại một lần rồi về emoji",
   "  - [x] AC-ART-03 Hết hạn mức thì vẽ bù đợt sau",
@@ -3023,6 +3063,8 @@
   "  - [x] AC-ART-08 Phóng lớn bất ngờ khi ghép ra món lần đầu (thêm 2026-10-20)",
   "  - [x] AC-ART-09 Mẻ full vẽ ảnh cho phần tử mới (thêm 2026-10-21, ADR 0012)",
   "  - [x] AC-ART-10 Thiếu cấu hình hoặc lỗi vẽ kéo dài không làm hỏng mẻ (thêm 2026-10-21, ADR 0012)",
+  "  - [ ] AC-ART-11 Vẽ bù ảnh cho phần tử lõi (thêm 2026-10-23)",
+  "- [ ] **ART2** Vẽ bù ảnh phần tử lõi (giai đoạn 2) · 1đ · rủi ro: LOW · KH: 2028-06-01 → 2028-06-05 · tiến độ: 0% (theo AC) · người: Thuc · bắt đầu:  · xong:  · ghi chú: ",
   "  - [ ] AC-ART-11 Vẽ bù ảnh cho phần tử lõi (thêm 2026-10-23)",
   "",
   "## Kiểm thử",
