@@ -11,7 +11,7 @@
 
 ### AC-METRIC-02: Nhận sự kiện theo danh sách cho phép
 - **Cho** thực khách đã đồng ý
-- **Khi** client gửi `POST` lô sự kiện (tối đa 50 sự kiện/lô) với loại thuộc danh sách: `session_start`, `combine_summary` (số lượt ghép được/trượt trong phiên), `daily_start`, `daily_complete`, `share` (`card`, `method`), `report`, `feedback`
+- **Khi** client gửi `POST` lô sự kiện (tối đa 50 sự kiện/lô) với loại thuộc danh sách: `session_start`, `combine_summary` (số lượt ghép được/trượt trong phiên), `daily_start` (`version`), `daily_complete` (`version`, không đếm bước - câu hỏi mở 62), `share` (`card`, `method`), `report`, `feedback`
 - **Thì** trả 202; mỗi sự kiện lưu: loại, UUID, thời điểm server nhận, thuộc tính đã validate; không lưu IP, user agent, URL giới thiệu đầy đủ
 - Ưu tiên: Bắt buộc
 
@@ -43,4 +43,10 @@
 - **Cho** sự kiện cũ hơn 90 ngày
 - **Khi** tác vụ dọn định kỳ (Cron Trigger của Worker, hằng ngày) chạy
 - **Thì** các sự kiện đó bị xóa; sự kiện trong 90 ngày giữ nguyên; tác vụ ghi số dòng đã xóa vào log
+- Ưu tiên: Bắt buộc
+
+### AC-METRIC-08: Client gửi sự kiện Món đặc biệt (thêm 2026-10-23, câu hỏi mở 62)
+- **Cho** thực khách đã đồng ý, manifest có Món đặc biệt version V
+- **Khi** thẻ Món đặc biệt của V hiện lần đầu trong phiên (lần tải trang), rồi thực khách ghép ra món đó lần đầu
+- **Thì** client xếp `daily_start` (`version: V`) vào hàng đợi đúng một lần mỗi phiên dù thẻ hiện lại; khi ghép ra món lần đầu (chưa giải V trước đó) xếp `daily_complete` (`version: V`) đúng một lần, không có số bước; ghép lại món đã giải không gửi thêm; cả hai đi chung lô với các sự kiện khác (AC-METRIC-04), chưa đồng ý thì không gửi gì
 - Ưu tiên: Bắt buộc
