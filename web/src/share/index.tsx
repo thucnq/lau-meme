@@ -118,8 +118,15 @@ export function drawCardPng(canvas: HTMLCanvasElement, card: ShareKind, data: Da
   ctx.fillText(data.emoji, 540, 470)
 
   ctx.font = font(46)
-  const text = daily ? body.replace(`${data.emoji} `, '') : body
-  wrap(ctx, text, 900).forEach((line, i) => ctx.fillText(line, 540, 800 + i * 60))
+  // Under the "Công thức gia truyền" header the PNG says it shorter than the text card; the nickname keeps its own
+  // line, and 3 lines at most never run into the link.
+  const lines = daily
+    ? wrap(ctx, body.replace(`${data.emoji} `, ''), 900)
+    : [
+        ...wrap(ctx, `Người đầu tiên nấu ra ${(data as DiscCardData).name}`, 900).slice(0, 2),
+        `của ${(data as DiscCardData).nickname}`,
+      ]
+  lines.slice(0, 3).forEach((line, i) => ctx.fillText(line, 540, 800 + i * 60))
 
   ctx.fillStyle = '#56665e'
   ctx.font = font(34, 500)
@@ -175,11 +182,15 @@ export function ShareCard({ card, data, player = NO_CONSENT }: Props) {
     setToast(message)
     logShare(player, card, method)
   }
-  const copy = () =>
-    navigator.clipboard.writeText(text).then(
-      () => done('copy', 'Đã sao chép'),
-      () => setError('Không sao chép được, thử lại sau.'),
-    )
+  // No clipboard outside a secure context (and in some webviews): say so instead of failing silently.
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(text)
+      done('copy', 'Đã sao chép')
+    } catch {
+      setError('Không sao chép được, thử lại sau.')
+    }
+  }
 
   const share = async () => {
     if (typeof navigator.share !== 'function') return copy()
@@ -198,8 +209,11 @@ export function ShareCard({ card, data, player = NO_CONSENT }: Props) {
       const a = document.createElement('a')
       a.href = url
       a.download = PNG_NAME
+      // iOS Safari only follows a link that is in the page; revoking at once cancels the download in some browsers.
+      document.body.append(a)
       a.click()
-      URL.revokeObjectURL(url)
+      a.remove()
+      window.setTimeout(() => URL.revokeObjectURL(url), 1000)
       done('image', null)
     })
 
