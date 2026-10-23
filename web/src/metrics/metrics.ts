@@ -8,7 +8,7 @@ import { withBase } from '../base'
 export type MetricEvent =
   | { type: 'session_start' }
   | { type: 'daily_start'; version: number }
-  | { type: 'daily_complete'; version: number; steps: number }
+  | { type: 'daily_complete'; version: number }
   | { type: 'share'; card: 'daily' | 'discovery'; method: 'copy' | 'native' | 'image' }
   | { type: 'report'; target: 'element' | 'image' }
   | { type: 'feedback'; value: 'ngon' | 'nhat' }
@@ -23,6 +23,7 @@ export type Metrics = {
 const FLUSH_MS = 5 * 60_000
 const MAX_BATCH = 50 // contract EventBatch.maxItems
 const MAX_COUNT = 10_000 // contract combine_summary.ok/miss maximum
+const MAX_QUEUE = 200 // 4 batches per flush, well under the per-IP limit; beyond it the oldest events go first
 
 export function createMetrics(opts: { getPlayerId: () => string | null }): Metrics {
   const queue: MetricEvent[] = []
@@ -69,6 +70,7 @@ export function createMetrics(opts: { getPlayerId: () => string | null }): Metri
     },
     track(event) {
       queue.push(event)
+      if (queue.length > MAX_QUEUE) queue.shift()
     },
     start() {
       if (timer !== null) return

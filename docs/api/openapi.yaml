@@ -657,7 +657,7 @@ paths:
       operationId: createEvents
       tags: [play]
       summary: Gửi lô sự kiện ẩn danh
-      description: '`text/plain` = cùng JSON gửi bằng `navigator.sendBeacon` (không đặt được header), UUID nằm trong `player_id`. Cả lô hợp lệ hoặc không ghi gì. Không lưu IP, user agent, referrer. Giới hạn 20 lô/phút/UUID.'
+      description: '`text/plain` = cùng JSON gửi bằng `navigator.sendBeacon` (không đặt được header), UUID nằm trong `player_id`. Cả lô hợp lệ hoặc không ghi gì. Không lưu IP, user agent, referrer. Giới hạn 20 lô/phút/UUID và 60 lô/phút/IP (vượt thì 429).'
       security: [{ PlayerId: [] }]
       x-ac: [AC-METRIC-02, AC-METRIC-03, AC-METRIC-04, AC-SHARE-06, AC-PRIV-02]
       requestBody:
@@ -1918,11 +1918,10 @@ components:
             version: { type: integer, minimum: 1 }
         - type: object
           additionalProperties: false
-          required: [type, version, steps]
+          required: [type, version]
           properties:
             type: { const: daily_complete }
             version: { type: integer, minimum: 1 }
-            steps: { type: integer, minimum: 1, maximum: 200 }
         - type: object
           additionalProperties: false
           required: [type, card, method]

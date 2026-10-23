@@ -12,7 +12,7 @@ import { ElementIcon } from '../art/ElementIcon'
 import { startManifestWatch } from '../daily/countdown'
 import { DailyPanel, Leaderboards } from '../daily/DailyPanel'
 import { loadSolved, saveSolved, type SolvedDaily } from '../daily/solved'
-import { recordCombine } from '../metrics/app'
+import { recordCombine, trackEvent } from '../metrics/app'
 import { BLOCKLIST_POLL_MS, loadBlocklist } from '../report/blocklist'
 import type { Graph } from '../graph/crypto'
 import { localStore as storage, migrateLegacyKeys } from '../storage'
@@ -242,6 +242,8 @@ export function Game({ onDiscover, onItems, heirlooms = {}, onReport, blocklistR
     const value = { a, b, name: result.name }
     saveSolved(storage(), m.version, value)
     setSolved({ version: m.version, value })
+    // only the first solve of a batch gets here: a solved batch returns above, even after a reload (AC-METRIC-08)
+    trackEvent({ type: 'daily_complete', version: m.version })
   }
 
   // ---------------------------------------------------------------- combining

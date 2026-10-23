@@ -5,7 +5,7 @@
 ### AC-FEEDBACK-01: Bỏ phiếu sau khi ghép
 - **Cho** thực khách vừa ghép A + B = C và đã đồng ý gửi dữ liệu
 - **Khi** bấm "Ngon" hoặc "Nhạt" trên kết quả
-- **Thì** client gửi `PUT` phiếu cho công thức (A, B) kèm UUID, trả 200; nút đã chọn được đánh dấu
+- **Thì** client gửi `PUT` phiếu cho công thức (A, B) kèm UUID, trả 200; nút đã chọn được đánh dấu; sau khi phiếu được ghi, client xếp sự kiện `feedback` (`value`) vào hàng đợi metrics (AC-METRIC-04, câu hỏi mở 63)
 - Ưu tiên: Tùy chọn
 
 ### AC-FEEDBACK-02: Một phiếu mỗi UUID mỗi công thức
