@@ -1,12 +1,12 @@
 # Gantt — ƯỚC LƯỢNG - LẨU MEME
 
-Tiến độ 78% · nghiệm thu KH 2027-11-23 · dự báo 2027-02-16. Bản tương tác: `gantt.html`.
+Tiến độ 65% · nghiệm thu KH 2028-05-04 · dự báo 2027-06-02. Bản tương tác: `gantt.html`.
 
 ```mermaid
 gantt
     title ƯỚC LƯỢNG - LẨU MEME
     dateFormat YYYY-MM-DD
-    excludes weekends, 2027-01-01, 2027-02-04, 2027-02-05, 2027-02-06, 2027-02-07, 2027-02-08, 2027-02-09, 2027-02-10
+    excludes weekends, 2027-01-01, 2027-02-04, 2027-02-05, 2027-02-06, 2027-02-07, 2027-02-08, 2027-02-09, 2027-02-10, 2027-04-30, 2027-05-01
     todayMarker stroke-width:2px,stroke:#d33
     section Nền tảng
     NEN Khởi tạo dự án & hạ tầng (100%) :done, NEN, 2026-10-19, 1d
@@ -39,15 +39,22 @@ gantt
     INV Bất biến nội dung và trò chơi (100%) :done, INV, 2026-10-20, 1d
     section Nền tảng
     SUBPATH Chạy dưới đường dẫn con dinoduct.fun/lau-meme (100%) :done, SUBPATH, 2026-10-20, 1d
+    section Trò chơi
+    DAILY3 Món đặc biệt - pool mặn/mới  lịch mẻ theo manifest (0%) :DAILY3, 2026-12-08, 9d
+    section Nội dung
+    TIER Tier của meme (0%) :TIER, 2026-12-21, 9d
+    section Cộng đồng
+    CONTRIB Đóng góp meme (0%) :CONTRIB, 2027-01-04, 29d
     section Kiểm thử
-    UAT Kiểm thử nghiệm thu & sửa lỗi (giai đoạn 1) (0%) :UAT, 2026-12-08, 33d
+    UAT Kiểm thử nghiệm thu & sửa lỗi (giai đoạn 1) (0%) :UAT, 2027-02-19, 40d
     section Nội dung
     MOD Kiểm duyệt nội dung tự động (giai đoạn 2) (100%) :done, MOD, 2026-10-20, 1d
     PIPE2 Pipeline Mẻ nhúng - crawl và tự động đăng (giai đoạn 2) (100%) :done, PIPE2, 2026-10-21, 1d
+    PIPE3 Nguồn Tuổi Trẻ  Threads  mức mặn  thống kê crawl (giai đoạn 2) (0%) :PIPE3, 2027-04-16, 17d
     ART Ảnh minh họa tự tạo (giai đoạn 2) (100%) :done, ART, 2026-10-21, 2d
     section Kiểm thử
-    UAT2 Kiểm thử nghiệm thu & sửa lỗi (giai đoạn 2) (0%) :UAT2, 2027-01-25, 11d
+    UAT2 Kiểm thử nghiệm thu & sửa lỗi (giai đoạn 2) (0%) :UAT2, 2027-05-12, 15d
     section Bàn giao
-    UAT 0 tuần :uat, 2027-02-16, 0d
-    Nghiệm thu :milestone, 2027-02-16, 0d
+    UAT 0 tuần :uat, 2027-06-02, 0d
+    Nghiệm thu :milestone, 2027-06-02, 0d
 ```

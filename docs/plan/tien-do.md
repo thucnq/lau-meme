@@ -1,7 +1,7 @@
 # Tiến độ — ƯỚC LƯỢNG - LẨU MEME
 
 > Sinh bởi `/dk:plan` (gen-plan.py) từ `docs/estimate/items.json`. **Người sửa trực tiếp file này**: dấu `[x]` (hạng mục hoặc AC), `tiến độ: N%`, `người`, `bắt đầu`, `xong` (YYYY-MM-DD), `ghi chú` — giữ nguyên dấu ` · ` giữa các trường. Chạy lại `/dk:plan` để tính dự báo và vẽ lại `gantt.html`. `KH` là kế hoạch gốc, chỉ đổi bằng `/dk:plan rebaseline`.
-> Bắt đầu dự án: 2026-10-20 · Kỹ sư: 1 (Thuc) · Giờ/tuần: 20 · Nghiệm thu KH: 2027-11-23 · Dự báo: 2027-02-16 · Cập nhật: 2026-10-23
+> Bắt đầu dự án: 2026-10-20 · Kỹ sư: 1 (Thuc) · Giờ/tuần: 20 · Nghiệm thu KH: 2028-05-04 · Dự báo: 2027-06-02 · Cập nhật: 2026-10-23
 
 
 ## Nền tảng
@@ -54,7 +54,7 @@
 ## Nội dung
 - [x] **PIPE** Pipeline Mẻ nhúng - chế độ lõi (giai đoạn 1) · 5đ · rủi ro: MEDIUM · KH: 2027-01-06 → 2027-01-20 · tiến độ: 100% · người: Thuc · bắt đầu: 2026-10-20 · xong: 2026-10-21 · ghi chú: 
   - [x] AC-PIPE-01 Chế độ lõi (giai đoạn 1)
-  - [x] AC-PIPE-02 Lịch chạy và chạy tay
+  - [x] AC-PIPE-02 Lịch chạy và chạy tay (cập nhật 2026-10-23)
   - [x] AC-PIPE-11 Lỗi giữa chừng không đăng gì
   - [x] AC-PIPE-13 Không gửi dữ liệu người chơi cho LLM
   - [x] AC-PIPE-14 Báo cáo đợt qua GitHub Issue
@@ -88,7 +88,7 @@
 
 ## Trò chơi
 - [x] **DAILY** Món đặc biệt hôm nay · 9đ · rủi ro: MEDIUM · KH: 2027-03-10 → 2027-04-06 · tiến độ: 100% · người: Thuc · bắt đầu: 2026-10-20 · xong: 2026-10-21 · ghi chú: 
-  - [x] AC-DAILY-01 Chọn Món đặc biệt
+  - [x] AC-DAILY-01 Chọn Món đặc biệt (cập nhật 2026-10-23)
   - [x] AC-DAILY-02 Không có ứng viên nào
   - [x] AC-DAILY-03 Công bố món không lộ tên
   - [x] AC-DAILY-04 Ghép ra Món đặc biệt trên bàn lẩu
@@ -99,7 +99,7 @@
   - [x] AC-DAILY-09 Bảng xếp hạng mẻ
   - [x] AC-DAILY-10 Streak
   - [x] AC-DAILY-11 Bảng xếp hạng streak
-  - [x] AC-DAILY-12 Đồng hồ đếm ngược theo manifest thật
+  - [x] AC-DAILY-12 Đồng hồ đếm ngược theo manifest thật (cập nhật 2026-10-23)
   - [x] AC-DAILY-13 Giới hạn tần suất nộp
   - [x] AC-DAILY-14 Bảng xếp hạng tuần và tháng (thêm 2026-10-21)
   - [x] AC-DAILY-15 Bảng xếp hạng trên giao diện, chưa đăng nhập và bảng rỗng (thêm 2026-10-21)
@@ -164,6 +164,8 @@
   - [x] AC-ADMIN-08 Nhật ký các đợt
   - [x] AC-ADMIN-09 Audit mọi thao tác quản trị
   - [x] AC-ADMIN-10 Trang quản trị
+  - [ ] AC-ADMIN-11 Thống kê kết quả crawl (thêm 2026-10-23)
+  - [ ] AC-ADMIN-12 Gán tier cho phần tử (thêm 2026-10-23)
 
 ## Vận hành
 - [ ] **METRIC** Đo chỉ số thành công · 4.5đ · rủi ro: MEDIUM · KH: 2027-05-28 → 2027-06-10 · tiến độ: 0% · người: Thuc · bắt đầu:  · xong:  · ghi chú: 
@@ -205,8 +207,37 @@
   - [x] AC-SUBPATH-11 Thẻ xem trước link và favicon
   - [x] AC-SUBPATH-12 Pipeline gọi API dưới tiền tố
 
+## Trò chơi
+- [ ] **DAILY3** Món đặc biệt - pool mặn/mới, lịch mẻ theo manifest · 4đ · rủi ro: MEDIUM · KH: 2027-09-29 → 2027-10-11 · tiến độ: 0% (theo AC) · người: Thuc · bắt đầu:  · xong:  · ghi chú: 
+  - [ ] AC-DAILY-01 Chọn Món đặc biệt (cập nhật 2026-10-23)
+  - [ ] AC-DAILY-12 Đồng hồ đếm ngược theo manifest thật (cập nhật 2026-10-23)
+  - [ ] AC-DAILY-18 Pool thử thách từ lõi không lặp trong 30 mẻ (thêm 2026-10-23)
+  - [ ] AC-PIPE-02 Lịch chạy và chạy tay (cập nhật 2026-10-23)
+
+## Nội dung
+- [ ] **TIER** Tier của meme · 4đ · rủi ro: LOW · KH: 2027-10-12 → 2027-10-22 · tiến độ: 0% (theo AC) · người: Thuc · bắt đầu:  · xong:  · ghi chú: 
+  - [ ] AC-ADMIN-12 Gán tier cho phần tử (thêm 2026-10-23)
+  - [ ] AC-TIER-01 Tier mặc định và giữ qua các mẻ
+  - [ ] AC-TIER-02 Hiển thị tier trên phần tử
+  - [ ] AC-TIER-03 Graph cũ chưa có tier
+
+## Cộng đồng
+- [ ] **CONTRIB** Đóng góp meme · 13đ · rủi ro: HIGH · KH: 2027-10-25 → 2027-12-02 · tiến độ: 0% (theo AC) · người: Thuc · bắt đầu:  · xong:  · ghi chú: 
+  - [ ] AC-CONTRIB-01 Gửi đề xuất hợp lệ
+  - [ ] AC-CONTRIB-02 Đầu vào không hợp lệ
+  - [ ] AC-CONTRIB-03 Trùng cặp, trùng tên, gửi lặp
+  - [ ] AC-CONTRIB-04 Từ cấm và bí danh bị chặn
+  - [ ] AC-CONTRIB-05 Chưa đăng nhập, chưa đồng ý, giới hạn tần suất
+  - [ ] AC-CONTRIB-06 Thực khách xem đề xuất của mình
+  - [ ] AC-CONTRIB-07 Admin xem và sửa đề xuất
+  - [ ] AC-CONTRIB-08 Admin duyệt hoặc từ chối
+  - [ ] AC-CONTRIB-09 Ảnh và biểu tượng của meme đóng góp
+  - [ ] AC-CONTRIB-10 Hiện người tạo trên phần tử
+  - [ ] AC-CONTRIB-11 Bảng xếp hạng "Top cống hiến"
+  - [ ] AC-CONTRIB-12 Xóa tài khoản và xuất dữ liệu
+
 ## Kiểm thử
-- [ ] **UAT** Kiểm thử nghiệm thu & sửa lỗi (giai đoạn 1) · 15đ · rủi ro: MEDIUM · KH: 2027-07-01 → 2027-08-04 · tiến độ: 0% · người: Thuc · bắt đầu:  · xong:  · ghi chú: 
+- [ ] **UAT** Kiểm thử nghiệm thu & sửa lỗi (giai đoạn 1) · 18đ · rủi ro: MEDIUM · KH: 2027-07-01 → 2027-08-04 · tiến độ: 0% · người: Thuc · bắt đầu:  · xong:  · ghi chú: 
   - [x] AC-GAME-01 Bàn chơi lần đầu
   - [x] AC-GAME-02 Nhúng lẩu qua nồi - ghép thành công
   - [x] AC-GAME-03 Thả chồng trên mặt bàn
@@ -251,7 +282,12 @@
   - [x] AC-PIPE-09 Giám khảo hài
   - [x] AC-PIPE-10 Idempotent
   - [x] AC-PIPE-12 Gom lô Gemini, backoff, hết quota dừng êm
-- [x] **ART** Ảnh minh họa tự tạo (giai đoạn 2) · 9đ · rủi ro: HIGH · KH: 2027-10-18 → 2027-11-08 · tiến độ: 100% · người: Thuc · bắt đầu: 2026-10-21 · xong: 2026-10-22 · ghi chú: đã nối vào mẻ full (ADR 0012, nhánh feat/art-wiring); cần WORKERS_AI_TOKEN + CLOUDFLARE_ACCOUNT_ID để vẽ thật; hạn mức Workers AI vẫn chờ kiểm (câu hỏi mở 13)
+- [ ] **PIPE3** Nguồn Tuổi Trẻ, Threads, mức mặn, thống kê crawl (giai đoạn 2) · 7.5đ · rủi ro: HIGH · KH: 2028-04-10 → 2028-05-03 · tiến độ: 0% (theo AC) · người: Thuc · bắt đầu:  · xong:  · ghi chú: 
+  - [ ] AC-ADMIN-11 Thống kê kết quả crawl (thêm 2026-10-23)
+  - [ ] AC-PIPE-15 Nguồn Tuổi Trẻ chuyên mục meme (thêm 2026-10-23)
+  - [ ] AC-PIPE-16 Ghi mức trending (mặn) của phần tử (thêm 2026-10-23)
+  - [ ] AC-PIPE-17 Nguồn Threads qua API chính thức (thêm 2026-10-23)
+- [x] **ART** Ảnh minh họa tự tạo (giai đoạn 2) · 10đ · rủi ro: HIGH · KH: 2027-10-18 → 2027-11-08 · tiến độ: 100% · người: Thuc · bắt đầu: 2026-10-21 · xong: 2026-10-22 · ghi chú: đã nối vào mẻ full (ADR 0012, nhánh feat/art-wiring); cần WORKERS_AI_TOKEN + CLOUDFLARE_ACCOUNT_ID để vẽ thật; hạn mức Workers AI vẫn chờ kiểm (câu hỏi mở 13)
   - [x] AC-ART-01 Prompt vẽ khái niệm, không người thật
   - [x] AC-ART-02 Kiểm duyệt ảnh, vẽ lại một lần rồi về emoji
   - [x] AC-ART-03 Hết hạn mức thì vẽ bù đợt sau
@@ -262,6 +298,7 @@
   - [x] AC-ART-08 Phóng lớn bất ngờ khi ghép ra món lần đầu (thêm 2026-10-20)
   - [x] AC-ART-09 Mẻ full vẽ ảnh cho phần tử mới (thêm 2026-10-21, ADR 0012)
   - [x] AC-ART-10 Thiếu cấu hình hoặc lỗi vẽ kéo dài không làm hỏng mẻ (thêm 2026-10-21, ADR 0012)
+  - [ ] AC-ART-11 Vẽ bù ảnh cho phần tử lõi (thêm 2026-10-23)
 
 ## Kiểm thử
-- [ ] **UAT2** Kiểm thử nghiệm thu & sửa lỗi (giai đoạn 2) · 5đ · rủi ro: MEDIUM · KH: 2027-11-09 → 2027-11-22 · tiến độ: 0% · người: Thuc · bắt đầu:  · xong:  · ghi chú: 
+- [ ] **UAT2** Kiểm thử nghiệm thu & sửa lỗi (giai đoạn 2) · 6.5đ · rủi ro: MEDIUM · KH: 2027-11-09 → 2027-11-22 · tiến độ: 0% · người: Thuc · bắt đầu:  · xong:  · ghi chú: 
