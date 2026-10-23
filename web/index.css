@@ -276,7 +276,9 @@ a { color: var(--accent-2); }
   --tier-4: #7a5c00; --tier-4-mark: #facc15;
   --tier-5: #991b1b; --tier-5-mark: #f87171;
 }
-[data-tier] { position: relative; color: var(--fg); }
+/* A positioning context for .tier-badge; .on-table keeps its own absolute position (the drop point). */
+[data-tier] { color: var(--fg); }
+[data-tier]:not(.on-table) { position: relative; }
 .chip[data-tier], .slot-item[data-tier], .discovery-card[data-tier] { background: var(--tier-bg); }
 .tier-1 { --tier-bg: var(--tier-1); --tier-mark: var(--tier-1-mark); }
 .tier-2 { --tier-bg: var(--tier-2); --tier-mark: var(--tier-2-mark); }

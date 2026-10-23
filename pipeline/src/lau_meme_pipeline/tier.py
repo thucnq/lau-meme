@@ -17,8 +17,8 @@ def valid_tier(value: object) -> bool:
 
 def apply_tiers(store: ContentStore, tiers: Iterable[Mapping]) -> ContentStore:
     """Elements listed in `tiers` take that tier as given; the others keep tier 1. Values are checked later on the
-    exported graph (`invalid_tiers`), so a bad value fails the batch at the check step (AC-PIPE-11)."""
-    by_id = {t["element_id"]: t["tier"] for t in tiers}
+    exported graph (`invalid_tiers`), so a bad or missing value fails the batch at the check step (AC-PIPE-11)."""
+    by_id = {t.get("element_id"): t.get("tier") for t in tiers}
     if not by_id:
         return store
     elements = {k: replace(e, tier=by_id[k]) if k in by_id else e for k, e in store.elements.items()}
