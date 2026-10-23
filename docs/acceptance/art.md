@@ -63,3 +63,9 @@
 - **Khi** mẻ `full` chạy
 - **Thì** cả bốn trường hợp mẻ vẫn thành công và đăng phần đã qua kiểm duyệt; (a) bỏ bước vẽ, phần tử mới vào chờ vẽ, báo cáo đợt cảnh báo thiếu cấu hình; (b) bước vẽ dừng ngay, mọi phần tử giữ chờ vẽ, không tính lần thử, báo cáo đợt cảnh báo lỗi cấu hình; (c) `art_attempts` của phần tử tăng mỗi đợt, sau đợt thứ 3 phần tử hết chờ vẽ và giữ emoji; (d) không phần tử nào bị tính lần thử (sự cố chung); báo cáo đợt đếm lỗi theo loại. Khác ART: thiếu `GEMINI_API_KEY` thì mẻ `full` thất bại (ADR 0011)
 - Ưu tiên: Bắt buộc
+
+### AC-ART-11: Vẽ bù ảnh cho phần tử lõi (thêm 2026-10-23)
+- **Cho** mẻ `full` đủ cấu hình vẽ (AC-ART-10a không xảy ra); `art_pending` có 3 phần tử, đợt có 5 phần tử mới; kho có 174 phần tử lõi chưa có `image_key`, có `image_hint`
+- **Khi** mẻ chạy tới bước vẽ minh họa
+- **Thì** thứ tự vẽ: phần tử chờ vẽ, rồi phần tử mới, rồi phần tử lõi đang hoạt động chưa có ảnh (xếp depth tăng dần, rồi tên đã `fold`) cho tới đủ 20 ảnh mỗi đợt (AC-ART-09) ⇒ đợt này vẽ 3 + 5 + 12 phần tử lõi; ảnh lõi qua cùng kiểm duyệt (AC-ART-02), cùng luật lỗi và số lần thử (AC-ART-10); phần tử lõi đã có ảnh, đã hết lượt thử (giữ emoji) hoặc bị ẩn/chặn thì không vẽ lại; báo cáo đợt ghi thêm "Lõi còn chưa có ảnh: N"; mẻ `core` không vẽ (không đổi)
+- Ưu tiên: Bắt buộc

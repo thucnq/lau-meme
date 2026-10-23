@@ -60,5 +60,17 @@
 ### AC-ADMIN-10: Trang quản trị
 - **Cho** mở `https://laumeme-admin.dinoduct.fun/` (staging `https://laumeme-admin-staging.dinoduct.fun/`) - origin riêng, không chung với game (ADR 0008)
 - **Khi** nhập token đúng; tải lại tab; đóng tab rồi mở lại; và gọi `/lau-meme/api/admin/*` trên host game
-- **Thì** trang hiện 3 mục Báo cáo / Nội dung / Đợt + Audit; token chỉ lưu trong `sessionStorage` của origin quản trị (mất khi đóng tab), không lưu `localStorage`/cookie; token sai hiện thông báo `role="alert"`; trang có `noindex` (thẻ meta + header `X-Robots-Tag`) và CSP `frame-ancestors 'none'`; API quản trị chỉ có trên host quản trị - `/lau-meme/api/admin/*` trên host game trả 404
+- **Thì** trang hiện các mục Báo cáo / Nội dung / Đợt + Audit / Đề xuất meme (AC-CONTRIB, thêm 2026-10-23); token chỉ lưu trong `sessionStorage` của origin quản trị (mất khi đóng tab), không lưu `localStorage`/cookie; token sai hiện thông báo `role="alert"`; trang có `noindex` (thẻ meta + header `X-Robots-Tag`) và CSP `frame-ancestors 'none'`; API quản trị chỉ có trên host quản trị - `/lau-meme/api/admin/*` trên host game trả 404
+- Ưu tiên: Bắt buộc
+
+### AC-ADMIN-11: Thống kê kết quả crawl (thêm 2026-10-23)
+- **Cho** token đúng; 3 đợt `full` đã chạy, đợt gần nhất thu Reddit 0 (lỗi RobotsDenied), Know Your Meme 40, Tuổi Trẻ 20, thêm 6, vào hàng chờ 50, bị chặn 4 (theo danh mục), vẽ 20 ảnh; và 1 đợt `core`
+- **Khi** mở mục "Đợt" (hoặc gọi API danh sách đợt, AC-ADMIN-08)
+- **Thì** mỗi đợt hiện thêm số khái niệm thu theo từng nguồn (nguồn lỗi hiện loại lỗi thay vì số), số thêm, hàng chờ, bị chặn theo danh mục, quota Gemini, số ảnh vẽ / về emoji / chờ vẽ; đầu mục có ô tổng: tổng khái niệm đã crawl, tổng phần tử đã thêm từ crawl, số meme đang trong hàng chờ, số phần tử còn chưa có ảnh (lấy từ đợt gần nhất); đợt `core` hiện "không crawl"; số liệu do pipeline gửi kèm nhật ký đợt, không có tên phần tử bị chặn (chỉ số đếm theo danh mục); chưa có đợt nào thì hiện "Chưa có đợt nào"
+- Ưu tiên: Bắt buộc
+
+### AC-ADMIN-12: Gán tier cho phần tử (thêm 2026-10-23)
+- **Cho** token đúng; phần tử P đang tier 1 (xám)
+- **Khi** đặt tier của P = 4; đặt tier = 0 hoặc 6 hoặc chuỗi; đặt tier cho phần tử không tồn tại
+- **Thì** tier hợp lệ 1-5 (AC-TIER-01): trả 200 và ghi 1 dòng audit (trước 1, sau 4) theo AC-ADMIN-09; giá trị ngoài 1-5 trả 400 problem+json, không ghi audit; phần tử không tồn tại trả 404; tier mới có trong graph từ mẻ kế tiếp (mặc định - câu hỏi mở 53); mục "Nội dung" hiện tier hiện tại của từng phần tử và lọc được theo tier
 - Ưu tiên: Bắt buộc

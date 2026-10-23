@@ -3,10 +3,10 @@
 > Giai đoạn 1. Component: pipeline (chọn món - logic thuần), worker (nhận kết quả, bảng xếp hạng, streak), web (thử thách, đếm bước, đồng hồ).
 > Cập nhật 2026-10-21: bỏ bàn thử thách và đếm bước. Ghép ra Món đặc biệt ngay trên bàn lẩu là được ghi nhận; thời gian giải = thời điểm server nhận kết quả − `batch_at` của mẻ. Chỉ thực khách **đã đăng nhập Google** (AC-AUTH) mới nộp kết quả và có tên trên bảng xếp hạng; kết quả, streak, nickname thuộc về tài khoản.
 
-### AC-DAILY-01: Chọn Món đặc biệt
-- **Cho** kho có phần tử trend mới (giai đoạn 2) và phần tử classic, cùng danh sách món đã từng chọn
+### AC-DAILY-01: Chọn Món đặc biệt (cập nhật 2026-10-23)
+- **Cho** kho có phần tử trend (crawl) và classic (lõi); mỗi phần tử có mức mặn `trend_peak` (AC-PIPE-16) và mẻ đầu tiên phần tử có mặt trong kho; danh sách Món đặc biệt của các mẻ trước
 - **Khi** pipeline chọn món cho mẻ mới
-- **Thì** món được chọn có depth trong [4, 8], tới được từ khởi đầu, đang hoạt động, chưa từng được chọn, không bị hoãn nóng (AC-MOD-08), có gợi ý đạt kiểm duyệt; ưu tiên phần tử trend mới nhất, không có thì phần tử classic (thứ tự tất định theo seed = version mẻ). Hết ứng viên chưa dùng thì chọn món đã dùng **lâu nhất** thỏa các điều kiện còn lại (mặc định - câu hỏi mở)
+- **Thì** ứng viên là phần tử có depth trong [4, 8], tới được từ khởi đầu, đang hoạt động, không bị hoãn nóng (AC-MOD-08), có gợi ý đạt kiểm duyệt (phần tử lõi: `daily_hint` viết tay trong `noi-dung-loi.json`, thay cho chỉ `daily_examples` - câu hỏi mở 41; phần tử crawl: gợi ý đã qua MOD) và **không là Món đặc biệt của 1 trong 30 mẻ gần nhất** (đếm theo mẻ, không theo ngày - câu hỏi mở 43). Ứng viên xếp theo (1) `trend_peak` giảm dần (mặn), (2) mẻ đầu tiên có mặt trong kho giảm dần (mới), (3) thứ tự tất định theo seed = version mẻ; chọn ứng viên đầu bảng. Ví dụ: A (mặn 5, có mặt từ mẻ 10), B (mặn 5, từ mẻ 12), C (mặn 0, từ mẻ 12) ⇒ thứ tự B, A, C; nếu B là món của một trong 30 mẻ gần nhất thì chọn A. Mọi phần tử thỏa điều kiện đều nằm trong 30 mẻ gần nhất thì chọn món có lần làm Món đặc biệt gần nhất là cũ nhất và báo cáo đợt ghi cảnh báo "Pool thử thách cạn" (mặc định - câu hỏi mở 43)
 - Ưu tiên: Bắt buộc
 
 ### AC-DAILY-02: Không có ứng viên nào
@@ -69,10 +69,10 @@
 - **Thì** trả tối đa 20 dòng: hạng, nickname (hoặc "Thực khách ẩn danh"), streak hiện tại; xếp giảm dần, hòa thì ai đạt trước đứng trước; streak 0 không xuất hiện
 - Ưu tiên: Bắt buộc
 
-### AC-DAILY-12: Đồng hồ đếm ngược theo manifest thật
-- **Cho** manifest có `batch_at` = 17:03 UTC (cron trễ 3 phút)
-- **Khi** client tính đồng hồ lúc 17:30 UTC; và lúc 05:20 UTC hôm sau khi manifest chưa đổi
-- **Thì** lúc 17:30 hiện thời gian tới mốc mẻ kế tiếp tính từ `batch_at` (mốc 05:00 UTC kế tiếp sau `batch_at`); khi đã quá mốc mà manifest chưa đổi thì hiện "Mẻ mới sắp lên" (không hiện số âm) và client kiểm manifest lại mỗi 60 s
+### AC-DAILY-12: Đồng hồ đếm ngược theo manifest thật (cập nhật 2026-10-23)
+- **Cho** manifest có `batch_at` = 17:03 UTC (cron trễ 3 phút) và lịch mẻ của môi trường `schedule_hours_utc` = [5, 17] (production); và một manifest staging có `batch_at` = 08:07 UTC, `schedule_hours_utc` = [0, 2, 4, …, 22]
+- **Khi** client tính đồng hồ lúc 17:30 UTC; lúc 05:20 UTC hôm sau khi manifest chưa đổi; và với manifest staging lúc 08:30 UTC
+- **Thì** mốc mẻ kế tiếp = giờ đầu tiên trong `schedule_hours_utc` sau `batch_at` (không đóng cứng giờ trong client): lúc 17:30 hiện thời gian tới 05:00 UTC; staging hiện thời gian tới 10:00 UTC; khi đã quá mốc mà manifest chưa đổi thì hiện "Mẻ mới sắp lên" (không hiện số âm) và client kiểm manifest lại mỗi 60 s. Pipeline lấy lịch từ biến môi trường `BATCH_HOURS_UTC` (mặc định `5,17`); giá trị không hợp lệ (ngoài 0-23, rỗng, trùng) thì mẻ thất bại theo AC-PIPE-11
 - Ưu tiên: Bắt buộc
 
 ### AC-DAILY-13: Giới hạn tần suất nộp
@@ -103,4 +103,10 @@
 - **Cho** thực khách đang chơi, trên bàn có món và một ô nồi đã có món
 - **Khi** bấm "Xem bảng xếp hạng" trên thẻ Món đặc biệt (hoặc tab "Bảng xếp hạng" ở đầu trang); rồi bấm tab "Bàn lẩu"
 - **Thì** trang có hai tab "Bàn lẩu" và "Bảng xếp hạng"; thẻ Món đặc biệt không còn chứa bảng xếp hạng. Tab "Bảng xếp hạng" giữ 3 thẻ "Mẻ này", "Tuần", "Tháng" và mọi trạng thái của AC-DAILY-15 (bảng rỗng, dòng nhắc đăng nhập); 3 hạng đầu có huy chương 🥇🥈🥉; dòng của chính thực khách (khi đã đăng nhập và có tên trong bảng) được tô nổi. Quay lại tab "Bàn lẩu" thì món trên bàn và ô nồi giữ nguyên
+- Ưu tiên: Bắt buộc
+
+### AC-DAILY-18: Pool thử thách từ lõi không lặp trong 30 mẻ (thêm 2026-10-23)
+- **Cho** kho chỉ có lõi classic hiện tại (59 phần tử depth 4-8 có `daily_hint`), mọi `trend_peak` = 0, lịch sử Món đặc biệt rỗng
+- **Khi** chạy liên tiếp 90 mẻ `core` (version tăng dần)
+- **Thì** 59 mẻ đầu chọn 59 món khác nhau; trong mọi chuỗi 30 mẻ liên tiếp không có món nào lặp; không mẻ nào thất bại vì Món đặc biệt; 35 phần tử thêm vào lõi ngày 22/10 có mặt trong kho từ mẻ muộn hơn nên đứng trước phần lõi cũ khi cùng mức mặn; chạy lại cùng chuỗi version ra cùng chuỗi món (tất định)
 - Ưu tiên: Bắt buộc
