@@ -323,7 +323,7 @@ class _CountedLlm(Mapping[str, Callable]):
 
 
 def _art_lines(report: Mapping | None) -> list[str]:
-    """AC-ART-02/03: drawn, emoji fallbacks, waiting, rejections by reason (ADR 0012)."""
+    """AC-ART-02/03/11: drawn, emoji fallbacks, waiting, core left to draw, rejections by reason (ADR 0012)."""
     if report is None:
         return []
     calls = f" · {report['calls']} lượt gọi Workers AI" if report.get("calls") is not None else ""
@@ -331,6 +331,8 @@ def _art_lines(report: Mapping | None) -> list[str]:
         f"- Ảnh: vẽ được {report['drawn']} · về emoji {report['fallback']} · chờ vẽ {report['pending']}"
         f" · {report['draws']} lần vẽ{calls}"
     ]
+    if report.get("core_left") is not None:
+        lines.append(f"- Lõi còn chưa có ảnh: {report['core_left']}")
     if report.get("rejections"):
         lines.append("- Ảnh bị loại: " + ", ".join(f"{k} {v}" for k, v in report["rejections"].items()))
     if report.get("errors"):

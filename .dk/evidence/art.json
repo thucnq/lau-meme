@@ -1,53 +1,41 @@
 {
  "red": {
-  "ts": "2026-10-21T12:56:45+00:00",
-  "commit": "02bca48",
+  "ts": "2026-10-23T18:03:59+00:00",
+  "commit": "7073884",
   "results": {
    "AC-ART-01": {
-    "status": "FAIL",
-    "test": "test_art_hardening#test_ac_art_01_nhieu_phan_tu_khong_goi_y_deu_vao_fallback_theo_thu_tu"
+    "status": "PASS",
+    "test": "test_art#test_ac_art_01_prompt_la_goi_y_anh_cong_doan_phong_cach_chung"
    },
    "AC-ART-02": {
-    "status": "FAIL",
-    "test": "test_art_hardening#test_ac_art_02_ly_do_la_hai_lan_thi_ve_emoji_va_dem_hai_lan"
+    "status": "PASS",
+    "test": "test_art#test_ac_art_02_hai_lan_vi_pham_thi_ve_dung_hai_lan_roi_ve_emoji_va_dem_ly_do"
    },
    "AC-ART-03": {
-    "status": "FAIL",
-    "test": "art-upload.test.ts#art: PipelineStore.art_pending > AC-ART-03: mẻ full kèm store.art_pending "
+    "status": "PASS",
+    "test": "test_art#test_ac_art_03_het_han_muc_sau_5_trong_12_thi_7_con_lai_cho_ve"
    },
    "AC-ART-04": {
+    "status": "PASS",
+    "test": "test_art#test_ac_art_04_chuyen_webp_256x256"
+   },
+   "AC-ART-09": {
+    "status": "PASS",
+    "test": "test_art_wiring#test_ac_art_09_22_meme_moi_ve_dung_20_anh_tai_len_truoc_khi_dang_va_2_vao_cho_ve"
+   },
+   "AC-ART-10": {
+    "status": "PASS",
+    "test": "test_art_wiring#test_ac_art_10_a_thieu_cau_hinh_ve_thi_bo_buoc_ve_meme_vao_cho_ve_va_issue_canh_bao"
+   },
+   "AC-ART-11": {
     "status": "FAIL",
-    "test": "art-upload.test.ts#art: PUT /pipeline/images/{key} > AC-ART-04: idempotent - đã có object cùng khóa thì PUT lại vẫn 204, nội dung không đổi; PUT hai lần cũng 204"
-   },
-   "AC-ART-05": {
-    "status": "PASS",
-    "test": "art.test.ts#art: GET /img/{key} > AC-ART-05: ảnh tồn tại trả 200 image/webp, đúng byte, Cache-Control public immutable một năm"
-   },
-   "AC-ART-06": {
-    "status": "PASS",
-    "test": "art.ui.test.tsx#art: emoji trước, ảnh sau > AC-ART-06: phần tử có khóa ảnh hiện emoji ngay, kèm <img> trỏ tới /lau-meme/img/<khóa>"
-   },
-   "AC-ART-07": {
-    "status": "PASS",
-    "test": "art.ui.test.tsx#art: ảnh bị chặn không được tải > AC-ART-07: id phần tử có trong images của danh sách chặn thì chỉ hiện emoji, không <img>, không yêu cầu /img/..."
-   },
-   "AC-ART-08": {
-    "status": "PASS",
-    "test": "art.ui.test.tsx#art: phóng lớn khi ghép ra món lần đầu > AC-ART-08: ghép ra phần tử chưa có thì lớp phủ hiện tên, emoji "
-   },
-   "AC-ART-VALIDATION": {
-    "status": "PASS",
-    "test": "art-upload.test.ts#art: PipelineStore.art_pending > AC-ART-VALIDATION: art_pending sai dạng "
-   },
-   "AC-ART-ABUSE": {
-    "status": "FAIL",
-    "test": "art-upload.test.ts#art: PUT /pipeline/images/{key} > AC-ART-ABUSE: token pipeline bị lộ cũng không ghi đè được ảnh có sẵn bằng nội dung khác hay ghi khóa giả"
+    "test": "test_art_core_backfill#test_ac_art_11_tai_len_loi_thi_phan_tu_loi_khong_co_khoa_va_vao_cho_ve"
    }
   }
  },
  "green": {
-  "ts": "2026-10-22T01:33:40+00:00",
-  "commit": "9cb160d",
+  "ts": "2026-10-23T19:34:15+00:00",
+  "commit": "7073884",
   "results": {
    "AC-ART-01": {
     "status": "PASS",
@@ -88,6 +76,10 @@
    "AC-ART-10": {
     "status": "PASS",
     "test": "test_art_wiring#test_ac_art_10_a_thieu_cau_hinh_ve_thi_bo_buoc_ve_meme_vao_cho_ve_va_issue_canh_bao"
+   },
+   "AC-ART-11": {
+    "status": "PASS",
+    "test": "test_art_core_backfill#test_ac_art_11_thu_tu_ve_cho_ve_roi_moi_roi_loi_dung_3_5_12"
    },
    "AC-ART-VALIDATION": {
     "status": "PASS",
