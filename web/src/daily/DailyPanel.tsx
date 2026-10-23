@@ -1,9 +1,11 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useSession } from '../auth/session'
+import { SITE_URL } from '../base'
 import { SendError } from '../disc/api'
 import type { Manifest } from '../game/engine'
 import { ConsentRequiredError } from '../privacy/client'
 import { ConsentPrompt } from '../privacy/ConsentPrompt'
+import { ShareCard, type DailyCardData } from '../share'
 import {
   getDailyLeaderboard,
   getPeriodLeaderboard,
@@ -30,6 +32,23 @@ const TABS: Array<[Tab, string]> = [
   ['month', 'Tháng'],
 ]
 const MEDALS = ['🥇', '🥈', '🥉']
+const GMT7_MS = 7 * 3_600_000
+
+/**
+ * The Daily share card (AC-SHARE-01): batch day and hour in GMT+7, the server's solve time and rank. Only shown with
+ * a server result: an unsigned player has no server time yet (open question 58).
+ */
+function dailyCard(batchAt: string, emoji: string, result: DailyResult): DailyCardData {
+  const local = new Date(Date.parse(batchAt) + GMT7_MS)
+  return {
+    day: local.toISOString().slice(0, 10),
+    batchHour: local.getUTCHours(),
+    emoji,
+    solveSeconds: Math.floor(result.solve_ms / 1000),
+    rank: result.rank,
+    link: SITE_URL,
+  }
+}
 
 /**
  * Món đặc biệt (AC-DAILY-03..06, 08, 12, 13, 16): the challenge card with its countdown and the result of a
@@ -71,6 +90,12 @@ export function DailyPanel({ manifest, storage, solved, onShowBoard }: Props) {
     }
   }, [solved, signedIn, version, storage, policyVersion])
 
+  const result = sent?.kind === 'result' ? sent.result : null
+  const card = useMemo(
+    () => (result ? dailyCard(manifest.batch_at, daily.emoji, result) : null),
+    [result, manifest.batch_at, daily.emoji],
+  )
+
   const countdown = getCountdown(manifest.batch_at, now)
   return (
     <DailyCard daily={daily} solvedName={solved?.name ?? null}>
@@ -81,6 +106,7 @@ export function DailyPanel({ manifest, storage, solved, onShowBoard }: Props) {
           Hạng #{sent.result.rank} · Streak {sent.result.streak.current}
         </p>
       )}
+      {solved && signedIn && card && <ShareCard card="daily" data={card} player={{ storage, policyVersion }} />}
       {solved && signedIn && sent?.kind === 'consent' && <ConsentPrompt />}
       {solved && signedIn && sent?.kind === 'error' && <p role="status">{sent.text}</p>}
       {onShowBoard && (
