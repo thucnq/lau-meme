@@ -28,10 +28,12 @@ import {
   resolveTheme,
   saveProgress,
   sortItems,
+  tierOf,
   visibleItems,
   visibleTable,
 } from './engine'
 import type { Blocklist, Item, Manifest, Progress, SortMode, TableItem } from './engine'
+import { TierBadge } from './TierBadge'
 
 const BOIL_MS = 1000 // AC-GAME-02: ≤ 1,2 s
 const STEAM_MS = 500 // AC-GAME-03: ≤ 0,6 s
@@ -522,7 +524,8 @@ export function Game({ onDiscover, onItems, heirlooms = {}, onReport, blocklistR
           {table.map((t) => (
             <div
               key={t.uid}
-              className="chip on-table"
+              className={`chip on-table tier-${tierOf(byId.get(t.id))}`}
+              data-tier={tierOf(byId.get(t.id))}
               data-testid="table-item"
               data-uid={t.uid}
               data-name={t.name}
@@ -534,8 +537,9 @@ export function Game({ onDiscover, onItems, heirlooms = {}, onReport, blocklistR
                 uid: t.uid,
               })}
             >
-              <ElementIcon emoji={t.emoji} imageKey={imageOf(byId.get(t.id))} /> {t.name}
+              <ElementIcon emoji={t.emoji} imageKey={imageOf(byId.get(t.id))} /> <span>{t.name}</span>
               {badge(byId.get(t.id))}
+              <TierBadge tier={tierOf(byId.get(t.id))} />
             </div>
           ))}
           {steam && (
@@ -555,7 +559,12 @@ export function Game({ onDiscover, onItems, heirlooms = {}, onReport, blocklistR
                 const it = slots[n - 1]
                 return (
                   <div key={n} className="pot-slot" data-testid={`pot-slot-${n}`} data-slot={n}>
-                    {it ? `${it.emoji} ${it.name}` : ''}
+                    {it && (
+                      <span className={`slot-item tier-${tierOf(byId.get(it.id) ?? it)}`} data-tier={tierOf(byId.get(it.id) ?? it)}>
+                        <span aria-hidden="true">{it.emoji}</span> <span>{it.name}</span>
+                        <TierBadge tier={tierOf(byId.get(it.id) ?? it)} />
+                      </span>
+                    )}
                   </div>
                 )
               })}
@@ -572,6 +581,7 @@ export function Game({ onDiscover, onItems, heirlooms = {}, onReport, blocklistR
               name={zoom.item.name}
               emoji={zoom.item.emoji}
               imageKey={imageOf(zoom.item)}
+              tier={tierOf(zoom.item)}
               onClose={closeZoom}
             />
           )}
@@ -614,7 +624,8 @@ export function Game({ onDiscover, onItems, heirlooms = {}, onReport, blocklistR
             {plate.map((it) => (
               <li
                 key={it.id}
-                className="chip"
+                className={`chip tier-${tierOf(it)}`}
+                data-tier={tierOf(it)}
                 data-testid="plate-item"
                 data-name={it.name}
                 title={heirlooms[it.id]}
@@ -627,8 +638,9 @@ export function Game({ onDiscover, onItems, heirlooms = {}, onReport, blocklistR
                 }}
                 {...dragHandlers({ item: it, uid: null })}
               >
-                <ElementIcon emoji={it.emoji} imageKey={imageOf(it)} /> {it.name}
+                <ElementIcon emoji={it.emoji} imageKey={imageOf(it)} /> <span>{it.name}</span>
                 {badge(it)}
+                <TierBadge tier={tierOf(it)} />
                 {onReport && (
                   <button
                     type="button"

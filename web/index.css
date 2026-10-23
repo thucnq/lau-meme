@@ -251,6 +251,46 @@ a { color: var(--accent-2); }
 .board-rows li[aria-current='true'] { outline: 2px solid var(--accent); background: var(--pot); }
 .medal { font-size: 1.15rem; }
 
+/* Tier (TIER, AC-TIER-02): background per tier, the small shape a deeper shade at the bottom centre. Text keeps
+   --fg, so each light background stays light and each dark one dark for >= 4.5:1. */
+:root {
+  --tier-1: #e5e7eb; --tier-1-mark: #6b7280;
+  --tier-2: #bbf7d0; --tier-2-mark: #16a34a;
+  --tier-3: #bfdbfe; --tier-3-mark: #2563eb;
+  --tier-4: #fde68a; --tier-4-mark: #ca8a04;
+  --tier-5: #fecaca; --tier-5-mark: #dc2626;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --tier-1: #4b5563; --tier-1-mark: #9ca3af;
+    --tier-2: #166534; --tier-2-mark: #4ade80;
+    --tier-3: #1e40af; --tier-3-mark: #60a5fa;
+    --tier-4: #7a5c00; --tier-4-mark: #facc15;
+    --tier-5: #991b1b; --tier-5-mark: #f87171;
+  }
+}
+:root[data-theme='dark'] {
+  --tier-1: #4b5563; --tier-1-mark: #9ca3af;
+  --tier-2: #166534; --tier-2-mark: #4ade80;
+  --tier-3: #1e40af; --tier-3-mark: #60a5fa;
+  --tier-4: #7a5c00; --tier-4-mark: #facc15;
+  --tier-5: #991b1b; --tier-5-mark: #f87171;
+}
+[data-tier] { position: relative; color: var(--fg); }
+.chip[data-tier], .slot-item[data-tier], .discovery-card[data-tier] { background: var(--tier-bg); }
+.tier-1 { --tier-bg: var(--tier-1); --tier-mark: var(--tier-1-mark); }
+.tier-2 { --tier-bg: var(--tier-2); --tier-mark: var(--tier-2-mark); }
+.tier-3 { --tier-bg: var(--tier-3); --tier-mark: var(--tier-3-mark); }
+.tier-4 { --tier-bg: var(--tier-4); --tier-mark: var(--tier-4-mark); }
+.tier-5 { --tier-bg: var(--tier-5); --tier-mark: var(--tier-5-mark); }
+.tier-badge {
+  position: absolute; left: 50%; bottom: 0.08rem; width: 0.5rem; height: 0.5rem; transform: translateX(-50%);
+  pointer-events: none;
+}
+.tier-badge circle, .tier-badge polygon { fill: var(--tier-mark); }
+.discovery-card .tier-badge { width: 0.8rem; height: 0.8rem; bottom: 0.3rem; }
+.slot-item { display: inline-flex; align-items: center; gap: 0.25rem; padding: 0.15rem 0.5rem; border-radius: 999px; max-width: 100%; }
+
 /* Illustrations (ART): emoji first, the drawing once it has loaded; the loading image takes no room (AC-ART-06) */
 .chip .art { width: 1.4rem; height: 1.4rem; border-radius: 0.3rem; object-fit: cover; }
 .art.loading { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }

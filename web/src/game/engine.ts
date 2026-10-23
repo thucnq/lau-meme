@@ -187,7 +187,10 @@ export async function combine(ctx: Ctx, p: Progress, a: string, b: string): Prom
   if (result) {
     const known = p.items.some((i) => i.id === result.id)
     const now = (ctx.now ?? (() => new Date()))()
-    const items = known ? p.items : [...p.items, { ...result, discovered_at: now.toISOString() }]
+    // a newer graph may carry a new tier for an element already on the plate (AC-TIER-03): take it on re-combine
+    const items = known
+      ? p.items.map((i) => (i.id === result.id && i.tier !== result.tier ? { ...i, tier: result.tier } : i))
+      : [...p.items, { ...result, discovered_at: now.toISOString() }]
     return { kind: 'hit', result, isNew: !known, progress: { ...p, items, miss_streak: 0 } }
   }
   const line = missLine(ctx.manifest.miss_lines, a, b)
@@ -214,6 +217,14 @@ export function sortItems(items: Item[], mode: SortMode): Item[] {
   else if (mode === 'name') out.sort(byName)
   else out.sort((x, y) => x.depth - y.depth || byName(x, y))
   return out
+}
+
+export const TIER_NAMES = ['Xám', 'Xanh lá', 'Xanh dương', 'Vàng', 'Đỏ'] as const
+
+/** Tier 1-5 of an element; missing (older graph or progress) or out-of-range values read as 1 (AC-TIER-03). */
+export function tierOf(item: { tier?: unknown } | undefined): number {
+  const t = item?.tier
+  return typeof t === 'number' && Number.isInteger(t) && t >= 1 && t <= 5 ? t : 1
 }
 
 export function isNew(item: Item, manifestVersion: number, bl: Blocklist): boolean {

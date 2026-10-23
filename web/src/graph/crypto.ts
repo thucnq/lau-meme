@@ -10,6 +10,8 @@ export type GraphResult = {
   depth: number
   added_version: number
   image_key: string | null
+  /** 1-5, set by the admin (TIER); graphs published before TIER have none - shown as 1 (AC-TIER-03) */
+  tier?: number
 }
 
 export type Graph = { format: 1; version: number; entries: Record<string, string> }
