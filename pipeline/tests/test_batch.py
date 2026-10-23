@@ -542,7 +542,9 @@ def test_ac_pipe_13_ma_nguon_khong_tham_chieu_bang_hay_endpoint_nguoi_choi():
     """AC-PIPE-13: mã batch không nhắc tới endpoint/bảng người chơi (me, players, discovery, consent, daily_result)."""
     assert BATCH_SOURCE.is_file(), "thiếu pipeline/src/lau_meme_pipeline/batch.py"
     source = BATCH_SOURCE.read_text(encoding="utf-8").lower()
-    for needle in ("/api/me", "/api/players", "discovery", "consent", "daily_result"):
+    # whole path segment: "/api/metrics" (AC-METRIC-06, aggregate numbers only) is not "/api/me"
+    assert not re.search(r"/api/me(?![a-z0-9_-])", source), "/api/me"
+    for needle in ("/api/players", "discovery", "consent", "daily_result"):
         assert needle not in source, needle
 
 

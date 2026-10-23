@@ -13,7 +13,7 @@ import sys
 import time
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, replace
-from datetime import UTC, datetime, timedelta, timezone
+from datetime import UTC, date, datetime, timedelta, timezone
 from pathlib import Path
 from typing import Protocol
 from urllib.parse import urlsplit
@@ -79,6 +79,7 @@ class BatchClient(Protocol):
     def post_batch(self, body: dict) -> dict: ...
     def patch_batch(self, run_id: str, issue_url: str) -> dict: ...
     def put_banned_terms(self, source: str, terms: list[str]) -> None: ...
+    def get_metrics_summary(self, day: str) -> dict: ...
 
 
 class IssueReporter(Protocol):
@@ -214,6 +215,7 @@ def _render_report(
     quota_hit: bool = False,
     store_bytes: int | None = None,
     art_report: Mapping | None = None,
+    metrics: Mapping | None = None,
 ) -> tuple[str, str]:
     """Title shows the dish's emoji only, never its name (AC-PIPE-14)."""
     status = "error" if failed_step else "success"
@@ -256,10 +258,41 @@ def _render_report(
         warning = miss_rate_warning(*miss)
         if warning:
             lines.append(f"- {warning}")
-    lines += [
-        "- METRIC: chưa có số liệu (tính năng METRIC chưa làm)",
-    ]
+    lines += _metric_lines(metrics)
     return title, "\n".join(lines) + "\n"
+
+
+def metrics_day(batch_at: datetime) -> str:
+    """The last whole GMT+7 day before the batch (open question 60): the batch's own day has barely started."""
+    return (batch_at.astimezone(GMT7).date() - timedelta(days=1)).isoformat()
+
+
+def _rate(value: object) -> str:
+    return f"{value:.0%}" if isinstance(value, int | float) else "-"
+
+
+def _metric_lines(metrics: Mapping | None) -> list[str]:
+    """AC-METRIC-06: aggregate numbers only (the endpoint never returns a UUID or a raw event)."""
+    if metrics is None:
+        return ["- METRIC: chưa có số liệu"]
+    shares = metrics.get("shares") or {}
+    return [
+        f"- METRIC ngày {metrics.get('day', '-')}:",
+        f"  - Daily: {metrics.get('daily_players', 0)} người chơi · {metrics.get('daily_completions', 0)} hoàn thành",
+        f"  - Retention: D1 {_rate(metrics.get('d1_retention'))} · D7 {_rate(metrics.get('d7_retention'))}",
+        "  - Chia sẻ theo thẻ: " + (" · ".join(f"{card} {n}" for card, n in sorted(shares.items())) or "0"),
+        f"  - Ghép trượt: {_rate(metrics.get('miss_rate'))} · Nhạt: {_rate(metrics.get('nhat_rate'))}",
+        f"  - Báo cáo: {metrics.get('reports', 0)}",
+    ]
+
+
+def _metrics(client: BatchClient, batch_at: datetime, log: Callable[[str], None]) -> dict | None:
+    """A failed call is only logged: the batch and its Issue never depend on the numbers (open question 60)."""
+    try:
+        return client.get_metrics_summary(metrics_day(batch_at))
+    except Exception as exc:
+        log(f"Không lấy được số liệu METRIC: {type(exc).__name__}")
+        return None
 
 
 class _CountedLlm(Mapping[str, Callable]):
@@ -586,6 +619,7 @@ def _finish(
         quota_hit=quota_hit,
         store_bytes=store_bytes,
         art_report=art_report,
+        metrics=_metrics(client, batch_at, log),
     )
     return BatchOutcome(
         ok=failed_step is None,
@@ -684,6 +718,9 @@ class HttpBatchClient:
 
     def put_banned_terms(self, source: str, terms: list[str]) -> None:
         self.http.request("PUT", f"/api/pipeline/banned-terms/{source}", {"terms": terms})
+
+    def get_metrics_summary(self, day: str) -> dict:
+        return self.http.request("GET", f"/api/metrics/summary?day={date.fromisoformat(day).isoformat()}")
 
     def put_image(self, key: str, data: bytes) -> None:
         """ADR 0012: the Worker checks the key against the content hash before writing R2."""

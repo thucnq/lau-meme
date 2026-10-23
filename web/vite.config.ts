@@ -41,9 +41,24 @@ function siteUrlInHtml(): Plugin {
   return { name: 'lau-meme:site-url', transformIndexHtml: (html) => html.replaceAll('%SITE_URL%', siteUrl) }
 }
 
+/** Cloudflare Web Analytics beacon (AC-METRIC-01): without a token at build time (dev, tests) the tag is dropped. */
+function analyticsBeacon(): Plugin {
+  const token = process.env.VITE_CF_BEACON_TOKEN ?? ''
+  return {
+    name: 'lau-meme:cf-beacon',
+    transformIndexHtml: {
+      order: 'pre',
+      handler: (html) =>
+        /^[0-9a-f]{32}$/i.test(token)
+          ? html.replaceAll('%VITE_CF_BEACON_TOKEN%', token)
+          : html.replace(/\s*<!-- Cloudflare Web Analytics[^>]*-->\s*<script[^>]*cloudflareinsights[^>]*><\/script>/, ''),
+    },
+  }
+}
+
 export default defineConfig({
   base,
-  plugins: [react(), siteUrlInHtml(), underBasePath()],
+  plugins: [react(), siteUrlInHtml(), analyticsBeacon(), underBasePath()],
   define: { 'import.meta.env.VITE_SITE_URL': JSON.stringify(siteUrl) },
   // Files outside the bundle would be copied to the root of outDir, outside the base path; reference assets from index.html instead.
   publicDir: false,

@@ -1,0 +1,78 @@
+{
+ "red": {
+  "ts": "2026-10-23T13:07:19+00:00",
+  "commit": "f8d85be",
+  "results": {
+   "AC-METRIC-01": {
+    "status": "FAIL",
+    "test": "beacon.test.ts#cloudflare web analytics beacon > AC-METRIC-01: token beacon lấy từ biến build "
+   },
+   "AC-METRIC-02": {
+    "status": "FAIL",
+    "test": "metric.test.ts#metric events "
+   },
+   "AC-METRIC-03": {
+    "status": "FAIL",
+    "test": "metric.test.ts#metric events "
+   },
+   "AC-METRIC-04": {
+    "status": "FAIL",
+    "test": "metrics.test.ts#metrics client > other events share the same batching > AC-METRIC-04: sự kiện khác "
+   },
+   "AC-METRIC-05": {
+    "status": "FAIL",
+    "test": "metric.test.ts#metric summary "
+   },
+   "AC-METRIC-06": {
+    "status": "FAIL",
+    "test": "metric.test.ts#metric summary "
+   },
+   "AC-METRIC-07": {
+    "status": "PASS",
+    "test": "metric.test.ts#metric retention job > AC-METRIC-07: Cron hằng ngày xóa sự kiện cũ hơn 90 ngày, giữ sự kiện trong 90 ngày và ghi số dòng đã xóa vào log"
+   },
+   "AC-METRIC-VALIDATION": {
+    "status": "FAIL",
+    "test": "metric.test.ts#metric summary "
+   }
+  }
+ },
+ "green": {
+  "ts": "2026-10-23T13:38:56+00:00",
+  "commit": "f8d85be",
+  "results": {
+   "AC-METRIC-01": {
+    "status": "PASS",
+    "test": "beacon.test.ts#cloudflare web analytics beacon > AC-METRIC-01: HTML có script beacon Cloudflare Web Analytics với data-cf-beacon"
+   },
+   "AC-METRIC-02": {
+    "status": "PASS",
+    "test": "metric.test.ts#metric events "
+   },
+   "AC-METRIC-03": {
+    "status": "PASS",
+    "test": "metric.test.ts#metric events "
+   },
+   "AC-METRIC-04": {
+    "status": "PASS",
+    "test": "metrics.test.ts#metrics client > AC-METRIC-04: ghép 40 lượt trong phiên không gửi yêu cầu nào cho từng lượt"
+   },
+   "AC-METRIC-05": {
+    "status": "PASS",
+    "test": "metric.test.ts#metric summary "
+   },
+   "AC-METRIC-06": {
+    "status": "PASS",
+    "test": "test_metric#test_ac_metric_06_buoc_bao_cao_goi_endpoint_tong_hop_voi_ngay_hop_le"
+   },
+   "AC-METRIC-07": {
+    "status": "PASS",
+    "test": "metric.test.ts#metric retention job > AC-METRIC-07: Cron hằng ngày xóa sự kiện cũ hơn 90 ngày, giữ sự kiện trong 90 ngày và ghi số dòng đã xóa vào log"
+   },
+   "AC-METRIC-VALIDATION": {
+    "status": "PASS",
+    "test": "metric.test.ts#metric events "
+   }
+  }
+ }
+}

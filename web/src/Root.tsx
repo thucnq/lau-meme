@@ -7,6 +7,8 @@ import { ConsentRequiredError } from './privacy/client'
 import { Game, type NewDiscovery } from './game/Game'
 import { ConsentPrompt } from './privacy/ConsentPrompt'
 import { canSend } from './privacy/consent'
+import { getPlayerId } from './privacy/player'
+import { startMetrics } from './metrics/app'
 import { ReportDialog } from './report/ReportDialog'
 import { ConsentBanner } from './privacy/ConsentBanner'
 import { MyDataPanel } from './privacy/MyDataPanel'
@@ -69,6 +71,12 @@ function Home() {
       },
     )
   }
+
+  // Play events (AC-METRIC-02/04): only with consent for the current policy version, checked at every send.
+  useEffect(() => {
+    if (policyVersion === null) return
+    return startMetrics(() => (canSend(storage, policyVersion) ? getPlayerId(storage) : null))
+  }, [storage, policyVersion])
 
   // The current policy version comes from the manifest; until it is known nothing can be sent (AC-PRIV-09).
   useEffect(() => {
