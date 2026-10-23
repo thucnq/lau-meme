@@ -1,0 +1,54 @@
+{
+ "red": {
+  "ts": "2026-10-23T05:28:01+00:00",
+  "commit": "9b3d573",
+  "results": {
+   "AC-TIER-01": {
+    "status": "FAIL",
+    "test": "tier.test.ts#tier "
+   },
+   "AC-TIER-02": {
+    "status": "FAIL",
+    "test": "tier.ui.test.tsx#tier trên phần tử > AC-TIER-02: ghép ra phần tử tier 4 từ graph thì thẻ kết quả "
+   },
+   "AC-TIER-03": {
+    "status": "FAIL",
+    "test": "tier.ui.test.tsx#graph cũ chưa có tier > AC-TIER-03: manifest lên version mới có tier thì phần tử hiện đúng tier mà không mất tiến độ "
+   },
+   "AC-TIER-VALIDATION": {
+    "status": "FAIL",
+    "test": "tier.test.ts#tier "
+   },
+   "AC-TIER-ABUSE": {
+    "status": "FAIL",
+    "test": "tier.test.ts#tier "
+   }
+  }
+ },
+ "green": {
+  "ts": "2026-10-23T06:07:43+00:00",
+  "commit": "501ba86",
+  "results": {
+   "AC-TIER-01": {
+    "status": "PASS",
+    "test": "test_tier#test_ac_tier_01_phan_tu_loi_va_moi_batch_mac_dinh_tier_1_cung_cho_voi_ten"
+   },
+   "AC-TIER-02": {
+    "status": "PASS",
+    "test": "tier.browser.test.tsx#tier hiển thị "
+   },
+   "AC-TIER-03": {
+    "status": "PASS",
+    "test": "tier.ui.test.tsx#graph cũ chưa có tier > AC-TIER-03: tiến độ cũ "
+   },
+   "AC-TIER-VALIDATION": {
+    "status": "PASS",
+    "test": "tier.test.ts#tier "
+   },
+   "AC-TIER-ABUSE": {
+    "status": "PASS",
+    "test": "tier.test.ts#tier "
+   }
+  }
+ }
+}

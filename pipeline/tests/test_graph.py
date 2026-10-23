@@ -169,7 +169,8 @@ def test_ac_graph_02_khop_cai_dat_doc_lap_theo_adr_0002():
     assert plain["emoji"] == expected["emoji"]
     assert plain["added_version"] == 0
     assert plain["image_key"] is None
-    assert set(plain) == {"id", "name", "emoji", "depth", "added_version", "image_key"}
+    assert plain["tier"] == 1  # AC-TIER-01: mặc định Xám, cùng chỗ với tên/emoji
+    assert set(plain) == {"id", "name", "emoji", "depth", "added_version", "image_key", "tier"}
     assert adr_decrypt(graph, "Cười", "Cay") == plain
     assert decrypt_entry(graph, "Cay", "Cười") == plain
 

@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { TierBadge } from '../game/TierBadge'
 import { ElementIcon } from './ElementIcon'
 
 /** How long the zoom stays before shrinking back (open question 31). */
@@ -8,6 +9,8 @@ type Props = {
   name: string
   emoji: string
   imageKey: string | null
+  /** 1-5 (AC-TIER-02); the zoom only shows elements already decrypted, so the tier is no secret here */
+  tier?: number
   onClose: () => void
 }
 
@@ -20,7 +23,7 @@ export function prefersReducedMotion(): boolean {
  * or on Esc. Not a dialog: nothing behind it is locked, so dragging and the pot keep working while it shows.
  * Remount it (key) for each new discovery so the timer starts again.
  */
-export function DiscoveryZoom({ name, emoji, imageKey, onClose }: Props) {
+export function DiscoveryZoom({ name, emoji, imageKey, tier = 1, onClose }: Props) {
   useEffect(() => {
     const timer = window.setTimeout(onClose, ZOOM_MS)
     const onKey = (e: KeyboardEvent) => {
@@ -35,11 +38,12 @@ export function DiscoveryZoom({ name, emoji, imageKey, onClose }: Props) {
 
   return (
     <div className="discovery-zoom" data-testid="discovery-zoom" data-motion={prefersReducedMotion() ? 'static' : 'bounce'} onClick={onClose}>
-      <div className="discovery-card">
+      <div className={`discovery-card tier-${tier}`} data-tier={tier}>
         <span className="discovery-icon">
           <ElementIcon emoji={emoji} imageKey={imageKey} />
         </span>
         <span className="discovery-name">{name}</span>
+        <TierBadge tier={tier} />
       </div>
     </div>
   )

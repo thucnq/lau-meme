@@ -10,14 +10,14 @@
 - **Thì** pipeline không gọi adapter crawl nào và không gọi LLM; chọn Món đặc biệt mới (AC-DAILY-01), xuất graph + manifest version mới với `batch_at` = T (AC-GRAPH-04), deploy, ghi báo cáo đợt (AC-PIPE-14)
 - Ưu tiên: Bắt buộc
 
-### AC-PIPE-02: Lịch chạy và chạy tay
+### AC-PIPE-02: Lịch chạy và chạy tay (cập nhật 2026-10-23)
 - **Cho** workflow mẻ nhúng trong `.github/workflows/`
 - **Khi** đọc cấu hình workflow
-- **Thì** có `schedule` cron `0 17 * * *` và `0 5 * * *` (00:00 và 12:00 GMT+7), có `workflow_dispatch` với tham số chế độ (`core`/`full`), có `timeout-minutes: 15` và `concurrency` để không có 2 mẻ chạy cùng lúc
+- **Thì** có `schedule` cron `0 17 * * *` và `0 5 * * *` (00:00 và 12:00 GMT+7) cho production và cron `0 */2 * * *` (mỗi 2 tiếng, giờ chẵn UTC) cho staging (cập nhật 2026-10-23); cron nào kích hoạt thì chọn môi trường tương ứng (`github.event.schedule`), `BATCH_HOURS_UTC` của môi trường khớp lịch cron (AC-DAILY-12); có `workflow_dispatch` với tham số chế độ (`core`/`full`) và môi trường; có `timeout-minutes: 15` và `concurrency` theo môi trường để không có 2 mẻ cùng môi trường chạy cùng lúc
 - Ưu tiên: Bắt buộc
 
 ### AC-PIPE-03: Một nguồn lỗi không làm hỏng cả đợt
-- **Cho** 5 adapter (Reddit, Know Your Meme, Google Trends VN, YouTube trending, RSS) trong đó adapter Reddit ném lỗi / hết thời gian
+- **Cho** các adapter (Reddit, Know Your Meme, Google Trends VN, YouTube trending, RSS, Tuổi Trẻ - AC-PIPE-15, Threads - AC-PIPE-17) trong đó adapter Reddit ném lỗi / hết thời gian
 - **Khi** bước crawl chạy
 - **Thì** khái niệm từ 4 adapter còn lại vẫn đi tiếp; báo cáo đợt ghi "Reddit: lỗi <loại lỗi>"; đợt không bị đánh dấu thất bại chỉ vì một nguồn
 - Ưu tiên: Bắt buộc
@@ -86,4 +86,22 @@
 - **Cho** một đợt kết thúc (thành công, lỗi, hoặc rollback)
 - **Khi** bước báo cáo chạy
 - **Thì** một GitHub Issue được tạo với: version, `batch_at`, chế độ, trạng thái, số meme crawl/thêm/bị chặn (theo danh mục)/vào hàng chờ, lỗi từng nguồn, quota Gemini đã dùng, Món đặc biệt (emoji, không lộ tên trong tiêu đề), số liệu METRIC của đợt; lỗi khi tạo Issue chỉ ghi log, không làm đợt thất bại
+- Ưu tiên: Bắt buộc
+
+### AC-PIPE-15: Nguồn Tuổi Trẻ chuyên mục meme (thêm 2026-10-23)
+- **Cho** trang `https://tuoitre.vn/meme.html` (HTML mẫu lưu trong test, không gọi mạng) có 20 bài, mỗi bài có tiêu đề, đoạn tóm tắt, link, ảnh đại diện; robots.txt của tuoitre.vn (mẫu) cấm `/tim-kiem.htm` và `/print/`
+- **Khi** adapter Tuổi Trẻ chạy trong mẻ `full`
+- **Thì** trả 20 khái niệm theo AC-PIPE-04: tên = tiêu đề bài, ngữ cảnh = đoạn tóm tắt (cắt tối đa 500 ký tự), link nguồn = link bài tuyệt đối, tên nguồn "Tuổi Trẻ"; không tải ảnh đại diện; chỉ đọc trang chuyên mục, không đi theo link bị robots.txt cấm; chỉ đọc trang 1 (mặc định); cấu trúc HTML đổi khiến không đọc được bài nào thì báo lỗi nguồn "Tuổi Trẻ: không đọc được trang" theo AC-PIPE-03, đợt không thất bại; User-Agent nêu tên dự án
+- Ưu tiên: Bắt buộc
+
+### AC-PIPE-16: Ghi mức trending (mặn) của phần tử (thêm 2026-10-23)
+- **Cho** kho có "Còn Cái Nịt" (`trend_peak` = 2) và "Stonks" (`trend_peak` = 0); đợt crawl thu được 4 khái niệm khử trùng (AC-PIPE-05) về "Còn Cái Nịt" từ 3 nguồn khác nhau, 1 khái niệm về "Stonks", và meme mới M được thêm từ 2 khái niệm
+- **Khi** đợt kết thúc thành công; rồi đợt sau crawl được 1 khái niệm về "Còn Cái Nịt"
+- **Thì** mức trending của một phần tử trong một đợt = số khái niệm crawl của đợt đó trùng với phần tử (khớp `fold` hoặc LLM nói trùng ở AC-PIPE-05; với phần tử mới: số khái niệm gộp lại thành nó); `trend_peak` = mức cao nhất từng ghi nhận, gồm cả đợt hiện tại (câu hỏi mở 42): sau đợt 1 "Còn Cái Nịt" = 4, "Stonks" = 1, M = 2; sau đợt 2 "Còn Cái Nịt" vẫn = 4; phần tử chưa từng được crawl thấy có `trend_peak` = 0; mẻ `core` và đợt lỗi không đổi `trend_peak`; chạy lại cùng đợt (AC-PIPE-10) không cộng dồn; báo cáo đợt liệt kê 5 phần tử có mức trending cao nhất của đợt (tên không xuất hiện trong tiêu đề Issue)
+- Ưu tiên: Bắt buộc
+
+### AC-PIPE-17: Nguồn Threads qua API chính thức (thêm 2026-10-23)
+- **Cho** mẻ `full` có GitHub Secret `THREADS_ACCESS_TOKEN` và variable `THREADS_KEYWORDS` (danh sách phân tách bằng dấu phẩy, vd. `meme,trend`); phản hồi mẫu của API tìm theo từ khóa của Threads (lưu trong test, không gọi mạng) có 15 bài công khai, mỗi bài có nội dung chữ, permalink, tên người đăng, ảnh/video
+- **Khi** adapter Threads chạy
+- **Thì** chỉ gọi API chính thức của Meta (không scrape trang threads.net); trả khái niệm theo AC-PIPE-04: tên/câu nói lấy từ nội dung bài, link nguồn = permalink, tên nguồn "Threads"; **không** lưu hay gửi LLM tên người đăng, ảnh đại diện, link hồ sơ; không tải ảnh/video; thiếu `THREADS_ACCESS_TOKEN` hoặc `THREADS_KEYWORDS` rỗng thì adapter không thu gì và báo cáo đợt cảnh báo thiếu cấu hình, đợt không thất bại; API trả 401/403 (token hết hạn, quyền chưa được duyệt) hoặc 429 thì ghi lỗi nguồn "Threads: <loại lỗi>" theo AC-PIPE-03; tối đa 50 bài mỗi đợt (mặc định)
 - Ưu tiên: Bắt buộc

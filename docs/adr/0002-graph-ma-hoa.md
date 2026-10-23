@@ -27,7 +27,7 @@ Ký hiệu: `fold(s)` là hàm chuẩn hóa đã có ở pipeline (`text.fold`, 
 ## Hệ quả
 - Đã biết 2 tên thì giải được 1 mục: graph chống đọc trộm cả cây, **không** chống dò từng cặp hay dò từ điển tên - chấp nhận theo BRD mục 8.
 - Đổi `fold` là đổi mọi id ⇒ phải coi `fold` như một phần của định dạng (`lm1`); đổi thì tăng tiền tố (`lm2`) và `format` của graph.
-- Kích thước: ~200 byte/mục (khóa 43 + bản mã base64url) ⇒ lõi 363 công thức ≈ 75 KB, gzip nhỏ hơn; mỗi lượt tra = 1 SHA-256 + 1 HKDF + 1 AES-GCM, đo trong AC-GAME-14.
+- Kích thước: ~200 byte/mục (khóa 43 + bản mã base64url) ⇒ lõi 518 công thức ≈ 105 KB, gzip nhỏ hơn; mỗi lượt tra = 1 SHA-256 + 1 HKDF + 1 AES-GCM, đo trong AC-GAME-14.
 
 ## Phương án đã loại
 - IV ngẫu nhiên mỗi mục: phá tính idempotent byte-giống-hệt (AC-INV-05).

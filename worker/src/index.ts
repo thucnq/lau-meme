@@ -1,5 +1,5 @@
 import { hasBearer } from './auth'
-import { adminOnly, listAudit, listBatches, listElements, listRecipes, listReports, moderate } from './features/admin/admin'
+import { adminOnly, listAudit, listBatches, listElements, listRecipes, listReports, moderate, setElementTier } from './features/admin/admin'
 import { getGraph, getImage, getManifest } from './features/content/content'
 import { createDiscovery, listDiscoveries, putBannedTerms } from './features/disc/disc'
 import { getSession, signInWithGoogle, signOut } from './features/auth/auth'
@@ -63,6 +63,7 @@ const routes: Route[] = [
 const adminRoutes: Route[] = [
   { pattern: /^\/api\/admin\/reports$/, methods: { GET: adminOnly(listReports) } },
   { pattern: /^\/api\/admin\/elements$/, methods: { GET: adminOnly(listElements) } },
+  { pattern: /^\/api\/admin\/elements\/([^/]+)\/tier$/, methods: { PUT: adminOnly(setElementTier) } },
   { pattern: /^\/api\/admin\/recipes$/, methods: { GET: adminOnly(listRecipes) } },
   { pattern: /^\/api\/admin\/moderation$/, methods: { POST: adminOnly(moderate) } },
   { pattern: /^\/api\/admin\/batches$/, methods: { GET: adminOnly(listBatches) } },

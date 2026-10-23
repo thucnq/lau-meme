@@ -21,8 +21,8 @@
 | Vai trò | Mô tả | Quyền chính |
 |---|---|---|
 | Thực khách (người chơi ẩn danh) | Định danh bằng UUID sinh trên trình duyệt; nickname tùy chọn | Chơi ghép, ghép ra Món đặc biệt, gửi Công thức gia truyền, báo cáo, Ngon/Nhạt, xem/xuất/xóa dữ liệu của mình |
-| Thực khách đã đăng nhập Google (thêm 2026-10-21) | Như trên + tài khoản định danh bằng băm HMAC mã `sub` của Google; phiên cookie HttpOnly | Thêm: nộp kết quả Món đặc biệt, có tên trên bảng xếp hạng mẻ/tuần/tháng/streak; nickname và streak theo tài khoản trên nhiều máy |
-| Quản trị (Thuc) | Một người, xác thực bằng 1 token lưu trong Cloudflare secret | Xem báo cáo, ẩn/hiện/chặn phần tử và công thức, xem nhật ký đợt và audit |
+| Thực khách đã đăng nhập Google (thêm 2026-10-21) | Như trên + tài khoản định danh bằng băm HMAC mã `sub` của Google; phiên cookie HttpOnly | Thêm: nộp kết quả Món đặc biệt, có tên trên bảng xếp hạng mẻ/tuần/tháng/streak/cống hiến; đề xuất meme mới (CONTRIB, thêm 2026-10-23); nickname và streak theo tài khoản trên nhiều máy |
+| Quản trị (Thuc) | Một người, xác thực bằng 1 token lưu trong Cloudflare secret | Xem báo cáo, ẩn/hiện/chặn phần tử và công thức, xem nhật ký đợt (kèm thống kê crawl) và audit; gán tier; sửa và duyệt đề xuất meme (cập nhật 2026-10-23) |
 | Pipeline (GitHub Actions) | Tác vụ máy, xác thực bằng token trong GitHub Secrets | Đọc nội dung, ghi nội dung + graph + manifest mới; không đọc dữ liệu người chơi |
 
 ## 3. Danh sách tính năng
@@ -31,15 +31,17 @@
 | GAME | Chơi ghép (Nhúng lẩu) | Nồi lẩu 2 chỗ thả + thả chồng; Đĩa nhúng (tìm không dấu, sắp xếp); Nồi trào cố định theo cặp + gợi ý; nhãn "MỚI"; lưu cục bộ; chế độ tối; hướng dẫn lần đầu; ghép < 50 ms | Bắt buộc | `docs/acceptance/game.md` |
 | GRAPH | Graph mã hóa + manifest + rollback | Khóa = băm cặp tên chuẩn hóa, kết quả mã hóa bằng khóa dẫn xuất từ 2 tên; manifest có version + giờ mẻ thật; giữ 14 bản; rollback bằng workflow chạy tay | Bắt buộc | `docs/acceptance/graph.md` |
 | SEED | Nạp lõi nội dung classic | Nạp `noi-dung-loi.json` (174 phần tử, 518 công thức, 40 câu Nồi trào, 4 khởi đầu); kiểm tới được, không trùng | Bắt buộc | `docs/acceptance/seed.md` |
-| PIPE | Pipeline Mẻ nhúng mới | Chế độ lõi (giai đoạn 1); crawl theo adapter, khử trùng, liên kết ngược + BFS, hàng chờ, công thức bổ sung, giám khảo, deploy; idempotent; gom lô Gemini; báo cáo đợt qua GitHub Issue (giai đoạn 2) | Bắt buộc | `docs/acceptance/pipe.md` |
+| PIPE | Pipeline Mẻ nhúng mới | Chế độ lõi (giai đoạn 1); crawl theo adapter, khử trùng, liên kết ngược + BFS, hàng chờ, công thức bổ sung, giám khảo, deploy; idempotent; gom lô Gemini; báo cáo đợt qua GitHub Issue (giai đoạn 2); nguồn Tuổi Trẻ và Threads, mức trending `trend_peak`, staging mỗi 2 tiếng (cập nhật 2026-10-23) | Bắt buộc | `docs/acceptance/pipe.md` |
 | MOD | Kiểm duyệt nội dung tự động | Từ cấm + LLM theo danh mục cấm; luật người thật dựa trên ngữ cảnh nguồn; danh sách chặn bí danh; không chắc thì loại; hoãn nội dung nóng 30 ngày (giai đoạn 2) | Bắt buộc | `docs/acceptance/mod.md` |
-| ART | Ảnh minh họa tự tạo | Workers AI vẽ khái niệm phong cách vẽ tay, Gemini kiểm duyệt ảnh, phóng lớn ảnh khi ghép ra món lần đầu, R2 + Cache API immutable, emoji dự phòng (giai đoạn 2) | Bắt buộc | `docs/acceptance/art.md` |
-| DAILY | Món đặc biệt hôm nay | 1 món/mẻ (độ sâu [4, 8]); emoji + gợi ý mờ; ghép ra món ngay trên bàn lẩu là giải (không bàn thử thách, không đếm bước); thời gian giải = lúc server nhận − `batch_at`; bảng xếp hạng mẻ (ai nộp trước), tuần và tháng (số mẻ giải, rồi tổng thời gian); **streak**; chỉ tài khoản Google mới nộp; đồng hồ theo manifest thật | Bắt buộc | `docs/acceptance/daily.md` |
+| ART | Ảnh minh họa tự tạo | Workers AI vẽ khái niệm phong cách vẽ tay, Gemini kiểm duyệt ảnh, phóng lớn ảnh khi ghép ra món lần đầu, R2 + Cache API immutable, emoji dự phòng (giai đoạn 2); vẽ bù phần tử lõi (cập nhật 2026-10-23) | Bắt buộc | `docs/acceptance/art.md` |
+| DAILY | Món đặc biệt hôm nay | 1 món/mẻ (độ sâu [4, 8]); ưu tiên mặn (trending) rồi mới, không trùng 30 mẻ gần nhất, lịch mẻ trong manifest (cập nhật 2026-10-23); emoji + gợi ý mờ; ghép ra món ngay trên bàn lẩu là giải (không bàn thử thách, không đếm bước); thời gian giải = lúc server nhận − `batch_at`; bảng xếp hạng mẻ (ai nộp trước), tuần và tháng (số mẻ giải, rồi tổng thời gian); **streak**; chỉ tài khoản Google mới nộp; đồng hồ theo manifest thật | Bắt buộc | `docs/acceptance/daily.md` |
 | AUTH | Đăng nhập bằng Google (thêm 2026-10-21) | Google Identity Services, Worker kiểm ID token (JWKS); chỉ lưu băm HMAC của `sub`, không email/tên; phiên cookie HttpOnly 90 ngày không dùng thì hết hạn; đăng xuất; xóa tài khoản; cùng tài khoản trên nhiều máy (không đồng bộ Đĩa) | Bắt buộc | `docs/acceptance/auth.md` |
 | DISC | Công thức gia truyền | UUID cục bộ + nickname tùy chọn (lọc từ cấm + bí danh); server kiểm công thức rồi ghi người đầu tiên; giới hạn tần suất theo UUID và IP băm | Bắt buộc | `docs/acceptance/disc.md` |
 | SHARE | Thẻ chia sẻ | Thẻ Daily kiểu Wordle (chữ + PNG) và thẻ Công thức gia truyền; sao chép / chia sẻ hệ thống; không lộ đáp án | Bắt buộc | `docs/acceptance/share.md` |
 | REPORT | Báo cáo + chặn nóng | Báo cáo phần tử và ảnh; 3 UUID khác nhau ⇒ tự ẩn; ảnh bị báo cáo về emoji; danh sách chặn nóng tải khi khởi động | Bắt buộc | `docs/acceptance/report.md` |
-| ADMIN | Trang quản trị tối giản | Token; xem báo cáo, ẩn/hiện/chặn phần tử và công thức, nhật ký đợt; audit mọi thao tác | Bắt buộc | `docs/acceptance/admin.md` |
+| ADMIN | Trang quản trị tối giản | Token; xem báo cáo, ẩn/hiện/chặn phần tử và công thức, nhật ký đợt + thống kê crawl; gán tier; duyệt đề xuất meme; audit mọi thao tác | Bắt buộc | `docs/acceptance/admin.md` |
+| CONTRIB | Đóng góp meme (thêm 2026-10-23) | Đề xuất meme từ cặp có sẵn (chỉ tên bắt buộc); từ cấm + admin duyệt, không gửi LLM; hiện nickname người tạo; "Top cống hiến" | Bắt buộc | `docs/acceptance/contrib.md` |
+| TIER | Tier của meme (thêm 2026-10-23) | 5 bậc admin gán; màu nền + hình nhỏ giữa mép dưới; mặc định Xám | Bắt buộc | `docs/acceptance/tier.md` |
 | FEEDBACK | Ngon / Nhạt | 1 phiếu/UUID/công thức; pipeline hạ/ẩn công thức nhiều "Nhạt" | Tùy chọn | `docs/acceptance/feedback.md` |
 | METRIC | Đo chỉ số thành công | Cloudflare Web Analytics + bảng sự kiện ẩn danh D1 (câu hỏi phạm vi 3: cần bảng sự kiện); tổng hợp D1/D7, Daily/ngày, chia sẻ, ghép trượt, "Nhạt", báo cáo | Bắt buộc | `docs/acceptance/metric.md` |
 | PRIV | Chính sách quyền riêng tư | Trang chính sách; đồng ý trước khi gửi dữ liệu; IP chỉ lưu băm, xóa sau thời hạn ngắn; xem/xuất/xóa dữ liệu qua UUID | Bắt buộc | `docs/acceptance/priv.md` |
@@ -83,12 +85,18 @@
 4. Lỗi toàn đợt → quản trị chạy workflow rollback về bản graph trước.
 - Mục tiêu: khôi phục trong 5 phút.
 
+### 4.6 Đóng góp meme (CONTRIB + ADMIN + TIER) (thêm 2026-10-23)
+1. Thực khách đã đăng nhập chọn 2 phần tử có sẵn, nhập tên (bắt buộc), biểu tượng, mô tả, link ảnh rồi gửi; Worker lọc từ cấm + bí danh, lưu "Chờ duyệt".
+2. Quản trị xem đề xuất, sửa thông tin, viết gợi ý ảnh, chọn tier, rồi duyệt hoặc từ chối (có lý do); mọi thao tác vào audit.
+3. Mẻ kế tiếp đưa phần tử đã duyệt và công thức của nó vào graph; mẻ `full` vẽ ảnh từ gợi ý của quản trị.
+4. Người chơi ghép ra phần tử thấy "Meme của <nickname>" khi rê chuột/chạm giữ; người tạo lên "Top cống hiến".
+
 ## 5. Dữ liệu
 
 ### 5.1 Thực thể chính
 | Thực thể | Thuộc tính quan trọng | Ghi chú |
 |---|---|---|
-| Phần tử (element) | id, tên, tên chuẩn hóa (`fold`), emoji, nguồn (Việt/Quốc tế), depth, gợi ý ảnh, khóa ảnh, mẻ thêm vào, trạng thái (hoạt động/ẩn/chặn), cờ hoãn nóng đến ngày | Tên chuẩn hóa duy nhất; emoji duy nhất |
+| Phần tử (element) | id, tên, tên chuẩn hóa (`fold`), emoji, nguồn (Việt/Quốc tế; lõi/crawl/đóng góp), depth, gợi ý ảnh, khóa ảnh, mẻ thêm vào, trạng thái (hoạt động/ẩn/chặn), cờ hoãn nóng đến ngày; tier 1-5, `trend_peak`, tài khoản người tạo (đóng góp) - cập nhật 2026-10-23 | Tên chuẩn hóa duy nhất; emoji duy nhất |
 | Công thức (recipe) | cặp (a, b) không thứ tự, kết quả, điểm hài, mẻ thêm vào, trạng thái | Mỗi cặp tối đa 1 kết quả |
 | Câu Nồi trào (miss line) | id, nội dung | 40 câu lõi |
 | Mẻ (batch) | version, `batch_at` thật, chế độ (lõi/đầy đủ), trạng thái, số thêm/chặn/lỗi nguồn, quota dùng | Manifest + graph theo version; giữ 14 bản |
@@ -104,6 +112,7 @@
 | Phiếu Ngon/Nhạt | công thức, player, giá trị | Tùy chọn (FEEDBACK) |
 | Sự kiện (event) | loại, player, thời điểm, thuộc tính nhỏ (loại thẻ…) | Không có IP, không có user agent đầy đủ |
 | Đồng ý (consent) | player, mục đích, version chính sách, thời điểm, IP băm, kênh | Append-only |
+| Đề xuất meme (contribution) (thêm 2026-10-23) | cặp phần tử cha, tên, biểu tượng, mô tả, link ảnh, tài khoản, trạng thái (chờ/duyệt/từ chối), lý do, gợi ý ảnh của admin, thời điểm | Tối đa 1 đề xuất chờ duyệt/tài khoản/cặp |
 | Audit quản trị | thao tác, đích, trước/sau, thời điểm, dấu vân token | Append-only |
 | Hàng chờ meme (pipeline) | khái niệm, nguồn, số lần thử, lần thử gần nhất | Nằm ở kho pipeline |
 
@@ -117,6 +126,7 @@ Phân loại theo Luật BVDLCN 2025 + NĐ 356/2025: chỉ có **dữ liệu cá
 | Nickname | Cơ bản | Hiển thị trên bảng xếp hạng và Công thức gia truyền | Đến khi thực khách đổi/xóa | Lọc từ cấm + bí danh; đồng ý trước khi lưu |
 | IP | Cơ bản | Giới hạn tần suất, chống gian lận | Chỉ lưu dạng băm HMAC (khóa trong secret); xóa sau 7 ngày | Không lưu IP thô; không ghi IP vào log |
 | Sự kiện chơi | Cơ bản (gắn UUID) | Đo D1/D7, chia sẻ, ghép trượt | 90 ngày | Không IP, không user agent; xóa theo UUID khi thực khách xóa dữ liệu |
+| Đề xuất meme (thêm 2026-10-23) | Cơ bản (gắn tài khoản) | Duyệt meme, ghi công người tạo, "Top cống hiến" | Chờ duyệt: đến khi duyệt/từ chối hoặc xóa tài khoản; đã duyệt: phần tử ở lại game, bỏ gắn tài khoản khi xóa tài khoản | Không gửi LLM; admin không thấy mã tài khoản; có trong xuất dữ liệu |
 | Bằng chứng đồng ý | Cơ bản | Chứng minh đồng ý | Theo vòng đời player + 1 năm sau khi xóa (mặc định - câu hỏi mở) | Append-only |
 
 - **Không gửi dữ liệu người chơi cho LLM** hay bất kỳ dịch vụ bên thứ ba nào. Gemini và Workers AI chỉ nhận dữ liệu meme công khai ⇒ không phát sinh chuyển dữ liệu cá nhân ra nước ngoài.
@@ -130,6 +140,8 @@ Phân loại theo Luật BVDLCN 2025 + NĐ 356/2025: chỉ có **dữ liệu cá
 | Know Your Meme | Vào | HTTP, tôn trọng robots.txt | Mỗi mẻ | Như trên |
 | Google Trends VN | Vào | RSS/HTTP | Mỗi mẻ | Như trên |
 | YouTube trending | Vào | YouTube Data API (key) | Mỗi mẻ | Như trên |
+| Threads (thêm 2026-10-23) | Vào | API chính thức của Meta, tìm theo từ khóa (token trong GitHub Secret, cần Meta duyệt app) | Mỗi mẻ | Như trên; không lưu tên người đăng |
+| Tuổi Trẻ `tuoitre.vn/meme.html` (thêm 2026-10-23) | Vào | Đọc HTML trang chuyên mục, theo robots.txt | Mỗi mẻ | Như trên |
 | RSS trang giải trí Việt | Vào | RSS | Mỗi mẻ | Như trên |
 | Gemini API (free tier) | Ra (dữ liệu meme công khai) | REST, gom lô | Mỗi mẻ | Retry backoff; hết quota → dừng êm, phần còn lại vào hàng chờ |
 | Cloudflare Workers AI (FLUX.1 schnell) | Ra | Binding/REST | Mỗi mẻ (giai đoạn 2) | Hết hạn mức → emoji, vẽ bù đợt sau |
@@ -180,3 +192,4 @@ Stack là Cloudflare Worker + D1 + Python pipeline (không Docker/Postgres), nê
 | 2026-10-22 | 0.7 | Góp ý giao diện sau staging: AC-GAME-19 (Dọn bàn, Chơi lại từ đầu, ? vào khu bàn lẩu; đăng nhập lên đầu trang), AC-GAME-20 (lửa không bị cắt, quai ngang thân nồi), AC-GAME-21 (vuốt chỗ trống để cuộn trên điện thoại, gợi ý lần đầu), AC-DAILY-16 (thẻ thử thách nổi bật), AC-DAILY-17 (bảng xếp hạng ở tab riêng, huy chương top 3, tô dòng của mình) | nguyenquythuc (chờ /dk:approve spec) |
 | 2026-10-22 | 0.8 | AC-GAME-20 làm rõ: lỗi lửa là ngọn ngoài cùng bên phải bị cắt ngang, không phải bị cắt chiều cao; hàng lửa chỉ vẽ ngọn trọn vẹn | nguyenquythuc (chờ /dk:approve spec) |
 | 2026-10-22 | 0.9 | SEED: lõi classic tăng lên 174 phần tử / 518 công thức (thêm 35 meme, PR #58; câu hỏi mở 40); cập nhật con số trong AC-SEED-01 và AC-GAME | nguyenquythuc (chờ /dk:approve spec) |
+| 2026-10-23 | 1.0 | Câu hỏi mở 41-48: DAILY chọn món theo mặn (trending, `trend_peak`) rồi mới, không trùng 30 mẻ gần nhất, pool gồm 59 món lõi có `daily_hint` (AC-DAILY-01, 12, 18); PIPE: staging mỗi 2 tiếng, lịch mẻ trong manifest, nguồn Tuổi Trẻ, ghi mức trending (AC-PIPE-02, 15, 16), nguồn Threads qua API chính thức (AC-PIPE-17; câu hỏi mở 47, 49, 55 đã chốt); ART vẽ bù lõi (AC-ART-11); ADMIN thống kê crawl, gán tier (AC-ADMIN-11, 12); thêm CONTRIB (đóng góp meme, Top cống hiến) và TIER | nguyenquythuc (chờ /dk:approve spec) |

@@ -1,6 +1,6 @@
 {
   "title": "ƯỚC LƯỢNG - LẨU MEME",
-  "subtitle": "Dự án cá nhân · 1 người · 20 giờ/tuần · theo AC đã duyệt (spec 49e1bd1) · giai đoạn 1 = lõi classic + pipeline chế độ lõi, giai đoạn 2 = crawl, kiểm duyệt, ảnh",
+  "subtitle": "Dự án cá nhân · 1 người · 20 giờ/tuần · theo AC đã duyệt (spec fc39c07) · giai đoạn 1 = lõi classic + pipeline chế độ lõi, giai đoạn 2 = crawl, kiểm duyệt, ảnh",
   "params": {
     "no_quote": true,
     "hours_per_day": 8,
@@ -326,11 +326,64 @@
       "owner": "Thuc"
     },
     {
+      "id": "DAILY3",
+      "module": "Trò chơi",
+      "name": "Món đặc biệt - pool mặn/mới, lịch mẻ theo manifest",
+      "desc": "DAILY + PIPE · AC-DAILY-01, 12, 18, AC-PIPE-02 (đổi 2026-10-23) · pool mọi món có gợi ý (59 món lõi + crawl), xếp mặn (trend_peak) rồi mới, không trùng 30 mẻ, tất định theo version (1.5); đồng hồ theo schedule_hours_utc trong manifest (1); mô phỏng 90 mẻ core (1); cron staging mỗi 2 tiếng + BATCH_HOURS_UTC theo môi trường (0.5)",
+      "points": 4,
+      "deps": [
+        "DAILY2",
+        "PIPE"
+      ],
+      "ac": [
+        "AC-DAILY-01",
+        "AC-DAILY-12",
+        "AC-DAILY-18",
+        "AC-PIPE-02"
+      ],
+      "risk": "MEDIUM",
+      "owner": "Thuc"
+    },
+    {
+      "id": "TIER",
+      "module": "Nội dung",
+      "name": "Tier của meme",
+      "desc": "TIER · AC-TIER-01..03, AC-ADMIN-12 (thêm 2026-10-23) · tier 1-5 trong kho, giữ qua mẻ và rollback, vào graph (1); màu nền + hình nhỏ mép dưới, tương phản 4,5:1 sáng/tối (1.5); graph cũ hiện Xám (0.5); admin gán tier + audit (1)",
+      "points": 4,
+      "deps": [
+        "ADMIN",
+        "GRAPH"
+      ],
+      "ac": [
+        "AC-TIER",
+        "AC-ADMIN-12"
+      ],
+      "risk": "LOW",
+      "owner": "Thuc"
+    },
+    {
+      "id": "CONTRIB",
+      "module": "Cộng đồng",
+      "name": "Đóng góp meme",
+      "desc": "CONTRIB · AC-CONTRIB-01..12 (thêm 2026-10-23) · form đề xuất từ cặp có sẵn + kiểm hợp lệ, trùng, từ cấm/bí danh, 401/403/429 (4); đề xuất của tôi (0.5); admin sửa, duyệt/từ chối, tạo phần tử + công thức (3.5); pipeline đưa vào graph với biểu tượng/emoji mặc định, không gửi LLM (1.5); chạm giữ/hover hiện người tạo (1.5); Top cống hiến (1); xóa tài khoản và xuất dữ liệu (1)",
+      "points": 13,
+      "deps": [
+        "AUTH",
+        "ADMIN",
+        "TIER"
+      ],
+      "ac": [
+        "AC-CONTRIB"
+      ],
+      "risk": "HIGH",
+      "owner": "Thuc"
+    },
+    {
       "id": "UAT",
       "module": "Kiểm thử",
       "name": "Kiểm thử nghiệm thu & sửa lỗi (giai đoạn 1)",
-      "desc": "15% điểm tính năng giai đoạn 1; chạy cron chế độ lõi vài ngày trên staging, kiểm trên 2–3 điện thoại; gồm thêm AUTH, DAILY làm lại, AC-GAME-18; thêm góp ý giao diện 2026-10-22 (UI2)",
-      "points": 15,
+      "desc": "15% điểm tính năng giai đoạn 1; chạy cron chế độ lõi vài ngày trên staging, kiểm trên 2–3 điện thoại; gồm thêm AUTH, DAILY làm lại, AC-GAME-18; thêm góp ý giao diện 2026-10-22 (UI2); thêm DAILY3, TIER, CONTRIB 2026-10-23",
+      "points": 18,
       "deps": [
         "*"
       ],
@@ -393,6 +446,27 @@
       "owner": "Thuc"
     },
     {
+      "id": "PIPE3",
+      "module": "Nội dung",
+      "name": "Nguồn Tuổi Trẻ, Threads, mức mặn, thống kê crawl (giai đoạn 2)",
+      "desc": "PIPE + ADMIN · AC-PIPE-15..17, AC-ADMIN-11 (thêm 2026-10-23) · adapter HTML tuoitre.vn/meme.html theo robots.txt (1.5); trend_peak mỗi phần tử qua các đợt (1.5); adapter Threads qua API chính thức, không lưu người đăng (3); thống kê crawl theo nguồn trong admin (1.5)",
+      "points": 7.5,
+      "deps": [
+        "PIPE2",
+        "ADMIN"
+      ],
+      "ac": [
+        "AC-PIPE-15",
+        "AC-PIPE-16",
+        "AC-PIPE-17",
+        "AC-ADMIN-11"
+      ],
+      "risk": "HIGH",
+      "owner": "Thuc",
+      "open": true,
+      "question": "Meta có cấp quyền tìm theo từ khóa (threads_keyword_search) cho app cá nhân không? Nếu không, AC-PIPE-17 chỉ còn bỏ qua êm khi thiếu token (-2 điểm)"
+    },
+    {
       "id": "ART",
       "module": "Nội dung",
       "name": "Ảnh minh họa tự tạo (giai đoạn 2)",
@@ -410,11 +484,26 @@
       "question": "Hạn mức Workers AI gói free hiện hành (R2 đã chốt 2026-10-21, không đòi thẻ)"
     },
     {
+      "id": "ART2",
+      "module": "Nội dung",
+      "name": "Vẽ bù ảnh phần tử lõi (giai đoạn 2)",
+      "desc": "ART · AC-ART-11 (thêm 2026-10-23) · vẽ bù ảnh 174 phần tử lõi trong hạn mức 20 ảnh/đợt, sau phần tử chờ vẽ và phần tử mới; tách khỏi ART vì ART đã xong",
+      "points": 1,
+      "deps": [
+        "ART"
+      ],
+      "ac": [
+        "AC-ART-11"
+      ],
+      "risk": "LOW",
+      "owner": "Thuc"
+    },
+    {
       "id": "UAT2",
       "module": "Kiểm thử",
       "name": "Kiểm thử nghiệm thu & sửa lỗi (giai đoạn 2)",
-      "desc": "15% điểm tính năng giai đoạn 2; chạy pipeline crawl thật vài đợt trên staging trước khi bật tự động đăng",
-      "points": 5,
+      "desc": "15% điểm tính năng giai đoạn 2; chạy pipeline crawl thật vài đợt trên staging trước khi bật tự động đăng; thêm PIPE3, ART-11 2026-10-23",
+      "points": 6.5,
       "deps": [
         "*"
       ],
@@ -432,6 +521,11 @@
       "q": "Lõi chỉ có 40 món độ sâu 4–8 ⇒ hết món chưa lặp sau ~20 ngày ở giai đoạn 1",
       "why": "open-questions #2; bổ sung lõi trước go-live sẽ thêm việc nội dung (không tính điểm ở đây)",
       "default": "Lặp lại món đã dùng lâu nhất (AC-DAILY-01)"
+    },
+    {
+      "q": "CONTRIB (đóng góp meme) nằm trong giai đoạn 1 hay để sau go-live?",
+      "why": "13 điểm, kéo lùi mốc nghiệm thu giai đoạn 1 khoảng 3 tuần ở 20 giờ/tuần",
+      "default": "Giai đoạn 1 (chỉ cần AUTH + ADMIN, không cần crawl)"
     }
   ]
 }

@@ -3,12 +3,15 @@
 # Đăng dữ liệu qua API của Worker, không deploy code; lỗi ở bất kỳ bước nào ⇒ bản hiện hành giữ nguyên, job đỏ.
 # Giai đoạn 2 (ADR 0009, 0011): chạy tay chọn mode `full`; cron dùng variable `BATCH_MODE` của environment
 # (trống = core), nên bật crawl tự động chỉ cần đặt BATCH_MODE=full, không phải sửa workflow.
+# Đề xuất 2026-10-23 (chờ spec AC-PIPE-02): staging chạy mỗi 2 tiếng ở giờ chẵn UTC (cron riêng, không trùng 05/17);
+# hai cron 05/17 giữ cho production. Cron nào chạy thì `github.event.schedule` cho biết, từ đó chọn môi trường.
 name: batch
 
 on:
   schedule:
     - cron: '0 17 * * *'
     - cron: '0 5 * * *'
+    - cron: '0 */2 * * *'
   workflow_dispatch:
     inputs:
       mode:
@@ -24,7 +27,7 @@ on:
 
 # Dùng chung nhóm với rollback.yml: mẻ nhúng và rollback không bao giờ chạy chồng nhau.
 concurrency:
-  group: batch-${{ inputs.target || 'production' }}
+  group: batch-${{ inputs.target || (github.event.schedule == '0 */2 * * *' && 'staging' || 'production') }}
   cancel-in-progress: false
 
 permissions:
@@ -36,7 +39,7 @@ jobs:
     timeout-minutes: 15
     # `production` có required reviewers (deploy code); mẻ nhúng chỉ đăng dữ liệu nên dùng environment
     # `production-no-approval` (cùng secret PIPELINE_TOKEN/API_BASE_URL của production) để cron không đứng chờ duyệt.
-    environment: ${{ inputs.target == 'staging' && 'staging' || 'production-no-approval' }}
+    environment: ${{ (inputs.target == 'staging' || github.event.schedule == '0 */2 * * *') && 'staging' || 'production-no-approval' }}
     permissions:
       contents: read
       issues: write

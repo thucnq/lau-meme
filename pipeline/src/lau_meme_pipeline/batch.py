@@ -19,6 +19,7 @@ from typing import Protocol
 from urllib.parse import urlsplit
 
 from lau_meme_pipeline.art import ArtAdapters, ArtItem, ArtResult, UploadFailed, draw_images, image_key, to_webp_256
+from lau_meme_pipeline.contrib import add_contributions
 from lau_meme_pipeline.crawl import Http, crawl
 from lau_meme_pipeline.daily import build_daily_block, select_daily
 from lau_meme_pipeline.full import run_full
@@ -28,6 +29,7 @@ from lau_meme_pipeline.invariants import InvariantError, check_all, miss_rate_wa
 from lau_meme_pipeline.moderation import QUOTA_LABEL, ModLists
 from lau_meme_pipeline.seed import ACTIVE, ContentStore, load_core
 from lau_meme_pipeline.text import fold
+from lau_meme_pipeline.tier import apply_tiers, invalid_tiers
 
 STEPS = ("state", "seed", "daily", "export", "check", "invariants", "banned", "publish", "report")
 GMT7 = timezone(timedelta(hours=7))
@@ -163,10 +165,19 @@ def _content(store: ContentStore, daily_id: str) -> dict:
 def _check(store: ContentStore, graph: Mapping, content: Mapping) -> None:
     """Invariants before publishing: every published recipe opens with its input names and gives its result."""
     names = {e.id: e.name for e in store.elements.values()}
+    entries = []
     for r in content["recipes"]:
         entry = decrypt_entry(graph, names[r["a"]], names[r["b"]])
         if entry is None or entry["id"] != r["result"]:
             raise ValueError(f"graph không mở được công thức {r['id']}")
+        entries.append(entry)
+    bad = invalid_tiers(entries)
+    if bad:  # missing or outside 1-5 (AC-TIER-01): nothing of this batch is published
+        raise ValueError(f"tier không hợp lệ ở {len(bad)} mục graph, vd {bad[0]}")
+
+
+def _first_versions(state: Mapping) -> dict[str, int]:
+    return {c["id"]: c["first_version"] for c in state.get("catalog", [])}
 
 
 def _mod_lists(state: Mapping, banned_words: Sequence[str]) -> ModLists:
@@ -404,6 +415,9 @@ def run_batch(
                 blocked=frozenset(state["blocklist"]["elements"]),
                 daily_history=state.get("daily_history", []),
                 draw=_drawer(art, client),
+                tiers=state.get("tiers", []),
+                contributions=state.get("contributions", []),
+                first_versions=_first_versions(state),
             )
             store = full.content
             graph, manifest, store_out = full.graph, full.manifest, full.store
@@ -428,6 +442,14 @@ def run_batch(
         else:
             step = "seed"
             store = load_core(core, ContentStore.empty()).store
+            store = add_contributions(
+                store,
+                state.get("contributions", []),
+                version=version,
+                first_versions=_first_versions(state),
+                blocked=frozenset(state["blocklist"]["elements"]),
+            ).store
+            store = apply_tiers(store, state.get("tiers", []))
             step = "daily"
             daily = _pick_daily(store, core, state, version)
             emoji = daily["emoji"]
