@@ -353,7 +353,7 @@ const DAILY_HISTORY_LIMIT = 1000
  */
 export async function getPipelineState(_req: Request, env: Env): Promise<Response> {
   const db = env.DB
-  const [current, blocks, aliases, history, admin] = await db.batch([
+  const [current, blocks, aliases, history, admin, catalog, tiers, contributions] = await db.batch([
     db.prepare('SELECT value FROM app_meta WHERE key = ?').bind('current_version'),
     db.prepare('SELECT kind, target_id FROM block ORDER BY kind, target_id'),
     db.prepare("SELECT term_fold FROM banned_term WHERE source IN ('mod', 'admin') ORDER BY term_fold"),
@@ -362,6 +362,13 @@ export async function getPipelineState(_req: Request, env: Env): Promise<Respons
        WHERE status = 'success' AND daily_element_id IS NOT NULL ORDER BY version DESC LIMIT ?`,
     ).bind(DAILY_HISTORY_LIMIT),
     db.prepare("SELECT term_fold FROM banned_term WHERE source = 'admin' ORDER BY term_fold"),
+    db.prepare('SELECT id, first_version, COALESCE(trend_peak, 0) AS trend_peak FROM element ORDER BY id'),
+    db.prepare('SELECT element_id, tier FROM element_tier ORDER BY element_id'),
+    // game content only: no description, image link, account or nickname (AC-CONTRIB-09, ADR 0013)
+    db.prepare(
+      `SELECT element_id, name, emoji, a_id, b_id, image_hint, decided_at FROM contribution
+       WHERE status = 'approved' ORDER BY decided_at, id`,
+    ),
   ])
   const value = (current?.results[0] as { value: string } | undefined)?.value
   const blocklist: Record<'elements' | 'recipes' | 'images', string[]> = { elements: [], recipes: [], images: [] }
@@ -377,6 +384,27 @@ export async function getPipelineState(_req: Request, env: Env): Promise<Respons
       (r) => ({ version: r.version, element_id: r.daily_element_id, batch_at: new Date(r.batch_at).toISOString() }),
     ),
     feedback: [], // FEEDBACK (optional feature) is not built yet
+    catalog: (catalog?.results ?? []) as { id: string; first_version: number; trend_peak: number }[],
+    tiers: (tiers?.results ?? []) as { element_id: string; tier: number }[],
+    contributions: (
+      (contributions?.results ?? []) as {
+        element_id: string
+        name: string
+        emoji: string | null
+        a_id: string
+        b_id: string
+        image_hint: string | null
+        decided_at: number
+      }[]
+    ).map((r) => ({
+      element_id: r.element_id,
+      name: r.name,
+      emoji: r.emoji,
+      a: r.a_id,
+      b: r.b_id,
+      image_hint: r.image_hint ?? '',
+      approved_at: new Date(r.decided_at).toISOString(),
+    })),
   })
 }
 

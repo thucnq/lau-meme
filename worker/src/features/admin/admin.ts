@@ -150,29 +150,44 @@ export async function listElements(req: Request, env: Env): Promise<Response> {
   const q = params.get('q') ?? ''
   if (q.length > 100) bad('q: tối đa 100 ký tự')
   const state = choice(params, 'state', ['active', 'hidden', 'blocked'] as const) ?? ''
+  const tier = Number(choice(params, 'tier', ['1', '2', '3', '4', '5'] as const) ?? 0)
   const db = env.DB
   const [rows, total] = await db.batch([
     db
       .prepare(
         `SELECT e.id, e.name, e.emoji, e.depth, e.image_key, e.last_version, COALESCE(be.state, 'active') AS state,
-                CASE WHEN e.image_key IS NULL THEN 'none' WHEN bi.target_id IS NULL THEN 'active' ELSE 'hidden' END AS image_state
+                CASE WHEN e.image_key IS NULL THEN 'none' WHEN bi.target_id IS NULL THEN 'active' ELSE 'hidden' END AS image_state,
+                COALESCE(t.tier, 1) AS tier
          FROM element e
          LEFT JOIN block be ON be.kind = 'element' AND be.target_id = e.id
          LEFT JOIN block bi ON bi.kind = 'image' AND bi.target_id = e.id
+         LEFT JOIN element_tier t ON t.element_id = e.id
          WHERE (?1 = '' OR instr(e.name_fold, ?1) > 0) AND (?2 = '' OR COALESCE(be.state, 'active') = ?2)
+           AND (?5 = 0 OR COALESCE(t.tier, 1) = ?5)
          ORDER BY e.name_fold, e.id LIMIT ?3 OFFSET ?4`,
       )
-      .bind(fold(q), state, p.size, p.offset),
+      .bind(fold(q), state, p.size, p.offset, tier),
     db
       .prepare(
         `SELECT COUNT(*) AS n FROM element e
          LEFT JOIN block be ON be.kind = 'element' AND be.target_id = e.id
-         LEFT JOIN block bi ON bi.kind = 'image' AND bi.target_id = e.id
-         WHERE (?1 = '' OR instr(e.name_fold, ?1) > 0) AND (?2 = '' OR COALESCE(be.state, 'active') = ?2)`,
+         LEFT JOIN element_tier t ON t.element_id = e.id
+         WHERE (?1 = '' OR instr(e.name_fold, ?1) > 0) AND (?2 = '' OR COALESCE(be.state, 'active') = ?2)
+           AND (?3 = 0 OR COALESCE(t.tier, 1) = ?3)`,
       )
-      .bind(fold(q), state),
+      .bind(fold(q), state, tier),
   ])
-  type Row = { id: string; name: string; emoji: string; depth: number; image_key: string | null; last_version: number; state: string; image_state: string }
+  type Row = {
+    id: string
+    name: string
+    emoji: string
+    depth: number
+    image_key: string | null
+    last_version: number
+    state: string
+    image_state: string
+    tier: number
+  }
   const items = ((rows?.results ?? []) as Row[]).map((r) => ({
     id: r.id,
     name: r.name,
@@ -182,6 +197,7 @@ export async function listElements(req: Request, env: Env): Promise<Response> {
     image_key: r.image_key,
     image_state: r.image_state,
     last_version: r.last_version,
+    tier: r.tier,
   }))
   return page(p, totalOf(total), items)
 }
@@ -263,22 +279,38 @@ export async function listBatches(req: Request, env: Env): Promise<Response> {
 export async function listAudit(req: Request, env: Env): Promise<Response> {
   const p = paging(new URL(req.url).searchParams)
   const db = env.DB
+  // admin_audit (moderation states) and admin_change (tier, contributions; ADR 0013) read as one log
   const [rows, total] = await db.batch([
     db
       .prepare(
-        `SELECT action, target_kind, target_id, before_state, after_state, reason, token_fp, created_at
-         FROM admin_audit ORDER BY created_at DESC, id DESC LIMIT ? OFFSET ?`,
+        `SELECT id, action, target_kind, target_id, before_state, after_state, 0 AS structured, reason, token_fp, created_at
+         FROM admin_audit
+         UNION ALL
+         SELECT id, action, target_kind, target_id, before_json, after_json, 1, reason, token_fp, created_at
+         FROM admin_change
+         ORDER BY created_at DESC, id DESC LIMIT ? OFFSET ?`,
       )
       .bind(p.size, p.offset),
-    db.prepare('SELECT COUNT(*) AS n FROM admin_audit'),
+    db.prepare('SELECT (SELECT COUNT(*) FROM admin_audit) + (SELECT COUNT(*) FROM admin_change) AS n'),
   ])
-  type Row = { action: string; target_kind: string; target_id: string; before_state: string; after_state: string; reason: string | null; token_fp: string; created_at: number }
+  type Row = {
+    action: string
+    target_kind: string
+    target_id: string
+    before_state: string
+    after_state: string
+    structured: number
+    reason: string | null
+    token_fp: string
+    created_at: number
+  }
+  const state = (r: Row, text: string): unknown => (r.structured ? JSON.parse(text) : text)
   const items = ((rows?.results ?? []) as Row[]).map((r) => ({
     action: r.action,
     target_kind: r.target_kind,
     target_id: r.target_id,
-    before: r.before_state,
-    after: r.after_state,
+    before: state(r, r.before_state),
+    after: state(r, r.after_state),
     reason: r.reason,
     token_fp: r.token_fp,
     created_at: iso(r.created_at),
@@ -401,4 +433,44 @@ export async function moderate(req: Request, env: Env): Promise<Response> {
   )
   await db.batch(writes)
   return json({ target_kind: kind, target_id: id, before, after })
+}
+
+// ------------------------------------------------------------------------------------------------ tier
+
+/**
+ * PUT /api/admin/elements/{id}/tier - AC-ADMIN-12: the element must be in the catalog; the tier row and its single
+ * admin_change row go in one batch. The graph shows it from the next batch (open question 53, ADR 0013).
+ */
+export async function setElementTier(req: Request, env: Env, _ctx: ExecutionContext, params: string[]): Promise<Response> {
+  const id = params[0] ?? ''
+  if (!ID43.test(id)) bad('id: id phần tử không hợp lệ')
+  const body = await readJson(req)
+  for (const k of Object.keys(body)) if (k !== 'tier') bad(`${k}: trường không được phép`)
+  const tier = body.tier
+  if (typeof tier !== 'number' || !Number.isInteger(tier) || tier < 1 || tier > 5) bad('tier: số nguyên 1-5')
+
+  const db = env.DB
+  const [found, current] = await db.batch([
+    db.prepare('SELECT id FROM element WHERE id = ?').bind(id),
+    db.prepare('SELECT tier FROM element_tier WHERE element_id = ?').bind(id),
+  ])
+  if (!found?.results[0]) return problem(404, 'Không tìm thấy phần tử')
+  const before = (current?.results[0] as { tier: number } | undefined)?.tier ?? 1
+  const now = Date.now()
+  const fp = (await sha256hex(env.ADMIN_TOKEN ?? '')).slice(0, 8)
+  await db.batch([
+    db
+      .prepare(
+        `INSERT INTO element_tier (element_id, tier, updated_at) VALUES (?1, ?2, ?3)
+         ON CONFLICT (element_id) DO UPDATE SET tier = excluded.tier, updated_at = excluded.updated_at`,
+      )
+      .bind(id, tier, now),
+    db
+      .prepare(
+        `INSERT INTO admin_change (id, action, target_kind, target_id, before_json, after_json, reason, token_fp, created_at)
+         VALUES (?, 'set_tier', 'element', ?, ?, ?, NULL, ?, ?)`,
+      )
+      .bind(uuidv7(now), id, JSON.stringify({ tier: before }), JSON.stringify({ tier }), fp, now),
+  ])
+  return json({ element_id: id, before, after: tier })
 }
