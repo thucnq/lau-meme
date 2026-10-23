@@ -283,6 +283,18 @@ describe.each(['light', 'dark'] as const)('tier hiển thị (giao diện %s)', 
     }
   })
 
+  it(`AC-TIER-02: trên bàn - phần tử tier 4 vẫn định vị tuyệt đối tại chỗ thả, nhãn tier nằm trong phần tử (${theme})`, async () => {
+    await open(theme)
+    const name = ITEMS[3]!
+    drag(plateItem(name), screen.getByTestId('table'))
+    await waitFor(() => expect(screen.getAllByTestId('table-item').length).toBe(1))
+    const el = screen.getByTestId('table-item')
+    expect(el.dataset.tier, 'tier 4').toBe('4')
+    expect(getComputedStyle(el).position, 'data-tier không được ghi đè .on-table').toBe('absolute')
+    const badge = within(el).getByRole('img', { name: 'Tier Vàng' })
+    expect(el.contains(badge)).toBe(true)
+  })
+
   it(`AC-TIER-02: trong nồi - phần tử ở chỗ thả số 1 giữ đúng màu nền, hình, nhãn và tương phản của tier (${theme})`, async () => {
     for (let tier = 1; tier <= 5; tier++) {
       await open(theme)
