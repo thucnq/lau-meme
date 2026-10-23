@@ -1,6 +1,6 @@
 # ERD - D1 (SQLite)
 
-> Nguồn: `worker/migrations/0001..0005`. Id phần tử/công thức là băm (ADR 0002). Thời gian `INTEGER` epoch ms UTC.
+> Nguồn: `worker/migrations/0001..0007`. Id phần tử/công thức là băm (ADR 0002). Thời gian `INTEGER` epoch ms UTC.
 > Không có khóa ngoại từ dữ liệu người chơi sang `element`/`recipe`: nội dung đổi theo version, bảng người chơi chỉ giữ id.
 
 ```mermaid
@@ -21,6 +21,12 @@ erDiagram
     TEXT image_key
     INTEGER first_version
     INTEGER last_version
+    INTEGER updated_at
+    INTEGER trend_peak "AC-PIPE-16"
+  }
+  element_tier {
+    TEXT element_id PK
+    INTEGER tier "1-5, không có dòng = 1"
     INTEGER updated_at
   }
   recipe {
@@ -54,6 +60,7 @@ erDiagram
     TEXT graph_json
     TEXT server_json
     INTEGER created_at
+    TEXT creators_json "Worker dựng, ADR 0013"
   }
   pipeline_store {
     INTEGER version PK
@@ -185,6 +192,25 @@ erDiagram
     INTEGER updated_at
   }
 
+  contribution {
+    TEXT id PK "UUIDv7"
+    TEXT account_id FK "NULL sau khi xóa tài khoản"
+    TEXT a_id
+    TEXT b_id
+    TEXT name
+    TEXT name_fold
+    TEXT emoji
+    TEXT description
+    TEXT image_url
+    TEXT status "pending | approved | rejected"
+    TEXT reject_reason
+    TEXT image_hint
+    TEXT element_id
+    INTEGER created_at
+    INTEGER updated_at
+    INTEGER decided_at
+  }
+
   rate_counter {
     TEXT bucket PK
     INTEGER count
@@ -201,8 +227,22 @@ erDiagram
     TEXT token_fp
     INTEGER created_at
   }
+  admin_change {
+    TEXT id PK
+    TEXT action
+    TEXT target_kind
+    TEXT target_id
+    TEXT before_json
+    TEXT after_json
+    TEXT reason
+    TEXT token_fp
+    INTEGER created_at
+  }
 
   element ||--o{ recipe : "a / b / result"
+  element ||--o| element_tier : "element_id"
+  account ||--o{ contribution : "account_id (SET NULL)"
+  contribution |o--o| element : "element_id (sau khi mẻ đăng)"
   batch_content ||--|| batch_run : "version"
   batch_content ||--o| pipeline_store : "version (mẻ full, ADR 0009)"
   element ||--o| discovery : "element_id"
@@ -225,4 +265,5 @@ erDiagram
 ## Ghi chú
 - Dữ liệu cá nhân: `player`, `consent`, `discovery.player_id`, `daily_result`, `streak`, `report.player_id`, `vote`, `event` (BRD 5.2). Xóa theo UUID: AC-PRIV-05.
 - Tài khoản Google (ADR 0010): `account`, `account_player`, `session`, `daily_entry`, `account_streak`; xóa `account` thì `ON DELETE CASCADE` xóa phần còn lại (AC-AUTH-06). Kết quả Daily, streak và nickname trên bảng xếp hạng thuộc tài khoản; `daily_result`/`streak` theo UUID cũ không còn được ghi.
-- Giữ dữ liệu (Cron Trigger hằng ngày, ADR 0004): `event` 90 ngày; `consent.ip_hash` 7 ngày; `admin_audit` 12 tháng; `consent` 1 năm sau dòng `erase`; `session` hết hạn (90 ngày không dùng); `batch_content` và `pipeline_store` 14 version mới nhất.
+- Đóng góp meme (ADR 0013): `contribution` gắn tài khoản là dữ liệu cá nhân; xóa tài khoản xóa đề xuất chờ duyệt, phần còn lại `SET NULL`, và nickname trong `batch_content.creators_json` thành `null`. Tier (`element_tier`) và mức mặn (`element.trend_peak`) là dữ liệu nội dung, pipeline đọc qua `/pipeline/state`.
+- Giữ dữ liệu (Cron Trigger hằng ngày, ADR 0004): `event` 90 ngày; `consent.ip_hash` 7 ngày; `admin_audit` và `admin_change` 12 tháng; `consent` 1 năm sau dòng `erase`; `session` hết hạn (90 ngày không dùng); `batch_content` và `pipeline_store` 14 version mới nhất.

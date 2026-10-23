@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: lau-meme API
-  version: 0.3.0
+  version: 0.4.0
   description: |
     API của Worker Lẩu Meme. Bốn chủ thể (BRD mục 2): thực khách ẩn danh (header `X-Player-Id` = UUID v4
     sinh trên trình duyệt), thực khách đã đăng nhập Google (cookie phiên `laumeme_sid`, ADR 0010 - kết quả Daily,
@@ -23,6 +23,8 @@ tags:
     description: Đăng nhập Google, phiên, đăng xuất (AUTH, ADR 0010)
   - name: play
     description: Khám phá, Daily, báo cáo, phiếu, sự kiện
+  - name: contrib
+    description: Đóng góp meme, người tạo, Top cống hiến (CONTRIB, ADR 0013)
   - name: admin
     description: Trang quản trị (ADMIN) - chỉ phục vụ trên host quản trị riêng (ADR 0008)
   - name: pipeline
@@ -76,7 +78,7 @@ paths:
       summary: Graph mã hóa của một version (bất biến)
       description: '`Cache-Control: public, max-age=31536000, immutable`; Worker đặt vào Cache API.'
       security: []
-      x-ac: [AC-GRAPH-01, AC-GRAPH-02, AC-GRAPH-03, AC-GRAPH-04, AC-GAME-14]
+      x-ac: [AC-GRAPH-01, AC-GRAPH-02, AC-GRAPH-03, AC-GRAPH-04, AC-GAME-14, AC-TIER-01, AC-TIER-02, AC-TIER-03]
       parameters:
         - $ref: '#/components/parameters/Version'
       responses:
@@ -87,6 +89,32 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Graph' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        default: { $ref: '#/components/responses/Problem' }
+  /creators/{version}:
+    get:
+      operationId: getCreators
+      tags: [content]
+      summary: Người tạo các meme đóng góp có trong một version
+      description: |
+        Bản chụp Worker dựng lúc đăng mẻ (ADR 0013): nickname **hiện tại lúc đăng mẻ** của tài khoản đã gửi, nên đổi
+        nickname thì hiện tên mới từ mẻ kế tiếp (AC-CONTRIB-10). Xóa tài khoản thì mục của tài khoản đó thành `null`
+        trong mọi version còn lưu (AC-CONTRIB-12). Chỉ có phần tử đóng góp; phần tử lõi và crawl không có mục.
+        Không có mã tài khoản hay UUID. Không bất biến vì có thể bị xóa nickname: `Cache-Control: public, max-age=300`.
+        Version chưa có bản chụp (đăng trước khi có CONTRIB) trả `{}`.
+      security: []
+      x-ac: [AC-CONTRIB-10, AC-CONTRIB-12]
+      parameters:
+        - $ref: '#/components/parameters/Version'
+      responses:
+        '200':
+          description: '`{ "<element_id>": "<nickname>" | null }`; `null` → client hiện "Thực khách ẩn danh"'
+          headers:
+            Cache-Control: { $ref: '#/components/headers/CacheCreators' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Creators' }
         '400': { $ref: '#/components/responses/BadRequest' }
         '404': { $ref: '#/components/responses/NotFound' }
         default: { $ref: '#/components/responses/Problem' }
@@ -209,10 +237,11 @@ paths:
       summary: Xem / xuất dữ liệu của tôi
       description: |
         UUID chưa có dữ liệu trả cấu trúc rỗng, không bao giờ dữ liệu của người khác. Không cần đồng ý. Có phiên hợp
-        lệ thì thêm `account` (thời điểm tạo, số phiên đang mở, nickname, kết quả Daily và streak của tài khoản);
+        lệ thì thêm `account` (thời điểm tạo, số phiên đang mở, nickname, kết quả Daily, streak và mọi đề xuất meme
+        của tài khoản với đủ trường đã gửi - AC-CONTRIB-12);
         không bao giờ có băm `sub` (AC-AUTH-06).
       security: [{ PlayerId: [] }, { PlayerId: [], Session: [] }]
-      x-ac: [AC-PRIV-08, AC-AUTH-06]
+      x-ac: [AC-PRIV-08, AC-AUTH-06, AC-CONTRIB-12]
       responses:
         '200':
           description: Dữ liệu của UUID gửi lên
@@ -231,8 +260,11 @@ paths:
         và thêm dòng `erase` (xóa hẳn sau 1 năm). Không cần đồng ý. UUID được bỏ gắn khỏi tài khoản.
         Có phiên hợp lệ thì xóa luôn tài khoản: băm `sub`, mọi phiên, nickname, kết quả Daily, streak; mọi UUID
         đã gắn tài khoản được xóa như trên; cookie bị xóa. Đăng nhập lại bằng cùng Google tạo tài khoản mới trống.
+        Đề xuất meme: `pending` bị xóa; đã duyệt/bị từ chối bỏ gắn tài khoản (meme đã duyệt ở lại game, hiện
+        "Thực khách ẩn danh", rời Top cống hiến ngay; nickname trong bản chụp người tạo của mọi version còn lưu thành
+        `null` - AC-CONTRIB-12, ADR 0013).
       security: [{ PlayerId: [] }, { PlayerId: [], Session: [] }]
-      x-ac: [AC-PRIV-05, AC-AUTH-06]
+      x-ac: [AC-PRIV-05, AC-AUTH-06, AC-CONTRIB-12]
       responses:
         '204':
           description: Đã xóa (hoặc không có gì để xóa)
@@ -472,6 +504,99 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/StreakLeaderboard' }
         default: { $ref: '#/components/responses/Problem' }
+  # ---------------------------------------------------------------- contrib
+  /contributions:
+    post:
+      operationId: createContribution
+      tags: [contrib]
+      summary: Gửi đề xuất meme mới từ cặp 2 phần tử có sẵn
+      description: |
+        Cần phiên hợp lệ (thiếu → 401) và đồng ý `play` của UUID cho version chính sách hiện hành (thiếu → 403).
+        Hai phần tử tra theo `fold` của tên và phải đang hoạt động trong version hiện hành (không có/bị ẩn → 400
+        nêu trường `a`/`b`). Lọc từ cấm + bí danh (wordlist, `mod`, `admin`) trên `fold` của tên và mô tả: khớp →
+        422 "Nội dung không phù hợp", không nêu từ nào. 409 khi: cặp đã có công thức (danh mục `recipe` hoặc đề xuất
+        đã duyệt); tên trùng phần tử đã có hoặc đề xuất đã duyệt theo `fold`; tài khoản đã có đề xuất chờ duyệt cho
+        cặp. Giới hạn: 5 đề xuất/tài khoản/ngày GMT+7 (thứ 6 → 429, `Retry-After` tới 00:00 GMT+7 hôm sau); 10 yêu
+        cầu/phút/IP băm (AC-PRIV-06). Không gọi LLM (câu hỏi mở 46).
+      security: [{ PlayerId: [], Session: [] }]
+      x-ac: [AC-CONTRIB-01, AC-CONTRIB-02, AC-CONTRIB-03, AC-CONTRIB-04, AC-CONTRIB-05]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ContributionRequest' }
+      responses:
+        '201':
+          description: Đã nhận, trạng thái `pending` ("Chờ duyệt")
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Contribution' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '415': { $ref: '#/components/responses/UnsupportedMediaType' }
+        '422': { $ref: '#/components/responses/Unprocessable' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        default: { $ref: '#/components/responses/Problem' }
+  /contributions/{id}:
+    get:
+      operationId: getContribution
+      tags: [contrib]
+      summary: Một đề xuất của tôi
+      description: Đề xuất của tài khoản khác hoặc không tồn tại đều trả 404 (không lộ là có tồn tại).
+      security: [{ Session: [] }]
+      x-ac: [AC-CONTRIB-06]
+      parameters:
+        - $ref: '#/components/parameters/ContributionId'
+      responses:
+        '200':
+          description: Đề xuất (bản admin đã sửa nếu có)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Contribution' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        default: { $ref: '#/components/responses/Problem' }
+  /me/contributions:
+    get:
+      operationId: listMyContributions
+      tags: [contrib]
+      summary: Đề xuất của tôi (mới nhất trước)
+      security: [{ Session: [] }]
+      x-ac: [AC-CONTRIB-06]
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Size'
+      responses:
+        '200':
+          description: Trang đề xuất của tài khoản (rỗng → client hiện "Bạn chưa đóng góp meme nào")
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ContributionPage' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        default: { $ref: '#/components/responses/Problem' }
+  /contributors/leaderboard:
+    get:
+      operationId: getContributorLeaderboard
+      tags: [contrib]
+      summary: Top cống hiến (top 20 cố định theo AC, không phân trang)
+      description: |
+        Theo số đề xuất đã duyệt từ trước tới giờ giảm dần, hòa thì ai đạt số đó trước (thời điểm duyệt của đề xuất
+        thứ N) đứng trước. Chỉ tài khoản còn tồn tại và có ≥ 1 đề xuất đã duyệt. Phiên tùy chọn - có thì `me` là
+        hạng của tài khoản kể cả ngoài top 20 (0 đề xuất duyệt → null); chỉ đọc phiên, không gia hạn. Không có mã
+        tài khoản hay UUID.
+      security: [{}, { Session: [] }]
+      x-ac: [AC-CONTRIB-11, AC-CONTRIB-12]
+      responses:
+        '200':
+          description: Bảng xếp hạng (rỗng → "Chưa có meme đóng góp nào được duyệt")
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ContributorLeaderboard' }
+        default: { $ref: '#/components/responses/Problem' }
   /reports:
     post:
       operationId: createReport
@@ -586,7 +711,7 @@ paths:
       tags: [admin]
       summary: Danh mục phần tử (tìm không dấu, lọc trạng thái)
       security: [{ AdminToken: [] }]
-      x-ac: [AC-ADMIN-01, AC-ADMIN-03, AC-ADMIN-05, AC-ADMIN-10]
+      x-ac: [AC-ADMIN-01, AC-ADMIN-03, AC-ADMIN-05, AC-ADMIN-10, AC-ADMIN-12]
       parameters:
         - name: q
           in: query
@@ -594,6 +719,9 @@ paths:
         - name: state
           in: query
           schema: { $ref: '#/components/schemas/TargetState' }
+        - name: tier
+          in: query
+          schema: { $ref: '#/components/schemas/Tier' }
         - $ref: '#/components/parameters/Page'
         - $ref: '#/components/parameters/Size'
       responses:
@@ -666,6 +794,191 @@ paths:
         '422': { $ref: '#/components/responses/Unprocessable' }
         '429': { $ref: '#/components/responses/TooManyRequests' }
         default: { $ref: '#/components/responses/Problem' }
+  /admin/elements/{id}/tier:
+    servers:
+      - url: /api
+        description: Chỉ trên host quản trị riêng (ADR 0008) - production https://laumeme-admin.dinoduct.fun/api, staging https://laumeme-admin-staging.dinoduct.fun/api; trên host game `/lau-meme/api/admin/*` trả 404
+    put:
+      operationId: adminSetElementTier
+      tags: [admin]
+      summary: Gán tier 1-5 cho phần tử
+      description: |
+        Phần tử phải có trong danh mục `element` (không có → 404). Tier ngoài 1-5 hoặc không phải số nguyên → 400,
+        không ghi audit. Thành công ghi đúng 1 dòng audit (`set_tier`, trước/sau) trong cùng `DB.batch`. Có hiệu lực
+        trong graph từ mẻ kế tiếp (câu hỏi mở 53). Đặt bằng tier hiện tại vẫn 200 và ghi audit.
+      security: [{ AdminToken: [] }]
+      x-ac: [AC-ADMIN-12, AC-ADMIN-09, AC-TIER-01]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { $ref: '#/components/schemas/ElementId' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [tier]
+              properties:
+                tier: { $ref: '#/components/schemas/Tier' }
+      responses:
+        '200':
+          description: Đã gán
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required: [element_id, before, after]
+                properties:
+                  element_id: { $ref: '#/components/schemas/ElementId' }
+                  before: { $ref: '#/components/schemas/Tier' }
+                  after: { $ref: '#/components/schemas/Tier' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        default: { $ref: '#/components/responses/Problem' }
+  /admin/contributions:
+    servers:
+      - url: /api
+        description: Chỉ trên host quản trị riêng (ADR 0008) - production https://laumeme-admin.dinoduct.fun/api, staging https://laumeme-admin-staging.dinoduct.fun/api; trên host game `/lau-meme/api/admin/*` trả 404
+    get:
+      operationId: adminListContributions
+      tags: [admin]
+      summary: Đề xuất meme (cũ nhất trước, lọc theo trạng thái)
+      description: |
+        Mỗi dòng có nickname người gửi (hoặc "Thực khách ẩn danh"), không bao giờ có mã tài khoản hay UUID.
+        `image_url` chỉ là chữ để admin tham khảo: trang quản trị không tải hay nhúng ảnh từ link.
+      security: [{ AdminToken: [] }]
+      x-ac: [AC-CONTRIB-07, AC-ADMIN-10]
+      parameters:
+        - name: status
+          in: query
+          schema: { $ref: '#/components/schemas/ContributionStatus' }
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Size'
+      responses:
+        '200':
+          description: Trang đề xuất
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AdminContributionPage' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        default: { $ref: '#/components/responses/Problem' }
+  /admin/contributions/{id}:
+    servers:
+      - url: /api
+        description: Chỉ trên host quản trị riêng (ADR 0008) - production https://laumeme-admin.dinoduct.fun/api, staging https://laumeme-admin-staging.dinoduct.fun/api; trên host game `/lau-meme/api/admin/*` trả 404
+    patch:
+      operationId: adminEditContribution
+      tags: [admin]
+      summary: Sửa tên, biểu tượng, mô tả, link ảnh của đề xuất chờ duyệt
+      description: |
+        Chỉ đề xuất `pending` (khác → 409, mặc định - câu hỏi mở 57). Cùng kiểm hợp lệ như khi gửi: sai → 400, tên
+        trùng phần tử đã có → 409 (AC-CONTRIB-02/03); không lọc từ cấm (admin chịu trách nhiệm). `null` xóa trường
+        tùy chọn. Thành công ghi 1 dòng audit `edit_contribution` (trước/sau các trường đã đổi).
+      security: [{ AdminToken: [] }]
+      x-ac: [AC-CONTRIB-07, AC-ADMIN-09]
+      parameters:
+        - $ref: '#/components/parameters/ContributionId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ContributionEdit' }
+      responses:
+        '200':
+          description: Đã sửa
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AdminContribution' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        default: { $ref: '#/components/responses/Problem' }
+  /admin/contributions/{id}/approve:
+    servers:
+      - url: /api
+        description: Chỉ trên host quản trị riêng (ADR 0008) - production https://laumeme-admin.dinoduct.fun/api, staging https://laumeme-admin-staging.dinoduct.fun/api; trên host game `/lau-meme/api/admin/*` trả 404
+    post:
+      operationId: adminApproveContribution
+      tags: [admin]
+      summary: Duyệt đề xuất
+      description: |
+        Trong một `DB.batch`: đề xuất thành `approved` với `element_id` = ElementId của `fold(tên)`; tier khác 1 thì
+        ghi `element_tier`; mọi đề xuất `pending` khác cùng cặp thành `rejected` với lý do "Cặp đã có công thức";
+        ghi audit `approve_contribution` (và `reject_contribution` cho từng đề xuất bị từ chối theo). Không sửa graph
+        đang phục vụ: pipeline đọc đề xuất đã duyệt ở mẻ kế tiếp (`/pipeline/state`). Đề xuất không còn `pending` →
+        409; cặp hoặc tên đã bị chiếm từ lúc gửi → 409.
+      security: [{ AdminToken: [] }]
+      x-ac: [AC-CONTRIB-08, AC-CONTRIB-09, AC-TIER-01, AC-ADMIN-09]
+      parameters:
+        - $ref: '#/components/parameters/ContributionId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [image_hint]
+              properties:
+                image_hint: { type: string, minLength: 1, maxLength: 300, description: 'Gợi ý ảnh do admin viết - ART chỉ vẽ từ đây, không dùng link của người gửi' }
+                tier: { $ref: '#/components/schemas/Tier' }
+      responses:
+        '200':
+          description: Đã duyệt
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AdminContribution' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        default: { $ref: '#/components/responses/Problem' }
+  /admin/contributions/{id}/reject:
+    servers:
+      - url: /api
+        description: Chỉ trên host quản trị riêng (ADR 0008) - production https://laumeme-admin.dinoduct.fun/api, staging https://laumeme-admin-staging.dinoduct.fun/api; trên host game `/lau-meme/api/admin/*` trả 404
+    post:
+      operationId: adminRejectContribution
+      tags: [admin]
+      summary: Từ chối đề xuất (cần lý do)
+      description: Lý do 1-200 ký tự (thiếu/rỗng → 400). Đề xuất không còn `pending` → 409. Ghi audit `reject_contribution`.
+      security: [{ AdminToken: [] }]
+      x-ac: [AC-CONTRIB-08, AC-ADMIN-09]
+      parameters:
+        - $ref: '#/components/parameters/ContributionId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [reason]
+              properties:
+                reason: { type: string, minLength: 1, maxLength: 200 }
+      responses:
+        '200':
+          description: Đã từ chối
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AdminContribution' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        default: { $ref: '#/components/responses/Problem' }
   /admin/batches:
     servers:
       - url: /api
@@ -673,9 +986,14 @@ paths:
     get:
       operationId: adminListBatches
       tags: [admin]
-      summary: Nhật ký các đợt (mới nhất trước)
+      summary: Nhật ký các đợt (mới nhất trước) kèm thống kê crawl
+      description: |
+        `stats` là số liệu pipeline gửi kèm nhật ký đợt (không có tên phần tử bị chặn, chỉ số đếm theo danh mục);
+        đợt `core` không có `sources` (giao diện hiện "không crawl"). `summary` là ô tổng ở đầu mục: tổng khái niệm
+        đã crawl và tổng phần tử đã thêm (cộng mọi đợt `full` thành công), hàng chờ và số phần tử chưa có ảnh lấy từ
+        đợt `full` thành công gần nhất (chưa có → null). Chưa có đợt nào: `items` rỗng ("Chưa có đợt nào").
       security: [{ AdminToken: [] }]
-      x-ac: [AC-ADMIN-01, AC-ADMIN-08]
+      x-ac: [AC-ADMIN-01, AC-ADMIN-08, AC-ADMIN-11]
       parameters:
         - $ref: '#/components/parameters/Page'
         - $ref: '#/components/parameters/Size'
@@ -697,8 +1015,9 @@ paths:
       operationId: adminListAudit
       tags: [admin]
       summary: Nhật ký audit (mới nhất trước)
+      description: Gộp `admin_audit` (kiểm duyệt) và `admin_change` (tier, đề xuất meme - ADR 0013) theo thời điểm.
       security: [{ AdminToken: [] }]
-      x-ac: [AC-ADMIN-01, AC-ADMIN-09]
+      x-ac: [AC-ADMIN-01, AC-ADMIN-09, AC-ADMIN-12, AC-CONTRIB-07, AC-CONTRIB-08]
       parameters:
         - $ref: '#/components/parameters/Page'
         - $ref: '#/components/parameters/Size'
@@ -742,9 +1061,11 @@ paths:
       summary: Trạng thái pipeline cần cho mẻ mới
       description: |
         Chỉ dữ liệu nội dung và tổng hợp ẩn danh: version hiện hành, danh sách chặn, bí danh bị chặn
-        (nguồn `mod`/`admin`), lịch sử Món đặc biệt, tỉ lệ "Nhạt" theo công thức. Không có dữ liệu người chơi.
+        (nguồn `mod`/`admin`), lịch sử Món đặc biệt, tỉ lệ "Nhạt" theo công thức, danh mục phần tử (mẻ đầu có mặt,
+        mức mặn), tier admin đã gán, đề xuất meme đã duyệt. Không có dữ liệu người chơi: đề xuất chỉ có nội dung game
+        (không mô tả, link ảnh gốc, tài khoản hay nickname - AC-CONTRIB-09, ADR 0013).
       security: [{ PipelineToken: [] }]
-      x-ac: [AC-PIPE-13, AC-DAILY-01, AC-MOD-10, AC-FEEDBACK-04, AC-INV-03]
+      x-ac: [AC-PIPE-13, AC-DAILY-01, AC-DAILY-18, AC-MOD-10, AC-FEEDBACK-04, AC-INV-03, AC-TIER-01, AC-PIPE-16, AC-CONTRIB-08, AC-CONTRIB-09]
       responses:
         '200':
           description: Trạng thái
@@ -851,9 +1172,11 @@ paths:
         gửi kèm `store` (ADR 0009), ghi vào `pipeline_store` trong cùng `DB.batch` và xóa cùng 14 bản; mẻ `core`
         không gửi `store`. Thân quá 5 MB, hoặc `store` dạng JSON quá 1,9 MB (D1 giới hạn 2 MB mỗi dòng) → 413.
         `version` phải lớn hơn mọi version đã đăng (409). `status = error`: chỉ ghi nhật ký đợt, không đổi bản
-        đang chạy.
+        đang chạy. Cùng `DB.batch` đó Worker ghi `creators_json` (ADR 0013): mỗi phần tử trong `content.elements`
+        là đề xuất đã duyệt → nickname hiện tại của tài khoản (không còn/không nickname → null); và cập nhật
+        `element.trend_peak` từ `content.elements[].trend_peak` (vắng thì giữ giá trị cũ).
       security: [{ PipelineToken: [] }]
-      x-ac: [AC-PIPE-01, AC-PIPE-10, AC-PIPE-11, AC-GRAPH-04, AC-GRAPH-05, AC-SEED-01, AC-SEED-08, AC-DAILY-01, AC-DAILY-02, AC-INV-06, AC-ART-09]
+      x-ac: [AC-PIPE-01, AC-PIPE-10, AC-PIPE-11, AC-GRAPH-04, AC-GRAPH-05, AC-SEED-01, AC-SEED-08, AC-DAILY-01, AC-DAILY-02, AC-INV-06, AC-ART-09, AC-PIPE-16, AC-CONTRIB-10, AC-ADMIN-11]
       requestBody:
         required: true
         content:
@@ -985,6 +1308,11 @@ components:
       description: '`PIPELINE_TOKEN` (Cloudflare secret + GitHub Secret). Chỉ mở được `/pipeline/*` và `/metrics/summary`.'
 
   parameters:
+    ContributionId:
+      name: id
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
     Version:
       name: version
       in: path
@@ -1004,6 +1332,8 @@ components:
       schema: { type: string, example: 'public, max-age=60' }
     CacheImmutable:
       schema: { type: string, example: 'public, max-age=31536000, immutable' }
+    CacheCreators:
+      schema: { type: string, example: 'public, max-age=300' }
     SetSessionCookie:
       description: '`laumeme_sid=<mã>; Path=/lau-meme; Max-Age=7776000; HttpOnly; Secure; SameSite=Lax`'
       schema: { type: string }
@@ -1103,6 +1433,120 @@ components:
     TargetState:
       type: string
       enum: [active, hidden, blocked]
+    Tier:
+      type: integer
+      minimum: 1
+      maximum: 5
+      description: 1 Xám-tròn, 2 Xanh lá-tam giác, 3 Xanh dương-thoi, 4 Vàng-ngũ giác, 5 Đỏ-lục giác (TIER)
+    Creators:
+      type: object
+      propertyNames: { pattern: '^[A-Za-z0-9_-]{43}$' }
+      additionalProperties: { type: [string, 'null'] }
+
+    ContributionStatus:
+      type: string
+      enum: [pending, approved, rejected]
+    ContributionRequest:
+      type: object
+      additionalProperties: false
+      required: [a, b, name]
+      properties:
+        a: { $ref: '#/components/schemas/Name' }
+        b: { $ref: '#/components/schemas/Name' }
+        name: { type: string, maxLength: 100, description: 'Sau khi cắt khoảng trắng dài 1-40 (rỗng/dài hơn → 400, câu hỏi mở 51)' }
+        emoji: { type: [string, 'null'], maxLength: 16, description: Đúng 1 emoji (sai → 400) }
+        description: { type: [string, 'null'], maxLength: 1000, description: 'Tối đa 200 ký tự sau khi cắt (dài hơn → 400)' }
+        image_url: { type: [string, 'null'], maxLength: 1000, description: '`https://`, tối đa 500 ký tự (sai → 400); chỉ admin xem, không bao giờ tải' }
+    ContributionEdit:
+      type: object
+      additionalProperties: false
+      minProperties: 1
+      properties:
+        name: { type: string, maxLength: 100 }
+        emoji: { type: [string, 'null'], maxLength: 16 }
+        description: { type: [string, 'null'], maxLength: 1000 }
+        image_url: { type: [string, 'null'], maxLength: 1000 }
+    Contribution:
+      type: object
+      additionalProperties: false
+      required: [id, a, b, name, emoji, description, status, reject_reason, created_at]
+      description: Đề xuất như tác giả thấy (bản admin đã sửa nếu có), gồm link ảnh tác giả đã gửi; không có gợi ý ảnh, tier hay nickname
+      properties:
+        id: { type: string, format: uuid }
+        a: { $ref: '#/components/schemas/Starter' }
+        b: { $ref: '#/components/schemas/Starter' }
+        name: { type: string }
+        emoji: { type: [string, 'null'] }
+        description: { type: [string, 'null'] }
+        image_url: { type: [string, 'null'] }
+        status: { $ref: '#/components/schemas/ContributionStatus' }
+        reject_reason: { type: [string, 'null'] }
+        created_at: { $ref: '#/components/schemas/Instant' }
+    ContributionPage:
+      allOf:
+        - $ref: '#/components/schemas/Page'
+        - type: object
+          required: [items]
+          properties:
+            items:
+              type: array
+              items: { $ref: '#/components/schemas/Contribution' }
+    AdminContribution:
+      type: object
+      additionalProperties: false
+      required: [id, a, b, name, emoji, description, image_url, status, reject_reason, image_hint, tier, element_id, nickname, created_at, decided_at]
+      properties:
+        id: { type: string, format: uuid }
+        a: { $ref: '#/components/schemas/Starter' }
+        b: { $ref: '#/components/schemas/Starter' }
+        name: { type: string }
+        emoji: { type: [string, 'null'] }
+        description: { type: [string, 'null'] }
+        image_url: { type: [string, 'null'], description: Chỉ hiện dạng chữ }
+        status: { $ref: '#/components/schemas/ContributionStatus' }
+        reject_reason: { type: [string, 'null'] }
+        image_hint: { type: [string, 'null'] }
+        tier: { $ref: '#/components/schemas/Tier' }
+        element_id:
+          oneOf:
+            - type: 'null'
+            - $ref: '#/components/schemas/ElementId'
+        nickname: { type: string, description: '"Thực khách ẩn danh" khi không có nickname hoặc tài khoản đã xóa' }
+        created_at: { $ref: '#/components/schemas/Instant' }
+        decided_at:
+          oneOf:
+            - type: 'null'
+            - $ref: '#/components/schemas/Instant'
+    AdminContributionPage:
+      allOf:
+        - $ref: '#/components/schemas/Page'
+        - type: object
+          required: [items]
+          properties:
+            items:
+              type: array
+              items: { $ref: '#/components/schemas/AdminContribution' }
+    ContributorRow:
+      type: object
+      additionalProperties: false
+      required: [rank, nickname, approved]
+      properties:
+        rank: { type: integer, minimum: 1 }
+        nickname: { type: string }
+        approved: { type: integer, minimum: 1, description: Số meme đã duyệt từ trước tới giờ }
+    ContributorLeaderboard:
+      type: object
+      additionalProperties: false
+      required: [rows, me]
+      properties:
+        rows:
+          type: array
+          maxItems: 20
+          items: { $ref: '#/components/schemas/ContributorRow' }
+        me:
+          oneOf:
+            - type: 'null'
+            - $ref: '#/components/schemas/ContributorRow'
     Instant:
       type: string
       format: date-time
@@ -1146,6 +1590,16 @@ components:
             emoji: { type: string }
             hint: { type: string, maxLength: 200 }
             depth: { type: integer, minimum: 4, maximum: 8 }
+        schedule_hours_utc:
+          type: array
+          minItems: 1
+          maxItems: 24
+          uniqueItems: true
+          description: |
+            Giờ UTC các mẻ của môi trường, tăng dần (`BATCH_HOURS_UTC`): production [5, 17], staging [0, 2, …, 22]. Client
+            lấy mốc kế tiếp = giờ đầu tiên sau `batch_at` (AC-DAILY-12). Manifest đăng trước khi có trường này → client
+            coi như [5, 17].
+          items: { type: integer, minimum: 0, maximum: 23 }
         policy_version:
           type: integer
           minimum: 1
@@ -1175,6 +1629,9 @@ components:
         depth: { type: integer, minimum: 1 }
         added_version: { type: integer }
         image_key: { type: [string, 'null'], pattern: '^[0-9a-f]{12}\.webp$' }
+        tier:
+          $ref: '#/components/schemas/Tier'
+          description: Bắt buộc từ graph có TIER (pipeline kiểm, thiếu/ngoài 1-5 thì mẻ không đăng); graph cũ không có → client hiện 1 (AC-TIER-03)
     Blocklist:
       type: object
       additionalProperties: false
@@ -1245,7 +1702,7 @@ components:
             - type: 'null'
             - type: object
               additionalProperties: false
-              required: [created_at, open_sessions, nickname, daily_results, streak]
+              required: [created_at, open_sessions, nickname, daily_results, streak, contributions]
               properties:
                 created_at: { $ref: '#/components/schemas/Instant' }
                 open_sessions: { type: integer, minimum: 1 }
@@ -1254,6 +1711,9 @@ components:
                   type: array
                   items: { $ref: '#/components/schemas/DailyResult' }
                 streak: { $ref: '#/components/schemas/Streak' }
+                contributions:
+                  type: array
+                  items: { $ref: '#/components/schemas/Contribution' }
         discoveries:
           type: array
           items:
@@ -1525,7 +1985,7 @@ components:
               items:
                 type: object
                 additionalProperties: false
-                required: [id, name, emoji, depth, state, image_state, last_version]
+                required: [id, name, emoji, depth, state, image_state, last_version, tier]
                 properties:
                   id: { $ref: '#/components/schemas/ElementId' }
                   name: { type: string }
@@ -1535,6 +1995,7 @@ components:
                   image_key: { type: [string, 'null'] }
                   image_state: { type: string, enum: [none, active, hidden] }
                   last_version: { type: integer }
+                  tier: { $ref: '#/components/schemas/Tier', description: Tier hiện tại (chưa gán → 1); graph có tier mới từ mẻ kế tiếp }
     AdminRecipePage:
       allOf:
         - $ref: '#/components/schemas/Page'
@@ -1607,12 +2068,46 @@ components:
               source: { type: string, maxLength: 50 }
               error: { type: string, maxLength: 200 }
         quota_used: { type: integer, minimum: 0 }
+        sources:
+          type: array
+          description: Mỗi nguồn crawl của đợt `full` (AC-ADMIN-11) - nguồn lỗi có `error` (loại lỗi, vd `RobotsDenied`) và `concepts` null
+          items:
+            type: object
+            additionalProperties: false
+            required: [source, concepts, error]
+            properties:
+              source: { type: string, maxLength: 50 }
+              concepts: { type: [integer, 'null'], minimum: 0 }
+              error: { type: [string, 'null'], maxLength: 100 }
+        queue_size: { type: integer, minimum: 0, description: Số meme đang trong hàng chờ sau đợt }
+        images:
+          type: object
+          additionalProperties: false
+          required: [drawn, fallback, pending]
+          description: Ảnh vẽ / về emoji / chờ vẽ của đợt (AC-ART)
+          properties:
+            drawn: { type: integer, minimum: 0 }
+            fallback: { type: integer, minimum: 0 }
+            pending: { type: integer, minimum: 0 }
+        without_image: { type: integer, minimum: 0, description: 'Phần tử đang hoạt động còn chưa có ảnh (gồm "Lõi còn chưa có ảnh", AC-ART-11)' }
+        core_without_image: { type: integer, minimum: 0 }
+        contributions_waiting: { type: integer, minimum: 0, description: Đề xuất đã duyệt chưa vào được graph vì cha bị ẩn/chặn (AC-CONTRIB-08) }
+        daily_pool_exhausted: { type: boolean, description: Cảnh báo "Pool thử thách cạn" (AC-DAILY-01) }
     BatchPage:
       allOf:
         - $ref: '#/components/schemas/Page'
         - type: object
-          required: [items]
+          required: [items, summary]
           properties:
+            summary:
+              type: object
+              additionalProperties: false
+              required: [crawled_total, added_total, queue_size, without_image]
+              properties:
+                crawled_total: { type: integer, minimum: 0 }
+                added_total: { type: integer, minimum: 0 }
+                queue_size: { type: [integer, 'null'], minimum: 0 }
+                without_image: { type: [integer, 'null'], minimum: 0 }
             items:
               type: array
               items: { $ref: '#/components/schemas/BatchRun' }
@@ -1629,11 +2124,18 @@ components:
                 additionalProperties: false
                 required: [action, target_kind, target_id, before, after, token_fp, created_at]
                 properties:
-                  action: { type: string, enum: [hide, show, block, unblock, dismiss_reports] }
-                  target_kind: { type: string, enum: [element, recipe, image] }
+                  action: { type: string, enum: [hide, show, block, unblock, dismiss_reports, set_tier, edit_contribution, approve_contribution, reject_contribution] }
+                  target_kind: { type: string, enum: [element, recipe, image, contribution] }
                   target_id: { type: string }
-                  before: { $ref: '#/components/schemas/TargetState' }
-                  after: { $ref: '#/components/schemas/TargetState' }
+                  before:
+                    description: Trạng thái kiểm duyệt; với `set_tier` và đề xuất là object các trường đã đổi
+                    oneOf:
+                      - $ref: '#/components/schemas/TargetState'
+                      - type: object
+                  after:
+                    oneOf:
+                      - $ref: '#/components/schemas/TargetState'
+                      - type: object
                   reason: { type: [string, 'null'] }
                   token_fp: { type: string, pattern: '^[0-9a-f]{8}$' }
                   created_at: { $ref: '#/components/schemas/Instant' }
@@ -1661,7 +2163,7 @@ components:
     PipelineState:
       type: object
       additionalProperties: false
-      required: [current_version, blocklist, banned_aliases, admin_blocked, daily_history, feedback]
+      required: [current_version, blocklist, banned_aliases, admin_blocked, daily_history, feedback, catalog, tiers, contributions]
       properties:
         current_version: { type: [integer, 'null'] }
         blocklist: { $ref: '#/components/schemas/Blocklist' }
@@ -1694,6 +2196,44 @@ components:
               recipe_id: { $ref: '#/components/schemas/RecipeId' }
               votes: { type: integer, minimum: 0 }
               nhat: { type: integer, minimum: 0 }
+        catalog:
+          type: array
+          description: |
+            Mọi phần tử từng đăng: `first_version` = mẻ đầu tiên có mặt trong kho ("mới", AC-DAILY-01/18),
+            `trend_peak` = mức mặn cao nhất đã ghi (chưa crawl thấy → 0, AC-PIPE-16). Mẻ `core` dùng lại nguyên giá trị.
+          items:
+            type: object
+            additionalProperties: false
+            required: [id, first_version, trend_peak]
+            properties:
+              id: { $ref: '#/components/schemas/ElementId' }
+              first_version: { type: integer, minimum: 1 }
+              trend_peak: { type: integer, minimum: 0 }
+        tiers:
+          type: array
+          description: Tier admin đã gán (phần tử không có mặt → 1) - pipeline đưa vào graph mẻ này (AC-TIER-01)
+          items:
+            type: object
+            additionalProperties: false
+            required: [element_id, tier]
+            properties:
+              element_id: { $ref: '#/components/schemas/ElementId' }
+              tier: { $ref: '#/components/schemas/Tier' }
+        contributions:
+          type: array
+          description: Đề xuất đã duyệt, cũ nhất trước (kể cả tài khoản đã xóa)
+          items:
+            type: object
+            additionalProperties: false
+            required: [element_id, name, emoji, a, b, image_hint, approved_at]
+            properties:
+              element_id: { $ref: '#/components/schemas/ElementId' }
+              name: { type: string, minLength: 1, maxLength: 40 }
+              emoji: { type: [string, 'null'], description: 'null → pipeline dùng "🍲" (AC-CONTRIB-09)' }
+              a: { $ref: '#/components/schemas/ElementId' }
+              b: { $ref: '#/components/schemas/ElementId' }
+              image_hint: { type: string, maxLength: 300 }
+              approved_at: { $ref: '#/components/schemas/Instant' }
 
     PipelineStore:
       type: object
@@ -1777,6 +2317,7 @@ components:
               depth: { type: integer, minimum: 0 }
               origin: { type: string, enum: [vn, intl] }
               image_key: { type: [string, 'null'], pattern: '^[0-9a-f]{12}\.webp$' }
+              trend_peak: { type: integer, minimum: 0, description: 'Mức mặn cao nhất (AC-PIPE-16); vắng → giữ giá trị đã lưu' }
         recipes:
           type: array
           maxItems: 50000
