@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { getManifest } from './api'
 import { App } from './App'
-import { withBase } from './base'
+import { SITE_URL, withBase } from './base'
 import { SendError, heirloomLine, listDiscoveries, submitDiscovery } from './disc/api'
 import { ConsentRequiredError } from './privacy/client'
 import { Game, type NewDiscovery } from './game/Game'
@@ -11,6 +11,7 @@ import { ReportDialog } from './report/ReportDialog'
 import { ConsentBanner } from './privacy/ConsentBanner'
 import { MyDataPanel } from './privacy/MyDataPanel'
 import { PolicyPage } from './privacy/PolicyPage'
+import { ShareCard, type DiscCardData } from './share'
 import { localStore } from './storage'
 
 /** Two screens, no router: the policy page at `<base>/chinh-sach` (AC-PRIV-01), the game everywhere else. */
@@ -19,8 +20,14 @@ export function Root() {
   return <Home />
 }
 
-/** Outcome of the last discovery send: the heirloom line, a consent invitation, or an error text. */
-type Notice = { kind: 'heirloom'; line: string; first: boolean } | { kind: 'consent' } | { kind: 'error'; text: string }
+/**
+ * Outcome of the last discovery send: the heirloom line (with a share card for the first discoverer, AC-SHARE-04),
+ * a consent invitation, or an error text.
+ */
+type Notice =
+  | { kind: 'heirloom'; line: string; share: DiscCardData | null }
+  | { kind: 'consent' }
+  | { kind: 'error'; text: string }
 
 function Home() {
   const [storage] = useState(localStore)
@@ -56,7 +63,9 @@ function Home() {
     submitDiscovery({ a: d.a, b: d.b, result: d.result }, { storage, policyVersion }).then(
       (r) => {
         const line = heirloomLine(r.nickname)
-        setNotice({ kind: 'heirloom', line, first: r.first })
+        // Only what the card prints: never the two inputs of the recipe.
+        const share = r.first ? { emoji: d.emoji, name: d.result, nickname: r.nickname, link: SITE_URL } : null
+        setNotice({ kind: 'heirloom', line, share })
         setHeirlooms((prev) => ({ ...prev, [r.element_id]: line }))
       },
       (err: unknown) => {
@@ -102,10 +111,15 @@ function Home() {
       {notice?.kind === 'consent' && <ConsentPrompt />}
       {notice?.kind === 'error' && <p role="status">{notice.text}</p>}
       {notice?.kind === 'heirloom' && (
-        <p className="heirloom" role="status">
-          {notice.first && 'Bạn là người đầu tiên! '}
-          {notice.line}
-        </p>
+        <div className="heirloom">
+          <p role="status">
+            {notice.share && 'Bạn là người đầu tiên! '}
+            {notice.line}
+          </p>
+          {notice.share && policyVersion !== null && (
+            <ShareCard card="discovery" data={notice.share} player={{ storage, policyVersion }} />
+          )}
+        </div>
       )}
       {policyVersion !== null && <ConsentBanner key={bannerKey} policyVersion={policyVersion} storage={storage} />}
       {myDataOpen && policyVersion !== null && (
