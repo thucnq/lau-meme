@@ -2265,6 +2265,10 @@ components:
           type: object
           description: Phản hồi LLM của mẻ ghi, khóa = sha256(bước + payload) (AC-PIPE-10)
           additionalProperties: true
+        core_art:
+          type: array
+          description: Trạng thái vẽ của từng phần tử lõi (id, tên, `image_key`, `art_attempts`, `image_fallback`) để đợt sau vẽ bù tiếp; phần tử lõi lấy từ file lõi, không nằm trong `elements` (AC-ART-11)
+          items: { type: object }
         art_pending:
           type: array
           description: Id phần tử "chờ vẽ" (hết hạn mức hoặc vượt 20 ảnh/đợt), đợt sau vẽ trước phần tử mới (AC-ART-03)
