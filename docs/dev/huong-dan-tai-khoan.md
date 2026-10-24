@@ -314,6 +314,8 @@ Mẻ `full` crawl meme rồi gọi Gemini để khử trùng, mô tả, kiểm d
    - Variable `GEMINI_MODEL` = `gemini-3.8-flash` (để trống cũng dùng giá trị này).
    - Variable `REDDIT_SUBREDDITS`, `RSS_FEEDS`: danh sách phân tách bằng dấu phẩy (câu hỏi mở 25). Để trống thì nguồn đó không thu gì; Know Your Meme và Google Trends VN chạy không cần cấu hình.
    - Secret `YOUTUBE_API_KEY` (tùy chọn): khóa YouTube Data API v3; không có thì nguồn YouTube báo lỗi trong báo cáo đợt, các nguồn khác vẫn chạy (AC-PIPE-03).
+   - Tuổi Trẻ (`https://tuoitre.vn/meme.html`, AC-PIPE-15) chạy không cần cấu hình; giao diện trang đổi thì báo cáo đợt ghi "Tuổi Trẻ: không đọc được trang".
+   - Secret `THREADS_ACCESS_TOKEN` và variable `THREADS_KEYWORDS` (vd. `meme,trend`) cho nguồn Threads qua API chính thức (AC-PIPE-17). Token lấy từ app Meta đã được duyệt quyền tìm theo từ khóa; thiếu một trong hai thì nguồn Threads không thu gì và báo cáo đợt cảnh báo "Threads: thiếu cấu hình". Token hết hạn / chưa được duyệt (401, 403) hoặc bị giới hạn (429) hiện ở dòng lỗi nguồn.
    - Variable `BATCH_MODE`: để trống (cron chạy `core`) cho tới khi chạy tay `full` ổn định, rồi đặt `full` để cron tự crawl.
 3. Chép `docs/dev/workflows/batch.yml` vào `.github/workflows/batch.yml` (agent không được sửa workflow).
 4. Thử: Actions → batch → Run workflow → mode `full`, target `staging`. Xem GitHub Issue báo cáo đợt: số crawl/thêm/bị chặn/hàng chờ, lỗi từng nguồn, quota Gemini.

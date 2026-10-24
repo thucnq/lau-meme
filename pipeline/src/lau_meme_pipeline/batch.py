@@ -21,7 +21,7 @@ from urllib.parse import urlsplit
 
 from lau_meme_pipeline.art import ArtAdapters, ArtItem, ArtResult, UploadFailed, draw_images, image_key, to_webp_256
 from lau_meme_pipeline.contrib import add_contributions
-from lau_meme_pipeline.crawl import Http, crawl
+from lau_meme_pipeline.crawl import Http, crawl, source_error_text
 from lau_meme_pipeline.daily import build_daily_block, core_hints, pick_daily
 from lau_meme_pipeline.full import run_full
 from lau_meme_pipeline.graph import build_manifest, decrypt_entry, export_graph
@@ -191,6 +191,23 @@ def _trend_peaks(state: Mapping) -> dict[str, int]:
     return {c["id"]: c.get("trend_peak", 0) for c in state.get("catalog", [])}
 
 
+TOP_TRENDING = 5
+
+
+def _with_trend_peaks(content: dict, levels: Mapping[str, int], stored: Mapping[str, int]) -> list[tuple[str, int]]:
+    """AC-PIPE-16: an element crawled this batch gets `trend_peak` = the highest level ever seen, this batch included
+    (a re-run of the same batch gives the same value); the others leave it out, so the Worker keeps what it stored.
+    Returns the batch's most trending elements for the report, highest first, then by folded name."""
+    for e in content["elements"]:
+        level = levels.get(e["id"], 0)
+        if level:
+            e["trend_peak"] = max(stored.get(e["id"], 0), level)
+    ranked = sorted(
+        (e for e in content["elements"] if levels.get(e["id"])), key=lambda e: (-levels[e["id"]], e["fold"])
+    )
+    return [(e["name"], levels[e["id"]]) for e in ranked[:TOP_TRENDING]]
+
+
 DEFAULT_BATCH_HOURS = (5, 17)
 
 
@@ -243,6 +260,8 @@ def _render_report(
     store_bytes: int | None = None,
     art_report: Mapping | None = None,
     metrics: Mapping | None = None,
+    unconfigured: Sequence[str] = (),
+    trending: Sequence[tuple[str, int]] = (),
 ) -> tuple[str, str]:
     """Title shows the dish's emoji only, never its name (AC-PIPE-14)."""
     status = "error" if failed_step else "success"
@@ -264,7 +283,8 @@ def _render_report(
         # Labels are the stats keys of the batch log (BatchStats), so the Issue reads like the admin page.
         f"- crawled: {stats.get('crawled', 0)} · added: {stats.get('added', 0)} · queued: {stats.get('queued', 0)}",
         "- blocked: " + (", ".join(f"{k} {v}" for k, v in sorted(blocked.items())) or "0"),
-        "- Lỗi nguồn: " + (", ".join(f"{e.get('source')}: lỗi {e.get('error')}" for e in errors) or "không có"),
+        "- Lỗi nguồn: " + (", ".join(source_error_text(e) for e in errors) or "không có"),
+        *[f"- ⚠️ {name}: thiếu cấu hình, nguồn không thu gì (xem runbook)" for name in unconfigured],
         f"- quota: {stats.get('quota_used', 0)} lượt gọi Gemini",
         *(["- ⚠️ Gemini hết quota: phần chưa xử lý nằm trong hàng chờ, đợt sau làm tiếp"] if quota_hit else []),
         *(
@@ -273,6 +293,11 @@ def _render_report(
             else []
         ),
         *_art_lines(art_report),
+        *(
+            ["- Mặn nhất đợt: " + ", ".join(f"{name} {level}" for name, level in trending)]
+            if trending and not failed_step
+            else []
+        ),
         f"- Món đặc biệt: {emoji or '-'}",
         *(
             ["- ⚠️ Pool thử thách cạn: mọi món đều đã ra trong 30 mẻ gần nhất, lấy lại món lâu chưa ra nhất"]
@@ -451,6 +476,8 @@ def run_batch(
     failed_step: str | None = None
     banned_count: int | None = None
     miss: tuple[float, float] | None = None
+    unconfigured: list[str] = []
+    trending: list[tuple[str, int]] = []
     step = "state"
     try:
         if mode not in ("core", "full"):
@@ -473,6 +500,8 @@ def run_batch(
             crawled = crawl(adapters, crawl_http)
             stats["crawled"] = len(crawled.concepts)
             stats["source_errors"] = [{"source": e["source"], "error": e["error"]} for e in crawled.errors]
+            stats["sources"] = [dict(src) for src in crawled.sources]  # AC-ADMIN-11
+            unconfigured = list(crawled.unconfigured)
             step = "full"
             lists = replace(_mod_lists(state, banned_words), admin_blocked=frozenset(state.get("admin_blocked", [])))
             full = run_full(
@@ -505,12 +534,17 @@ def run_batch(
             new_aliases = full.new_aliases
             stats["added"] = sum(1 for e in store_out["elements"] if e.get("added_version") == version)
             stats["queued"] = len(store_out.get("queue", []))
+            stats["queue_size"] = stats["queued"]
             moderation = full.report.get("moderation") or {}
             stats["blocked"] = {k: v for k, v in sorted(moderation.items()) if k != QUOTA_LABEL}
             miss = tuple(full.report["miss_rate"]) if full.report.get("miss_rate") else None
             if full.report.get("daily_pool_exhausted"):
                 stats["daily_pool_exhausted"] = True
             content = _content(store, full.daily_element_id)
+            if art_report is not None:
+                stats["images"] = {k: int(art_report.get(k, 0)) for k in ("drawn", "fallback", "pending")}
+            stats["without_image"] = sum(1 for e in content["elements"] if not e.get("image_key"))
+            trending = _with_trend_peaks(content, full.trend_levels, _trend_peaks(state))
             step = "check"
             _check(store, graph, content)  # run_full already checked the invariants (AC-INV)
         else:
@@ -585,6 +619,8 @@ def run_batch(
                 quota_hit,
                 store_bytes,
                 art_report,
+                unconfigured,
+                trending,
             )
         failed_step, version = step, None
         # Network errors may carry the API host: the public workflow log only gets their type.
@@ -620,6 +656,8 @@ def run_batch(
         quota_hit,
         store_bytes,
         art_report,
+        unconfigured,
+        trending,
     )
 
 
@@ -651,6 +689,8 @@ def _finish(
     quota_hit: bool = False,
     store_bytes: int | None = None,
     art_report: Mapping | None = None,
+    unconfigured: Sequence[str] = (),
+    trending: Sequence[tuple[str, int]] = (),
 ) -> BatchOutcome:
     title, report = _render_report(
         version=version,
@@ -665,6 +705,8 @@ def _finish(
         store_bytes=store_bytes,
         art_report=art_report,
         metrics=_metrics(client, batch_at, log),
+        unconfigured=unconfigured,
+        trending=trending,
     )
     return BatchOutcome(
         ok=failed_step is None,

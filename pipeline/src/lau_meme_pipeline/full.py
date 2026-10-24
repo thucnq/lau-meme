@@ -11,9 +11,9 @@ from datetime import date, datetime, timedelta, timezone
 
 from lau_meme_pipeline.art import ArtItem, ArtResult, apply_images, order_for_drawing
 from lau_meme_pipeline.contrib import add_contributions
-from lau_meme_pipeline.crawl import CrawlResult, crawl_report_line
+from lau_meme_pipeline.crawl import CrawlResult, RawConcept, crawl_report_line
 from lau_meme_pipeline.daily import build_daily_block, core_hints, pick_daily
-from lau_meme_pipeline.dedupe import dedupe, dedupe_key
+from lau_meme_pipeline.dedupe import DedupeResult, dedupe, dedupe_key
 from lau_meme_pipeline.graph import build_manifest, export_graph
 from lau_meme_pipeline.ids import element_id, recipe_id
 from lau_meme_pipeline.invariants import check_all, miss_rate_warning, simulate_miss_rate
@@ -52,6 +52,7 @@ class FullOutcome:
     content: ContentStore | None = None  # what was exported, for the publish body (batch._content)
     daily_element_id: str | None = None
     new_aliases: frozenset[str] = frozenset()  # MOD aliases found this batch (AC-MOD-06)
+    trend_levels: dict[str, int] = field(default_factory=dict)  # element id → trending level of this batch (> 0)
 
 
 def _units(text: str) -> int:
@@ -112,6 +113,21 @@ def _concept_from(item: Mapping, described: Mapping) -> Concept:
         context=raw.get("context", ""),
         source_name=raw.get("source_name", ""),
     )
+
+
+def trend_counts(concepts: Sequence[RawConcept], deduped: DedupeResult) -> dict[str, int]:
+    """AC-PIPE-16: crawled concepts per dedupe key of what they are: exact matches count for their own key (a known
+    element, a queued meme or the first concept of this batch with that key), LLM matches for the known name, and a
+    concept left without an answer counts for nothing."""
+    counts: dict[str, int] = {}
+    kept = {c.name for c in deduped.kept}
+    for c in concepts:
+        fate = None if c.name in kept else deduped.dropped.get(c.name)
+        if fate == "no_answer":
+            continue
+        key = dedupe_key(deduped.same_as[c.name]) if fate == "llm_same" else dedupe_key(c.name)
+        counts[key] = counts.get(key, 0) + 1
+    return counts
 
 
 def run_full(
@@ -380,6 +396,10 @@ def run_full(
     report["daily_pool_exhausted"] = pick.exhausted
     daily = build_daily_block(chosen, chosen["hint"])
 
+    # 7b. Trending level of this batch (AC-PIPE-16): a new meme gathers the concepts of its own key.
+    counts = trend_counts(crawl_result.concepts, deduped)
+    levels = {eid: counts[dedupe_key(e.name)] for eid, e in content.elements.items() if counts.get(dedupe_key(e.name))}
+
     content = apply_tiers(content, tiers)
     graph_out = export_graph(content, version)
     manifest = build_manifest(
@@ -409,6 +429,7 @@ def run_full(
         content=content,
         daily_element_id=chosen["element_id"],
         new_aliases=moderated.new_aliases,
+        trend_levels=levels,
     )
 
 

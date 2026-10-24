@@ -1,69 +1,7 @@
 {
  "red": {
-  "ts": "2026-10-21T09:20:28+00:00",
-  "commit": "e08eedd",
-  "results": {
-   "AC-PIPE-01": {
-    "status": "FAIL",
-    "test": "test_pipe_full_batch#test_ac_pipe_01_full_dang_mot_me_success_kem_store_va_meme_moi"
-   },
-   "AC-PIPE-02": {
-    "status": "PASS",
-    "test": "test_batch#test_ac_pipe_02_lich_chay_hai_cron_00_va_12_gio_gmt7"
-   },
-   "AC-PIPE-03": {
-    "status": "FAIL",
-    "test": "test_pipe_full_batch#test_ac_pipe_03_full_mot_nguon_loi_van_thanh_cong_va_bao_cao_ghi_loi_nguon"
-   },
-   "AC-PIPE-04": {
-    "status": "PASS",
-    "test": "test_pipe2#test_ac_pipe_04_khai_niem_chi_gom_nam_truong"
-   },
-   "AC-PIPE-05": {
-    "status": "PASS",
-    "test": "test_pipe2#test_ac_pipe_05_dedupe_key_fold_bo_dau_cau"
-   },
-   "AC-PIPE-06": {
-    "status": "PASS",
-    "test": "test_pipe2#test_ac_pipe_06_chi_cap_hop_le_duoc_them_hai_cap_kia_bi_loai_kem_ly_do"
-   },
-   "AC-PIPE-07": {
-    "status": "FAIL",
-    "test": "test_pipe_full_batch#test_ac_pipe_07_full_dot_sau_thu_lai_meme_trong_hang_cho_truoc_meme_moi"
-   },
-   "AC-PIPE-08": {
-    "status": "PASS",
-    "test": "test_pipe2#test_ac_pipe_08_phan_tu_duoi_3_cong_thuc_can_bo_sung"
-   },
-   "AC-PIPE-09": {
-    "status": "FAIL",
-    "test": "test_pipe_gemini#test_ac_pipe_09_buoc_judge_gop_cac_lo_thanh_mot_dict"
-   },
-   "AC-PIPE-10": {
-    "status": "FAIL",
-    "test": "pipeline-store.test.ts#pipeline store round trip > AC-PIPE-10: 15 mẻ full thì kho cũ nhất bị dọn cùng batch_content "
-   },
-   "AC-PIPE-11": {
-    "status": "FAIL",
-    "test": "pipeline-store.test.ts#pipeline store size cap > AC-PIPE-11: store lớn hơn 1,9 MB bị từ chối 413, version hiện hành và kho không đổi"
-   },
-   "AC-PIPE-12": {
-    "status": "FAIL",
-    "test": "test_pipe_gemini#test_ac_pipe_12_moi_lo_deu_hong_thi_nem_llm_error[not_json]"
-   },
-   "AC-PIPE-13": {
-    "status": "FAIL",
-    "test": "pipeline.test.ts#pipeline state > AC-PIPE-13: trạng thái pipeline chỉ có dữ liệu nội dung ẩn danh, không có trường người chơi"
-   },
-   "AC-PIPE-14": {
-    "status": "FAIL",
-    "test": "test_pipe_full_batch#test_ac_pipe_14_full_quota_used_lay_tu_llm_calls_khi_co"
-   }
-  }
- },
- "green": {
-  "ts": "2026-10-21T09:32:41+00:00",
-  "commit": "7b78275",
+  "ts": "2026-10-24T06:28:03+00:00",
+  "commit": "1edee67",
   "results": {
    "AC-PIPE-01": {
     "status": "PASS",
@@ -78,8 +16,8 @@
     "test": "test_pipe2#test_ac_pipe_03_mot_nguon_loi_khong_lam_hong_ca_dot"
    },
    "AC-PIPE-04": {
-    "status": "PASS",
-    "test": "test_pipe2#test_ac_pipe_04_khai_niem_chi_gom_nam_truong"
+    "status": "FAIL",
+    "test": "test_pipe2#test_ac_pipe_04_khong_co_adapter_facebook_tiktok"
    },
    "AC-PIPE-05": {
     "status": "PASS",
@@ -103,7 +41,7 @@
    },
    "AC-PIPE-10": {
     "status": "PASS",
-    "test": "test_pipe2#test_ac_pipe_10_cached_llm_khoa_la_sha256_va_khong_goi_lai"
+    "test": "test_art_adapters#test_ac_pipe_10_workers_ai_gui_seed_nguyen_cung_prompt_thi_cung_seed_o_lan_dau"
    },
    "AC-PIPE-11": {
     "status": "PASS",
@@ -115,11 +53,97 @@
    },
    "AC-PIPE-13": {
     "status": "PASS",
-    "test": "test_batch#test_ac_pipe_13_payload_llm_chi_giu_truong_duoc_phep"
+    "test": "test_art_adapters#test_ac_pipe_13_workers_ai_token_khong_nam_trong_duong_dan_hay_thong_bao_loi[429]"
    },
    "AC-PIPE-14": {
     "status": "PASS",
     "test": "test_batch#test_ac_pipe_14_tieu_de_co_version_trang_thai_che_do_emoji_khong_lo_ten"
+   },
+   "AC-PIPE-15": {
+    "status": "FAIL",
+    "test": "test_pipe3#test_ac_pipe_15_default_adapters_co_tuoi_tre"
+   },
+   "AC-PIPE-16": {
+    "status": "FAIL",
+    "test": "test_pipe3#test_ac_pipe_16_bao_cao_liet_ke_phan_tu_trending_ten_khong_o_tieu_de"
+   },
+   "AC-PIPE-17": {
+    "status": "FAIL",
+    "test": "test_pipe3#test_ac_pipe_17_threads_ten_nguoi_dang_khong_toi_llm_khong_vao_noi_dung_dang"
+   }
+  }
+ },
+ "green": {
+  "ts": "2026-10-24T06:39:39+00:00",
+  "commit": "1edee67",
+  "results": {
+   "AC-PIPE-01": {
+    "status": "PASS",
+    "test": "test_batch#test_ac_pipe_01_version_for_doi_gio_sang_gmt7"
+   },
+   "AC-PIPE-02": {
+    "status": "PASS",
+    "test": "test_batch#test_ac_pipe_02_lich_chay_hai_cron_00_va_12_gio_gmt7"
+   },
+   "AC-PIPE-03": {
+    "status": "PASS",
+    "test": "test_pipe2#test_ac_pipe_03_mot_nguon_loi_khong_lam_hong_ca_dot"
+   },
+   "AC-PIPE-04": {
+    "status": "PASS",
+    "test": "test_crawl_http#test_ac_pipe_04_http_get_tu_choi_url_http_khong_mo_ket_noi"
+   },
+   "AC-PIPE-05": {
+    "status": "PASS",
+    "test": "test_pipe2#test_ac_pipe_05_dedupe_key_fold_bo_dau_cau"
+   },
+   "AC-PIPE-06": {
+    "status": "PASS",
+    "test": "test_pipe2#test_ac_pipe_06_chi_cap_hop_le_duoc_them_hai_cap_kia_bi_loai_kem_ly_do"
+   },
+   "AC-PIPE-07": {
+    "status": "PASS",
+    "test": "test_pipe2#test_ac_pipe_07_meme_chua_noi_duoc_vao_hang_cho_voi_so_lan_thu_1"
+   },
+   "AC-PIPE-08": {
+    "status": "PASS",
+    "test": "test_pipe2#test_ac_pipe_08_phan_tu_duoi_3_cong_thuc_can_bo_sung"
+   },
+   "AC-PIPE-09": {
+    "status": "PASS",
+    "test": "test_pipe2#test_ac_pipe_09_chi_giu_diem_tu_3_tro_len_va_luu_diem_kem_cong_thuc"
+   },
+   "AC-PIPE-10": {
+    "status": "PASS",
+    "test": "test_art_adapters#test_ac_pipe_10_workers_ai_gui_seed_nguyen_cung_prompt_thi_cung_seed_o_lan_dau"
+   },
+   "AC-PIPE-11": {
+    "status": "PASS",
+    "test": "test_batch#test_ac_pipe_11_loi_o_buoc_state_khong_dang_gi_va_ghi_dot_loi"
+   },
+   "AC-PIPE-12": {
+    "status": "PASS",
+    "test": "test_pipe2#test_ac_pipe_12_vi_du_25_khai_niem_429_hai_lan_roi_het_quota_o_lo_3"
+   },
+   "AC-PIPE-13": {
+    "status": "PASS",
+    "test": "test_art_adapters#test_ac_pipe_13_workers_ai_token_khong_nam_trong_duong_dan_hay_thong_bao_loi[429]"
+   },
+   "AC-PIPE-14": {
+    "status": "PASS",
+    "test": "test_batch#test_ac_pipe_14_tieu_de_co_version_trang_thai_che_do_emoji_khong_lo_ten"
+   },
+   "AC-PIPE-15": {
+    "status": "PASS",
+    "test": "test_pipe3#test_ac_pipe_15_tuoi_tre_tra_20_khai_niem_dung_truong"
+   },
+   "AC-PIPE-16": {
+    "status": "PASS",
+    "test": "test_pipe3#test_ac_pipe_16_sau_dot_1_con_cai_nit_4_stonks_1_meme_moi_2"
+   },
+   "AC-PIPE-17": {
+    "status": "PASS",
+    "test": "test_pipe3#test_ac_pipe_17_threads_tra_15_khai_niem_tu_noi_dung_bai"
    }
   }
  }

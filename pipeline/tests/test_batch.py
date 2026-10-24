@@ -526,11 +526,12 @@ def hist_at(name: str, version: int) -> dict:
 
 
 def core_with_only(names: list[str]) -> dict:
-    """Real core where only `names` keep their daily_hint (so only they can be a dish)."""
+    """Real core where only `names` keep their daily_hint or daily_examples entry (so only they can be a dish)."""
     core = real_core()
     for e in core["elements"]:
         if e["name"] not in names:
             e.pop("daily_hint", None)
+    core["daily_examples"] = [ex for ex in core.get("daily_examples", []) if ex["target"] in names]
     assert sorted(hinted_core_names(core)) == sorted(names)
     return core
 

@@ -235,11 +235,11 @@ export async function listRecipes(req: Request, env: Env): Promise<Response> {
   return page(p, totalOf(total), items)
 }
 
-/** GET /api/admin/batches - batch log, newest first (AC-ADMIN-08). */
+/** GET /api/admin/batches - batch log, newest first (AC-ADMIN-08), plus the crawl summary of every batch (AC-ADMIN-11). */
 export async function listBatches(req: Request, env: Env): Promise<Response> {
   const p = paging(new URL(req.url).searchParams)
   const db = env.DB
-  const [rows, total] = await db.batch([
+  const [rows, total, totals, latest] = await db.batch([
     db
       .prepare(
         `SELECT id, version, batch_at, mode, status, failed_step, rollback_to, stats_json, issue_url, created_at
@@ -247,7 +247,25 @@ export async function listBatches(req: Request, env: Env): Promise<Response> {
       )
       .bind(p.size, p.offset),
     db.prepare('SELECT COUNT(*) AS n FROM batch_run'),
+    // successful full batches only: a failed or rolled back batch added nothing
+    db.prepare(
+      `SELECT COALESCE(SUM(json_extract(stats_json, '$.crawled')), 0) AS crawled_total,
+              COALESCE(SUM(json_extract(stats_json, '$.added')), 0) AS added_total
+       FROM batch_run WHERE mode = 'full' AND status = 'success'`,
+    ),
+    db.prepare(
+      `SELECT json_extract(stats_json, '$.queue_size') AS queue_size, json_extract(stats_json, '$.without_image') AS without_image
+       FROM batch_run WHERE mode = 'full' AND status = 'success' ORDER BY created_at DESC, id DESC LIMIT 1`,
+    ),
   ])
+  const sums = totals?.results[0] as { crawled_total: number; added_total: number } | undefined
+  const last = latest?.results[0] as { queue_size: number | null; without_image: number | null } | undefined
+  const summary = {
+    crawled_total: sums?.crawled_total ?? 0,
+    added_total: sums?.added_total ?? 0,
+    queue_size: last?.queue_size ?? null,
+    without_image: last?.without_image ?? null,
+  }
   type Row = {
     id: string
     version: number | null
@@ -272,7 +290,7 @@ export async function listBatches(req: Request, env: Env): Promise<Response> {
     issue_url: r.issue_url,
     created_at: iso(r.created_at),
   }))
-  return page(p, totalOf(total), items)
+  return json({ page: p.page, size: p.size, total: totalOf(total), items, summary })
 }
 
 /** GET /api/admin/audit - newest first (AC-ADMIN-09). */
