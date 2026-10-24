@@ -13,7 +13,8 @@ Không bí mật nào nằm trong repo (repo có thể public).
 | `API_BASE_URL`, `BANNED_WORDS` | GitHub Environment secret | `docs/dev/huong-dan-tai-khoan.md` mục 4.3 |
 | `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID` | GitHub Secrets | Settings → Secrets and variables → Actions |
 | Khóa API của pipeline (LLM, nguồn dữ liệu) | GitHub Secrets | như trên |
-| `THREADS_ACCESS_TOKEN` (secret), `THREADS_KEYWORDS` (variable) | GitHub Secret và Variable của workflow `batch.yml`; token lấy từ app Meta đã được duyệt quyền tìm theo từ khóa (AC-PIPE-17) | `docs/dev/huong-dan-tai-khoan.md` mục 8 |
+| `THREADS_ACCESS_TOKEN` (secret), `THREADS_KEYWORDS` (variable) | GitHub Secret và Variable của workflow `batch.yml`; token lấy từ app Meta đã được duyệt quyền tìm theo từ khóa (AC-PIPE-17). Secret `THREADS_ACCESS_TOKEN` được workflow `threads-token` gia hạn và ghi lại mỗi tuần (AC-PIPE-19) | `docs/dev/huong-dan-tai-khoan.md` mục 8, 8.1 |
+| `GH_SECRETS_TOKEN` | GitHub Secret của repo: fine-grained PAT chỉ cho repo lau-meme, quyền `Secrets: Read and write`, hạn 1 năm. Chỉ workflow `threads-token` đọc; `GITHUB_TOKEN` không ghi được secret | `docs/dev/huong-dan-tai-khoan.md` mục 8.1 (gia hạn token) |
 | Biến chạy cục bộ | `worker/.dev.vars` (gitignore) | chép từ `worker/.dev.vars.example` |
 
 `GOOGLE_CLIENT_ID` không phải bí mật: là biến thường trong `worker/wrangler.jsonc` (`vars`), mỗi môi trường một Client ID. Worker dùng Client ID này để kiểm `aud` của ID token.
@@ -30,6 +31,8 @@ Game chạy dưới đường dẫn con (ADR 0007). Tiền tố nằm ở `base-
 | Staging | https://staging.dinoduct.fun/lau-meme/ | `staging.dinoduct.fun/lau-meme*` | `/lau-meme/api/health` |
 | Quản trị (production) | https://laumeme-admin.dinoduct.fun/ | `laumeme-admin.dinoduct.fun/*` | không có; `/api/admin/batches` trả 401 khi không token |
 | Quản trị (staging) | https://laumeme-admin-staging.dinoduct.fun/ | `laumeme-admin-staging.dinoduct.fun/*` | không có; `/api/admin/batches` trả 401 khi không token |
+
+Trang chính sách `/lau-meme/chinh-sach` (và `/lau-meme/chinh-sach/`) trả `index.html` cho mọi GET/HEAD, không cần `Accept: text/html`, để bot App Review của Meta đọc được (AC-SUBPATH-13, ADR 0014). Nội dung do JS vẽ (câu hỏi mở 66).
 
 Trang quản trị chạy trên host riêng (ADR 0008), cùng Worker, phân biệt bằng biến `ADMIN_HOST` trong `wrangler.jsonc` (mỗi môi trường một giá trị). Trên host game, `/lau-meme/admin*` và `/lau-meme/api/admin/*` trả 404. Bản ghi DNS của hai host quản trị nằm trong `docs/dev/huong-dan-tai-khoan.md` mục 1.
 
@@ -65,6 +68,10 @@ Cấu hình tài khoản lần đầu (DNS, Redirect Rule, SSL, deploy productio
 - Phiên đăng nhập (ADR 0010): phiên hết hạn sau 90 ngày không dùng; cùng Cron `0 20 * * *` xóa các dòng `session` đã hết hạn. Bảng xếp hạng chỉ đọc phiên, không gia hạn.
 - Lịch mẻ staging (AC-PIPE-02, AC-DAILY-12): cron riêng `0 */2 * * *` chạy mỗi 2 tiếng ở giờ chẵn UTC; production giữ `0 5 * * *` và `0 17 * * *`. Workflow `batch.yml` chọn môi trường `staging` khi cron này chạy, và đặt `BATCH_HOURS_UTC` theo lịch của môi trường (staging `0,2,...,22`, production `5,17`). Pipeline ghi lịch vào manifest (`schedule_hours_utc`) để client đếm ngược đúng; không tự đặt tay giá trị này trong GitHub Variables.
 - Đổi nội dung chính sách (`web/src/privacy/PolicyPage.tsx`): tăng `POLICY_VERSION` trong `worker/wrangler.jsonc` (cả staging) và `POLICY.version` trên trang ⇒ mọi người chơi được hỏi đồng ý lại (AC-PRIV-09).
+- Gia hạn token Threads (AC-PIPE-19, ADR 0014): workflow `threads-token` chạy thứ Hai 02:00 UTC mỗi tuần và chạy tay được (Actions → `threads-token` → Run workflow). Mỗi lần thành công, workflow ghi lại `THREADS_ACCESS_TOKEN` cho `staging` và `production-no-approval`; lỗi thì mở Issue "Threads token: gia hạn lỗi" kèm link run. Workflow nằm ở `docs/dev/workflows/threads-token.yml`, người làm chép vào `.github/workflows/` (agent không sửa workflow) và tạo `GH_SECRETS_TOKEN` (`docs/dev/huong-dan-tai-khoan.md` mục 8.1).
+  - Hằng tháng kiểm tra workflow `threads-token` còn **Enabled**. GitHub tắt workflow theo lịch sau 60 ngày repo không có hoạt động; bị tắt thì bấm **Enable workflow** và chạy tay một lần.
+  - Nếu bước ghi secret thứ hai (`production-no-approval`) lỗi thì `staging` đã có token mới và `production-no-approval` vẫn cũ. Chạy lại workflow bằng `workflow_dispatch` để ghi lại cả hai.
+  - Dự phòng khi workflow không chạy được: gia hạn bằng tay theo `docs/dev/huong-dan-tai-khoan.md` mục 8.1 (trước 60 ngày).
 
 ## Sự cố thường gặp
 | Triệu chứng | Nguyên nhân thường gặp | Xử lý |
@@ -74,6 +81,8 @@ Cấu hình tài khoản lần đầu (DNS, Redirect Rule, SSL, deploy productio
 | Ghi đồng ý (`/lau-meme/api/consents`) trả 500, log `IP_HASH_KEY is not configured` | Chưa đặt secret băm IP của môi trường đó (cố ý báo lỗi thay vì lưu IP thô) | Đặt secret theo `docs/dev/huong-dan-tai-khoan.md` |
 | Workflow cron chạy trễ | GitHub Actions không bảo đảm đúng giờ | Bình thường; giao diện dựa vào thời điểm trong dữ liệu, không vào giờ lý thuyết |
 | Báo cáo đợt ghi "Threads: thiếu cấu hình" | Thiếu `THREADS_ACCESS_TOKEN` hoặc `THREADS_KEYWORDS` (rỗng) | Đặt secret và variable theo `docs/dev/huong-dan-tai-khoan.md` mục 8; đợt không thất bại, nguồn Threads chỉ không thu gì (AC-PIPE-17) |
+| Báo cáo đợt ghi "Threads: 0 bài cho mọi từ khóa" (dòng ⚠️) | App chưa được Meta duyệt quyền `threads_keyword_search`: API chỉ tìm trong bài của chính tài khoản cấp token, nên mọi từ khóa ra 0 bài. Không phải lỗi nguồn, đợt vẫn đăng (AC-PIPE-20) | Không cần sửa code. Gửi hoặc theo dõi App Review theo `docs/dev/huong-dan-tai-khoan.md` mục 8.1 (Bước 2); khi được duyệt, dòng cảnh báo biến mất ở đợt sau |
+| Issue "Threads token: gia hạn lỗi" (workflow `threads-token` đỏ) | Gia hạn token lỗi: dòng `Threads token: gia hạn lỗi <mã>` trong log, thiếu `GH_SECRETS_TOKEN` hoặc PAT đã hết hạn (1 năm), hoặc workflow đã bị GitHub tắt | Mở log run theo link trong Issue. Token hết hạn ⇒ làm lại Bước 3 mục 8.1 rồi cập nhật secret. PAT hết hạn ⇒ tạo PAT mới, cập nhật `GH_SECRETS_TOKEN`, chạy lại workflow. Workflow bị tắt ⇒ bấm **Enable workflow** |
 | Báo cáo đợt ghi "Threads: 401" hoặc "Threads: 403" | Token hết hạn, hoặc app chưa được duyệt quyền tìm theo từ khóa | Cấp lại token trong app Meta rồi cập nhật secret `THREADS_ACCESS_TOKEN`. Lỗi 429 (bị giới hạn lượt gọi) cũng hiện ở dòng lỗi nguồn (AC-PIPE-03) |
 | Báo cáo đợt ghi "Tuổi Trẻ: không đọc được trang" | Trang `tuoitre.vn/meme.html` đổi giao diện | Không cần cấu hình; cập nhật bộ đọc `TuoiTreAdapter` trong `pipeline/src/lau_meme_pipeline/crawl.py` (AC-PIPE-15) |
 | Đợt `core` thất bại với lỗi lịch mẻ (`BATCH_HOURS_UTC` ngoài 0-23, rỗng hoặc trùng) | Giá trị `BATCH_HOURS_UTC` trong `batch.yml` bị sửa sai | Khôi phục biểu thức trong `.github/workflows/batch.yml`; bản hiện hành giữ nguyên (AC-DAILY-12) |
