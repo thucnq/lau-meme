@@ -326,7 +326,7 @@ Pipeline gọi `GET https://graph.threads.net/v1.0/keyword_search` (API tìm the
 **Bước 1 - Tạo app Meta**
 1. Vào https://developers.facebook.com/apps → **Create app** → chọn use case **Access the Threads API**.
 2. **Use cases** → **Access the Threads API** → **Permissions**: giữ `threads_basic` (bắt buộc), bấm **Add** cạnh `threads_keyword_search`.
-3. **Settings** của use case: chép **Threads app ID** và **Threads app secret** (secret là bí mật, không dán vào chat/issue/commit). Ở **Client OAuth Settings** thêm redirect URI `https://staging.dinoduct.fun/lau-meme/` (chỉ dùng để nhận `code` trên thanh địa chỉ, trang không xử lý gì). Điền **Deauthorize callback URL** và **Data Deletion Requests URL** (có thể dùng cùng URL trên) → **Save**.
+3. **Settings** của use case: chép **Threads app ID** và **Threads app secret** (secret là bí mật, không dán vào chat/issue/commit). Ở **Client OAuth Settings** thêm redirect URI `https://staging.dinoduct.fun/lau-meme/` (ô này nhận nhiều URL: gõ xong phải bấm **Enter** để URL thành thẻ, nếu không Save báo "Please specify an OAuth redirect URI"; chỉ dùng để nhận `code` trên thanh địa chỉ, trang không xử lý gì). Điền **Deauthorize callback URL** và **Data Deletion Requests URL** (có thể dùng cùng URL trên) → **Save**.
 4. **Add or Remove Threads Test Users** → **App roles > Roles** → **Add People** → vai trò **Threads Testers** → nhập tên tài khoản Threads. Mở app Threads bằng tài khoản đó → **Cài đặt → Tài khoản → Quyền đối với website → Lời mời** → chấp nhận.
 
 **Bước 2 - Duyệt quyền tìm theo từ khóa (App Review)**
