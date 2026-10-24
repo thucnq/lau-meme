@@ -280,46 +280,58 @@ def test_ac_pipe_01_content_phan_tu_cong_thuc_va_khoi_dau_khop_kho_loi():
     assert all(r["a"] in ids and r["b"] in ids and r["result"] in ids for r in content["recipes"])
 
 
-def test_ac_pipe_01_mon_dac_biet_lay_tu_daily_examples_voi_goi_y_cua_loi():
-    """AC-PIPE-01: lịch sử rỗng thì Món đặc biệt là một target của daily_examples, gợi ý đúng theo file lõi."""
+def hinted_core_names(core: dict | None = None) -> list[str]:
+    """Core elements that can be a daily dish: depth 4-8 with a hand-written `daily_hint` (AC-DAILY-01, 2026-10-23)."""
+    core = core or real_core()
+    return [e["name"] for e in core["elements"] if 4 <= e["depth"] <= 8 and e.get("daily_hint")]
+
+
+def test_ac_pipe_01_mon_dac_biet_lay_tu_phan_tu_loi_co_daily_hint():
+    """AC-PIPE-01 / AC-DAILY-01: lịch sử rỗng thì Món đặc biệt là phần tử lõi depth 4-8 có daily_hint,
+    gợi ý và emoji đúng theo file lõi."""
     core = real_core()
     client = FakeClient()
     run(client)
     (body,) = client.success_posts
     name = daily_name_of(body)
-    example = next((e for e in core["daily_examples"] if e["target"] == name), None)
-    assert example is not None
-    assert body["manifest"]["daily"]["hint"] == example["hint"]
-    emoji = next(e["emoji"] for e in core["elements"] if e["name"] == name)
-    assert body["manifest"]["daily"]["emoji"] == emoji
+    assert name in hinted_core_names(core)
+    element = next(e for e in core["elements"] if e["name"] == name)
+    assert body["manifest"]["daily"]["hint"] == element["daily_hint"]
+    assert body["manifest"]["daily"]["emoji"] == element["emoji"]
 
 
-def test_ac_pipe_01_mon_dac_biet_khong_lap_lai_mon_da_dung():
-    """AC-PIPE-01: lịch sử đã gồm mọi target trừ một thì chọn đúng target còn lại (AC-DAILY-01)."""
-    targets = example_targets()
-    assert len(targets) >= 2
-    for remaining in targets:
-        history = [hist(t, i + 1) for i, t in enumerate(x for x in targets if x != remaining)]
-        client = FakeClient(make_state(history=history))
-        run(client)
-        (body,) = client.success_posts
-        assert daily_name_of(body) == remaining
+def test_ac_pipe_01_mon_dac_biet_khong_lap_lai_mon_trong_30_me_gan_nhat():
+    """AC-PIPE-01 / AC-DAILY-01: 30 mẻ gần nhất đã dùng 30 món lõi thì mẻ mới chọn món khác, không báo pool cạn."""
+    names = hinted_core_names()
+    assert len(names) >= 31
+    recent = names[:30]
+    history = [hist(t, i + 1) for i, t in enumerate(recent)]
+    client, reporter = FakeClient(make_state(history=history)), FakeReporter()
+    outcome = run(client, reporter)
+    (body,) = client.success_posts
+    assert daily_name_of(body) not in recent
+    assert not body["stats"].get("daily_pool_exhausted")
+    assert "Pool thử thách cạn" not in outcome.report_body
 
 
 def test_ac_pipe_01_mon_dac_biet_khong_chon_phan_tu_bi_chan():
-    """AC-PIPE-01: phần tử trong blocklist.elements không bao giờ được chọn, kể cả khi nó là món dùng lâu nhất."""
-    targets = example_targets()
-    history = [hist(t, i + 1) for i, t in enumerate(targets)]  # món đầu là món dùng cũ nhất
-    client = FakeClient(make_state(history=history, blocked_elements=[eid(targets[0])]))
+    """AC-PIPE-01: phần tử trong blocklist.elements không bao giờ được chọn, kể cả khi nó đứng đầu bảng xếp."""
+    first = FakeClient()
+    run(first)
+    top = daily_name_of(first.success_posts[0])
+    client = FakeClient(make_state(blocked_elements=[eid(top)]))
     run(client)
     (body,) = client.success_posts
-    assert daily_name_of(body) == targets[1]
-    assert body["content"]["daily_element_id"] != eid(targets[0])
+    assert daily_name_of(body) != top
+    assert body["content"]["daily_element_id"] != eid(top)
 
 
 def test_ac_pipe_01_moi_target_bi_chan_thi_that_bai_o_buoc_daily():
-    """AC-PIPE-01: mọi target bị chặn ⇒ không chọn được Món đặc biệt (AC-DAILY-02): mẻ lỗi ở bước daily, không đăng."""
-    blocked = [eid(t) for t in example_targets()]
+    """AC-PIPE-01: mọi ứng viên lõi bị chặn ⇒ không chọn được Món đặc biệt (AC-DAILY-02).
+
+    Mẻ lỗi ở bước daily, không đăng.
+    """
+    blocked = [eid(t) for t in hinted_core_names()]
     client, reporter = FakeClient(make_state(blocked_elements=blocked)), FakeReporter()
     outcome = run(client, reporter)
     assert outcome.ok is False
@@ -398,6 +410,229 @@ def test_ac_pipe_02_chay_module_batch_voi_quyen_tao_issue_va_secret():
     assert re.search(r"issues:\s*write", text)
     assert "secrets.PIPELINE_TOKEN" in text
     assert re.search(r"vars\.API_BASE_URL", text)
+
+
+STAGING_CRON = r"0 \*/2 \* \* \*"
+EVEN_HOURS = "0,2,4,6,8,10,12,14,16,18,20,22"
+
+
+def test_ac_pipe_02_staging_cron_moi_2_tieng_ben_canh_hai_cron_production():
+    """AC-PIPE-02 (2026-10-23): ngoài '0 17 * * *' và '0 5 * * *' còn cron '0 */2 * * *' cho staging."""
+    text = workflow_text()
+    assert re.search(rf"cron:\s*['\"]{STAGING_CRON}['\"]", text)
+    assert re.search(r"cron:\s*['\"]0 17 \* \* \*['\"]", text)
+    assert re.search(r"cron:\s*['\"]0 5 \* \* \*['\"]", text)
+
+
+def test_ac_pipe_02_moi_truong_chon_theo_github_event_schedule():
+    """AC-PIPE-02: cron nào kích hoạt thì chọn môi trường đó qua github.event.schedule: cron '0 */2 * * *' ⇒ staging,
+    hai cron còn lại ⇒ production; chạy tay vẫn theo inputs.target."""
+    text = workflow_text()
+    assert "github.event.schedule" in text
+    assert re.search(rf"github\.event\.schedule\s*[=!]=\s*['\"]{STAGING_CRON}['\"]", text), (
+        "môi trường phải được chọn bằng cách so github.event.schedule với cron staging"
+    )
+    env_line = re.search(r"^\s*environment:\s*(.+)$", text, re.M)
+    assert env_line, "thiếu environment ở job"
+    assert "github.event.schedule" in env_line.group(1) or "needs." in env_line.group(1)
+    assert "inputs.target" in env_line.group(1) or "needs." in env_line.group(1)
+    assert "staging" in env_line.group(1) or "needs." in env_line.group(1)
+
+
+def test_ac_pipe_02_batch_hours_utc_khop_lich_cron_cua_moi_truong():
+    """AC-PIPE-02 / AC-DAILY-12: workflow đặt BATCH_HOURS_UTC cho bước chạy mẻ; staging 0,2,...,22, production 5,17."""
+    text = workflow_text()
+    assert "BATCH_HOURS_UTC" in text
+    assert EVEN_HOURS in text.replace(" ", ""), "thiếu lịch staging 0,2,4,...,22"
+    assert re.search(r"(?<![\d,])5,\s*17(?![\d,])", text), "thiếu lịch production 5,17"
+
+
+def test_ac_pipe_02_chay_tay_chon_che_do_va_moi_truong():
+    """AC-PIPE-02: workflow_dispatch có input mode (core/full) và input target (staging/production)."""
+    text = workflow_text()
+    match = re.search(r"^\s*workflow_dispatch:(.*?)(?=^\S|^\s{0,2}\w[\w-]*:\s*$)", text, re.M | re.S)
+    assert match, "thiếu workflow_dispatch"
+    block = match.group(1)
+    assert re.search(r"^\s*mode:", block, re.M) and re.search(r"^\s*target:", block, re.M)
+    assert "staging" in block and "production" in block
+
+
+def test_ac_pipe_02_concurrency_theo_moi_truong_khong_de_hai_me_cung_moi_truong_chay_chung():
+    """AC-PIPE-02: nhóm concurrency phụ thuộc môi trường (cả chạy tay lẫn cron) để cron staging và cron production
+    không chung một nhóm, còn hai mẻ cùng môi trường thì xếp hàng (không hủy mẻ đang chạy)."""
+    text = workflow_text()
+    match = re.search(r"^concurrency:\s*\n((?:[ \t]+.*\n)+)", text, re.M)
+    assert match, "thiếu khối concurrency ở cấp workflow"
+    block = match.group(1)
+    group = re.search(r"group:\s*(.+)", block)
+    assert group and "${{" in group.group(1), "group phải là biểu thức theo môi trường, không phải hằng số"
+    assert "inputs.target" in group.group(1)
+    assert "github.event.schedule" in group.group(1) or "needs." in group.group(1)
+    assert re.search(r"cancel-in-progress:\s*false", block)
+    assert re.search(r"timeout-minutes:\s*15\b", text)
+
+
+# ---------------------------------------------------------------- AC-DAILY-12 (pipeline): BATCH_HOURS_UTC
+
+
+def run_main(monkeypatch, hours: str | None):
+    from lau_meme_pipeline.batch import main
+
+    if hours is None:
+        monkeypatch.delenv("BATCH_HOURS_UTC", raising=False)
+    else:
+        monkeypatch.setenv("BATCH_HOURS_UTC", hours)
+    monkeypatch.delenv("GITHUB_REPOSITORY", raising=False)
+    monkeypatch.delenv("GITHUB_TOKEN", raising=False)
+    client = FakeClient()
+    rc = main(["--mode", "core", "--core", str(CORE_PATH)], client=client, now=lambda: T)
+    return rc, client
+
+
+def test_ac_daily_12_pipeline_mac_dinh_lich_5_17_khi_khong_dat_batch_hours_utc(monkeypatch):
+    """AC-DAILY-12: không đặt BATCH_HOURS_UTC thì manifest.schedule_hours_utc = [5, 17]."""
+    rc, client = run_main(monkeypatch, None)
+    assert rc == 0
+    assert client.success_posts[0]["manifest"]["schedule_hours_utc"] == [5, 17]
+
+
+def test_ac_daily_12_pipeline_doc_lich_tu_batch_hours_utc(monkeypatch):
+    """AC-DAILY-12: BATCH_HOURS_UTC='5,17' và '0,2,...,22' được đưa vào manifest.schedule_hours_utc."""
+    rc, client = run_main(monkeypatch, "5,17")
+    assert rc == 0
+    assert client.success_posts[0]["manifest"]["schedule_hours_utc"] == [5, 17]
+    rc, client = run_main(monkeypatch, EVEN_HOURS)
+    assert rc == 0
+    assert client.success_posts[0]["manifest"]["schedule_hours_utc"] == list(range(0, 24, 2))
+
+
+@pytest.mark.parametrize("hours", ["", "24", "-1", "5,5", "abc", "5,,17", "5.5", "17,25", "0,2,2"])
+def test_ac_daily_12_pipeline_lich_khong_hop_le_thi_me_that_bai_theo_pipe_11(monkeypatch, hours):
+    """AC-DAILY-12: BATCH_HOURS_UTC ngoài 0-23, rỗng, trùng hay không phải số ⇒ mẻ thất bại: main trả 1,
+    không đăng bản success, có đợt lỗi (AC-PIPE-11)."""
+    rc, client = run_main(monkeypatch, hours)
+    assert rc == 1
+    assert client.success_posts == []
+    assert len(client.error_posts) == 1
+    assert client.error_posts[0]["status"] == "error"
+
+
+# ---------------------------------------------------------------- AC-DAILY-01 (pool cạn) / AC-DAILY-18
+
+
+def hist_at(name: str, version: int) -> dict:
+    return {"version": version, "element_id": eid(name), "batch_at": f"2026-09-{(version % 28) + 1:02d}T17:00:00Z"}
+
+
+def core_with_only(names: list[str]) -> dict:
+    """Real core where only `names` keep their daily_hint (so only they can be a dish)."""
+    core = real_core()
+    for e in core["elements"]:
+        if e["name"] not in names:
+            e.pop("daily_hint", None)
+    assert sorted(hinted_core_names(core)) == sorted(names)
+    return core
+
+
+def test_ac_daily_01_pool_can_thi_lay_mon_cu_nhat_va_bao_cao_canh_bao():
+    """AC-DAILY-01: mọi ứng viên đều nằm trong 30 mẻ gần nhất ⇒ chọn món có lần làm Món đặc biệt gần nhất cũ nhất,
+    stats.daily_pool_exhausted = true và báo cáo đợt ghi "Pool thử thách cạn"; mẻ vẫn thành công."""
+    pool = ["Stonks", "Bao Giờ Cưới", "Mẹ Giữ Hộ"]
+    history = [hist_at(pool[i % 3], i + 1) for i in range(30)]  # lần dùng gần nhất: pool[0] ở mẻ 28 là cũ nhất
+    client, reporter = FakeClient(make_state(history=history)), FakeReporter()
+    outcome = run(client, reporter, core=core_with_only(pool))
+    assert outcome.ok is True and outcome.status == "success"
+    (body,) = client.success_posts
+    assert daily_name_of(body) == pool[0]
+    assert body["stats"]["daily_pool_exhausted"] is True
+    assert "Pool thử thách cạn" in outcome.report_body
+    assert "Pool thử thách cạn" in reporter.issues[0][1]
+
+
+def test_ac_daily_01_con_ung_vien_ngoai_cua_so_thi_khong_bao_pool_can():
+    """AC-DAILY-01: cửa sổ tính theo mẻ - món dùng cách đây 31 mẻ được chọn lại và không có cảnh báo; món dùng cách
+    đây 30 mẻ vẫn bị loại (pool cạn)."""
+    pool = ["Stonks", "Mì Tôm"]
+    core = core_with_only(pool)
+    # 31 mẻ: Stonks ở mẻ 1 rơi khỏi cửa sổ 30 mẻ gần nhất, 30 mẻ sau toàn Mì Tôm
+    older = [hist_at("Stonks", 1)] + [hist_at("Mì Tôm", v) for v in range(2, 32)]
+    client, reporter = FakeClient(make_state(history=older)), FakeReporter()
+    outcome = run(client, reporter, core=core)
+    (body,) = client.success_posts
+    assert daily_name_of(body) == "Stonks"
+    assert not body["stats"].get("daily_pool_exhausted")
+    assert "Pool thử thách cạn" not in outcome.report_body
+    # 30 mẻ: Stonks ở mẻ 2 vẫn nằm trong cửa sổ -> cả hai bị loại -> cạn, lấy món cũ nhất = Stonks
+    inside = [hist_at("Stonks", 2)] + [hist_at("Mì Tôm", v) for v in range(3, 32)]
+    assert len(inside) == 30
+    client2, reporter2 = FakeClient(make_state(history=inside)), FakeReporter()
+    outcome2 = run(client2, reporter2, core=core)
+    (body2,) = client2.success_posts
+    assert daily_name_of(body2) == "Stonks"
+    assert body2["stats"]["daily_pool_exhausted"] is True
+    assert "Pool thử thách cạn" in outcome2.report_body
+
+
+_SIM: dict[int, list[str]] = {}
+
+
+def simulate_core_batches(count: int) -> list[str]:
+    """Run `count` consecutive core batches (12 hours apart, versions ascending), feeding each pick back as history."""
+    if count in _SIM:
+        return _SIM[count]
+    history: list[dict] = []
+    picks: list[str] = []
+    for i in range(count):
+        batch_at = T + timedelta(hours=12 * i)
+        client = FakeClient(make_state(history=history))
+        outcome = run(client, batch_at=batch_at)
+        assert outcome.ok is True, f"mẻ {i + 1} thất bại ở bước {outcome.failed_step}"
+        (body,) = client.success_posts
+        picks.append(daily_name_of(body))
+        history.append(
+            {
+                "version": body["version"],
+                "element_id": body["content"]["daily_element_id"],
+                "batch_at": body["batch_at"],
+            }
+        )
+        assert not body["stats"].get("daily_pool_exhausted"), f"mẻ {i + 1} không được báo pool cạn"
+    _SIM[count] = picks
+    return picks
+
+
+def test_ac_daily_18_90_me_core_59_mon_dau_khac_nhau_khong_lap_trong_30_me():
+    """AC-DAILY-18: 90 mẻ core liên tiếp trên lõi thật: 59 mẻ đầu 59 món khác nhau, mọi cửa sổ 30 mẻ không lặp,
+    không mẻ nào thất bại, mọi món là phần tử lõi depth 4-8 có daily_hint."""
+    names = hinted_core_names()
+    assert len(names) == 59
+    picks = simulate_core_batches(90)
+    assert len(picks) == 90
+    assert len(set(picks[:59])) == 59
+    assert set(picks[:59]) == set(names)
+    assert set(picks) <= set(names)
+    for start in range(0, 90 - 30 + 1):
+        window = picks[start : start + 30]
+        assert len(set(window)) == 30, f"lặp món trong cửa sổ bắt đầu ở mẻ {start + 1}"
+
+
+def test_ac_daily_18_35_phan_tu_moi_cua_loi_dung_truoc_phan_loi_cu():
+    """AC-DAILY-18: 35 phần tử thêm vào lõi ngày 22/10 (35 phần tử cuối trong file lõi) có mặt từ mẻ muộn hơn nên
+    mọi mẻ chọn trong số chúng đứng trước phần lõi cũ khi cùng trend_peak = 0."""
+    core = real_core()
+    new_elements = {e["name"] for e in core["elements"][-35:]}
+    new_candidates = {n for n in hinted_core_names(core) if n in new_elements}
+    assert new_candidates, "35 phần tử cuối của lõi phải có ứng viên Món đặc biệt"
+    picks = simulate_core_batches(90)
+    assert set(picks[: len(new_candidates)]) == new_candidates
+
+
+def test_ac_daily_18_chay_lai_cung_chuoi_version_ra_cung_chuoi_mon():
+    """AC-DAILY-18: chạy lại cùng chuỗi version cho đúng cùng chuỗi món (tất định)."""
+    first = simulate_core_batches(90)
+    _SIM.pop(90)
+    second = simulate_core_batches(90)
+    assert first == second
 
 
 # ---------------------------------------------------------------- AC-PIPE-11

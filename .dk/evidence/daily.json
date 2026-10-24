@@ -1,55 +1,87 @@
 {
  "red": {
-  "ts": "2026-10-22T02:47:41+00:00",
-  "commit": "29be42a",
+  "ts": "2026-10-24T03:47:14+00:00",
+  "commit": "7073884",
   "results": {
+   "AC-DAILY-01": {
+    "status": "FAIL",
+    "test": "test_daily#test_ac_daily_01_cua_so_30_me_gan_nhat_tinh_theo_me_khong_theo_ngay"
+   },
+   "AC-DAILY-02": {
+    "status": "PASS",
+    "test": "test_daily#test_ac_daily_02_khong_co_ung_vien_nao_thi_bao_loi_ro_rang"
+   },
    "AC-DAILY-03": {
-    "status": "SKIP",
-    "test": "daily.ui.test.tsx#daily ui: thẻ Món đặc biệt và đồng hồ > AC-DAILY-03: thẻ hiện emoji, gợi ý và tên \"???\", không lộ tên món, không có nút \"Thử thách\" hay bàn thử thách"
+    "status": "PASS",
+    "test": "test_daily#test_ac_daily_03_khoi_daily_chi_co_khoa_bam_emoji_goi_y_depth"
    },
    "AC-DAILY-04": {
-    "status": "SKIP",
+    "status": "PASS",
     "test": "daily.ui.test.tsx#daily ui: thẻ Món đặc biệt và đồng hồ > AC-DAILY-04: khi đã giải thẻ lộ tên \"Stonks\" và hiện \"Đã giải\", không còn \"???\""
    },
    "AC-DAILY-05": {
-    "status": "SKIP",
+    "status": "PASS",
     "test": "daily.ui.test.tsx#daily ui: gửi kết quả > AC-DAILY-05: thẻ vẫn \"Đã giải\" kèm tên khi chưa gửi được; dựng lại ở mẻ khác "
    },
    "AC-DAILY-06": {
-    "status": "SKIP",
+    "status": "PASS",
     "test": "api.test.ts#submitDailyResult > AC-DAILY-06: 201 trả { result, already: false }; POST đúng đường dẫn, JSON { a, b } và X-Player-Id"
    },
+   "AC-DAILY-07": {
+    "status": "PASS",
+    "test": "daily.test.ts#daily > AC-DAILY-07: cặp không phải công thức, ra món khác món đích, hoặc tên không tồn tại thì 422 problem+json, không ghi gì, không đổi streak"
+   },
    "AC-DAILY-08": {
-    "status": "SKIP",
+    "status": "PASS",
     "test": "api.test.ts#submitDailyResult > AC-DAILY-08: 409 trả { result: kết quả đã lưu, already: true }"
    },
    "AC-DAILY-09": {
-    "status": "SKIP",
+    "status": "PASS",
     "test": "api.test.ts#leaderboards "
    },
+   "AC-DAILY-10": {
+    "status": "PASS",
+    "test": "daily.test.ts#daily > AC-DAILY-10: streak theo ngày GMT+7 của batch_at: 20,21,22 => 3; hai mẻ một ngày tính 1; bỏ 23, làm 24 => 1; dài nhất 3; máy khác thấy cùng streak"
+   },
+   "AC-DAILY-11": {
+    "status": "PASS",
+    "test": "daily.test.ts#daily > AC-DAILY-11: bảng streak tối đa 20 dòng, giảm dần, hòa thì ai đạt trước đứng trước, ẩn danh khi không nickname, không lộ mã tài khoản"
+   },
    "AC-DAILY-12": {
-    "status": "SKIP",
-    "test": "countdown.test.ts#countdown > AC-DAILY-12: lúc 17:30 UTC đếm tới mốc 05:00 UTC kế tiếp sau batch_at "
+    "status": "FAIL",
+    "test": "daily.ui.test.tsx#daily ui: thẻ Món đặc biệt và đồng hồ > AC-DAILY-12: manifest staging đã quá mốc 10:00 UTC mà chưa đổi thì hiện \"Mẻ mới sắp lên\", không có số âm"
    },
    "AC-DAILY-13": {
-    "status": "SKIP",
+    "status": "PASS",
     "test": "daily.ui.test.tsx#daily ui: gửi kết quả > AC-DAILY-13: máy chủ trả 429 thì hiện \"Gửi quá nhanh, thử lại sau.\" và không hiện hạng"
    },
    "AC-DAILY-14": {
-    "status": "SKIP",
+    "status": "PASS",
     "test": "api.test.ts#leaderboards "
    },
    "AC-DAILY-15": {
-    "status": "SKIP",
+    "status": "PASS",
     "test": "daily.ui.test.tsx#daily ui: gửi kết quả > AC-DAILY-15: giải khi chưa đăng nhập thì hiện lời mời đăng nhập, không gửi gì; đăng nhập xong tự gửi ngay "
    },
    "AC-DAILY-16": {
-    "status": "FAIL",
-    "test": "ui2.ui.test.tsx#ui2: thẻ thử thách nổi bật "
+    "status": "PASS",
+    "test": "ui2.browser.test.tsx#ui2 thẻ thử thách nổi bật "
    },
    "AC-DAILY-17": {
+    "status": "PASS",
+    "test": "ui2.browser.test.tsx#ui2 tab bảng xếp hạng "
+   },
+   "AC-DAILY-18": {
     "status": "FAIL",
-    "test": "ui2.ui.test.tsx#ui2: bảng xếp hạng ở tab riêng "
+    "test": "test_batch#test_ac_daily_18_35_phan_tu_moi_cua_loi_dung_truoc_phan_loi_cu"
+   },
+   "AC-DAILY-TENANT": {
+    "status": "PASS",
+    "test": "daily.test.ts#daily > AC-DAILY-TENANT: kết quả, streak và hạng của tài khoản A không hiện ở tài khoản B; header UUID của A kèm cookie của B không ghi vào A"
+   },
+   "AC-DAILY-VALIDATION": {
+    "status": "PASS",
+    "test": "daily.test.ts#daily > AC-DAILY-VALIDATION: tên quá dài, script, SQL, kiểu sai, trường thừa "
    }
   }
  },
