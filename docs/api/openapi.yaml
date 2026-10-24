@@ -1084,7 +1084,7 @@ paths:
         hiện hành; sau rollback là kho của version đã quay về. Version hiện hành chưa có kho (mẻ `core`, hoặc chưa
         đăng mẻ nào) → `{}`. `version` chỉ định mà không còn lưu (ngoài 14 bản) → 404. Không có dữ liệu người chơi.
       security: [{ PipelineToken: [] }]
-      x-ac: [AC-PIPE-07, AC-PIPE-10, AC-PIPE-13, AC-INV-05, AC-ART-03, AC-ART-10]
+      x-ac: [AC-PIPE-07, AC-PIPE-10, AC-PIPE-13, AC-INV-05, AC-ART-03, AC-ART-10, AC-ART-11]
       parameters:
         - name: version
           in: query
@@ -1176,7 +1176,7 @@ paths:
         là đề xuất đã duyệt → nickname hiện tại của tài khoản (không còn/không nickname → null); và cập nhật
         `element.trend_peak` từ `content.elements[].trend_peak` (vắng thì giữ giá trị cũ).
       security: [{ PipelineToken: [] }]
-      x-ac: [AC-PIPE-01, AC-PIPE-10, AC-PIPE-11, AC-GRAPH-04, AC-GRAPH-05, AC-SEED-01, AC-SEED-08, AC-DAILY-01, AC-DAILY-02, AC-INV-06, AC-ART-09, AC-PIPE-16, AC-CONTRIB-10, AC-ADMIN-11]
+      x-ac: [AC-PIPE-01, AC-PIPE-10, AC-PIPE-11, AC-GRAPH-04, AC-GRAPH-05, AC-SEED-01, AC-SEED-08, AC-DAILY-01, AC-DAILY-02, AC-INV-06, AC-ART-09, AC-PIPE-16, AC-CONTRIB-10, AC-ADMIN-11, AC-ART-11]
       requestBody:
         required: true
         content:
