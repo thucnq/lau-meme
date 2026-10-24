@@ -36,6 +36,16 @@ def _eligible(c: Mapping) -> bool:
     )
 
 
+def core_hints(core: Mapping) -> dict[str, str]:
+    """Hand-written hints of the core by element name: every element's `daily_hint` (open question 41), plus the
+    older `daily_examples` whose target has none, so a core written before `daily_hint` keeps its dishes."""
+    hints = {e["name"]: e["daily_hint"] for e in core.get("elements", []) if e.get("daily_hint")}
+    for ex in core.get("daily_examples", []):
+        if ex.get("hint"):
+            hints.setdefault(ex["target"], ex["hint"])
+    return hints
+
+
 def _seeded(version: int, element: str) -> str:
     """Deterministic shuffle key: same (version, element) → same order, whatever the input order."""
     return hashlib.sha256(f"lm1|daily|{version}|{element}".encode()).hexdigest()

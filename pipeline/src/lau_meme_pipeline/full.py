@@ -12,7 +12,7 @@ from datetime import date, datetime, timedelta, timezone
 from lau_meme_pipeline.art import ArtItem, ArtResult, apply_images, order_for_drawing
 from lau_meme_pipeline.contrib import add_contributions
 from lau_meme_pipeline.crawl import CrawlResult, crawl_report_line
-from lau_meme_pipeline.daily import build_daily_block, pick_daily
+from lau_meme_pipeline.daily import build_daily_block, core_hints, pick_daily
 from lau_meme_pipeline.dedupe import dedupe, dedupe_key
 from lau_meme_pipeline.graph import build_manifest, export_graph
 from lau_meme_pipeline.ids import element_id, recipe_id
@@ -363,13 +363,11 @@ def run_full(
     # are not held; salt and newness come from the Worker's catalog (an element it never published is new now).
     seen, salt = first_versions or {}, trend_peaks or {}
     candidates_daily = []
-    for raw in core.get("elements", []):
-        e = content.elements.get(element_id(raw["name"]))
-        if e and raw.get("daily_hint"):
+    for name, hint in core_hints(core).items():
+        e = content.elements.get(element_id(name))
+        if e:
             added = seen.get(e.id, version)
-            candidates_daily.append(
-                _candidate(e, raw["daily_hint"], "classic", added, salt.get(e.id, 0), False, blocked)
-            )
+            candidates_daily.append(_candidate(e, hint, "classic", added, salt.get(e.id, 0), False, blocked))
     for t in out_store["elements"]:
         e = content.elements[t["id"]]
         held = is_held(date.fromisoformat(t["held_until"]), batch_date) if t.get("held_until") else False

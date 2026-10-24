@@ -22,7 +22,7 @@ from urllib.parse import urlsplit
 from lau_meme_pipeline.art import ArtAdapters, ArtItem, ArtResult, UploadFailed, draw_images, image_key, to_webp_256
 from lau_meme_pipeline.contrib import add_contributions
 from lau_meme_pipeline.crawl import Http, crawl
-from lau_meme_pipeline.daily import build_daily_block, pick_daily
+from lau_meme_pipeline.daily import build_daily_block, core_hints, pick_daily
 from lau_meme_pipeline.full import run_full
 from lau_meme_pipeline.graph import build_manifest, decrypt_entry, export_graph
 from lau_meme_pipeline.ids import element_id
@@ -123,9 +123,9 @@ def _pick_daily(store: ContentStore, core: Mapping, state: Mapping, version: int
     blocked = set(state.get("blocklist", {}).get("elements", []))
     catalog = {c["id"]: c for c in state.get("catalog", [])}
     candidates = []
-    for raw in core.get("elements", []):
-        element = store.elements.get(element_id(raw["name"]))
-        if element is None or not raw.get("daily_hint"):
+    for name, hint in core_hints(core).items():
+        element = store.elements.get(element_id(name))
+        if element is None:
             continue
         seen = catalog.get(element.id, {})
         candidates.append(
@@ -137,7 +137,7 @@ def _pick_daily(store: ContentStore, core: Mapping, state: Mapping, version: int
                 "active": element.status == ACTIVE and element.id not in blocked,
                 "reachable": True,  # load_core rejects a core with an unreachable element
                 "held": False,  # hot deferral (AC-MOD-08) comes with MOD
-                "hint": raw["daily_hint"],
+                "hint": hint,
                 "hint_ok": True,  # written by hand in the core, reviewed by a human
                 "source": "classic",
                 "added_version": seen.get("first_version", version),
@@ -200,7 +200,7 @@ def parse_batch_hours(raw: str | None) -> tuple[int, ...]:
     if raw is None:
         return DEFAULT_BATCH_HOURS
     parts = [p.strip() for p in raw.split(",")]
-    if not all(re.fullmatch(r"\d{1,2}", p) for p in parts):
+    if not all(re.fullmatch(r"[0-9]{1,2}", p) for p in parts):
         raise ValueError(f"BATCH_HOURS_UTC {raw!r} phải là các giờ 0-23 cách nhau bởi dấu phẩy")
     hours = [int(p) for p in parts]
     if any(h > 23 for h in hours) or len(set(hours)) != len(hours):

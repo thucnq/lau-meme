@@ -691,7 +691,10 @@ def failing_setup(step, monkeypatch):
     elif step == "seed":
         core["recipes"].append({"a": "Không Có A", "b": "Không Có B", "result": "Không Có C", "best": False})
     elif step == "daily":
-        client = FakeClient(make_state(blocked_elements=[eid(e["target"]) for e in core["daily_examples"]]))
+        # every dish of the core pool (daily_hint, open question 41, plus daily_examples) blocked: no candidate
+        hinted = [e["name"] for e in core["elements"] if e.get("daily_hint")]
+        targets = hinted + [e["target"] for e in core["daily_examples"]]
+        client = FakeClient(make_state(blocked_elements=[eid(n) for n in targets]))
     elif step == "export":
         patch_everywhere(monkeypatch, "export_graph", boom_for(step))
     elif step == "check":
