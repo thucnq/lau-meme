@@ -13,6 +13,7 @@ Không bí mật nào nằm trong repo (repo có thể public).
 | `API_BASE_URL`, `BANNED_WORDS` | GitHub Environment secret | `docs/dev/huong-dan-tai-khoan.md` mục 4.3 |
 | `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID` | GitHub Secrets | Settings → Secrets and variables → Actions |
 | Khóa API của pipeline (LLM, nguồn dữ liệu) | GitHub Secrets | như trên |
+| `THREADS_ACCESS_TOKEN` (secret), `THREADS_KEYWORDS` (variable) | GitHub Secret và Variable của workflow `batch.yml`; token lấy từ app Meta đã được duyệt quyền tìm theo từ khóa (AC-PIPE-17) | `docs/dev/huong-dan-tai-khoan.md` mục 8 |
 | Biến chạy cục bộ | `worker/.dev.vars` (gitignore) | chép từ `worker/.dev.vars.example` |
 
 `GOOGLE_CLIENT_ID` không phải bí mật: là biến thường trong `worker/wrangler.jsonc` (`vars`), mỗi môi trường một Client ID. Worker dùng Client ID này để kiểm `aud` của ID token.
@@ -72,6 +73,9 @@ Cấu hình tài khoản lần đầu (DNS, Redirect Rule, SSL, deploy productio
 | Trang trắng sau deploy | Quên build web trước khi deploy | `npm --prefix web run build` rồi deploy lại |
 | Ghi đồng ý (`/lau-meme/api/consents`) trả 500, log `IP_HASH_KEY is not configured` | Chưa đặt secret băm IP của môi trường đó (cố ý báo lỗi thay vì lưu IP thô) | Đặt secret theo `docs/dev/huong-dan-tai-khoan.md` |
 | Workflow cron chạy trễ | GitHub Actions không bảo đảm đúng giờ | Bình thường; giao diện dựa vào thời điểm trong dữ liệu, không vào giờ lý thuyết |
+| Báo cáo đợt ghi "Threads: thiếu cấu hình" | Thiếu `THREADS_ACCESS_TOKEN` hoặc `THREADS_KEYWORDS` (rỗng) | Đặt secret và variable theo `docs/dev/huong-dan-tai-khoan.md` mục 8; đợt không thất bại, nguồn Threads chỉ không thu gì (AC-PIPE-17) |
+| Báo cáo đợt ghi "Threads: 401" hoặc "Threads: 403" | Token hết hạn, hoặc app chưa được duyệt quyền tìm theo từ khóa | Cấp lại token trong app Meta rồi cập nhật secret `THREADS_ACCESS_TOKEN`. Lỗi 429 (bị giới hạn lượt gọi) cũng hiện ở dòng lỗi nguồn (AC-PIPE-03) |
+| Báo cáo đợt ghi "Tuổi Trẻ: không đọc được trang" | Trang `tuoitre.vn/meme.html` đổi giao diện | Không cần cấu hình; cập nhật bộ đọc `TuoiTreAdapter` trong `pipeline/src/lau_meme_pipeline/crawl.py` (AC-PIPE-15) |
 | Đợt `core` thất bại với lỗi lịch mẻ (`BATCH_HOURS_UTC` ngoài 0-23, rỗng hoặc trùng) | Giá trị `BATCH_HOURS_UTC` trong `batch.yml` bị sửa sai | Khôi phục biểu thức trong `.github/workflows/batch.yml`; bản hiện hành giữ nguyên (AC-DAILY-12) |
 | `dinoduct.fun` báo lỗi 52x hoặc không phân giải | Thiếu bản ghi DNS proxied cho host, hoặc Redirect Rule bị tắt | Xem `docs/dev/huong-dan-tai-khoan.md` mục 1–2 |
 | `/lau-meme` vào được nhưng F5 ở màn hình con ra 404 | Bản deploy cũ (trước ADR 0007) hoặc web build sai thư mục | Build lại web (`web/dist/lau-meme/index.html` phải có) rồi deploy |
