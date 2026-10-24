@@ -483,7 +483,7 @@ def test_ac_pipe_15_default_adapters_co_tuoi_tre():
 
 # ================================================================ AC-PIPE-17: Threads
 
-THREADS_HOST = "graph.threads.net"
+THREADS_HOST = "graph.threads.com"
 THREADS_ACCESS = "THREADSTOKENSECRET123"
 SCRAPE_HOSTS = {"threads.net", "www.threads.net", "threads.com", "www.threads.com"}
 
