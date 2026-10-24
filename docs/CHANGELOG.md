@@ -33,3 +33,7 @@
 - Sự kiện Món đặc biệt (AC-METRIC-08): khi thẻ Món đặc biệt hiện lần đầu trong phiên, client gửi `daily_start`; khi ghép ra món lần đầu, gửi `daily_complete`. Không còn gửi số bước. Chỉ gửi khi thực khách đã đồng ý.
 - Đo lường ẩn danh (AC-METRIC-02..04): client gom sự kiện thành lô gửi `POST /api/events` theo danh sách sự kiện cho phép.
 - Ảnh minh họa cho phần tử lõi (AC-ART-11): mẻ `full` vẽ bù ảnh cho phần tử lõi chưa có ảnh, sau khi chờ vẽ và phần tử mới. Game vẫn hiện emoji khi chưa có ảnh.
+- Nguồn meme mới (AC-PIPE-15, AC-PIPE-17): mẻ `full` thu thêm trang chuyên mục Tuổi Trẻ (`tuoitre.vn/meme.html`) và Threads qua API tìm theo từ khóa chính thức; không lưu tên người đăng hay link hồ sơ, không tải ảnh hay video. Threads chỉ chạy khi đã cấu hình token và từ khóa.
+- Mức mặn phần tử (AC-PIPE-16): mỗi phần tử giữ mức trending cao nhất từng ghi (`trend_peak`); mẻ không thu lại phần tử thì giữ giá trị cũ.
+- Quản trị (AC-ADMIN-11): trang Đợt có ô tổng (meme thu thập, thêm, hàng chờ, thiếu ảnh) và số liệu crawl theo từng nguồn; `GET /admin/batches` trả thêm `summary`.
+- Triển khai staging: Worker version `9349181e-13d9-4a82-855e-d73c4bed6825`, git sha `a736f0d`, health ok.
