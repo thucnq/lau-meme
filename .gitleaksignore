@@ -3,3 +3,7 @@
 2da5c20d375c6d5669b86fe43f8f566fc91f82d7:pipeline/tests/test_art_adapters.py:generic-api-key:31
 37bdd3d86452fbbc0b78ab99766a5cd6eb562908:worker/test/art.test.ts:generic-api-key:26
 cf011a0d84841acb3d2270c080c0123ae325eeb8:worker/test/art.test.ts:generic-api-key:16
+# AC-ART-11 (8fe2826): cùng loại báo nhầm - tên file ảnh mẫu "0123456789ab.webp" gán cho biến/khóa có chữ KEY.
+8fe282672ce0ad1f784dab405f2ce6cbe1615abd:pipeline/tests/test_art_core_backfill.py:generic-api-key:40
+8fe282672ce0ad1f784dab405f2ce6cbe1615abd:pipeline/tests/test_art_full_batch.py:generic-api-key:36
+8fe282672ce0ad1f784dab405f2ce6cbe1615abd:worker/test/art-upload.test.ts:generic-api-key:357

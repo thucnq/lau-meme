@@ -64,10 +64,14 @@ def _version(batch_at: datetime) -> int:
 
 
 def _combined(core: Mapping, store: Mapping) -> ContentStore:
-    """Core classic content plus the trend elements and recipes kept in the store."""
+    """Core classic content plus the trend elements and recipes kept in the store, and the images drawn for core
+    elements in earlier batches (`core_art`, AC-ART-11)."""
     base = load_core(core, ContentStore.empty()).store
     elements = dict(base.elements)
     recipes = dict(base.recipes)
+    for c in store.get("core_art", []):
+        if c.get("image_key") and c["id"] in elements:
+            elements[c["id"]] = replace(elements[c["id"]], image_key=c["image_key"])
     for e in store.get("elements", []):
         elements[e["id"]] = StoredElement(
             id=e["id"],
@@ -148,6 +152,15 @@ def run_full(
 
     content = _combined(core, store)
     trend: dict[str, dict] = {e["id"]: dict(e) for e in store.get("elements", [])}
+    # Drawing state of the core elements (AC-ART-11), one entry each so a later batch knows what is left to draw;
+    # kept in drawing order: the core file's depth (stable whatever is blocked this batch), then folded name.
+    stored_core = {c["id"]: c for c in store.get("core_art", [])}
+    core_art: dict[str, dict] = {
+        e.id: {**stored_core.get(e.id, {}), "id": e.id, "name": e.name}
+        for e in sorted(
+            load_core(core, ContentStore.empty()).store.elements.values(), key=lambda e: (e.depth, e.fold, e.id)
+        )
+    }
     trend_recipes: dict[str, dict] = {r["id"]: dict(r) for r in store.get("recipes", [])}
     report: dict = {"crawl": crawl_report_line(crawl_result)}
 
@@ -312,7 +325,7 @@ def run_full(
 
     # 6. Depth by BFS over everything; trend elements that lost every path are inactive (AC-INV-03).
     out_store = _store_of(trend, trend_recipes)
-    content = _combined(core, out_store)
+    content = _combined(core, {**out_store, "core_art": list(core_art.values())})
     # Approved contributions live in D1, not in the store (ADR 0013); the BFS below sets their depth.
     joined = add_contributions(
         content, contributions, version=version, first_versions=first_versions or {}, blocked=frozenset(blocked)
@@ -340,7 +353,9 @@ def run_full(
 
     # 6b. Illustrations (ADR 0012, AC-ART-01..04): `draw` holds the network side; without it nothing is tracked.
     if draw is not None:
-        content = _illustrate(content, out_store, store.get("art_pending", []), blocked, version, draw, report)
+        content = _illustrate(
+            content, out_store, core_art, store.get("art_pending", []), blocked, version, draw, report
+        )
 
     # 7. Daily: core examples, plus trend elements with an approved hint that are not held.
     candidates_daily = []
@@ -369,6 +384,7 @@ def run_full(
     out_store["queue"] = q.queue
     out_store["asked_pairs"] = [list(p) for p in sorted(asked_in | supplemented.rejected)]
     out_store["llm_cache"] = {k: used[k] for k in sorted(used)}
+    out_store["core_art"] = [core_art[k] for k in sorted(core_art)]
     report["quota"] = report["quota"] or quota["hit"]  # supplement steps may hit it too
     return FullOutcome(
         graph=graph_out,
@@ -384,6 +400,7 @@ def run_full(
 def _illustrate(
     content: ContentStore,
     out_store: dict,
+    core_art: Mapping[str, dict],
     waiting: Sequence[str],
     blocked: frozenset[str],
     version: int,
@@ -392,8 +409,9 @@ def _illustrate(
 ) -> ContentStore:
     """Elements waiting from earlier batches first, then this batch's, then older ones never drawn (AC-ART-03).
     An element whose draws were refused, whose hint failed moderation, or that kept failing for MAX_ART_ATTEMPTS
-    batches keeps its emoji for good (AC-ART-02). One with no hint yet is only skipped: a later hint is drawn."""
-    trend = {e["id"]: e for e in out_store["elements"]}
+    batches keeps its emoji for good (AC-ART-02). One with no hint yet is only skipped: a later hint is drawn.
+    Core elements without an image come last, shallowest first, then by folded name (AC-ART-11)."""
+    trend = {e["id"]: e for e in out_store["elements"]} | dict(core_art)
 
     def drawable(eid: str) -> bool:
         e, el = trend.get(eid), content.elements.get(eid)
@@ -404,21 +422,30 @@ def _illustrate(
             and eid not in blocked
             and not e.get("image_key")
             and not e.get("image_fallback")
+            # a core element with no hint is only skipped (and not counted) until the core file gives it one
+            and (eid not in core_art or bool(hint(eid).strip()))
         )
 
-    def item(eid: str) -> ArtItem:
+    def hint(eid: str) -> str:
         e = trend[eid]
-        return ArtItem(eid, e["name"], e.get("image_hint", "") if e.get("image_hint_ok", True) else "")
+        if eid in core_art:
+            return content.elements[eid].image_hint
+        return e.get("image_hint", "") if e.get("image_hint_ok", True) else ""
+
+    def item(eid: str) -> ArtItem:
+        return ArtItem(eid, trend[eid]["name"], hint(eid))
 
     first = [eid for eid in dict.fromkeys(waiting) if drawable(eid)]
     rest = sorted(
         (e for e in out_store["elements"] if drawable(e["id"]) and e["id"] not in first),
         key=lambda e: (e.get("added_version") != version, e["id"]),
     )
-    art = draw(order_for_drawing([item(i) for i in first], [item(e["id"]) for e in rest]))
+    backfill = [eid for eid in core_art if drawable(eid) and eid not in first]
+    art = draw(order_for_drawing([item(i) for i in first], [item(e["id"]) for e in rest] + [item(i) for i in backfill]))
     for eid, key in art.images.items():
         trend[eid]["image_key"] = key
-    pending = list(art.pending)
+    # a core element merely not reached is found again from core_art; one that failed waits like any other
+    pending = [eid for eid in art.pending if eid not in core_art or eid in art.errored]
     gave_up = []
     # An error counts against an element only when drawing worked for something else in this batch; otherwise it
     # is an outage (network, Worker, credentials) and holding it against the elements would lose their images.
@@ -430,7 +457,7 @@ def _illustrate(
     pending = [eid for eid in pending if eid not in gave_up]
     for eid in [*art.fallback, *gave_up]:
         e = trend[eid]
-        if e.get("image_hint", "").strip() or not e.get("image_hint_ok", True) or eid in gave_up:
+        if hint(eid).strip() or not e.get("image_hint_ok", True) or eid in gave_up:
             e["image_fallback"] = True
     out_store["art_pending"] = pending[:MAX_ART_PENDING]
     report["art"] = {
@@ -441,6 +468,7 @@ def _illustrate(
         "rejections": dict(sorted(art.rejections.items())),
         "errors": dict(sorted(art.errors.items())),
         "config_error": art.config_error,
+        "core_left": sum(1 for eid in core_art if drawable(eid)),
     }
     return apply_images(content, art.images)
 

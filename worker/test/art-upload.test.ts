@@ -351,4 +351,31 @@ describe('art: PipelineStore.art_pending', () => {
     const state = (await (await call(`${BASE}/state`)).json()) as { current_version: number | null }
     expect(state.current_version).toBeNull()
   })
+
+  it('AC-ART-11: mẻ full kèm store.core_art (mảng đối tượng) thì 201 và GET /pipeline/store trả đúng nguyên văn', async () => {
+    const core_art = [
+      { id: await id43('core|1'), name: 'Cay', image_key: '0123456789ab.webp' },
+      { id: await id43('core|2'), name: 'Cười', art_attempts: 2 },
+      { id: await id43('core|3'), name: 'Toang', art_attempts: 3, image_fallback: true },
+    ]
+    const store: Store = { elements: [], recipes: [], queue: [], asked_pairs: [], llm_cache: {}, art_pending: [], core_art }
+    const res = await publish(72, store)
+    expect(res.status).toBe(201)
+
+    const got = await call(`${BASE}/store`)
+    expect(got.status).toBe(200)
+    const body = (await got.json()) as Store
+    expect(body.core_art).toEqual(core_art)
+    expect(body).toEqual(store)
+  })
+
+  it('AC-ART-11: store.core_art không phải mảng bị từ chối 422 problem+json và không đổi version', async () => {
+    for (const core_art of ['not-a-list', { a: 1 }, 42]) {
+      const res = await publish(82, { queue: [], asked_pairs: [], llm_cache: {}, core_art })
+      expect(res.status, JSON.stringify(core_art)).toBe(422)
+      expect(res.headers.get('content-type') ?? '').toContain('application/problem+json')
+    }
+    const state = (await (await call(`${BASE}/state`)).json()) as { current_version: number | null }
+    expect(state.current_version).toBeNull()
+  })
 })

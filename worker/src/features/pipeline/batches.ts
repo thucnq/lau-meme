@@ -7,7 +7,7 @@ import { currentVersion } from '../content/content'
 const KEEP_VERSIONS = 14
 /** D1 caps a row at 2 MB; the phase 2 pipeline store (ADR 0009) must fit one row. */
 const MAX_STORE_BYTES = 1_900_000
-const STORE_KEYS = ['elements', 'recipes', 'queue', 'asked_pairs', 'llm_cache', 'art_pending'] as const
+const STORE_KEYS = ['elements', 'recipes', 'queue', 'asked_pairs', 'llm_cache', 'art_pending', 'core_art'] as const
 const MODES = ['core', 'full'] as const
 
 type Element = { id: string; name: string; fold: string; emoji: string; depth: number; origin: string | null; image_key: string | null }
@@ -254,7 +254,8 @@ export async function publishBatch(req: Request, env: Env): Promise<Response> {
 /** ADR 0009: opaque to the Worker - only the top-level shape and the one-row size are checked. */
 function parseStore(value: unknown): string {
   const store = obj(value, 'store', STORE_KEYS, [])
-  for (const key of ['elements', 'recipes', 'queue', 'asked_pairs'] as const) {
+  // core_art: drawing state of the core elements (AC-ART-11)
+  for (const key of ['elements', 'recipes', 'queue', 'asked_pairs', 'core_art'] as const) {
     if (key in store && !Array.isArray(store[key])) fail(`store.${key}: phải là mảng`)
   }
   if ('art_pending' in store) {

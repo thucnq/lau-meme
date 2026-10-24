@@ -1,7 +1,7 @@
-# Tiến độ — ƯỚC LƯỢNG - LẨU MEME
+# Tiến độ - ƯỚC LƯỢNG - LẨU MEME
 
-> Sinh bởi `/dk:plan` (gen-plan.py) từ `docs/estimate/items.json`. **Người sửa trực tiếp file này**: dấu `[x]` (hạng mục hoặc AC), `tiến độ: N%`, `người`, `bắt đầu`, `xong` (YYYY-MM-DD), `ghi chú` — giữ nguyên dấu ` · ` giữa các trường. Chạy lại `/dk:plan` để tính dự báo và vẽ lại `gantt.html`. `KH` là kế hoạch gốc, chỉ đổi bằng `/dk:plan rebaseline`.
-> Bắt đầu dự án: 2026-10-20 · Kỹ sư: 1 (Thuc) · Giờ/tuần: 20 · Nghiệm thu KH: 2028-06-06 · Dự báo: 2027-07-23 · Cập nhật: 2026-10-23
+> Sinh bởi `/dk:plan` (gen-plan.py) từ `docs/estimate/items.json`. **Người sửa trực tiếp file này**: dấu `[x]` (hạng mục hoặc AC), `tiến độ: N%`, `người`, `bắt đầu`, `xong` (YYYY-MM-DD), `ghi chú` - giữ nguyên dấu ` · ` giữa các trường. Chạy lại `/dk:plan` để tính dự báo và vẽ lại `gantt.html`. `KH` là kế hoạch gốc, chỉ đổi bằng `/dk:plan rebaseline`.
+> Bắt đầu dự án: 2026-10-20 · Kỹ sư: 1 (Thuc) · Giờ/tuần: 20 · Nghiệm thu KH: 2028-06-06 · Dự báo: 2027-07-23 · Cập nhật: 2026-10-24
 
 
 ## Nền tảng
@@ -168,7 +168,7 @@
   - [ ] AC-ADMIN-12 Gán tier cho phần tử (thêm 2026-10-23)
 
 ## Vận hành
-- [ ] **METRIC** Đo chỉ số thành công · 4.5đ · rủi ro: MEDIUM · KH: 2027-05-28 → 2027-06-10 · tiến độ: 0% · người: Thuc · bắt đầu:  · xong:  · ghi chú: 
+- [ ] **METRIC** Đo chỉ số thành công · 5đ · rủi ro: MEDIUM · KH: 2027-05-28 → 2027-06-10 · tiến độ: 0% · người: Thuc · bắt đầu:  · xong:  · ghi chú: 
   - [ ] AC-METRIC-01 Cloudflare Web Analytics không cookie
   - [ ] AC-METRIC-02 Nhận sự kiện theo danh sách cho phép
   - [ ] AC-METRIC-03 Sự kiện không hợp lệ
@@ -176,6 +176,7 @@
   - [ ] AC-METRIC-05 Tổng hợp chỉ số
   - [ ] AC-METRIC-06 Đưa số liệu vào báo cáo đợt
   - [ ] AC-METRIC-07 Dọn sự kiện quá hạn
+  - [ ] AC-METRIC-08 Client gửi sự kiện Món đặc biệt (thêm 2026-10-23, câu hỏi mở 62)
 
 ## Kiểm thử
 - [x] **INV** Bất biến nội dung và trò chơi · 6đ · rủi ro: HIGH · KH: 2027-06-11 → 2027-06-30 · tiến độ: 100% · người: Thuc · bắt đầu: 2026-10-20 · xong: 2026-10-20 · ghi chú: 
@@ -259,6 +260,14 @@
   - [x] AC-GAME-19 Nút điều khiển nằm ở khu bàn lẩu, đăng nhập ở đầu trang (thêm 2026-10-22)
   - [x] AC-GAME-20 Nồi lẩu vẽ trọn, quai ngang thân nồi (thêm 2026-10-22)
   - [x] AC-GAME-21 Vuốt cuộn trang trên màn hình cảm ứng (thêm 2026-10-22)
+  - [ ] AC-METRIC-01 Cloudflare Web Analytics không cookie
+  - [ ] AC-METRIC-02 Nhận sự kiện theo danh sách cho phép
+  - [ ] AC-METRIC-03 Sự kiện không hợp lệ
+  - [ ] AC-METRIC-04 Client gom sự kiện ghép
+  - [ ] AC-METRIC-05 Tổng hợp chỉ số
+  - [ ] AC-METRIC-06 Đưa số liệu vào báo cáo đợt
+  - [ ] AC-METRIC-07 Dọn sự kiện quá hạn
+  - [ ] AC-METRIC-08 Client gửi sự kiện Món đặc biệt (thêm 2026-10-23, câu hỏi mở 62)
 
 ## Nội dung
 - [x] **MOD** Kiểm duyệt nội dung tự động (giai đoạn 2) · 9đ · rủi ro: HIGH · KH: 2027-08-05 → 2027-09-01 · tiến độ: 100% · người: Thuc · bắt đầu: 2026-10-20 · xong: 2026-10-20 · ghi chú: 
