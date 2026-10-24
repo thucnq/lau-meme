@@ -69,3 +69,15 @@
 - **Khi** mẻ chạy tới bước vẽ minh họa
 - **Thì** thứ tự vẽ: phần tử chờ vẽ, rồi phần tử mới, rồi phần tử lõi đang hoạt động chưa có ảnh (xếp depth tăng dần, rồi tên đã `fold`) cho tới đủ 20 ảnh mỗi đợt (AC-ART-09) ⇒ đợt này vẽ 3 + 5 + 12 phần tử lõi; ảnh lõi qua cùng kiểm duyệt (AC-ART-02), cùng luật lỗi và số lần thử (AC-ART-10); phần tử lõi đã có ảnh, đã hết lượt thử (giữ emoji) hoặc bị ẩn/chặn thì không vẽ lại; báo cáo đợt ghi thêm "Lõi còn chưa có ảnh: N" (N = lõi đang hoạt động, chưa có ảnh, chưa hết lượt thử, không bị chặn - số còn sẽ vẽ; chốt 2026-10-23); mẻ `core` không vẽ (không đổi)
 - Ưu tiên: Bắt buộc
+
+### AC-ART-12: Ưu tiên vẽ ảnh cho món sắp lên Vàng/Đỏ (thêm 2026-10-24)
+- **Cho** mẻ `full` đủ cấu hình vẽ; hạn mức 20 ảnh/đợt (AC-ART-09); kho có 4 phần tử độ sâu ≥ 5 chưa có ảnh (đang bị giữ ở Xanh dương - AC-TIER-04), 1 phần tử admin gán Vàng mà ảnh vừa bị chặn do báo cáo (AC-REPORT), 3 phần tử chờ vẽ, 5 phần tử mới, 30 phần tử lõi chưa có ảnh
+- **Khi** mẻ chạy tới bước vẽ minh họa
+- **Thì** thứ tự vẽ (cập nhật thứ tự của AC-ART-11): trước hết phần tử tier tự động Vàng/Đỏ đang chờ ảnh và phần tử admin gán Vàng/Đỏ mà mất ảnh (xếp độ sâu giảm dần, rồi tên đã `fold`), rồi phần tử chờ vẽ, phần tử mới, phần tử lõi như AC-ART-11, tới đủ 20 ảnh; ảnh vẽ cùng phong cách vẽ tay chung và qua cùng kiểm duyệt (AC-ART-02); có ảnh hợp lệ thì phần tử lên tier tự động đúng độ sâu ngay trong graph của mẻ đó; phần tử admin gán Vàng/Đỏ mà không còn ảnh hợp lệ sau khi hết lượt vẽ được ghi vào báo cáo đợt "Vàng/Đỏ thiếu ảnh: <tên>" để admin xử lý (graph vẫn đăng, phần tử hiện emoji)
+- Ưu tiên: Bắt buộc
+
+### AC-ART-13: Admin tải tranh vẽ tay cho phần tử (thêm 2026-10-24)
+- **Cho** token admin đúng; phần tử P chưa có ảnh hoặc có ảnh tự vẽ
+- **Khi** admin tải lên một file PNG hoặc WebP ≤ 1 MB cho P; tải file sai định dạng, quá cỡ hoặc cho phần tử không tồn tại
+- **Thì** file hợp lệ được chuẩn hóa về WebP 256×256 và lưu theo băm nội dung như AC-ART-04, gắn vào P thay ảnh cũ, ghi audit (trước/sau khóa ảnh) theo AC-ADMIN-09, có trong graph từ mẻ kế tiếp; ảnh do admin tải không qua kiểm duyệt LLM và không bị mẻ sau vẽ đè; sai định dạng hoặc quá cỡ trả 400, phần tử không tồn tại trả 404, không đổi gì (câu hỏi mở 70)
+- Ưu tiên: Tùy chọn

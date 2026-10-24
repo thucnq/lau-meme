@@ -72,5 +72,5 @@
 ### AC-ADMIN-12: Gán tier cho phần tử (thêm 2026-10-23)
 - **Cho** token đúng; phần tử P đang tier 1 (xám)
 - **Khi** đặt tier của P = 4; đặt tier = 0 hoặc 6 hoặc chuỗi; đặt tier cho phần tử không tồn tại
-- **Thì** tier hợp lệ 1-5 (AC-TIER-01): trả 200 và ghi 1 dòng audit (trước 1, sau 4) theo AC-ADMIN-09; giá trị ngoài 1-5 trả 400 problem+json, không ghi audit; phần tử không tồn tại trả 404; tier mới có trong graph từ mẻ kế tiếp (mặc định - câu hỏi mở 53); mục "Nội dung" hiện tier hiện tại của từng phần tử và lọc được theo tier
+- **Thì** tier hợp lệ 1-5 (AC-TIER-01): trả 200 và ghi 1 dòng audit (trước 1, sau 4) theo AC-ADMIN-09; (cập nhật 2026-10-24) có thêm lựa chọn "Tự động (theo độ sâu)" để bỏ giá trị admin gán (AC-TIER-05); gán tier 4 hoặc 5 cho phần tử chưa có ảnh (không có ảnh hoặc ảnh bị chặn) trả 409 problem+json "Món Vàng/Đỏ cần có ảnh trước", không ghi audit (AC-TIER-04, câu hỏi mở 69); giá trị ngoài 1-5 trả 400 problem+json, không ghi audit; phần tử không tồn tại trả 404; tier mới có trong graph từ mẻ kế tiếp (mặc định - câu hỏi mở 53); mục "Nội dung" hiện tier hiện tại của từng phần tử và lọc được theo tier
 - Ưu tiên: Bắt buộc

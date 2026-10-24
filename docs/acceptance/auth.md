@@ -24,7 +24,7 @@
 ### AC-AUTH-04: Cùng tài khoản trên nhiều máy
 - **Cho** tài khoản T đã đăng nhập ở máy 1, có nickname "Lẩu Thủ", streak 3 và kết quả Daily của mẻ V
 - **Khi** đăng nhập T ở máy 2 (UUID khác)
-- **Thì** máy 2 thấy nickname "Lẩu Thủ", streak 3, trạng thái đã nộp V (nộp lại trả 409 như AC-DAILY-08); Đĩa nhúng không đồng bộ, vẫn chỉ lưu trên từng máy; UUID máy 2 cũng được gắn vào T
+- **Thì** máy 2 thấy nickname "Lẩu Thủ", streak 3, trạng thái đã nộp V (nộp lại trả 409 như AC-DAILY-08); Đĩa nhúng của T được gộp từ mọi máy theo AC-SYNC-02 (cập nhật 2026-10-24, trước đây Đĩa chỉ lưu trên từng máy); vị trí món trên bàn vẫn riêng từng máy; UUID máy 2 cũng được gắn vào T
 - Ưu tiên: Bắt buộc
 
 ### AC-AUTH-05: Đăng xuất
@@ -36,7 +36,7 @@
 ### AC-AUTH-06: Xóa tài khoản và dữ liệu
 - **Cho** tài khoản T có nickname, kết quả Daily, streak, 2 UUID đã gắn
 - **Khi** gửi `DELETE` dữ liệu của mình khi đang đăng nhập (sau khi xác nhận trên UI)
-- **Thì** trả 204; tài khoản (băm `sub`), mọi phiên, nickname, kết quả Daily, streak của T bị xóa; các UUID đã gắn xử lý như AC-PRIV-05; đăng nhập lại bằng cùng Google tạo tài khoản mới trống; trang chính sách (AC-PRIV-01) nêu thêm dữ liệu "mã tài khoản Google dạng băm", mục đích "định danh trên bảng xếp hạng", thời hạn "đến khi xóa"; xem/xuất dữ liệu (AC-PRIV-08) có thêm thời điểm tạo tài khoản và số phiên đang mở (không có băm `sub`)
+- **Thì** trả 204; tài khoản (băm `sub`), mọi phiên, nickname, kết quả Daily, streak và Đĩa nhúng của tài khoản (AC-SYNC-10, thêm 2026-10-24) của T bị xóa; các UUID đã gắn xử lý như AC-PRIV-05; đăng nhập lại bằng cùng Google tạo tài khoản mới trống; trang chính sách (AC-PRIV-01) nêu thêm dữ liệu "mã tài khoản Google dạng băm", mục đích "định danh trên bảng xếp hạng", thời hạn "đến khi xóa"; xem/xuất dữ liệu (AC-PRIV-08) có thêm thời điểm tạo tài khoản và số phiên đang mở (không có băm `sub`)
 - Ưu tiên: Bắt buộc
 
 ### AC-AUTH-07: Giới hạn tần suất đăng nhập

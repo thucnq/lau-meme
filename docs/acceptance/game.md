@@ -108,7 +108,7 @@
 ### AC-GAME-18: Nồi lẩu nằm trong màn hình đầu tiên (thêm 2026-10-21)
 - **Cho** thực khách mở trang lần đầu (đã đóng hướng dẫn) ở các khung nhìn 1366×768 (PC), 1024×768 và 768×1024 (tablet), 390×844 và 360×640 (mobile), thẻ Món đặc biệt đang hiện
 - **Khi** trang vừa tải xong, chưa cuộn
-- **Thì** toàn bộ nồi lẩu (2 chỗ thả) nằm trọn trong khung nhìn; trên mobile Đĩa nhúng có thể nằm dưới nồi và phải cuộn mới thấy; chiều cao mặt bàn co theo khung nhìn thay vì cố định. Kiểm bằng Vitest browser mode với Playwright (Chromium thật) đo hộp bao của nồi ở cả 5 khung nhìn, vì jsdom không tính bố cục; test vẫn chạy qua `vitest -t AC-GAME-18` như các test khác (chốt 2026-10-21)
+- **Thì** toàn bộ nồi lẩu (2 chỗ thả) nằm trọn trong khung nhìn; trên mobile Đĩa nhúng có thể nằm dưới nồi và phải cuộn mới thấy; chiều cao mặt bàn co theo khung nhìn thay vì cố định. (cập nhật 2026-10-24, góp ý "bàn hơi chật") Mặt bàn lấp phần còn lại của khung nhìn đầu tiên: mép dưới mặt bàn cách đáy khung nhìn không quá 24 px ở cả 5 khung nhìn (không tràn ra ngoài), và chiều cao mặt bàn ≥ 60% chiều cao khung nhìn ở PC/tablet, ≥ 55% ở mobile (mặc định - câu hỏi mở 72); khi khung nhìn đổi cỡ thì mặt bàn đổi theo, món trên bàn không rơi ra ngoài mặt bàn. Kiểm bằng Vitest browser mode với Playwright (Chromium thật) đo hộp bao của nồi ở cả 5 khung nhìn, vì jsdom không tính bố cục; test vẫn chạy qua `vitest -t AC-GAME-18` như các test khác (chốt 2026-10-21)
 - Ưu tiên: Bắt buộc
 
 
@@ -128,4 +128,40 @@
 - **Cho** thực khách dùng điện thoại cảm ứng (390×844), trên bàn có món, Đĩa nhúng nằm dưới nồi
 - **Khi** vuốt dọc bắt đầu ở chỗ trống trên mặt bàn; rồi giữ và kéo một món vào nồi
 - **Thì** vuốt ở chỗ trống cuộn trang bình thường (chỉ món trên bàn và trong Đĩa giữ cử chỉ kéo); kéo món vẫn thả vào nồi như AC-GAME-02. Lần đầu mở trên thiết bị cảm ứng hiện gợi ý "Giữ món để kéo, vuốt chỗ trống để cuộn" sát mặt bàn; gợi ý ẩn khi bấm đóng hoặc sau lần kéo thả thành công đầu tiên, và không hiện lại sau khi tải lại trang (lưu cùng tiến độ cục bộ)
+- Ưu tiên: Bắt buộc
+
+### AC-GAME-22: Vùng cấm đặt món (thêm 2026-10-24)
+- **Cho** khu bàn lẩu có hàng nút "Dọn bàn", "Chơi lại từ đầu", "?" (AC-GAME-19), vùng câu Nồi trào + gợi ý khi đang hiện (AC-GAME-05/06), và gợi ý vuốt cuộn khi đang hiện (AC-GAME-21); khung nhìn 1366×768 và 390×844
+- **Khi** kéo một món từ Đĩa hoặc trên bàn thả vào giữa vùng nút hoặc vùng gợi ý; và khi ghép trượt đưa A, B trở lại bàn (AC-GAME-05) hay ghép thành công đặt món mới lên bàn (AC-GAME-02) trong lúc các vùng đó đang hiện
+- **Thì** không món nào nằm (dù một phần) trong hộp bao của vùng nút hay vùng gợi ý: món thả vào đó được đặt ở chỗ trống gần nhất ngoài các vùng cấm và vẫn nằm trọn trong mặt bàn; vị trí món tự đặt sau ghép cũng tránh các vùng này; nút vẫn bấm được ngay sau đó (không món nào đè lên nút). Kiểm bằng Vitest browser mode như AC-GAME-18: hộp bao của mọi món không giao với hộp bao của vùng cấm
+- Ưu tiên: Bắt buộc
+
+### AC-GAME-23: Đĩa nhúng cao bằng bàn lẩu, thanh cuộn mỏng (thêm 2026-10-24)
+- **Cho** Đĩa có 120 phần tử (nhiều hơn số hiện được trong một màn); 5 khung nhìn của AC-GAME-18; giao diện sáng và tối
+- **Khi** trang vừa tải xong; rồi cuộn trong Đĩa
+- **Thì** vùng danh sách phần tử của Đĩa (kể cả ô tìm và chọn sắp xếp) có chiều cao bằng chiều cao mặt bàn (sai lệch ≤ 2 px) và không đổi khi số phần tử tăng; danh sách cuộn bên trong vùng đó, trang không dài thêm theo số phần tử; thanh cuộn mỏng (bề rộng ≤ 8 px), màu theo giao diện sáng/tối, vẫn kéo được bằng chuột và vuốt được trên cảm ứng; kéo món từ Đĩa vào nồi vẫn chạy như AC-GAME-02 khi Đĩa đã cuộn
+- Ưu tiên: Bắt buộc
+
+### AC-GAME-24: Bấm món là cho vào nồi (thêm 2026-10-24)
+- **Cho** nồi đang trống; A ở Đĩa, B trên mặt bàn; graph có A + B = C
+- **Khi** bấm/chạm A (nhả ra mà không kéo: di chuyển < 6 px và giữ < 500 ms); rồi bấm/chạm B; và trường hợp khác: chỉ bấm A khi nồi đã có một món ở chỗ thả 1
+- **Thì** A vào chỗ thả trống đầu tiên (chỗ 1 rồi chỗ 2), B vào chỗ còn lại, rồi ghép như AC-GAME-02; khi đủ 2 chỗ thì ghép ngay, không cần thao tác thêm; trong lúc nồi đang sôi thì bấm món không làm gì; giữ lâu hơn 500 ms vẫn là cử chỉ giữ của AC-CONTRIB (hiện người tạo), không cho vào nồi; với bàn phím, phần tử đang được chọn (focus) nhấn Enter hoặc Space cũng vào nồi như bấm
+- Ưu tiên: Bắt buộc
+
+### AC-GAME-25: Hiệu ứng khi ghép ra món Vàng và Đỏ (thêm 2026-10-24)
+- **Cho** graph có A + B = V (tier 4 Vàng) và A + D = R (tier 5 Đỏ) (AC-TIER); V, R chưa có trong Đĩa
+- **Khi** ghép ra V lần đầu; ghép ra R lần đầu; rồi ghép ra lại V và R
+- **Thì** lần đầu ra V: hiệu ứng ánh vàng lan từ nồi + hạt lấp lánh, dài ≤ 1,5 s, đi cùng phóng lớn của AC-ART-08; lần đầu ra R: hiệu ứng riêng lớn hơn hiệu ứng Vàng (lửa đỏ bùng quanh nồi, bàn rung nhẹ, pháo giấy), dài ≤ 2,5 s; cả hai bỏ qua được bằng bấm/Esc như AC-ART-08 và không chặn kéo thả tiếp; ghép ra lại món đã có chỉ có viền sáng ngắn ≤ 0,6 s; `prefers-reduced-motion` thì không rung, không hạt, chỉ đổi màu viền tĩnh; Món đặc biệt chưa giải không làm lộ tier qua hiệu ứng trước khi ghép ra
+- Ưu tiên: Bắt buộc
+
+### AC-GAME-26: Âm thanh khi ghép ra món Vàng và Đỏ (thêm 2026-10-24)
+- **Cho** thực khách ghép ra món Vàng hoặc Đỏ lần đầu (AC-GAME-25)
+- **Khi** hiệu ứng chạy; rồi bấm nút loa ở khu bàn lẩu để tắt tiếng, tải lại trang và ghép ra món Đỏ khác
+- **Thì** có một tiếng ngắn riêng cho Vàng và một tiếng riêng cho Đỏ (≤ 2 s, mỗi file ≤ 50 KB, phục vụ dưới `/lau-meme/` - không tải từ ngoài, AC-SUBPATH-07); âm thanh chỉ phát sau thao tác ghép của người chơi (không tự phát khi tải trang); tắt tiếng thì không phát gì và lựa chọn này được giữ sau khi tải lại (lưu cùng tiến độ cục bộ, khóa `laumeme:`); mặc định bật tiếng (câu hỏi mở 73); trình duyệt chặn phát thì bỏ qua êm, không báo lỗi
+- Ưu tiên: Tùy chọn
+
+### AC-GAME-27: Giao diện mới - phông chữ, bảng màu và hệ thống thiết kế (thêm 2026-10-24)
+- **Cho** hướng thiết kế mới được chốt ở `/dk:design` (ADR, dùng skill design-taste-frontend: phông, bảng màu, khoảng cách, bo góc, đổ bóng, chuyển động - người duyệt bằng ảnh chụp các khung nhìn của AC-GAME-18 ở hai chế độ sáng/tối trước khi build)
+- **Khi** mở trang chơi, hộp xác nhận, bảng xếp hạng và trang chính sách ở 5 khung nhìn của AC-GAME-18, sáng và tối
+- **Thì** mọi chữ dùng tối đa 2 họ phông đã chốt, hiển thị đủ dấu tiếng Việt (kiểm chuỗi "Ầ ẫ ặ ỡ ự Đ"), file phông tự phục vụ dưới `/lau-meme/` dạng woff2, tổng ≤ 150 KB, `font-display: swap`, không gọi Google Fonts hay CDN; màu, cỡ chữ, khoảng cách, bo góc lấy từ một bộ token duy nhất (biến CSS) có bản sáng và tối; chữ thường đạt tương phản ≥ 4,5:1 và chữ lớn/biểu tượng ≥ 3:1 ở cả hai chế độ; không có cuộn ngang ở khung nhìn 360 px; các AC bố cục GAME-18..23, TIER-02 vẫn đạt. Kiểm bằng Vitest browser mode (phông đã tải qua `document.fonts`, tương phản tính từ màu thực tế, không request ra ngoài tiền tố)
 - Ưu tiên: Bắt buộc
