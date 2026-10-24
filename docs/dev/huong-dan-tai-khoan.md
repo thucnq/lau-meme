@@ -326,7 +326,7 @@ Pipeline gọi `GET https://graph.threads.net/v1.0/keyword_search` (API tìm the
 **Bước 1 - Tạo app Meta**
 1. Vào https://developers.facebook.com/apps → **Create app** → chọn use case **Access the Threads API**.
 2. **Use cases** → **Access the Threads API** → **Permissions**: giữ `threads_basic` (bắt buộc), bấm **Add** cạnh `threads_keyword_search`.
-3. **Settings** của use case: chép **Threads app ID** và **Threads app secret** (secret là bí mật, không dán vào chat/issue/commit). Ở **Client OAuth Settings** thêm redirect URI `https://staging.dinoduct.fun/lau-meme/` (ô này nhận nhiều URL: gõ xong phải bấm **Enter** để URL thành thẻ, nếu không Save báo "Please specify an OAuth redirect URI"; chỉ dùng để nhận `code` trên thanh địa chỉ, trang không xử lý gì). Điền **Deauthorize callback URL** và **Data Deletion Requests URL** (có thể dùng cùng URL trên) → **Save**.
+3. **Settings** của use case: chép **Threads app ID** và **Threads app secret** (secret là bí mật, không dán vào chat/issue/commit). Ở **Client OAuth Settings** thêm redirect URI `https://staging.dinoduct.fun/lau-meme` (**không** có `/` ở cuối: có `/` thì Save báo "Please specify an OAuth redirect URI"; chỉ dùng để nhận `code` trên thanh địa chỉ, trang không xử lý gì). Điền **Deauthorize callback URL** và **Data Deletion Requests URL** (có thể dùng cùng URL trên) → **Save**.
 4. **Add or Remove Threads Test Users** → **App roles > Roles** → **Add People** → vai trò **Threads Testers** → nhập tên tài khoản Threads. Mở app Threads bằng tài khoản đó → **Cài đặt → Tài khoản → Quyền đối với website → Lời mời** → chấp nhận.
 
 **Bước 2 - Duyệt quyền tìm theo từ khóa (App Review)**
@@ -335,15 +335,15 @@ Chưa được duyệt `threads_keyword_search` thì API chỉ tìm trong bài *
 **Bước 3 - Lấy token dài hạn (60 ngày)**
 1. Mở trình duyệt (đăng nhập Threads bằng tài khoản tester):
    ```
-   https://threads.net/oauth/authorize?client_id=<APP_ID>&redirect_uri=https://staging.dinoduct.fun/lau-meme/&scope=threads_basic,threads_keyword_search&response_type=code
+   https://threads.net/oauth/authorize?client_id=<APP_ID>&redirect_uri=https://staging.dinoduct.fun/lau-meme&scope=threads_basic,threads_keyword_search&response_type=code
    ```
-   Đồng ý → trình duyệt chuyển về `https://staging.dinoduct.fun/lau-meme/?code=...#_`. Chép giá trị `code` (bỏ đuôi `#_`). Code dùng một lần, hết hạn sau 1 giờ.
+   Đồng ý → trình duyệt chuyển về `https://staging.dinoduct.fun/lau-meme?code=...#_` (Worker chuyển tiếp sang `/lau-meme/?code=...`, giữ nguyên `code`). Chép giá trị `code` (bỏ đuôi `#_`). Code dùng một lần, hết hạn sau 1 giờ.
 2. Đổi code lấy token ngắn hạn (1 giờ), rồi đổi sang token dài hạn (60 ngày). Lệnh đọc secret/code bằng `read -s` nên không hiện trên màn hình và không nằm trong lịch sử shell:
    ```bash
    read -rp "App ID: " APP_ID; read -rsp "App secret: " APP_SECRET; echo; read -rsp "Code: " CODE; echo
    SHORT=$(curl -fsS -X POST https://graph.threads.net/oauth/access_token \
      -d client_id="$APP_ID" -d client_secret="$APP_SECRET" -d grant_type=authorization_code \
-     -d redirect_uri=https://staging.dinoduct.fun/lau-meme/ -d code="$CODE" | jq -r .access_token)
+     -d redirect_uri=https://staging.dinoduct.fun/lau-meme -d code="$CODE" | jq -r .access_token)
    LONG=$(curl -fsS -G https://graph.threads.net/access_token -d grant_type=th_exchange_token \
      --data-urlencode client_secret="$APP_SECRET" --data-urlencode access_token="$SHORT" | jq -r .access_token)
    ```
