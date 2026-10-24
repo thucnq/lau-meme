@@ -78,3 +78,9 @@
 - **Khi** mẻ nhúng gọi state/đăng/gắn Issue và workflow rollback gọi rollback
 - **Thì** đường dẫn gửi đi lần lượt là `/lau-meme/api/pipeline/state`, `/lau-meme/api/pipeline/batches`, `/lau-meme/api/pipeline/batches/<id>`, `/lau-meme/api/pipeline/rollback`; `manifest.graph_url` vẫn là `/api/graph/<version>`
 - Ưu tiên: Bắt buộc
+
+### AC-SUBPATH-13: Trang chính sách trả về cho mọi GET (thêm 2026-10-24)
+- **Cho** web đã build; bot kiểm tra URL chính sách của Meta (App Review của app Threads, AC-PIPE-17) có thể không gửi `Accept: text/html` hay `Sec-Fetch-Mode: navigate`
+- **Khi** gọi `GET` và `HEAD` tới `/lau-meme/chinh-sach` và `/lau-meme/chinh-sach/`: không có `Accept`, với `Accept: */*`, và với `User-Agent: facebookexternalhit/1.1`
+- **Thì** tất cả trả 200 `text/html` là nội dung `index.html` của game (có `<div id="root">`; `HEAD` không có thân); `POST /lau-meme/chinh-sach` không trả HTML; các đường dẫn khác giữ nguyên AC-SUBPATH-04/05 (vd `GET /lau-meme/assets/khong-co.js` với `Accept: */*` vẫn 404, `GET /lau-meme/chinh-sach-abc` không có `Accept` vẫn 404); không đụng D1
+- Ưu tiên: Bắt buộc

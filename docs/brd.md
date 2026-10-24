@@ -140,7 +140,7 @@ Phân loại theo Luật BVDLCN 2025 + NĐ 356/2025: chỉ có **dữ liệu cá
 | Know Your Meme | Vào | HTTP, tôn trọng robots.txt | Mỗi mẻ | Như trên |
 | Google Trends VN | Vào | RSS/HTTP | Mỗi mẻ | Như trên |
 | YouTube trending | Vào | YouTube Data API (key) | Mỗi mẻ | Như trên |
-| Threads (thêm 2026-10-23) | Vào | API chính thức của Meta, tìm theo từ khóa (token trong GitHub Secret, cần Meta duyệt app) | Mỗi mẻ | Như trên; không lưu tên người đăng |
+| Threads (thêm 2026-10-23, cập nhật 2026-10-24) | Vào | API chính thức của Meta `graph.threads.com`, tìm theo từ khóa (token trong GitHub Secret, cần Meta duyệt app); token 60 ngày tự gia hạn mỗi tuần (AC-PIPE-19) | Mỗi mẻ; gia hạn token mỗi thứ Hai | Như trên; không lưu tên người đăng; trả 0 bài thì cảnh báo trong báo cáo đợt (AC-PIPE-20); gia hạn lỗi thì mở Issue |
 | Tuổi Trẻ `tuoitre.vn/meme.html` (thêm 2026-10-23) | Vào | Đọc HTML trang chuyên mục, theo robots.txt | Mỗi mẻ | Như trên |
 | RSS trang giải trí Việt | Vào | RSS | Mỗi mẻ | Như trên |
 | Gemini API (free tier) | Ra (dữ liệu meme công khai) | REST, gom lô | Mỗi mẻ | Retry backoff; hết quota → dừng êm, phần còn lại vào hàng chờ |
@@ -193,3 +193,4 @@ Stack là Cloudflare Worker + D1 + Python pipeline (không Docker/Postgres), nê
 | 2026-10-22 | 0.8 | AC-GAME-20 làm rõ: lỗi lửa là ngọn ngoài cùng bên phải bị cắt ngang, không phải bị cắt chiều cao; hàng lửa chỉ vẽ ngọn trọn vẹn | nguyenquythuc (chờ /dk:approve spec) |
 | 2026-10-22 | 0.9 | SEED: lõi classic tăng lên 174 phần tử / 518 công thức (thêm 35 meme, PR #58; câu hỏi mở 40); cập nhật con số trong AC-SEED-01 và AC-GAME | nguyenquythuc (chờ /dk:approve spec) |
 | 2026-10-23 | 1.0 | Câu hỏi mở 41-48: DAILY chọn món theo mặn (trending, `trend_peak`) rồi mới, không trùng 30 mẻ gần nhất, pool gồm 59 món lõi có `daily_hint` (AC-DAILY-01, 12, 18); PIPE: staging mỗi 2 tiếng, lịch mẻ trong manifest, nguồn Tuổi Trẻ, ghi mức trending (AC-PIPE-02, 15, 16), nguồn Threads qua API chính thức (AC-PIPE-17; câu hỏi mở 47, 49, 55 đã chốt); ART vẽ bù lõi (AC-ART-11); ADMIN thống kê crawl, gán tier (AC-ADMIN-11, 12); thêm CONTRIB (đóng góp meme, Top cống hiến) và TIER | nguyenquythuc (chờ /dk:approve spec) |
+| 2026-10-24 | 1.1 | Threads sau khi lấy token: AC-PIPE-18 (host `graph.threads.com`), AC-PIPE-19 (tự gia hạn token mỗi tuần, ghi lại GitHub Secret), AC-PIPE-20 (cảnh báo 0 bài khi app chưa được duyệt); AC-SUBPATH-13 (trang `/chinh-sach` trả về cho mọi GET để Meta duyệt URL chính sách); câu hỏi mở 65-66 | nguyenquythuc (chờ /dk:approve spec) |

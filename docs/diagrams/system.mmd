@@ -17,11 +17,12 @@ flowchart LR
   subgraph gh["GitHub"]
     actions["Pipeline Python<br/>GitHub Actions cron 05:00/17:00 UTC (staging mỗi 2 tiếng) + chạy tay"]
     issues["GitHub Issues<br/>báo cáo đợt"]
-    secrets["GitHub Secrets<br/>PIPELINE_TOKEN, BANNED_WORDS,<br/>GEMINI_API_KEY, WORKERS_AI_TOKEN,<br/>THREADS_ACCESS_TOKEN"]
+    secrets["GitHub Secrets<br/>PIPELINE_TOKEN, BANNED_WORDS,<br/>GEMINI_API_KEY, WORKERS_AI_TOKEN,<br/>THREADS_ACCESS_TOKEN, GH_SECRETS_TOKEN"]
+    tokenjob["Workflow threads-token<br/>thứ Hai 02:00 UTC + chạy tay<br/>gia hạn token Threads (ADR 0014)"]
   end
 
   google["Google Identity Services<br/>ID token + JWKS (ADR 0010)"]
-  sources["Nguồn meme công khai<br/>Reddit, KYM, Trends, YouTube, RSS,<br/>Tuổi Trẻ, Threads API (giai đoạn 2)"]
+  sources["Nguồn meme công khai<br/>Reddit, KYM, Trends, YouTube, RSS,<br/>Tuổi Trẻ, Threads API graph.threads.com (giai đoạn 2)"]
   gemini["Gemini API<br/>(giai đoạn 2, chỉ dữ liệu meme)"]
 
   player -- "HTTPS dinoduct.fun/" --> redirect
@@ -38,6 +39,8 @@ flowchart LR
   secrets --> actions
   actions -.-> sources
   actions -.-> gemini
+  tokenjob -. "GET /refresh_access_token" .-> sources
+  tokenjob -. "ghi THREADS_ACCESS_TOKEN (GH_SECRETS_TOKEN); lỗi thì mở Issue" .-> secrets
   actions -. "vẽ ảnh qua REST (ADR 0012)" .-> wai
   actions -. "PUT /pipeline/images/{key} (ADR 0012)" .-> worker
   worker -. "ghi ảnh đã kiểm, đọc /img/* (binding IMG)" .-> r2

@@ -11,8 +11,8 @@
    "2028-06-06"
   ],
   "fcUat": [
-   "2027-07-23",
-   "2027-07-23"
+   "2027-07-26",
+   "2027-07-26"
   ],
   "holidays": [
    "2027-01-01",
@@ -27,11 +27,11 @@
    "2027-05-01",
    "2027-09-02"
   ],
-  "pct": 76.4,
+  "pct": 74.7,
   "counts": {
    "done": 19,
    "doing": 0,
-   "todo": 8,
+   "todo": 9,
    "late": 0
   },
   "slip": 0,
@@ -1481,7 +1481,7 @@
      "id": "AC-ADMIN-11",
      "title": "Thống kê kết quả crawl (thêm 2026-10-23)",
      "optional": false,
-     "tested": false,
+     "tested": true,
      "done": false,
      "line": 166
     },
@@ -1844,6 +1844,14 @@
      "tested": true,
      "done": true,
      "line": 208
+    },
+    {
+     "id": "AC-SUBPATH-13",
+     "title": "Trang chính sách trả về cho mọi GET (thêm 2026-10-24)",
+     "optional": false,
+     "tested": false,
+     "done": false,
+     "line": 209
     }
    ]
   },
@@ -1875,7 +1883,7 @@
     "2026-11-23",
     "2026-12-03"
    ],
-   "line": 211,
+   "line": 212,
    "acs": [
     {
      "id": "AC-DAILY-01",
@@ -1883,7 +1891,7 @@
      "optional": false,
      "tested": true,
      "done": false,
-     "line": 212
+     "line": 213
     },
     {
      "id": "AC-DAILY-12",
@@ -1891,15 +1899,15 @@
      "optional": false,
      "tested": true,
      "done": false,
-     "line": 213
+     "line": 214
     },
     {
      "id": "AC-DAILY-18",
      "title": "Pool thử thách từ lõi không lặp trong 30 mẻ (thêm 2026-10-23)",
      "optional": false,
-     "tested": false,
+     "tested": true,
      "done": false,
-     "line": 214
+     "line": 215
     },
     {
      "id": "AC-PIPE-02",
@@ -1907,7 +1915,7 @@
      "optional": false,
      "tested": true,
      "done": false,
-     "line": 215
+     "line": 216
     }
    ]
   },
@@ -1939,7 +1947,7 @@
     "2026-12-04",
     "2026-12-16"
    ],
-   "line": 218,
+   "line": 219,
    "acs": [
     {
      "id": "AC-ADMIN-12",
@@ -1947,7 +1955,7 @@
      "optional": false,
      "tested": true,
      "done": false,
-     "line": 219
+     "line": 220
     },
     {
      "id": "AC-TIER-01",
@@ -1955,7 +1963,7 @@
      "optional": false,
      "tested": true,
      "done": false,
-     "line": 220
+     "line": 221
     },
     {
      "id": "AC-TIER-02",
@@ -1963,7 +1971,7 @@
      "optional": false,
      "tested": true,
      "done": false,
-     "line": 221
+     "line": 222
     },
     {
      "id": "AC-TIER-03",
@@ -1971,7 +1979,7 @@
      "optional": false,
      "tested": true,
      "done": false,
-     "line": 222
+     "line": 223
     }
    ]
   },
@@ -2004,7 +2012,7 @@
     "2026-12-17",
     "2027-01-27"
    ],
-   "line": 225,
+   "line": 226,
    "acs": [
     {
      "id": "AC-CONTRIB-01",
@@ -2012,7 +2020,7 @@
      "optional": false,
      "tested": false,
      "done": false,
-     "line": 226
+     "line": 227
     },
     {
      "id": "AC-CONTRIB-02",
@@ -2020,7 +2028,7 @@
      "optional": false,
      "tested": false,
      "done": false,
-     "line": 227
+     "line": 228
     },
     {
      "id": "AC-CONTRIB-03",
@@ -2028,7 +2036,7 @@
      "optional": false,
      "tested": false,
      "done": false,
-     "line": 228
+     "line": 229
     },
     {
      "id": "AC-CONTRIB-04",
@@ -2036,7 +2044,7 @@
      "optional": false,
      "tested": false,
      "done": false,
-     "line": 229
+     "line": 230
     },
     {
      "id": "AC-CONTRIB-05",
@@ -2044,7 +2052,7 @@
      "optional": false,
      "tested": false,
      "done": false,
-     "line": 230
+     "line": 231
     },
     {
      "id": "AC-CONTRIB-06",
@@ -2052,7 +2060,7 @@
      "optional": false,
      "tested": false,
      "done": false,
-     "line": 231
+     "line": 232
     },
     {
      "id": "AC-CONTRIB-07",
@@ -2060,7 +2068,7 @@
      "optional": false,
      "tested": false,
      "done": false,
-     "line": 232
+     "line": 233
     },
     {
      "id": "AC-CONTRIB-08",
@@ -2068,7 +2076,7 @@
      "optional": false,
      "tested": false,
      "done": false,
-     "line": 233
+     "line": 234
     },
     {
      "id": "AC-CONTRIB-09",
@@ -2076,7 +2084,7 @@
      "optional": false,
      "tested": false,
      "done": false,
-     "line": 234
+     "line": 235
     },
     {
      "id": "AC-CONTRIB-10",
@@ -2084,7 +2092,7 @@
      "optional": false,
      "tested": false,
      "done": false,
-     "line": 235
+     "line": 236
     },
     {
      "id": "AC-CONTRIB-11",
@@ -2092,7 +2100,7 @@
      "optional": false,
      "tested": false,
      "done": false,
-     "line": 236
+     "line": 237
     },
     {
      "id": "AC-CONTRIB-12",
@@ -2100,7 +2108,7 @@
      "optional": false,
      "tested": false,
      "done": false,
-     "line": 237
+     "line": 238
     }
    ]
   },
@@ -2131,7 +2139,7 @@
     "2027-07-01",
     "2027-07-01"
    ],
-   "line": 240,
+   "line": 241,
    "acs": [
     {
      "id": "AC-GAME-01",
@@ -2139,7 +2147,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 241
+     "line": 242
     },
     {
      "id": "AC-GAME-02",
@@ -2147,7 +2155,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 242
+     "line": 243
     },
     {
      "id": "AC-GAME-03",
@@ -2155,7 +2163,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 243
+     "line": 244
     },
     {
      "id": "AC-GAME-04",
@@ -2163,7 +2171,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 244
+     "line": 245
     },
     {
      "id": "AC-GAME-05",
@@ -2171,7 +2179,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 245
+     "line": 246
     },
     {
      "id": "AC-GAME-06",
@@ -2179,7 +2187,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 246
+     "line": 247
     },
     {
      "id": "AC-GAME-07",
@@ -2187,7 +2195,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 247
+     "line": 248
     },
     {
      "id": "AC-GAME-08",
@@ -2195,7 +2203,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 248
+     "line": 249
     },
     {
      "id": "AC-GAME-09",
@@ -2203,7 +2211,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 249
+     "line": 250
     },
     {
      "id": "AC-GAME-10",
@@ -2211,7 +2219,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 250
+     "line": 251
     },
     {
      "id": "AC-GAME-11",
@@ -2219,7 +2227,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 251
+     "line": 252
     },
     {
      "id": "AC-GAME-12",
@@ -2227,7 +2235,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 252
+     "line": 253
     },
     {
      "id": "AC-GAME-13",
@@ -2235,7 +2243,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 253
+     "line": 254
     },
     {
      "id": "AC-GAME-14",
@@ -2243,7 +2251,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 254
+     "line": 255
     },
     {
      "id": "AC-GAME-15",
@@ -2251,7 +2259,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 255
+     "line": 256
     },
     {
      "id": "AC-GAME-16",
@@ -2259,7 +2267,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 256
+     "line": 257
     },
     {
      "id": "AC-GAME-17",
@@ -2267,7 +2275,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 257
+     "line": 258
     },
     {
      "id": "AC-GAME-18",
@@ -2275,7 +2283,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 258
+     "line": 259
     },
     {
      "id": "AC-GAME-19",
@@ -2283,7 +2291,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 259
+     "line": 260
     },
     {
      "id": "AC-GAME-20",
@@ -2291,7 +2299,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 260
+     "line": 261
     },
     {
      "id": "AC-GAME-21",
@@ -2299,7 +2307,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 261
+     "line": 262
     },
     {
      "id": "AC-METRIC-01",
@@ -2307,7 +2315,7 @@
      "optional": false,
      "tested": true,
      "done": false,
-     "line": 262
+     "line": 263
     },
     {
      "id": "AC-METRIC-02",
@@ -2315,7 +2323,7 @@
      "optional": false,
      "tested": true,
      "done": false,
-     "line": 263
+     "line": 264
     },
     {
      "id": "AC-METRIC-03",
@@ -2323,7 +2331,7 @@
      "optional": false,
      "tested": true,
      "done": false,
-     "line": 264
+     "line": 265
     },
     {
      "id": "AC-METRIC-04",
@@ -2331,7 +2339,7 @@
      "optional": false,
      "tested": true,
      "done": false,
-     "line": 265
+     "line": 266
     },
     {
      "id": "AC-METRIC-05",
@@ -2339,7 +2347,7 @@
      "optional": false,
      "tested": true,
      "done": false,
-     "line": 266
+     "line": 267
     },
     {
      "id": "AC-METRIC-06",
@@ -2347,7 +2355,7 @@
      "optional": false,
      "tested": true,
      "done": false,
-     "line": 267
+     "line": 268
     },
     {
      "id": "AC-METRIC-07",
@@ -2355,7 +2363,7 @@
      "optional": false,
      "tested": true,
      "done": false,
-     "line": 268
+     "line": 269
     },
     {
      "id": "AC-METRIC-08",
@@ -2363,7 +2371,7 @@
      "optional": false,
      "tested": true,
      "done": false,
-     "line": 269
+     "line": 270
     }
    ]
   },
@@ -2394,7 +2402,7 @@
     "2026-10-20",
     "2026-10-20"
    ],
-   "line": 272,
+   "line": 273,
    "acs": [
     {
      "id": "AC-MOD-01",
@@ -2402,7 +2410,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 273
+     "line": 274
     },
     {
      "id": "AC-MOD-02",
@@ -2410,7 +2418,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 274
+     "line": 275
     },
     {
      "id": "AC-MOD-03",
@@ -2418,7 +2426,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 275
+     "line": 276
     },
     {
      "id": "AC-MOD-04",
@@ -2426,7 +2434,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 276
+     "line": 277
     },
     {
      "id": "AC-MOD-05",
@@ -2434,7 +2442,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 277
+     "line": 278
     },
     {
      "id": "AC-MOD-06",
@@ -2442,7 +2450,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 278
+     "line": 279
     },
     {
      "id": "AC-MOD-07",
@@ -2450,7 +2458,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 279
+     "line": 280
     },
     {
      "id": "AC-MOD-08",
@@ -2458,7 +2466,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 280
+     "line": 281
     },
     {
      "id": "AC-MOD-09",
@@ -2466,7 +2474,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 281
+     "line": 282
     },
     {
      "id": "AC-MOD-10",
@@ -2474,7 +2482,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 282
+     "line": 283
     }
    ]
   },
@@ -2505,7 +2513,7 @@
     "2026-10-21",
     "2026-10-21"
    ],
-   "line": 283,
+   "line": 284,
    "acs": [
     {
      "id": "AC-PIPE-03",
@@ -2513,7 +2521,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 284
+     "line": 285
     },
     {
      "id": "AC-PIPE-04",
@@ -2521,7 +2529,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 285
+     "line": 286
     },
     {
      "id": "AC-PIPE-05",
@@ -2529,7 +2537,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 286
+     "line": 287
     },
     {
      "id": "AC-PIPE-06",
@@ -2537,7 +2545,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 287
+     "line": 288
     },
     {
      "id": "AC-PIPE-07",
@@ -2545,7 +2553,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 288
+     "line": 289
     },
     {
      "id": "AC-PIPE-08",
@@ -2553,7 +2561,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 289
+     "line": 290
     },
     {
      "id": "AC-PIPE-09",
@@ -2561,7 +2569,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 290
+     "line": 291
     },
     {
      "id": "AC-PIPE-10",
@@ -2569,7 +2577,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 291
+     "line": 292
     },
     {
      "id": "AC-PIPE-12",
@@ -2577,7 +2585,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 292
+     "line": 293
     }
    ]
   },
@@ -2609,39 +2617,103 @@
     "2027-01-28",
     "2027-02-26"
    ],
-   "line": 293,
+   "line": 294,
    "acs": [
     {
      "id": "AC-ADMIN-11",
      "title": "Thống kê kết quả crawl (thêm 2026-10-23)",
      "optional": false,
-     "tested": false,
+     "tested": true,
      "done": false,
-     "line": 294
+     "line": 295
     },
     {
      "id": "AC-PIPE-15",
      "title": "Nguồn Tuổi Trẻ chuyên mục meme (thêm 2026-10-23)",
      "optional": false,
-     "tested": false,
+     "tested": true,
      "done": false,
-     "line": 295
+     "line": 296
     },
     {
      "id": "AC-PIPE-16",
      "title": "Ghi mức trending (mặn) của phần tử (thêm 2026-10-23)",
      "optional": false,
-     "tested": false,
+     "tested": true,
      "done": false,
-     "line": 296
+     "line": 297
     },
     {
      "id": "AC-PIPE-17",
      "title": "Nguồn Threads qua API chính thức (thêm 2026-10-23)",
      "optional": false,
+     "tested": true,
+     "done": false,
+     "line": 298
+    }
+   ]
+  },
+  {
+   "id": "PIPE4",
+   "module": "Nội dung",
+   "name": "Threads sau khi có token, trang chính sách cho bot Meta (giai đoạn 2)",
+   "points": 4.0,
+   "days": 9,
+   "risk": "MEDIUM",
+   "deps": [
+    "PIPE3",
+    "SUBPATH"
+   ],
+   "owner": "Thuc",
+   "lane": "Thuc",
+   "pct": 0,
+   "pctAuto": true,
+   "status": "todo",
+   "slip": 0,
+   "note": "",
+   "startActual": "",
+   "finishActual": "",
+   "kh": [
+    "2028-05-05",
+    "2028-05-17"
+   ],
+   "fc": [
+    "2027-03-01",
+    "2027-03-11"
+   ],
+   "line": 299,
+   "acs": [
+    {
+     "id": "AC-PIPE-18",
+     "title": "Threads gọi host `graph.threads.com` (thêm 2026-10-24)",
+     "optional": false,
      "tested": false,
      "done": false,
-     "line": 297
+     "line": 300
+    },
+    {
+     "id": "AC-PIPE-19",
+     "title": "Tự gia hạn token Threads (thêm 2026-10-24)",
+     "optional": false,
+     "tested": false,
+     "done": false,
+     "line": 301
+    },
+    {
+     "id": "AC-PIPE-20",
+     "title": "Cảnh báo Threads trả 0 bài (thêm 2026-10-24)",
+     "optional": false,
+     "tested": false,
+     "done": false,
+     "line": 302
+    },
+    {
+     "id": "AC-SUBPATH-13",
+     "title": "Trang chính sách trả về cho mọi GET (thêm 2026-10-24)",
+     "optional": false,
+     "tested": false,
+     "done": false,
+     "line": 303
     }
    ]
   },
@@ -2672,7 +2744,7 @@
     "2026-10-21",
     "2026-10-22"
    ],
-   "line": 298,
+   "line": 304,
    "acs": [
     {
      "id": "AC-ART-01",
@@ -2680,7 +2752,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 299
+     "line": 305
     },
     {
      "id": "AC-ART-02",
@@ -2688,7 +2760,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 300
+     "line": 306
     },
     {
      "id": "AC-ART-03",
@@ -2696,7 +2768,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 301
+     "line": 307
     },
     {
      "id": "AC-ART-04",
@@ -2704,7 +2776,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 302
+     "line": 308
     },
     {
      "id": "AC-ART-05",
@@ -2712,7 +2784,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 303
+     "line": 309
     },
     {
      "id": "AC-ART-06",
@@ -2720,7 +2792,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 304
+     "line": 310
     },
     {
      "id": "AC-ART-07",
@@ -2728,7 +2800,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 305
+     "line": 311
     },
     {
      "id": "AC-ART-08",
@@ -2736,7 +2808,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 306
+     "line": 312
     },
     {
      "id": "AC-ART-09",
@@ -2744,7 +2816,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 307
+     "line": 313
     },
     {
      "id": "AC-ART-10",
@@ -2752,7 +2824,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 308
+     "line": 314
     },
     {
      "id": "AC-ART-11",
@@ -2760,7 +2832,7 @@
      "optional": false,
      "tested": true,
      "done": false,
-     "line": 309
+     "line": 315
     }
    ]
   },
@@ -2788,10 +2860,10 @@
     "2028-06-05"
    ],
    "fc": [
-    "2027-03-01",
-    "2027-03-03"
+    "2027-03-12",
+    "2027-03-16"
    ],
-   "line": 310,
+   "line": 316,
    "acs": [
     {
      "id": "AC-ART-11",
@@ -2799,7 +2871,7 @@
      "optional": false,
      "tested": true,
      "done": false,
-     "line": 311
+     "line": 317
     }
    ]
   },
@@ -2807,8 +2879,8 @@
    "id": "UAT2",
    "module": "Kiểm thử",
    "name": "Kiểm thử nghiệm thu & sửa lỗi (giai đoạn 2)",
-   "points": 6.5,
-   "days": 15,
+   "points": 7.0,
+   "days": 16,
    "risk": "MEDIUM",
    "deps": [
     "*"
@@ -2828,9 +2900,9 @@
    ],
    "fc": [
     "2027-07-02",
-    "2027-07-22"
+    "2027-07-23"
    ],
-   "line": 314,
+   "line": 320,
    "acs": []
   }
  ],
@@ -2838,7 +2910,7 @@
   "# Tiến độ - ƯỚC LƯỢNG - LẨU MEME",
   "",
   "> Sinh bởi `/dk:plan` (gen-plan.py) từ `docs/estimate/items.json`. **Người sửa trực tiếp file này**: dấu `[x]` (hạng mục hoặc AC), `tiến độ: N%`, `người`, `bắt đầu`, `xong` (YYYY-MM-DD), `ghi chú` - giữ nguyên dấu ` · ` giữa các trường. Chạy lại `/dk:plan` để tính dự báo và vẽ lại `gantt.html`. `KH` là kế hoạch gốc, chỉ đổi bằng `/dk:plan rebaseline`.",
-  "> Bắt đầu dự án: 2026-10-20 · Kỹ sư: 1 (Thuc) · Giờ/tuần: 20 · Nghiệm thu KH: 2028-06-06 · Dự báo: 2027-07-23 · Cập nhật: 2026-10-24",
+  "> Bắt đầu dự án: 2026-10-20 · Kỹ sư: 1 (Thuc) · Giờ/tuần: 20 · Nghiệm thu KH: 2028-06-06 · Dự báo: 2027-07-26 · Cập nhật: 2026-10-24",
   "",
   "",
   "## Nền tảng",
@@ -3044,6 +3116,7 @@
   "  - [x] AC-SUBPATH-10 Link chia sẻ tuyệt đối",
   "  - [x] AC-SUBPATH-11 Thẻ xem trước link và favicon",
   "  - [x] AC-SUBPATH-12 Pipeline gọi API dưới tiền tố",
+  "  - [ ] AC-SUBPATH-13 Trang chính sách trả về cho mọi GET (thêm 2026-10-24)",
   "",
   "## Trò chơi",
   "- [ ] **DAILY3** Món đặc biệt - pool mặn/mới, lịch mẻ theo manifest · 4đ · rủi ro: MEDIUM · KH: 2027-09-29 → 2027-10-11 · tiến độ: 0% (theo AC) · người: Thuc · bắt đầu:  · xong:  · ghi chú: ",
@@ -3133,6 +3206,11 @@
   "  - [ ] AC-PIPE-15 Nguồn Tuổi Trẻ chuyên mục meme (thêm 2026-10-23)",
   "  - [ ] AC-PIPE-16 Ghi mức trending (mặn) của phần tử (thêm 2026-10-23)",
   "  - [ ] AC-PIPE-17 Nguồn Threads qua API chính thức (thêm 2026-10-23)",
+  "- [ ] **PIPE4** Threads sau khi có token, trang chính sách cho bot Meta (giai đoạn 2) · 4đ · rủi ro: MEDIUM · KH: 2028-05-05 → 2028-05-17 · tiến độ: 0% (theo AC) · người: Thuc · bắt đầu:  · xong:  · ghi chú: ",
+  "  - [ ] AC-PIPE-18 Threads gọi host `graph.threads.com` (thêm 2026-10-24)",
+  "  - [ ] AC-PIPE-19 Tự gia hạn token Threads (thêm 2026-10-24)",
+  "  - [ ] AC-PIPE-20 Cảnh báo Threads trả 0 bài (thêm 2026-10-24)",
+  "  - [ ] AC-SUBPATH-13 Trang chính sách trả về cho mọi GET (thêm 2026-10-24)",
   "- [x] **ART** Ảnh minh họa tự tạo (giai đoạn 2) · 9đ · rủi ro: HIGH · KH: 2027-10-18 → 2027-11-08 · tiến độ: 100% · người: Thuc · bắt đầu: 2026-10-21 · xong: 2026-10-22 · ghi chú: đã nối vào mẻ full (ADR 0012, nhánh feat/art-wiring); cần WORKERS_AI_TOKEN + CLOUDFLARE_ACCOUNT_ID để vẽ thật; hạn mức Workers AI vẫn chờ kiểm (câu hỏi mở 13)",
   "  - [x] AC-ART-01 Prompt vẽ khái niệm, không người thật",
   "  - [x] AC-ART-02 Kiểm duyệt ảnh, vẽ lại một lần rồi về emoji",
@@ -3149,6 +3227,6 @@
   "  - [ ] AC-ART-11 Vẽ bù ảnh cho phần tử lõi (thêm 2026-10-23)",
   "",
   "## Kiểm thử",
-  "- [ ] **UAT2** Kiểm thử nghiệm thu & sửa lỗi (giai đoạn 2) · 6.5đ · rủi ro: MEDIUM · KH: 2027-11-09 → 2027-11-22 · tiến độ: 0% · người: Thuc · bắt đầu:  · xong:  · ghi chú: "
+  "- [ ] **UAT2** Kiểm thử nghiệm thu & sửa lỗi (giai đoạn 2) · 7đ · rủi ro: MEDIUM · KH: 2027-11-09 → 2027-11-22 · tiến độ: 0% · người: Thuc · bắt đầu:  · xong:  · ghi chú: "
  ]
 }

@@ -103,5 +103,23 @@
 ### AC-PIPE-17: Nguồn Threads qua API chính thức (thêm 2026-10-23)
 - **Cho** mẻ `full` có GitHub Secret `THREADS_ACCESS_TOKEN` và variable `THREADS_KEYWORDS` (danh sách phân tách bằng dấu phẩy, vd. `meme,trend`); phản hồi mẫu của API tìm theo từ khóa của Threads (lưu trong test, không gọi mạng) có 15 bài công khai, mỗi bài có nội dung chữ, permalink, tên người đăng, ảnh/video
 - **Khi** adapter Threads chạy
-- **Thì** chỉ gọi API chính thức của Meta (không scrape trang threads.net); trả khái niệm theo AC-PIPE-04: tên/câu nói lấy từ nội dung bài, link nguồn = permalink, tên nguồn "Threads"; **không** lưu hay gửi LLM tên người đăng, ảnh đại diện, link hồ sơ; không tải ảnh/video; thiếu `THREADS_ACCESS_TOKEN` hoặc `THREADS_KEYWORDS` rỗng thì adapter không thu gì và báo cáo đợt cảnh báo thiếu cấu hình, đợt không thất bại; API trả 401/403 (token hết hạn, quyền chưa được duyệt) hoặc 429 thì ghi lỗi nguồn "Threads: <loại lỗi>" theo AC-PIPE-03; tối đa 50 bài mỗi đợt (mặc định)
+- **Thì** chỉ gọi API chính thức của Meta (không scrape trang threads.net; host API theo AC-PIPE-18, cập nhật 2026-10-24); trả khái niệm theo AC-PIPE-04: tên/câu nói lấy từ nội dung bài, link nguồn = permalink, tên nguồn "Threads"; **không** lưu hay gửi LLM tên người đăng, ảnh đại diện, link hồ sơ; không tải ảnh/video; thiếu `THREADS_ACCESS_TOKEN` hoặc `THREADS_KEYWORDS` rỗng thì adapter không thu gì và báo cáo đợt cảnh báo thiếu cấu hình, đợt không thất bại; API trả 401/403 (token hết hạn, quyền chưa được duyệt) hoặc 429 thì ghi lỗi nguồn "Threads: <loại lỗi>" theo AC-PIPE-03; tối đa 50 bài mỗi đợt (mặc định)
+- Ưu tiên: Bắt buộc
+
+### AC-PIPE-18: Threads gọi host `graph.threads.com` (thêm 2026-10-24)
+- **Cho** tài liệu Meta hiện ghi host API là `graph.threads.com` (`graph.threads.net` là tên cũ); mẻ `full` có cấu hình Threads như AC-PIPE-17, adapter HTTP mock ở tầng kết nối
+- **Khi** adapter Threads chạy với 2 từ khóa, và lệnh gia hạn token AC-PIPE-19 chạy
+- **Thì** mọi request tới Meta có host đúng là `graph.threads.com` (tìm: đường dẫn `/v1.0/keyword_search`; gia hạn: `/refresh_access_token`), không request nào tới `graph.threads.net`; tham số, giới hạn 50 bài và cách xử lý lỗi giữ nguyên AC-PIPE-17
+- Ưu tiên: Bắt buộc
+
+### AC-PIPE-19: Tự gia hạn token Threads (thêm 2026-10-24)
+- **Cho** GitHub Secret `THREADS_ACCESS_TOKEN` (token dài hạn 60 ngày, dùng chung cho environment `staging` và `production-no-approval`, câu hỏi mở 65) và Secret `GH_SECRETS_TOKEN` (token GitHub chỉ có quyền ghi secret của repo); workflow `threads-token.yml` chạy theo lịch mỗi thứ Hai 02:00 UTC và chạy tay; phản hồi mẫu của `GET https://graph.threads.com/refresh_access_token?grant_type=th_refresh_token` lưu trong test (không gọi mạng)
+- **Khi** lệnh `python -m lau_meme_pipeline.threads_token` chạy với token hiện tại trong biến môi trường `THREADS_ACCESS_TOKEN` và đường dẫn file ra trong `THREADS_TOKEN_OUT`
+- **Thì** phản hồi 200 `{access_token, expires_in}`: ghi token mới (chỉ token, không xuống dòng) vào file `THREADS_TOKEN_OUT` với quyền `600`, in "Threads token: đã gia hạn, còn N ngày" (N = `expires_in` / 86400, làm tròn xuống), exit 0; workflow ghi file đó vào secret `THREADS_ACCESS_TOKEN` của cả hai environment rồi xóa file. Phản hồi lỗi (400/401: token hết hạn hoặc chưa đủ 24 giờ; 429; mạng) hoặc thiếu `access_token`: không tạo file, in "Threads token: gia hạn lỗi <mã HTTP hoặc loại lỗi>", exit 1; workflow lỗi thì mở GitHub Issue "Threads token: gia hạn lỗi" có link run (không token). Thiếu `THREADS_ACCESS_TOKEN`: không gọi mạng, in "Threads token: thiếu cấu hình, bỏ qua", exit 0. Token cũ và mới **không bao giờ** xuất hiện trong stdout, stderr, thông báo lỗi hay nội dung Issue (test kiểm cả đường lỗi)
+- Ưu tiên: Bắt buộc
+
+### AC-PIPE-20: Cảnh báo Threads trả 0 bài (thêm 2026-10-24)
+- **Cho** mẻ `full` có `THREADS_ACCESS_TOKEN` và `THREADS_KEYWORDS` = `meme,trend`; app chưa được Meta duyệt `threads_keyword_search` nên API chỉ tìm trong bài của chính tài khoản
+- **Khi** API trả 200 với `data: []` cho cả 2 từ khóa
+- **Thì** báo cáo đợt có dòng "⚠️ Threads: 0 bài cho mọi từ khóa - kiểm tra app đã được Meta duyệt quyền threads_keyword_search (xem runbook)"; đây không phải lỗi nguồn (không vào dòng lỗi AC-PIPE-03), đợt không thất bại, các nguồn khác chạy bình thường; có ít nhất 1 bài ở một từ khóa thì không có dòng này; thiếu cấu hình thì chỉ có cảnh báo thiếu cấu hình (AC-PIPE-17); mọi từ khóa đều lỗi 401/403/429 thì chỉ có lỗi nguồn, không có dòng 0 bài; dòng cảnh báo không chứa token
 - Ưu tiên: Bắt buộc
