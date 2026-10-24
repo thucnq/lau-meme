@@ -262,6 +262,7 @@ def _render_report(
     metrics: Mapping | None = None,
     unconfigured: Sequence[str] = (),
     trending: Sequence[tuple[str, int]] = (),
+    source_warnings: Sequence[str] = (),
 ) -> tuple[str, str]:
     """Title shows the dish's emoji only, never its name (AC-PIPE-14)."""
     status = "error" if failed_step else "success"
@@ -285,6 +286,7 @@ def _render_report(
         "- blocked: " + (", ".join(f"{k} {v}" for k, v in sorted(blocked.items())) or "0"),
         "- Lỗi nguồn: " + (", ".join(source_error_text(e) for e in errors) or "không có"),
         *[f"- ⚠️ {name}: thiếu cấu hình, nguồn không thu gì (xem runbook)" for name in unconfigured],
+        *[f"- {warning}" for warning in source_warnings],
         f"- quota: {stats.get('quota_used', 0)} lượt gọi Gemini",
         *(["- ⚠️ Gemini hết quota: phần chưa xử lý nằm trong hàng chờ, đợt sau làm tiếp"] if quota_hit else []),
         *(
@@ -478,6 +480,7 @@ def run_batch(
     miss: tuple[float, float] | None = None
     unconfigured: list[str] = []
     trending: list[tuple[str, int]] = []
+    source_warnings: list[str] = []
     step = "state"
     try:
         if mode not in ("core", "full"):
@@ -502,6 +505,7 @@ def run_batch(
             stats["source_errors"] = [{"source": e["source"], "error": e["error"]} for e in crawled.errors]
             stats["sources"] = [dict(src) for src in crawled.sources]  # AC-ADMIN-11
             unconfigured = list(crawled.unconfigured)
+            source_warnings = list(crawled.warnings)
             step = "full"
             lists = replace(_mod_lists(state, banned_words), admin_blocked=frozenset(state.get("admin_blocked", [])))
             full = run_full(
@@ -621,6 +625,7 @@ def run_batch(
                 art_report,
                 unconfigured,
                 trending,
+                source_warnings,
             )
         failed_step, version = step, None
         # Network errors may carry the API host: the public workflow log only gets their type.
@@ -658,6 +663,7 @@ def run_batch(
         art_report,
         unconfigured,
         trending,
+        source_warnings,
     )
 
 
@@ -691,6 +697,7 @@ def _finish(
     art_report: Mapping | None = None,
     unconfigured: Sequence[str] = (),
     trending: Sequence[tuple[str, int]] = (),
+    source_warnings: Sequence[str] = (),
 ) -> BatchOutcome:
     title, report = _render_report(
         version=version,
@@ -707,6 +714,7 @@ def _finish(
         metrics=_metrics(client, batch_at, log),
         unconfigured=unconfigured,
         trending=trending,
+        source_warnings=source_warnings,
     )
     return BatchOutcome(
         ok=failed_step is None,

@@ -1,7 +1,7 @@
 {
  "red": {
-  "ts": "2026-10-24T06:28:03+00:00",
-  "commit": "1edee67",
+  "ts": "2026-10-24T13:29:41+00:00",
+  "commit": "cb3635a",
   "results": {
    "AC-PIPE-01": {
     "status": "PASS",
@@ -16,8 +16,8 @@
     "test": "test_pipe2#test_ac_pipe_03_mot_nguon_loi_khong_lam_hong_ca_dot"
    },
    "AC-PIPE-04": {
-    "status": "FAIL",
-    "test": "test_pipe2#test_ac_pipe_04_khong_co_adapter_facebook_tiktok"
+    "status": "PASS",
+    "test": "test_crawl_http#test_ac_pipe_04_http_get_tu_choi_url_http_khong_mo_ket_noi"
    },
    "AC-PIPE-05": {
     "status": "PASS",
@@ -60,22 +60,34 @@
     "test": "test_batch#test_ac_pipe_14_tieu_de_co_version_trang_thai_che_do_emoji_khong_lo_ten"
    },
    "AC-PIPE-15": {
-    "status": "FAIL",
-    "test": "test_pipe3#test_ac_pipe_15_default_adapters_co_tuoi_tre"
+    "status": "PASS",
+    "test": "test_pipe3#test_ac_pipe_15_tuoi_tre_tra_20_khai_niem_dung_truong"
    },
    "AC-PIPE-16": {
-    "status": "FAIL",
-    "test": "test_pipe3#test_ac_pipe_16_bao_cao_liet_ke_phan_tu_trending_ten_khong_o_tieu_de"
+    "status": "PASS",
+    "test": "test_pipe3#test_ac_pipe_16_sau_dot_1_con_cai_nit_4_stonks_1_meme_moi_2"
    },
    "AC-PIPE-17": {
     "status": "FAIL",
     "test": "test_pipe3#test_ac_pipe_17_threads_ten_nguoi_dang_khong_toi_llm_khong_vao_noi_dung_dang"
+   },
+   "AC-PIPE-18": {
+    "status": "FAIL",
+    "test": "test_pipe4#test_ac_pipe_18_ca_hai_luong_khong_cham_host_cu"
+   },
+   "AC-PIPE-19": {
+    "status": "FAIL",
+    "test": "test_pipe4#test_ac_pipe_19_workflow_threads_token_lich_thu_hai_ghi_ca_hai_environment_mo_issue_khi_loi"
+   },
+   "AC-PIPE-20": {
+    "status": "FAIL",
+    "test": "test_pipe4#test_ac_pipe_20_threads_0_khai_niem_khong_loi_trong_stats_sources"
    }
   }
  },
  "green": {
-  "ts": "2026-10-24T06:39:39+00:00",
-  "commit": "1edee67",
+  "ts": "2026-10-24T13:35:16+00:00",
+  "commit": "cb3635a",
   "results": {
    "AC-PIPE-01": {
     "status": "PASS",
@@ -144,6 +156,18 @@
    "AC-PIPE-17": {
     "status": "PASS",
     "test": "test_pipe3#test_ac_pipe_17_threads_tra_15_khai_niem_tu_noi_dung_bai"
+   },
+   "AC-PIPE-18": {
+    "status": "PASS",
+    "test": "test_pipe4#test_ac_pipe_18_tim_kiem_goi_graph_threads_com_duong_dan_keyword_search"
+   },
+   "AC-PIPE-19": {
+    "status": "PASS",
+    "test": "test_pipe4#test_ac_pipe_19_200_ghi_token_moi_dung_nguyen_van_quyen_600_in_so_ngay_exit_0"
+   },
+   "AC-PIPE-20": {
+    "status": "PASS",
+    "test": "test_pipe4#test_ac_pipe_20_ca_hai_tu_khoa_rong_co_dong_canh_bao_khong_phai_loi_nguon"
    }
   }
  }
