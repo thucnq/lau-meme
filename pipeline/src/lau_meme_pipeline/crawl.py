@@ -255,13 +255,19 @@ class TuoiTreAdapter:
         return out
 
 
-THREADS_API = "https://graph.threads.net/v1.0/keyword_search"
+# Meta's docs name graph.threads.com; graph.threads.net is the old name (AC-PIPE-18).
+THREADS_GRAPH = "https://graph.threads.com"
+THREADS_API = f"{THREADS_GRAPH}/v1.0/keyword_search"
 THREADS_MAX_POSTS = 50
 MAX_THREADS_NAME = 100
 # The permalink names the poster (`/@user/post/<code>`); the short form `/t/<code>` opens the same post without it.
 _THREADS_USER_LINK = re.compile(r"^https://(?:www\.)?threads\.(?:net|com)/@[^/]+/post/([\w-]+)")
 # The text may tag the poster or other people: handles are dropped before anything is kept.
 _THREADS_HANDLE = re.compile(r"@[\w.]+")
+# Until Meta approves threads_keyword_search the API only searches the account's own posts (AC-PIPE-20).
+THREADS_ZERO_WARNING = (
+    "⚠️ Threads: 0 bài cho mọi từ khóa - kiểm tra app đã được Meta duyệt quyền threads_keyword_search (xem runbook)"
+)
 
 
 def _threads_link(permalink: str) -> str:
@@ -287,16 +293,19 @@ class ThreadsAdapter:
     def __init__(self, access_token: str | None, keywords: Sequence[str]) -> None:
         self.access_token = access_token or ""
         self.keywords = [k.strip() for k in keywords if k and k.strip()]
+        self.warning: str | None = None  # set by fetch: every keyword answered with no post (AC-PIPE-20)
 
     @property
     def missing_config(self) -> bool:
         return not self.access_token or not self.keywords
 
     def fetch(self, http: Http) -> list[RawConcept]:
+        self.warning = None
         if self.missing_config:
             return []
         out: list[RawConcept] = []
         seen: set[str] = set()
+        answered = 0
         for keyword in self.keywords:
             if len(out) >= THREADS_MAX_POSTS:
                 break
@@ -304,7 +313,9 @@ class ThreadsAdapter:
                 f"{THREADS_API}?q={quote(keyword)}&search_type=TOP&fields=id,text,permalink"
                 f"&limit={THREADS_MAX_POSTS}&access_token={quote(self.access_token)}"
             )
-            for post in json.loads(http.text(url)).get("data", []):
+            posts = json.loads(http.text(url)).get("data", [])
+            answered += len(posts)
+            for post in posts:
                 text = _THREADS_HANDLE.sub(" ", post.get("text") or "")
                 name, link = _threads_name(text), _threads_link(post.get("permalink") or "")
                 post_id = post.get("id")
@@ -314,6 +325,8 @@ class ThreadsAdapter:
                 out.append(RawConcept(name, _clip(text), "", link, self.name))
                 if len(out) >= THREADS_MAX_POSTS:
                     break
+        if not answered:
+            self.warning = THREADS_ZERO_WARNING
         return out
 
 
@@ -375,6 +388,8 @@ class CrawlResult:
     # One entry per adapter, in order (AC-ADMIN-11): concepts collected, or the error and `concepts` None.
     sources: list[dict] = field(default_factory=list)
     unconfigured: list[str] = field(default_factory=list)
+    # Report lines of adapters that ran fine but look misconfigured (AC-PIPE-20); not source errors.
+    warnings: list[str] = field(default_factory=list)
 
 
 def crawl(adapters: Sequence, http: Http) -> CrawlResult:
@@ -391,6 +406,8 @@ def crawl(adapters: Sequence, http: Http) -> CrawlResult:
             result.sources.append({"source": adapter.name, "concepts": None, "error": error})
             continue
         result.concepts.extend(found)
+        if getattr(adapter, "warning", None):
+            result.warnings.append(adapter.warning)
         result.sources.append({"source": adapter.name, "concepts": len(found), "error": None})
     return result
 
