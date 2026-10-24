@@ -12,7 +12,7 @@ from datetime import date, datetime, timedelta, timezone
 from lau_meme_pipeline.art import ArtItem, ArtResult, apply_images, order_for_drawing
 from lau_meme_pipeline.contrib import add_contributions
 from lau_meme_pipeline.crawl import CrawlResult, crawl_report_line
-from lau_meme_pipeline.daily import build_daily_block, select_daily
+from lau_meme_pipeline.daily import build_daily_block, core_hints, pick_daily
 from lau_meme_pipeline.dedupe import dedupe, dedupe_key
 from lau_meme_pipeline.graph import build_manifest, export_graph
 from lau_meme_pipeline.ids import element_id, recipe_id
@@ -128,6 +128,8 @@ def run_full(
     tiers: Sequence[Mapping] = (),
     contributions: Sequence[Mapping] = (),
     first_versions: Mapping[str, int] | None = None,
+    trend_peaks: Mapping[str, int] | None = None,
+    schedule_hours_utc: Sequence[int] = (5, 17),
 ) -> FullOutcome:
     version = _version(batch_at)
     batch_date: date = batch_at.astimezone(GMT7).date()
@@ -357,24 +359,37 @@ def run_full(
             content, out_store, core_art, store.get("art_pending", []), blocked, version, draw, report
         )
 
-    # 7. Daily: core examples, plus trend elements with an approved hint that are not held.
+    # 7. Daily (AC-DAILY-01): core elements with a hand-written hint, plus trend elements with an approved hint that
+    # are not held; salt and newness come from the Worker's catalog (an element it never published is new now).
+    seen, salt = first_versions or {}, trend_peaks or {}
     candidates_daily = []
-    for ex in core.get("daily_examples", []):
-        e = content.elements.get(element_id(ex["target"]))
+    for name, hint in core_hints(core).items():
+        e = content.elements.get(element_id(name))
         if e:
-            candidates_daily.append(_candidate(e, ex.get("hint"), "classic", 0, False, blocked))
+            added = seen.get(e.id, version)
+            candidates_daily.append(_candidate(e, hint, "classic", added, salt.get(e.id, 0), False, blocked))
     for t in out_store["elements"]:
         e = content.elements[t["id"]]
         held = is_held(date.fromisoformat(t["held_until"]), batch_date) if t.get("held_until") else False
         if t.get("daily_hint") and t.get("hint_ok", True) and _hint_valid(e, t["daily_hint"]):
-            candidates_daily.append(_candidate(e, t["daily_hint"], TREND, t["added_version"], held, blocked))
+            peak = salt.get(e.id, 0)
+            candidates_daily.append(_candidate(e, t["daily_hint"], TREND, t["added_version"], peak, held, blocked))
     history = [{"element_id": h["element_id"], "version": h["version"]} for h in daily_history]
-    chosen = select_daily(candidates_daily, history, version)
+    pick = pick_daily(candidates_daily, history, version)
+    chosen = pick.chosen
+    report["daily_pool_exhausted"] = pick.exhausted
     daily = build_daily_block(chosen, chosen["hint"])
 
     content = apply_tiers(content, tiers)
     graph_out = export_graph(content, version)
-    manifest = build_manifest(content, version=version, batch_at=batch_at, daily=daily, previous_version=None)
+    manifest = build_manifest(
+        content,
+        version=version,
+        batch_at=batch_at,
+        daily=daily,
+        previous_version=None,
+        schedule_hours_utc=schedule_hours_utc,
+    )
     check_all(graph_out, manifest, content, lists)  # raises InvariantError: nothing of this batch is published
     try:  # warns only (AC-INV-12): a failing simulation never fails the batch
         report["miss_rate"] = list(simulate_miss_rate(graph_out, manifest["starters"]))
@@ -594,7 +609,7 @@ def _hint_valid(e: StoredElement, hint: str) -> bool:
 
 
 def _candidate(
-    e: StoredElement, hint: str | None, source: str, added: int, held: bool, blocked: frozenset[str]
+    e: StoredElement, hint: str | None, source: str, added: int, peak: int, held: bool, blocked: frozenset[str]
 ) -> dict:
     return {
         "element_id": e.id,
@@ -608,4 +623,5 @@ def _candidate(
         "hint_ok": True,
         "source": source,
         "added_version": added,
+        "trend_peak": peak,
     }

@@ -39,6 +39,7 @@ def cand(eid: str, depth: int = 5, source: str = "classic", added_version: int =
         "held": False,
         "hint": f"Gợi ý {eid}",
         "hint_ok": True,
+        "trend_peak": 0,  # mức mặn (AC-PIPE-16); added_version = mẻ đầu tiên phần tử có mặt trong kho
     }
     base.update(over)
     return base
@@ -86,20 +87,61 @@ def test_ac_daily_01_depth_bien_4_va_8_deu_hop_le():
         assert chosen_id([cand("edge", depth=depth), cand("d3", depth=3), cand("d9", depth=9)], []) == "edge"
 
 
-def test_ac_daily_01_uu_tien_trend_moi_nhat_roi_moi_den_classic():
-    """AC-DAILY-01: có trend chưa dùng thì lấy trend có added_version lớn nhất; không có trend thì classic."""
-    classic = [cand(f"c{i}", depth=4 + i % 5) for i in range(6)]
-    trends = [
-        cand("t_old", source="trend", added_version=10),
-        cand("t_new", source="trend", added_version=12),
-        cand("t_mid", source="trend", added_version=11),
-    ]
+def test_ac_daily_01_uu_tien_trend_peak_giam_dan_roi_moi_den_seed():
+    """AC-DAILY-01 (2026-10-23): xếp theo trend_peak giảm dần, rồi mẻ đầu tiên có mặt (added_version) giảm dần;
+    nguồn trend/classic không còn quyết định thứ tự."""
+    a = cand("A", trend_peak=5, added_version=10)
+    b = cand("B", trend_peak=5, added_version=12)
+    c = cand("C", trend_peak=0, added_version=12)
     for version in range(1, 15):
-        assert chosen_id([*classic, *trends], [], version) == "t_new"
-    # trend mới nhất đã dùng -> trend chưa dùng mới nhất còn lại
-    assert chosen_id([*classic, *trends], [used("t_new", 3)]) == "t_mid"
-    # không có trend -> classic
-    assert chosen_id(classic, []).startswith("c")
+        assert chosen_id([a, b, c], [], version) == "B"
+        assert chosen_id([c, a, b], [], version) == "B"
+    # B là món của một trong 30 mẻ gần nhất -> A; cả A và B -> C
+    assert chosen_id([a, b, c], [used("B", 6)]) == "A"
+    assert chosen_id([a, b, c], [used("B", 6), used("A", 5)]) == "C"
+    # mặn cao hơn thắng dù cũ hơn và dù là classic; trend mặn 0 mới hơn không thắng classic mặn 3
+    classic_salty = cand("salty", source="classic", trend_peak=3, added_version=1)
+    trend_bland = cand("bland", source="trend", trend_peak=0, added_version=99)
+    for version in range(1, 10):
+        assert chosen_id([trend_bland, classic_salty], [], version) == "salty"
+
+
+def test_ac_daily_01_cung_trend_peak_va_added_version_thi_chon_tat_dinh_theo_version():
+    """AC-DAILY-01: hòa cả mặn lẫn độ mới thì thứ tự tất định theo seed = version; version khác có thể ra món khác."""
+    pool = [cand(f"s{i:02d}", depth=4 + i % 5, trend_peak=2, added_version=7) for i in range(12)]
+    picks = [chosen_id(pool, [], version) for version in range(1, 13)]
+    assert picks == [chosen_id(list(reversed(pool)), [], version) for version in range(1, 13)]
+    assert len(set(picks)) >= 2, "seed theo version phải làm đổi món giữa các mẻ"
+
+
+def test_ac_daily_01_cua_so_30_me_gan_nhat_tinh_theo_me_khong_theo_ngay():
+    """AC-DAILY-01: món dùng cách đây 30 mẻ vẫn bị loại, cách đây 31 mẻ thì được chọn lại; đếm theo mẻ."""
+    best = cand("best", trend_peak=9, added_version=50)
+    rest = [cand(f"r{i}", trend_peak=0, added_version=1) for i in range(5)]
+    # 30 mẻ gần nhất: versions 1..30, 'best' ở mẻ cũ nhất trong cửa sổ (mẻ 1) -> vẫn bị loại
+    # (các mẻ còn lại dùng món khác, không nằm trong danh sách ứng viên hiện tại)
+    window = [used("best", 1)] + [used(f"x{i}", 2 + i) for i in range(29)]
+    assert len(window) == 30
+    assert chosen_id([best, *rest], window, 31) != "best"
+    # 31 mẻ: mẻ 1 rơi khỏi cửa sổ -> 'best' được chọn lại
+    older = [used("best", 1)] + [used(f"x{i}", 2 + i) for i in range(30)]
+    assert len(older) == 31
+    assert chosen_id([best, *rest], older, 32) == "best"
+
+
+def test_ac_daily_01_moi_ung_vien_nam_trong_30_me_thi_lay_mon_dung_cu_nhat():
+    """AC-DAILY-01: mọi ứng viên đều nằm trong 30 mẻ gần nhất -> món có lần làm Món đặc biệt gần nhất cũ nhất,
+    bất kể trend_peak hay độ mới."""
+    a = cand("a", trend_peak=9, added_version=9)
+    b = cand("b", trend_peak=0, added_version=1)
+    c = cand("c", trend_peak=5, added_version=5)
+    history = (
+        [used("b", 10)]
+        + [used("a", 11), used("c", 12)]
+        + [used("a", 13 + i) if i % 2 else used("c", 13 + i) for i in range(10)]
+    )
+    for version in (30, 31, 99):
+        assert chosen_id([a, b, c], history, version) == "b"
 
 
 def test_ac_daily_01_tat_dinh_theo_version_va_khong_phu_thuoc_thu_tu_dau_vao():

@@ -27,6 +27,7 @@ export type Manifest = {
   starters: Starter[]
   miss_lines: string[]
   daily: { element_id: string; emoji: string; hint: string; depth: number }
+  schedule_hours_utc?: number[] // AC-DAILY-12; absent in manifests published before it, meaning [5, 17]
   policy_version: number
 }
 export type Blocklist = { elements: string[]; recipes: string[]; images: string[] }

@@ -42,7 +42,10 @@ export function toBatchRun(row: BatchRunRow) {
 }
 
 function parseStats(value: unknown): string {
-  const stats = obj(value, 'stats', ['crawled', 'added', 'blocked', 'queued', 'source_errors', 'quota_used'], [])
+  const keys = ['crawled', 'added', 'blocked', 'queued', 'source_errors', 'quota_used', 'daily_pool_exhausted']
+  const stats = obj(value, 'stats', keys, [])
+  // "Pool thử thách cạn" (AC-DAILY-01)
+  if ('daily_pool_exhausted' in stats && typeof stats.daily_pool_exhausted !== 'boolean') fail('stats.daily_pool_exhausted: phải là boolean')
   return JSON.stringify(stats)
 }
 
@@ -100,7 +103,8 @@ type ManifestRefs = { version: number; batchAt: number; starters: string[]; dail
  * with the content of the same request (starters, Món đặc biệt, version, batch_at).
  */
 function parseManifest(value: unknown, refs: ManifestRefs): string {
-  const m = obj(value, 'manifest', ['version', 'batch_at', 'graph_url', 'starters', 'miss_lines', 'daily'])
+  const required = ['version', 'batch_at', 'graph_url', 'starters', 'miss_lines', 'daily']
+  const m = obj(value, 'manifest', [...required, 'schedule_hours_utc'], required)
   if (m.version !== refs.version) fail('manifest.version: phải bằng version')
   if (instant(m.batch_at, 'manifest.batch_at') !== refs.batchAt) fail('manifest.batch_at: phải bằng batch_at')
   if (m.graph_url !== `/api/graph/${refs.version}`) fail(`manifest.graph_url: phải là /api/graph/${refs.version}`)
@@ -130,7 +134,15 @@ function parseManifest(value: unknown, refs: ManifestRefs): string {
     starters,
     miss_lines: missLines,
     daily,
+    ...('schedule_hours_utc' in m && { schedule_hours_utc: parseScheduleHours(m.schedule_hours_utc) }),
   })
+}
+
+/** Batch hours of the environment, ascending and unique (AC-DAILY-12); manifests published before have none. */
+function parseScheduleHours(value: unknown): number[] {
+  const hours = arr(value, 'manifest.schedule_hours_utc', 24, 1).map((v, i) => int(v, `manifest.schedule_hours_utc[${i}]`, 0, 23))
+  if (hours.some((h, i) => i > 0 && h <= (hours[i - 1] as number))) fail('manifest.schedule_hours_utc: phải tăng dần, không trùng')
+  return hours
 }
 
 async function maxPublishedVersion(db: D1Database): Promise<number> {

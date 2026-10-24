@@ -184,6 +184,24 @@ describe('daily ui: thẻ Món đặc biệt và đồng hồ', () => {
     render(panel({ manifest: manifestOf(VERSION, '2026-10-20T17:03:00.000Z') }))
     expect(screen.getByText(/Mẻ mới sau 11:30:0\d/)).toBeTruthy()
   })
+
+  const STAGING_HOURS = [0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22]
+  const stagingManifest = (): Manifest =>
+    ({ ...manifestOf(VERSION, '2026-10-20T08:07:00.000Z'), schedule_hours_utc: STAGING_HOURS }) as unknown as Manifest
+
+  it('AC-DAILY-12: manifest staging (schedule_hours_utc giờ chẵn, batch_at 08:07) lúc 08:30 UTC hiện 1:30:00 tới mốc 10:00 UTC', () => {
+    vi.setSystemTime(new Date('2026-10-20T08:30:00.000Z'))
+    render(panel({ manifest: stagingManifest() }))
+    expect(screen.getByText(/Mẻ mới sau 1:30:0\d/)).toBeTruthy()
+  })
+
+  it('AC-DAILY-12: manifest staging đã quá mốc 10:00 UTC mà chưa đổi thì hiện "Mẻ mới sắp lên", không có số âm', () => {
+    vi.setSystemTime(new Date('2026-10-20T10:20:00.000Z'))
+    render(panel({ manifest: stagingManifest() }))
+    expect(screen.getByText('Mẻ mới sắp lên')).toBeTruthy()
+    expect(screen.queryByText(/Mẻ mới sau/)).toBeNull()
+    expect(document.body.textContent).not.toMatch(/-\d+:\d\d/)
+  })
 })
 
 // ================================================================ AC-DAILY-05 / 06 / 08 / 13 / 15: submitting
