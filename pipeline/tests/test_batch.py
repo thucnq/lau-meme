@@ -56,8 +56,11 @@ def eid(name: str) -> str:
     return element_id(name)
 
 
-def make_state(history: list | None = None, blocked_elements: list | None = None) -> dict:
+def make_state(
+    history: list | None = None, blocked_elements: list | None = None, catalog: list | None = None
+) -> dict:
     return {
+        "catalog": list(catalog or []),
         "current_version": None,
         "blocklist": {"elements": list(blocked_elements or []), "recipes": [], "images": []},
         "banned_aliases": [],
@@ -573,6 +576,25 @@ def test_ac_daily_01_con_ung_vien_ngoai_cua_so_thi_khong_bao_pool_can():
     assert "Pool thử thách cạn" in outcome2.report_body
 
 
+OLD_FIRST_VERSION = 202610202349  # mẻ đầu tiên của 139 phần tử lõi cũ
+NEW_FIRST_VERSION = 202610221029  # mẻ đầu tiên của 35 phần tử thêm vào lõi ngày 22/10
+
+
+def core_catalog() -> list[dict]:
+    """Worker state `catalog` (GET /pipeline/state): first 139 core elements present since an earlier batch, the 35
+    appended on 2026-10-22 (indices 139..173) since a later one; all trend_peak = 0."""
+    elements = real_core()["elements"]
+    assert len(elements) == 174
+    return [
+        {
+            "id": eid(e["name"]),
+            "first_version": OLD_FIRST_VERSION if i < len(elements) - 35 else NEW_FIRST_VERSION,
+            "trend_peak": 0,
+        }
+        for i, e in enumerate(elements)
+    ]
+
+
 _SIM: dict[int, list[str]] = {}
 
 
@@ -582,9 +604,10 @@ def simulate_core_batches(count: int) -> list[str]:
         return _SIM[count]
     history: list[dict] = []
     picks: list[str] = []
+    catalog = core_catalog()
     for i in range(count):
         batch_at = T + timedelta(hours=12 * i)
-        client = FakeClient(make_state(history=history))
+        client = FakeClient(make_state(history=history, catalog=catalog))
         outcome = run(client, batch_at=batch_at)
         assert outcome.ok is True, f"mẻ {i + 1} thất bại ở bước {outcome.failed_step}"
         (body,) = client.success_posts

@@ -6,6 +6,7 @@ Pure functions: the "random" order is a hash seeded by the batch version, so a r
 import hashlib
 import re
 from collections.abc import Mapping, Sequence
+from typing import NamedTuple
 
 from lau_meme_pipeline.ids import element_id
 from lau_meme_pipeline.text import fold
@@ -13,6 +14,7 @@ from lau_meme_pipeline.text import fold
 MIN_DEPTH = 4
 MAX_DEPTH = 8
 MAX_HINT_LENGTH = 200
+RECENT_BATCHES = 30  # a dish is not repeated within this many batches (AC-DAILY-01/18)
 TREND = "trend"
 
 
@@ -40,27 +42,41 @@ def _seeded(version: int, element: str) -> str:
 
 
 def select_daily(candidates: Sequence[Mapping], history: Sequence[Mapping], version: int) -> Mapping:
-    """Newest unused trend, else an unused classic, else the dish whose last use is the oldest.
+    """Saltiest (`trend_peak`), then never or longest not a dish, then newest (`added_version` = first batch in the
+    store), then seeded order, skipping the dishes of the last `RECENT_BATCHES` batches; when all of them are
+    recent, the dish whose last use is the oldest (AC-DAILY-01, 2026-10-23/24).
 
     `history` lists earlier picks as {element_id, version}; held/inactive/unreachable dishes never qualify.
     """
+    return pick_daily(candidates, history, version).chosen
+
+
+class DailyPick(NamedTuple):
+    chosen: Mapping
+    exhausted: bool  # every candidate was a dish of the last RECENT_BATCHES batches: "Pool thử thách cạn"
+
+
+def pick_daily(candidates: Sequence[Mapping], history: Sequence[Mapping], version: int) -> DailyPick:
     pool = [c for c in candidates if _eligible(c)]
     if not pool:
         raise NoDailyCandidate()
     last_used: dict[str, int] = {}
     for h in history:
         last_used[h["element_id"]] = max(h["version"], last_used.get(h["element_id"], h["version"]))
+    # counted in batches, not days (open question 43): one history entry per published batch
+    recent = {h["element_id"] for h in sorted(history, key=lambda h: h["version"], reverse=True)[:RECENT_BATCHES]}
 
     def seeded(c: Mapping) -> str:
         return _seeded(version, c["element_id"])
 
-    unused = [c for c in pool if c["element_id"] not in last_used]
-    trends = [c for c in unused if c["source"] == TREND]
-    if trends:
-        return min(trends, key=lambda c: (-c["added_version"], seeded(c)))
-    if unused:
-        return min(unused, key=seeded)
-    return min(pool, key=lambda c: (last_used[c["element_id"]], seeded(c)))
+    fresh = [c for c in pool if c["element_id"] not in recent]
+    if fresh:
+        # never a dish before (-1), else the one whose last use is the oldest, ahead of newness (chốt 2026-10-24)
+        def rank(c: Mapping) -> tuple:
+            return (-c.get("trend_peak", 0), last_used.get(c["element_id"], -1), -c["added_version"], seeded(c))
+
+        return DailyPick(min(fresh, key=rank), False)
+    return DailyPick(min(pool, key=lambda c: (last_used[c["element_id"]], seeded(c))), True)
 
 
 def build_daily_block(element: Mapping, hint: str) -> dict:

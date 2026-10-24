@@ -185,3 +185,66 @@ describe('pipeline batch report', () => {
     }
   })
 })
+
+describe('pipeline batch: lịch mẻ và cảnh báo pool cạn', () => {
+  const post = (b: unknown) => call('/lau-meme/api/pipeline/batches', { method: 'POST', body: JSON.stringify(b) })
+  const getManifest = async () => (await call('/lau-meme/api/manifest', {}, null)).json() as Promise<Record<string, unknown>>
+  const EVEN = [0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22]
+
+  it('AC-DAILY-12: manifest có schedule_hours_utc [0,2,...,22] thì 201 và GET /api/manifest trả đúng nguyên giá trị', async () => {
+    const { body } = await batchBody(1)
+    ;(body.manifest as Record<string, unknown>).schedule_hours_utc = EVEN
+    expect((await post(body)).status).toBe(201)
+    const manifest = await getManifest()
+    expect(manifest.schedule_hours_utc).toEqual(EVEN)
+    expect(manifest.version).toBe(1)
+  })
+
+  it('AC-DAILY-12: manifest không có schedule_hours_utc vẫn 201 và GET /api/manifest không bịa trường này', async () => {
+    const { body } = await batchBody(1)
+    expect((await post(body)).status).toBe(201)
+    const manifest = await getManifest()
+    expect('schedule_hours_utc' in manifest).toBe(false)
+  })
+
+  it('AC-DAILY-12: schedule_hours_utc không hợp lệ thì 422 problem+json và version hiện hành không đổi', async () => {
+    expect((await post((await batchBody(1)).body)).status).toBe(201)
+    const invalid: unknown[] = [[24], [-1], [5, 5], [], [5.5], ['5'], [17, 5], 'abc', null, Array.from({ length: 25 }, (_, i) => i)]
+    for (const value of invalid) {
+      const { body } = await batchBody(2)
+      ;(body.manifest as Record<string, unknown>).schedule_hours_utc = value
+      const res = await post(body)
+      expect(res.status, JSON.stringify(value)).toBe(422)
+      expect(res.headers.get('content-type')).toContain('application/problem+json')
+    }
+    const manifest = await getManifest()
+    expect(manifest.version).toBe(1)
+    expect('schedule_hours_utc' in manifest).toBe(false)
+  })
+
+  it('AC-DAILY-01: stats.daily_pool_exhausted true được nhận (201) và trả lại trong đợt', async () => {
+    const { body } = await batchBody(1)
+    ;(body.stats as Record<string, unknown>).daily_pool_exhausted = true
+    const res = await post(body)
+    expect(res.status).toBe(201)
+    const run = (await res.json()) as { id: string; stats: Record<string, unknown> }
+    expect(run.stats.daily_pool_exhausted).toBe(true)
+    const patched = await call(`/lau-meme/api/pipeline/batches/${run.id}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ issue_url: ISSUE_URL }),
+    })
+    expect(((await patched.json()) as { stats: Record<string, unknown> }).stats.daily_pool_exhausted).toBe(true)
+  })
+
+  it('AC-DAILY-01: stats.daily_pool_exhausted không phải boolean thì 422 problem+json, không ghi gì', async () => {
+    for (const value of ['true', 1, null, {}]) {
+      const { body } = await batchBody(1)
+      ;(body.stats as Record<string, unknown>).daily_pool_exhausted = value
+      const res = await post(body)
+      expect(res.status, JSON.stringify(value)).toBe(422)
+      expect(res.headers.get('content-type')).toContain('application/problem+json')
+    }
+    const count = await env.DB.prepare('SELECT COUNT(*) AS n FROM batch_content').first<{ n: number }>()
+    expect(count?.n).toBe(0)
+  })
+})

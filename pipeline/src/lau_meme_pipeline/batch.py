@@ -9,6 +9,7 @@ import argparse
 import http.client
 import json
 import os
+import re
 import sys
 import time
 from collections.abc import Callable, Mapping, Sequence
@@ -21,7 +22,7 @@ from urllib.parse import urlsplit
 from lau_meme_pipeline.art import ArtAdapters, ArtItem, ArtResult, UploadFailed, draw_images, image_key, to_webp_256
 from lau_meme_pipeline.contrib import add_contributions
 from lau_meme_pipeline.crawl import Http, crawl
-from lau_meme_pipeline.daily import build_daily_block, select_daily
+from lau_meme_pipeline.daily import build_daily_block, pick_daily
 from lau_meme_pipeline.full import run_full
 from lau_meme_pipeline.graph import build_manifest, decrypt_entry, export_graph
 from lau_meme_pipeline.ids import element_id
@@ -111,18 +112,22 @@ def _core_stats() -> dict:
     return {"crawled": 0, "added": 0, "blocked": {}, "queued": 0, "source_errors": [], "quota_used": 0}
 
 
-def _pick_daily(store: ContentStore, core: Mapping, state: Mapping, version: int) -> dict:
-    """Phase 1: only dishes with a hand-written hint in the core's `daily_examples` (open question 17).
+def _pick_daily(store: ContentStore, core: Mapping, state: Mapping, version: int) -> tuple[dict, bool]:
+    """Core mode: every core element with a hand-written `daily_hint` (AC-DAILY-01/18, open question 41); salt and
+    newness come from the Worker's catalog, an element it has never published is new in this batch. Returns the
+    manifest block and whether the pool ran dry ("Pool thử thách cạn").
 
     The blocklist only steers this choice: blocked elements/recipes are still published, the Worker's `block`
     table hides them at serve time (ADR 0003). Phase 2 must not assume the pipeline filters them.
     """
     blocked = set(state.get("blocklist", {}).get("elements", []))
+    catalog = {c["id"]: c for c in state.get("catalog", [])}
     candidates = []
-    for example in core.get("daily_examples", []):
-        element = store.elements.get(element_id(example["target"]))
-        if element is None:
+    for raw in core.get("elements", []):
+        element = store.elements.get(element_id(raw["name"]))
+        if element is None or not raw.get("daily_hint"):
             continue
+        seen = catalog.get(element.id, {})
         candidates.append(
             {
                 "element_id": element.id,
@@ -132,15 +137,16 @@ def _pick_daily(store: ContentStore, core: Mapping, state: Mapping, version: int
                 "active": element.status == ACTIVE and element.id not in blocked,
                 "reachable": True,  # load_core rejects a core with an unreachable element
                 "held": False,  # hot deferral (AC-MOD-08) comes with MOD
-                "hint": example.get("hint"),
+                "hint": raw["daily_hint"],
                 "hint_ok": True,  # written by hand in the core, reviewed by a human
                 "source": "classic",
-                "added_version": 0,
+                "added_version": seen.get("first_version", version),
+                "trend_peak": seen.get("trend_peak", 0),
             }
         )
     history = [{"element_id": h["element_id"], "version": h["version"]} for h in state.get("daily_history", [])]
-    chosen = select_daily(candidates, history, version)
-    return build_daily_block(chosen, chosen["hint"])
+    pick = pick_daily(candidates, history, version)
+    return build_daily_block(pick.chosen, pick.chosen["hint"]), pick.exhausted
 
 
 def _content(store: ContentStore, daily_id: str) -> dict:
@@ -179,6 +185,27 @@ def _check(store: ContentStore, graph: Mapping, content: Mapping) -> None:
 
 def _first_versions(state: Mapping) -> dict[str, int]:
     return {c["id"]: c["first_version"] for c in state.get("catalog", [])}
+
+
+def _trend_peaks(state: Mapping) -> dict[str, int]:
+    return {c["id"]: c.get("trend_peak", 0) for c in state.get("catalog", [])}
+
+
+DEFAULT_BATCH_HOURS = (5, 17)
+
+
+def parse_batch_hours(raw: str | None) -> tuple[int, ...]:
+    """`BATCH_HOURS_UTC` of the environment (AC-DAILY-12): unset → 5,17; empty, outside 0-23, duplicated or not
+    integers → ValueError, so the batch fails (AC-PIPE-11). Sorted, as the manifest lists them ascending."""
+    if raw is None:
+        return DEFAULT_BATCH_HOURS
+    parts = [p.strip() for p in raw.split(",")]
+    if not all(re.fullmatch(r"\d{1,2}", p) for p in parts):
+        raise ValueError(f"BATCH_HOURS_UTC {raw!r} phải là các giờ 0-23 cách nhau bởi dấu phẩy")
+    hours = [int(p) for p in parts]
+    if any(h > 23 for h in hours) or len(set(hours)) != len(hours):
+        raise ValueError(f"BATCH_HOURS_UTC {raw!r}: giờ ngoài 0-23 hoặc bị trùng")
+    return tuple(sorted(hours))
 
 
 def _mod_lists(state: Mapping, banned_words: Sequence[str]) -> ModLists:
@@ -247,6 +274,11 @@ def _render_report(
         ),
         *_art_lines(art_report),
         f"- Món đặc biệt: {emoji or '-'}",
+        *(
+            ["- ⚠️ Pool thử thách cạn: mọi món đều đã ra trong 30 mẻ gần nhất, lấy lại món lâu chưa ra nhất"]
+            if stats.get("daily_pool_exhausted")
+            else []
+        ),
     ]
     # Only the count: the words themselves are secret (ADR 0005).
     if banned_count == 0:
@@ -401,6 +433,7 @@ def run_batch(
     log: Callable[[str], None] = print,
     banned_words: Sequence[str] = (),
     art: ArtAdapters | None = None,
+    schedule_hours: str | None = None,
 ) -> BatchOutcome:
     """Run one batch. Never raises: a failure posts an error run, keeps the current version and is reported.
     The core mode never touches `adapters`, `crawl_http` or `llm` (AC-PIPE-01); the full mode (ADR 0009) crawls,
@@ -423,6 +456,8 @@ def run_batch(
         if mode not in ("core", "full"):
             raise ValueError(f"chế độ {mode!r} không có (core hoặc full)")
         version = version_for(batch_at)
+        step = "schedule"
+        hours = parse_batch_hours(schedule_hours)
         if mode == "full":
             step = "llm"
             if llm is None or crawl_http is None:
@@ -453,6 +488,8 @@ def run_batch(
                 tiers=state.get("tiers", []),
                 contributions=state.get("contributions", []),
                 first_versions=_first_versions(state),
+                trend_peaks=_trend_peaks(state),
+                schedule_hours_utc=hours,
             )
             store = full.content
             graph, manifest, store_out = full.graph, full.manifest, full.store
@@ -471,6 +508,8 @@ def run_batch(
             moderation = full.report.get("moderation") or {}
             stats["blocked"] = {k: v for k, v in sorted(moderation.items()) if k != QUOTA_LABEL}
             miss = tuple(full.report["miss_rate"]) if full.report.get("miss_rate") else None
+            if full.report.get("daily_pool_exhausted"):
+                stats["daily_pool_exhausted"] = True
             content = _content(store, full.daily_element_id)
             step = "check"
             _check(store, graph, content)  # run_full already checked the invariants (AC-INV)
@@ -486,11 +525,15 @@ def run_batch(
             ).store
             store = apply_tiers(store, state.get("tiers", []))
             step = "daily"
-            daily = _pick_daily(store, core, state, version)
+            daily, exhausted = _pick_daily(store, core, state, version)
+            if exhausted:
+                stats["daily_pool_exhausted"] = True
             emoji = daily["emoji"]
             step = "export"
             graph = export_graph(store, version)
-            manifest = build_manifest(store, version=version, batch_at=batch_at, daily=daily, previous_version=None)
+            manifest = build_manifest(
+                store, version=version, batch_at=batch_at, daily=daily, previous_version=None, schedule_hours_utc=hours
+            )
             content = _content(store, daily["element_id"])
             step = "check"
             _check(store, graph, content)
@@ -801,6 +844,7 @@ def main(argv: list[str], *, client=None, reporter=None, now: Callable[[], datet
         llm=llm,
         banned_words=banned_words,
         art=art,
+        schedule_hours=os.environ.get("BATCH_HOURS_UTC"),
     )
     print(outcome.report_title)
     print(outcome.report_body, end="")

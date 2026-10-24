@@ -99,7 +99,7 @@ export function DailyPanel({ manifest, storage, solved, onShowBoard }: Props) {
     [result, manifest.batch_at, daily.emoji],
   )
 
-  const countdown = getCountdown(manifest.batch_at, now)
+  const countdown = getCountdown(manifest.batch_at, now, manifest.schedule_hours_utc)
   return (
     <DailyCard daily={daily} solvedName={solved?.name ?? null}>
       <p className="daily-countdown">{countdown.kind === 'imminent' ? countdown.text : `Mẻ mới sau ${countdown.text}`}</p>

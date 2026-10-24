@@ -6,7 +6,7 @@ Pure functions: the batch time and version are passed in; the output is byte-ide
 import base64
 import binascii
 import json
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 from datetime import UTC, datetime
 from functools import lru_cache
 
@@ -110,6 +110,7 @@ def build_manifest(
     batch_at: datetime,
     daily: Mapping,
     previous_version: int | None,
+    schedule_hours_utc: Sequence[int] = (5, 17),
 ) -> dict:
     """Manifest without `policy_version` (the Worker adds it)."""
     if previous_version is not None and version <= previous_version:
@@ -124,4 +125,5 @@ def build_manifest(
         "starters": [{"id": e.id, "name": e.name, "emoji": e.emoji} for e in starters],
         "miss_lines": list(store.miss_lines),
         "daily": dict(daily),
+        "schedule_hours_utc": list(schedule_hours_utc),  # AC-DAILY-12: the client counts down to the next one
     }

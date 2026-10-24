@@ -209,10 +209,16 @@ export function Game({ onDiscover, onItems, heirlooms = {}, onReport, blocklistR
   // A new batch (or a new block list) without a reload of the page: once the next batch is due, re-read the
   // manifest every 60 s and load everything again when it changed (AC-DAILY-12, AC-REPORT-07).
   const batchAt = loaded?.manifest.batch_at
+  const scheduleHoursUtc = loaded?.manifest.schedule_hours_utc
   useEffect(() => {
     if (!batchAt) return
-    return startManifestWatch({ batchAt, fetchManifest: () => getManifest(), onChange: () => setReloadKey((k) => k + 1) })
-  }, [batchAt])
+    return startManifestWatch({
+      batchAt,
+      scheduleHoursUtc,
+      fetchManifest: () => getManifest(),
+      onChange: () => setReloadKey((k) => k + 1),
+    })
+  }, [batchAt, scheduleHoursUtc])
 
   const later = (fn: () => void, ms: number) => {
     const id = window.setTimeout(() => {

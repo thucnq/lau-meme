@@ -86,12 +86,12 @@
   }
  },
  "green": {
-  "ts": "2026-10-22T03:22:23+00:00",
-  "commit": "7d8d78f",
+  "ts": "2026-10-24T04:12:05+00:00",
+  "commit": "01df1a7",
   "results": {
    "AC-DAILY-01": {
     "status": "PASS",
-    "test": "test_daily#test_ac_daily_01_chi_chon_ung_vien_thoa_moi_dieu_kien"
+    "test": "test_batch#test_ac_daily_01_pool_can_thi_lay_mon_cu_nhat_va_bao_cao_canh_bao"
    },
    "AC-DAILY-02": {
     "status": "PASS",
@@ -135,7 +135,7 @@
    },
    "AC-DAILY-12": {
     "status": "PASS",
-    "test": "countdown.test.ts#countdown > AC-DAILY-12: lúc 17:30 UTC đếm tới mốc 05:00 UTC kế tiếp sau batch_at "
+    "test": "test_batch#test_ac_daily_12_pipeline_mac_dinh_lich_5_17_khi_khong_dat_batch_hours_utc"
    },
    "AC-DAILY-13": {
     "status": "PASS",
@@ -156,6 +156,10 @@
    "AC-DAILY-17": {
     "status": "PASS",
     "test": "ui2.browser.test.tsx#ui2 tab bảng xếp hạng "
+   },
+   "AC-DAILY-18": {
+    "status": "PASS",
+    "test": "test_batch#test_ac_daily_18_90_me_core_59_mon_dau_khac_nhau_khong_lap_trong_30_me"
    },
    "AC-DAILY-TENANT": {
     "status": "PASS",
