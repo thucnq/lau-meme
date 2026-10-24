@@ -136,7 +136,7 @@ export async function getMyData(req: Request, env: Env): Promise<Response> {
   const session = await readSession(req, env)
   const accountId = session?.accountId ?? ''
   const now = Date.now()
-  const [nick, discoveries, daily, streak, reports, votes, consents, events, account, sessions, entries, accStreak] =
+  const [nick, discoveries, daily, streak, reports, votes, consents, events, account, sessions, entries, accStreak, plate] =
     await limited(req, env, player, [
     db.prepare('SELECT nickname FROM player WHERE id = ?').bind(player),
     db.prepare('SELECT element_id, discovered_at FROM discovery WHERE player_id = ? ORDER BY discovered_at').bind(player),
@@ -168,6 +168,7 @@ export async function getMyData(req: Request, env: Env): Promise<Response> {
       )
       .bind(accountId),
     accountStreakStatement(db, accountId),
+    db.prepare('SELECT element_id, found_at FROM account_element WHERE account_id = ? ORDER BY found_at, element_id').bind(accountId),
   ])
   const acc = rows<{ nickname: string | null; created_at: number }>(account)[0]
   const accRow = rows<StreakRow & { reached_at: number }>(accStreak)[0] ?? null
@@ -219,6 +220,11 @@ export async function getMyData(req: Request, env: Env): Promise<Response> {
               }),
             ),
             streak: accountStreak,
+            // Đĩa of the account (AC-SYNC-10)
+            plate: rows<{ element_id: string; found_at: number }>(plate).map((r) => ({
+              element_id: r.element_id,
+              found_at: iso(r.found_at),
+            })),
           }
         : null,
     },
@@ -249,7 +255,7 @@ function eraseStatements(db: D1Database, player: string, version: number, ip: st
 /**
  * DELETE /api/me - idempotent erasure (AC-PRIV-05): personal rows go; discoveries and reports stay without the
  * UUID (reports still count); consent evidence stays and gets an `erase` row (kept 1 year, cleanup.ts). Signed in,
- * the account goes too (AC-AUTH-06): sub hash, sessions, nickname, Daily results, streak, and every linked UUID is
+ * the account goes too (AC-AUTH-06): sub hash, sessions, nickname, Daily results, streak, plate (AC-SYNC-10), and every linked UUID is
  * erased the same way.
  */
 export async function deleteMyData(req: Request, env: Env): Promise<Response> {
@@ -267,7 +273,7 @@ export async function deleteMyData(req: Request, env: Env): Promise<Response> {
   const statements = [...new Set([player, ...linked])].flatMap((p) => eraseStatements(db, p, policyVersion(env), ip, now))
   if (session) {
     const id = session.accountId
-    for (const table of ['session', 'account_player', 'daily_entry', 'account_streak'] as const)
+    for (const table of ['session', 'account_player', 'daily_entry', 'account_streak', 'account_element'] as const)
       statements.push(db.prepare(ACCOUNT_DELETES[table]).bind(id))
     statements.push(db.prepare('DELETE FROM account WHERE id = ?').bind(id))
   }
@@ -281,4 +287,5 @@ const ACCOUNT_DELETES = {
   account_player: 'DELETE FROM account_player WHERE account_id = ?',
   daily_entry: 'DELETE FROM daily_entry WHERE account_id = ?',
   account_streak: 'DELETE FROM account_streak WHERE account_id = ?',
+  account_element: 'DELETE FROM account_element WHERE account_id = ?',
 } as const

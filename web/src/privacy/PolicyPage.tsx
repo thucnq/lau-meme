@@ -33,6 +33,11 @@ export function PolicyPage() {
           nhập vào trò chơi. Phiên đăng nhập dùng một cookie bắt buộc (không theo dõi), hết hạn sau 90 ngày không dùng.
         </li>
         <li>
+          <strong>Danh sách món đã ghép ra theo tài khoản</strong> (chỉ khi đã đăng nhập bằng Google): mã của từng món
+          trong Đĩa nhúng và thời điểm bạn ghép ra lần đầu, không lưu vị trí món trên bàn. Mục đích: chơi tiếp trên nhiều
+          máy đã đăng nhập cùng tài khoản.
+        </li>
+        <li>
           <strong>IP dạng băm</strong> - địa chỉ IP được băm một chiều bằng khóa bí mật, không lưu IP gốc: để giới hạn
           tần suất và chống gian lận.
         </li>
@@ -48,6 +53,7 @@ export function PolicyPage() {
         <li>Sự kiện chơi: 90 ngày.</li>
         <li>Nickname, khám phá, kết quả Món đặc biệt, streak, phiếu: đến khi bạn xóa.</li>
         <li>Mã tài khoản Google dạng băm: đến khi xóa (xóa dữ liệu khi đang đăng nhập là xóa luôn tài khoản).</li>
+        <li>Danh sách món đã ghép ra theo tài khoản: đến khi xóa tài khoản.</li>
         <li>Bằng chứng đồng ý: đến 1 năm sau khi bạn xóa dữ liệu.</li>
       </ul>
 
@@ -69,7 +75,7 @@ export function PolicyPage() {
         <li>rút lại đồng ý - trò chơi ngừng gửi dữ liệu ngay;</li>
         <li>
           xóa dữ liệu - nickname, kết quả, streak, phiếu, sự kiện bị xóa; khám phá và báo cáo giữ lại nhưng không còn
-          gắn với bạn. Nếu đang đăng nhập, tài khoản Google đã gắn (mã dạng băm, mọi phiên, nickname, kết quả, streak)
+          gắn với bạn. Nếu đang đăng nhập, tài khoản Google đã gắn (mã dạng băm, mọi phiên, nickname, kết quả, streak, danh sách món đã ghép ra)
           và dữ liệu của mọi máy đã đăng nhập tài khoản đó cũng bị xóa;
         </li>
         <li>đăng xuất bất cứ lúc nào - phiên bị hủy ngay trên máy chủ.</li>

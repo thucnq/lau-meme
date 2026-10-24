@@ -274,7 +274,9 @@ async function foundAt(accountId: string, name: string): Promise<number | undefi
 const insBlock = (kind: 'element' | 'recipe', target: string) =>
   env.DB.prepare("INSERT INTO block (kind, target_id, state, reason, created_at) VALUES (?, ?, 'blocked', 'admin', ?)").bind(kind, target, Date.now())
 const insBucket = (bucket: string, count: number, windowStart: number) =>
-  env.DB.prepare('INSERT INTO rate_counter (bucket, count, expires_at) VALUES (?, ?, ?)').bind(bucket, count, windowStart + 60_000)
+  env.DB.prepare(
+    'INSERT INTO rate_counter (bucket, count, expires_at) VALUES (?, ?, ?) ON CONFLICT (bucket) DO UPDATE SET count = excluded.count, expires_at = excluded.expires_at',
+  ).bind(bucket, count, windowStart + 60_000)
 const insPlate = (accountId: string, element: string, at: number) =>
   env.DB.prepare('INSERT INTO account_element (account_id, element_id, found_at) VALUES (?, ?, ?)').bind(accountId, element, at)
 

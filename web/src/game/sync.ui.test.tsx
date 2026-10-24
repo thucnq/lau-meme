@@ -322,6 +322,13 @@ function signIn(): void {
   sessionNow = SESSION
   act(() => setCurrentSession(SESSION))
 }
+/** Wait for AuthBar's mount-time GET /auth/session and its effects to flush, so a later signIn() is not overwritten. */
+async function settleAuth(): Promise<void> {
+  await waitFor(() =>
+    expect(fetchMock.mock.calls.some((c) => urlOf(c[0] as RequestInfo).includes('/auth/session'))).toBe(true),
+  )
+  await advance(2000)
+}
 function signOut(): void {
   sessionNow = null
   act(() => setCurrentSession(null))
@@ -486,6 +493,7 @@ describe('sync (web)', () => {
     await mountReady()
     expect(plateCalls()).toHaveLength(0) // chưa đăng nhập: Đĩa chỉ ở cục bộ (AC-GAME-10)
 
+    await settleAuth()
     signIn()
     await waitFor(() => expect(merges()).toHaveLength(1))
     const items = (merges()[0]!.body as { items: Combo[] }).items
@@ -535,6 +543,7 @@ describe('sync (web)', () => {
     })
     server.reject.add(NAME_D)
     await mountReady()
+    await settleAuth()
     signIn()
     await waitFor(() => expect(merges()).toHaveLength(1))
     await advance(500)
@@ -595,6 +604,7 @@ describe('sync (web)', () => {
     await setup({ specs: [SPEC_C] })
     await mountReady()
     await waitFor(() => expect(plateGets().length).toBeGreaterThanOrEqual(1))
+    await settleAuth()
     signOut()
     await potCombine('Cay', 'Cười')
     await advance(500)
@@ -770,6 +780,7 @@ describe('sync (web)', () => {
       },
     })
     await mountReady()
+    await settleAuth()
     signIn()
     await waitFor(() => expect(merges().length).toBeGreaterThanOrEqual(2), { timeout: 20_000 })
     await advance(500)

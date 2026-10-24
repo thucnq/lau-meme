@@ -52,5 +52,59 @@
     "test": "sync.test.ts#sync > AC-SYNC-VALIDATION: script, SQL, tên quá dài, trường lạ giả danh tài khoản khác, merge rỗng hoặc sai kiểu đều bị từ chối 4xx "
    }
   }
+ },
+ "green": {
+  "ts": "2026-10-24T20:01:15+00:00",
+  "commit": "d163366",
+  "results": {
+   "AC-SYNC-01": {
+    "status": "PASS",
+    "test": "sync.ui.test.tsx#sync "
+   },
+   "AC-SYNC-02": {
+    "status": "PASS",
+    "test": "sync.ui.test.tsx#sync "
+   },
+   "AC-SYNC-03": {
+    "status": "PASS",
+    "test": "sync.ui.test.tsx#sync "
+   },
+   "AC-SYNC-04": {
+    "status": "PASS",
+    "test": "sync.ui.test.tsx#sync "
+   },
+   "AC-SYNC-05": {
+    "status": "PASS",
+    "test": "sync.ui.test.tsx#sync "
+   },
+   "AC-SYNC-06": {
+    "status": "PASS",
+    "test": "sync.ui.test.tsx#sync "
+   },
+   "AC-SYNC-07": {
+    "status": "PASS",
+    "test": "sync.ui.test.tsx#sync "
+   },
+   "AC-SYNC-08": {
+    "status": "PASS",
+    "test": "sync.ui.test.tsx#sync "
+   },
+   "AC-SYNC-09": {
+    "status": "PASS",
+    "test": "sync.ui.test.tsx#sync "
+   },
+   "AC-SYNC-10": {
+    "status": "PASS",
+    "test": "sync.ui.test.tsx#sync "
+   },
+   "AC-SYNC-TENANT": {
+    "status": "PASS",
+    "test": "sync.test.ts#sync > AC-SYNC-TENANT: tài khoản B không đọc, không sửa Đĩa của tài khoản A; cookie giả -> 401; B ghi cùng món chỉ tạo dòng của B"
+   },
+   "AC-SYNC-VALIDATION": {
+    "status": "PASS",
+    "test": "sync.test.ts#sync > AC-SYNC-VALIDATION: script, SQL, tên quá dài, trường lạ giả danh tài khoản khác, merge rỗng hoặc sai kiểu đều bị từ chối 4xx "
+   }
+  }
  }
 }

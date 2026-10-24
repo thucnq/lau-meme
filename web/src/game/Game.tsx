@@ -8,6 +8,7 @@ import type { KeyboardEvent as ReactKeyboardEvent, PointerEvent as ReactPointerE
 import { getGraph, getManifest } from '../api'
 import { DiscoveryZoom, prefersReducedMotion } from '../art/DiscoveryZoom'
 import { AuthBar } from '../auth/AuthBar'
+import { useSession } from '../auth/session'
 import { ElementIcon } from '../art/ElementIcon'
 import { startManifestWatch } from '../daily/countdown'
 import { DailyPanel, Leaderboards } from '../daily/DailyPanel'
@@ -37,6 +38,7 @@ import { CELEBRATE_MS, Celebrate } from './Celebrate'
 import type { CelebrationKind } from './Celebrate'
 import { createTierSound } from './sound'
 import { TierBadge } from './TierBadge'
+import { startPlateSync, type PlateSync } from './plateSync'
 
 const BOIL_MS = 1000 // AC-GAME-02: ≤ 1,2 s
 const STEAM_MS = 500 // AC-GAME-03: ≤ 0,6 s
@@ -199,6 +201,8 @@ export function Game({ onDiscover, onItems, heirlooms = {}, onReport, blocklistR
   const [tableHeight, setTableHeight] = useState<number | null>(null)
   const [layoutTick, setLayoutTick] = useState(0)
   const gameRef = useRef<HTMLDivElement>(null)
+  const session = useSession()
+  const syncRef = useRef<PlateSync | null>(null)
 
   const commit = (next: Progress) => {
     progressRef.current = next
@@ -289,6 +293,20 @@ export function Game({ onDiscover, onItems, heirlooms = {}, onReport, blocklistR
     )
     return () => ctrl.abort()
   }, [reloadKey])
+
+  // Đĩa of the signed-in account (AC-SYNC-01..06): read and merged on load and at sign-in, then fed every new discovery.
+  const graph = loaded?.graph
+  const policyVersion = loaded?.manifest.policy_version
+  useEffect(() => {
+    if (!session || !graph || policyVersion === undefined) return
+    const sync = startPlateSync({ graph, opts: { storage: storage(), policyVersion }, progress: () => progressRef.current, commit })
+    syncRef.current = sync
+    sync.kick()
+    return () => {
+      sync.stop()
+      syncRef.current = null
+    }
+  }, [session, graph, policyVersion])
 
   // Block list while playing: every minute, and at once after a report (AC-REPORT-05/07).
   const hasLoaded = loaded !== null
@@ -385,6 +403,7 @@ export function Game({ onDiscover, onItems, heirlooms = {}, onReport, blocklistR
             checkDaily(a.name, b.name, item)
             if (out.isNew) {
               onDiscoverRef.current?.({ a: a.name, b: b.name, result: item.name, id: item.id, emoji: item.emoji })
+              syncRef.current?.kick()
               showZoom(item)
             }
             celebrate(item, out.isNew)
@@ -418,6 +437,7 @@ export function Game({ onDiscover, onItems, heirlooms = {}, onReport, blocklistR
         checkDaily(source.item.name, target.name, item)
         if (out.isNew) {
           onDiscoverRef.current?.({ a: source.item.name, b: target.name, result: item.name, id: item.id, emoji: item.emoji })
+          syncRef.current?.kick()
           showZoom(item)
         }
         celebrate(item, out.isNew)
