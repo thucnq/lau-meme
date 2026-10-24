@@ -100,12 +100,17 @@ const isRead = (req: Request): boolean => req.method === 'GET' || req.method ===
 const isNavigation = (req: Request): boolean =>
   isRead(req) && (req.headers.get('Sec-Fetch-Mode') === 'navigate' || (req.headers.get('Accept') ?? '').includes('text/html'))
 
+/** The policy page is read by Meta's App Review bot, which may send neither Accept: text/html nor
+ * Sec-Fetch-Mode: navigate (AC-SUBPATH-13, ADR 0014): any GET/HEAD of it gets the SPA. */
+const isPolicyPage = (req: Request, env: Env, url: URL): boolean =>
+  isRead(req) && (url.pathname === `${env.BASE_PATH}/chinh-sach` || url.pathname === `${env.BASE_PATH}/chinh-sach/`)
+
 /** Static file under the base path; a navigation that matches no file gets the SPA's index.html (F5 on any screen). */
 async function asset(req: Request, env: Env, url: URL): Promise<Response> {
   const res = await env.ASSETS.fetch(req)
-  if (res.status !== 404 || !isNavigation(req)) return res
+  if (res.status !== 404 || !(isNavigation(req) || isPolicyPage(req, env, url))) return res
   // `<base>/` (not `<base>/index.html`, which the assets layer would redirect to the directory URL)
-  return env.ASSETS.fetch(new Request(new URL(`${env.BASE_PATH}/`, url), { headers: req.headers }))
+  return env.ASSETS.fetch(new Request(new URL(`${env.BASE_PATH}/`, url), { method: req.method, headers: req.headers }))
 }
 
 /** Headers of every admin-host response; the page itself also gets a strict CSP (ADR 0008). */
