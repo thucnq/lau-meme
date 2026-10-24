@@ -1,6 +1,6 @@
 # Gantt - ƯỚC LƯỢNG - LẨU MEME
 
-Tiến độ 75% · nghiệm thu KH 2028-06-06 · dự báo 2027-07-26. Bản tương tác: `gantt.html`.
+Tiến độ 64% · nghiệm thu KH 2028-06-06 · dự báo 2027-09-28. Bản tương tác: `gantt.html`.
 
 ```mermaid
 gantt
@@ -42,21 +42,25 @@ gantt
     section Trò chơi
     DAILY3 Món đặc biệt - pool mặn/mới  lịch mẻ theo manifest (0%) :DAILY3, 2026-11-23, 9d
     section Nội dung
-    TIER Tier của meme (0%) :TIER, 2026-12-04, 9d
+    TIER Tier của meme (0%) :TIER, 2026-12-04, 19d
     section Cộng đồng
-    CONTRIB Đóng góp meme (0%) :CONTRIB, 2026-12-17, 29d
+    CONTRIB Đóng góp meme (0%) :CONTRIB, 2026-12-31, 29d
+    section Trò chơi
+    SYNC Đĩa nhúng theo tài khoản (0%) :SYNC, 2027-02-18, 24d
+    UI3 Giao diện mới và cảm giác chơi - góp ý 2026-10-24 (0%) :UI3, 2027-06-07, 22d
     section Kiểm thử
+    UAT3 Kiểm thử nghiệm thu & sửa lỗi (góp ý 2026-10-24) (0%) :UAT3, 2027-07-07, 9d
     UAT Kiểm thử nghiệm thu & sửa lỗi (giai đoạn 1) (100%) :done, UAT, 2027-07-01, 1d
     section Nội dung
     MOD Kiểm duyệt nội dung tự động (giai đoạn 2) (100%) :done, MOD, 2026-10-20, 1d
     PIPE2 Pipeline Mẻ nhúng - crawl và tự động đăng (giai đoạn 2) (100%) :done, PIPE2, 2026-10-21, 1d
-    PIPE3 Nguồn Tuổi Trẻ  Threads  mức mặn  thống kê crawl (giai đoạn 2) (0%) :PIPE3, 2027-01-28, 17d
-    PIPE4 Threads sau khi có token  trang chính sách cho bot Meta (giai đoạn 2) (0%) :PIPE4, 2027-03-01, 9d
+    PIPE3 Nguồn Tuổi Trẻ  Threads  mức mặn  thống kê crawl (giai đoạn 2) (0%) :PIPE3, 2027-07-20, 17d
+    PIPE4 Threads sau khi có token  trang chính sách cho bot Meta (giai đoạn 2) (0%) :PIPE4, 2027-08-12, 9d
     ART Ảnh minh họa tự tạo (giai đoạn 2) (100%) :done, ART, 2026-10-21, 2d
-    ART2 Vẽ bù ảnh phần tử lõi (giai đoạn 2) (0%) :ART2, 2027-03-12, 3d
+    ART2 Vẽ bù ảnh phần tử lõi  ưu tiên món Vàng/Đỏ (giai đoạn 2) (0%) :ART2, 2027-08-25, 6d
     section Kiểm thử
-    UAT2 Kiểm thử nghiệm thu & sửa lỗi (giai đoạn 2) (0%) :UAT2, 2027-07-02, 16d
+    UAT2 Kiểm thử nghiệm thu & sửa lỗi (giai đoạn 2) (0%) :UAT2, 2027-09-03, 17d
     section Bàn giao
-    UAT 0 tuần :uat, 2027-07-26, 0d
-    Nghiệm thu :milestone, 2027-07-26, 0d
+    UAT 0 tuần :uat, 2027-09-28, 0d
+    Nghiệm thu :milestone, 2027-09-28, 0d
 ```
