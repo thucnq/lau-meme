@@ -1,6 +1,6 @@
-# Gantt — ƯỚC LƯỢNG - LẨU MEME
+# Gantt - ƯỚC LƯỢNG - LẨU MEME
 
-Tiến độ 77% · nghiệm thu KH 2028-06-06 · dự báo 2027-07-23. Bản tương tác: `gantt.html`.
+Tiến độ 76% · nghiệm thu KH 2028-06-06 · dự báo 2027-07-23. Bản tương tác: `gantt.html`.
 
 ```mermaid
 gantt
@@ -29,30 +29,30 @@ gantt
     DAILY2 Món đặc biệt - làm lại theo thời gian và tài khoản (100%) :done, DAILY2, 2026-10-21, 1d
     UI2 Giao diện - góp ý sau staging (100%) :done, UI2, 2027-06-04, 1d
     section Cộng đồng
-    SHARE Thẻ chia sẻ (0%) :SHARE, 2026-10-23, 9d
+    SHARE Thẻ chia sẻ (0%) :SHARE, 2026-10-26, 9d
     section An toàn
     REPORT Báo cáo + chặn nóng (100%) :done, REPORT, 2026-10-20, 1d
     ADMIN Trang quản trị tối giản (100%) :done, ADMIN, 2026-10-20, 1d
     section Vận hành
-    METRIC Đo chỉ số thành công (0%) :METRIC, 2026-11-05, 10d
+    METRIC Đo chỉ số thành công (0%) :METRIC, 2026-11-06, 11d
     section Kiểm thử
     INV Bất biến nội dung và trò chơi (100%) :done, INV, 2026-10-20, 1d
     section Nền tảng
     SUBPATH Chạy dưới đường dẫn con dinoduct.fun/lau-meme (100%) :done, SUBPATH, 2026-10-20, 1d
     section Trò chơi
-    DAILY3 Món đặc biệt - pool mặn/mới  lịch mẻ theo manifest (0%) :DAILY3, 2026-11-19, 9d
+    DAILY3 Món đặc biệt - pool mặn/mới  lịch mẻ theo manifest (0%) :DAILY3, 2026-11-23, 9d
     section Nội dung
-    TIER Tier của meme (0%) :TIER, 2026-12-02, 9d
+    TIER Tier của meme (0%) :TIER, 2026-12-04, 9d
     section Cộng đồng
-    CONTRIB Đóng góp meme (0%) :CONTRIB, 2026-12-15, 29d
+    CONTRIB Đóng góp meme (0%) :CONTRIB, 2026-12-17, 29d
     section Kiểm thử
     UAT Kiểm thử nghiệm thu & sửa lỗi (giai đoạn 1) (100%) :done, UAT, 2027-07-01, 1d
     section Nội dung
     MOD Kiểm duyệt nội dung tự động (giai đoạn 2) (100%) :done, MOD, 2026-10-20, 1d
     PIPE2 Pipeline Mẻ nhúng - crawl và tự động đăng (giai đoạn 2) (100%) :done, PIPE2, 2026-10-21, 1d
-    PIPE3 Nguồn Tuổi Trẻ  Threads  mức mặn  thống kê crawl (giai đoạn 2) (0%) :PIPE3, 2027-01-26, 17d
+    PIPE3 Nguồn Tuổi Trẻ  Threads  mức mặn  thống kê crawl (giai đoạn 2) (0%) :PIPE3, 2027-01-28, 17d
     ART Ảnh minh họa tự tạo (giai đoạn 2) (100%) :done, ART, 2026-10-21, 2d
-    ART2 Vẽ bù ảnh phần tử lõi (giai đoạn 2) (0%) :ART2, 2027-02-25, 3d
+    ART2 Vẽ bù ảnh phần tử lõi (giai đoạn 2) (0%) :ART2, 2027-03-01, 3d
     section Kiểm thử
     UAT2 Kiểm thử nghiệm thu & sửa lỗi (giai đoạn 2) (0%) :UAT2, 2027-07-02, 15d
     section Bàn giao

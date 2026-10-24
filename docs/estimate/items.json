@@ -234,7 +234,7 @@
       "id": "SHARE",
       "module": "Cộng đồng",
       "name": "Thẻ chia sẻ",
-      "desc": "SHARE · AC-SHARE-01..06 · thẻ Daily chữ + PNG (thời gian giải và hạng thay số bước, 2026-10-21) nồi lẩu tạo ở client, thẻ Công thức gia truyền, sao chép / chia sẻ hệ thống, ghi sự kiện",
+      "desc": "SHARE · AC-SHARE-01..06 · thẻ Daily chữ + PNG (thời gian giải và hạng thay số bước, 2026-10-21) nồi lẩu tạo ở client, thẻ Công thức gia truyền, sao chép / chia sẻ hệ thống, ghi sự kiện; chưa đăng nhập thì không có thẻ Daily (2026-10-23)",
       "points": 4,
       "deps": [
         "DAILY2"
@@ -281,8 +281,8 @@
       "id": "METRIC",
       "module": "Vận hành",
       "name": "Đo chỉ số thành công",
-      "desc": "METRIC · AC-METRIC-01..07 · Web Analytics không cookie, bảng sự kiện D1 theo danh sách cho phép, gom sự kiện ghép, tổng hợp D1/D7, đưa vào báo cáo đợt, dọn sự kiện quá hạn",
-      "points": 4.5,
+      "desc": "METRIC · AC-METRIC-01..08 · Web Analytics không cookie, bảng sự kiện D1 theo danh sách cho phép, gom sự kiện ghép, tổng hợp D1/D7, đưa vào báo cáo đợt, dọn sự kiện quá hạn; AC-METRIC-08 daily_start khi thẻ Món đặc biệt hiện, daily_complete khi giải lần đầu, bỏ steps (thêm 2026-10-23, 0.5)",
+      "points": 5,
       "deps": [
         "SHARE"
       ],
@@ -382,7 +382,7 @@
       "id": "UAT",
       "module": "Kiểm thử",
       "name": "Kiểm thử nghiệm thu & sửa lỗi (giai đoạn 1)",
-      "desc": "15% điểm tính năng giai đoạn 1; chạy cron chế độ lõi vài ngày trên staging, kiểm trên 2–3 điện thoại; gồm thêm AUTH, DAILY làm lại, AC-GAME-18; thêm góp ý giao diện 2026-10-22 (UI2); thêm DAILY3, TIER, CONTRIB 2026-10-23",
+      "desc": "15% điểm tính năng giai đoạn 1; chạy cron chế độ lõi vài ngày trên staging, kiểm trên 2–3 điện thoại; gồm thêm AUTH, DAILY làm lại, AC-GAME-18; thêm góp ý giao diện 2026-10-22 (UI2); thêm DAILY3, TIER, CONTRIB 2026-10-23; thêm AC-METRIC-08 2026-10-23",
       "points": 18,
       "deps": [
         "*"
