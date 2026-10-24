@@ -20,6 +20,8 @@ import re
 import unicodedata
 from datetime import timedelta
 
+import pytest
+
 from test_art_full_batch import (
     HINT,
     HINT2,
@@ -30,11 +32,12 @@ from test_art_full_batch import (
     DrawFailingOn,
     art_adapters,
     content_element,
+    llm_with_hints,
     pending_of,
     run,
 )
 from test_art_full_batch import ArtClient as _ArtClient
-from test_pipe_full_batch import MEME, T2, FakeReporter, T, real_core
+from test_pipe_full_batch import MEME, T2, FakeAdapter, FakeReporter, T, real_core
 
 CAP = 20
 PRESET_KEY = "0123456789ab.webp"
@@ -343,6 +346,51 @@ def test_ac_art_11_tai_len_loi_thi_phan_tu_loi_khong_co_khoa_va_vao_cho_ve():
     (body,) = client.success_posts
     assert content_element(body, first_core["name"]).get("image_key") is None
     assert content_element(body, first_core["name"])["id"] in pending_of(body)
+
+
+@pytest.mark.parametrize("blank", ["", "   "])
+def test_ac_art_11_loi_khong_co_goi_y_anh_thi_khong_ve_khong_dem_va_khong_danh_dau_fallback(blank):
+    """AC-ART-11: phần tử lõi đầu danh sách (theo depth, tên fold) có image_hint rỗng hoặc toàn khoảng trắng: không bao
+    giờ được vẽ, các phần tử lõi kế tiếp lấp chỗ (meme rồi 19 lõi), không tính vào "Lõi còn chưa có ảnh: N"
+    (N = 173 - 19 = 154) và entry core_art của nó không có image_fallback, image_key hay art_attempts (file lõi sau này
+    có gợi ý thì sẽ được vẽ, như AC-ART-01)."""
+    from lau_meme_pipeline.batch import run_batch
+    from lau_meme_pipeline.crawl import Http
+
+    ordered = core_order()
+    blanked, expected_core = ordered[0], ordered[1:20]
+    core = copy.deepcopy(real_core())
+    (target,) = [e for e in core["elements"] if e["name"] == blanked["name"]]
+    target["image_hint"] = blank
+
+    client, reporter, draw = ArtClient(), FakeReporter(), Draw()
+    outcome = run_batch(
+        mode="full",
+        batch_at=T,
+        core=core,
+        client=client,
+        reporter=reporter,
+        adapters=[FakeAdapter("RSS", [MEME])],
+        crawl_http=Http(lambda url: ("text/plain", "")),
+        llm=llm_with_hints(),
+        log=lambda msg: None,
+        banned_words=[],
+        art=art_adapters(draw, Check()),
+    )
+
+    assert outcome.ok is True and outcome.status == "success"
+    assert len(draw.prompts) == CAP
+    assert HINT in draw.prompts[0]
+    assert not any(core_hint(blanked) in p for p in draw.prompts)
+    for i, element in enumerate(expected_core):
+        assert core_hint(element) in draw.prompts[1 + i], f"lõi thứ {i}: {element['name']}"
+    (body,) = client.success_posts
+    entry = core_entry(body, blanked["name"])
+    assert not entry.get("image_fallback")
+    assert not entry.get("image_key")
+    assert entry.get("art_attempts", 0) == 0
+    assert content_element(body, blanked["name"]).get("image_key") is None
+    assert report_count(reporter) == 173 - 19
 
 
 def test_ac_art_11_me_core_khong_ve_gi():
