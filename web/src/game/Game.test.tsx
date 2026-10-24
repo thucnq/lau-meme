@@ -532,8 +532,20 @@ describe('Game', () => {
     for (const [k, v] of Object.entries(keep)) expect(localStorage.getItem(k)).toBe(v)
 
     // đã đăng nhập: vẫn không có cách nào xóa Đĩa
-    act(() => setCurrentSession(session))
+    // (cơ chế như ui2.ui.test.tsx: điểm cuối phiên trả về phiên, rồi tải lại để AuthBar đọc)
+    const plainFetch = fetchMock as unknown as typeof fetch
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+        const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url
+        const method = (init?.method ?? (input instanceof Request ? input.method : 'GET')).toUpperCase()
+        if (url.endsWith('/api/auth/session') && method === 'GET') return json(session)
+        return plainFetch(input, init)
+      }),
+    )
     try {
+      cleanup()
+      await mountReady()
       await waitFor(() => expect(document.body.textContent).toContain('Lẩu Thủ'))
       expectNoReset('đã đăng nhập')
       drag(plateItem('Cay'), tableEl(), { x: 80, y: 90 })
@@ -545,6 +557,7 @@ describe('Game', () => {
       for (const [k, v] of Object.entries(keep)) expect(localStorage.getItem(k)).toBe(v)
     } finally {
       act(() => setCurrentSession(null))
+      vi.stubGlobal('fetch', plainFetch)
     }
 
     await reload()
