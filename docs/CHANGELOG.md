@@ -25,3 +25,11 @@
 - Món đặc biệt (AC-DAILY-16): thẻ thử thách có nhãn "Thử thách" nổi bật và câu dẫn "Ghép ra món bí ẩn này trên bàn lẩu".
 - Bảng xếp hạng Daily (AC-DAILY-17): chuyển sang tab "Bảng xếp hạng" riêng, cạnh tab "Bàn lẩu"; thẻ Món đặc biệt không còn chứa bảng xếp hạng. Ba hạng đầu có huy chương 🥇🥈🥉; dòng của chính thực khách được tô nổi khi đã đăng nhập và có tên trong bảng. Tab chỉ hiện khi đã tải được nồi lẩu.
 - Lõi nội dung classic: thêm 35 meme, lên 174 phần tử và 518 công thức (trước là 139 và 363). Đã triển khai staging với graph version 202610221029.
+- Món đặc biệt (AC-DAILY-01, AC-DAILY-18): chọn theo mức mặn (trending) rồi tới món lâu chưa ra; món không lặp trong 30 mẻ gần nhất. Pool thử thách lấy từ các phần tử lõi có gợi ý riêng (`daily_hint`). Mẻ không thất bại vì Món đặc biệt.
+- Đồng hồ đếm ngược Món đặc biệt (AC-DAILY-12): tính theo lịch mẻ trong manifest, không đóng cứng giờ. Staging chạy mỗi 2 tiếng (giờ chẵn UTC); production vẫn 05:00 và 17:00 UTC. Quá mốc mà chưa có mẻ mới thì hiện "Mẻ mới sắp lên".
+- Tier phần tử (AC-TIER-02, AC-TIER-03): nền phần tử đổi màu theo tier 1-5 (1 là Xám), kèm hình nhỏ ở mép dưới để phân biệt không chỉ bằng màu; áp dụng trên Đĩa, bàn, nồi và thẻ kết quả khi ghép ra. Graph cũ chưa có tier hiện như tier 1.
+- Thẻ chia sẻ Daily (AC-SHARE-01..03): dạng chữ và ảnh PNG 1080x1080 tạo trên trình duyệt, gồm thời gian giải và hạng; không chứa tên món hay tên hai phần tử đã ghép. Chưa đăng nhập thì không có thẻ Daily.
+- Chia sẻ công thức gia truyền (AC-SHARE-04..06): thẻ chữ và PNG 1080x1080; chia sẻ hệ thống, sao chép hoặc lưu ảnh. Lưu ảnh chạy được trên Safari. Sự kiện chia sẻ chỉ ghi khi thực khách đã đồng ý.
+- Sự kiện Món đặc biệt (AC-METRIC-08): khi thẻ Món đặc biệt hiện lần đầu trong phiên, client gửi `daily_start`; khi ghép ra món lần đầu, gửi `daily_complete`. Không còn gửi số bước. Chỉ gửi khi thực khách đã đồng ý.
+- Đo lường ẩn danh (AC-METRIC-02..04): client gom sự kiện thành lô gửi `POST /api/events` theo danh sách sự kiện cho phép.
+- Ảnh minh họa cho phần tử lõi (AC-ART-11): mẻ `full` vẽ bù ảnh cho phần tử lõi chưa có ảnh, sau khi chờ vẽ và phần tử mới. Game vẫn hiện emoji khi chưa có ảnh.

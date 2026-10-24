@@ -1,6 +1,6 @@
 # API - Lẩu Meme
 
-> Nguồn sự thật: [`openapi.yaml`](openapi.yaml) (OpenAPI 3, `lau-meme API 0.2.0`). File này chỉ là mục lục; khi hai nơi khác nhau thì `openapi.yaml` đúng. Mỗi endpoint mang `x-ac` trỏ về AC trong `docs/acceptance/`.
+> Nguồn sự thật: [`openapi.yaml`](openapi.yaml) (OpenAPI 3, `lau-meme API 0.4.0`). File này chỉ là mục lục; khi hai nơi khác nhau thì `openapi.yaml` đúng. Mỗi endpoint mang `x-ac` trỏ về AC trong `docs/acceptance/`.
 
 ## Địa chỉ
 | Nhóm | Production | Staging |
@@ -32,14 +32,15 @@ Mọi lỗi là RFC 9457 `application/problem+json` (`type`, `title`, `status`, 
 |---|---|---|---|---|
 | GET | `/health` | Trạng thái Worker và schema D1 | - | AC-HEALTH-01 |
 | GET | `/manifest` | Manifest của version hiện hành (503 nếu chưa có mẻ) | - | AC-GRAPH-04, AC-GRAPH-06 |
-| GET | `/graph/{version}` | Graph mã hóa của một version (bất biến) | - | AC-GRAPH-01..04 |
+| GET | `/graph/{version}` | Graph mã hóa của một version (bất biến), mỗi phần tử có tier 1-5 | - | AC-GRAPH-01..04, AC-TIER-01..03 |
+| GET | `/creators/{version}` | Người tạo meme đóng góp có trong một version (`null` = ẩn danh; không bất biến, `max-age=300`) | - | AC-CONTRIB-10, AC-CONTRIB-12 |
 | GET | `/blocklist` | Danh sách chặn nóng (phần tử, công thức, ảnh) | - | AC-REPORT-04..07, AC-ADMIN-03/04 |
 | POST | `/consents` | Ghi / rút đồng ý (append-only) | PlayerId | AC-PRIV-02..04, AC-PRIV-09 |
 | POST | `/auth/google` | Đăng nhập bằng ID token Google, mở phiên | PlayerId | AC-AUTH-01, AC-AUTH-03, AC-AUTH-04, AC-AUTH-07 |
 | GET | `/auth/session` | Phiên hiện tại (gia hạn) | Session | AC-AUTH-02 |
 | DELETE | `/auth/session` | Đăng xuất | - hoặc Session | AC-AUTH-05 |
-| GET | `/me` | Xem / xuất dữ liệu của tôi (có phiên thì kèm tài khoản) | PlayerId (+ Session) | AC-PRIV-08, AC-AUTH-06 |
-| DELETE | `/me` | Xóa dữ liệu của tôi (có phiên thì xóa cả tài khoản) | PlayerId (+ Session) | AC-PRIV-05, AC-AUTH-06 |
+| GET | `/me` | Xem / xuất dữ liệu của tôi (có phiên thì kèm tài khoản và đề xuất meme) | PlayerId (+ Session) | AC-PRIV-08, AC-AUTH-06, AC-CONTRIB-12 |
+| DELETE | `/me` | Xóa dữ liệu của tôi (có phiên thì xóa cả tài khoản) | PlayerId (+ Session) | AC-PRIV-05, AC-AUTH-06, AC-CONTRIB-12 |
 | PUT | `/me/nickname` | Đặt / đổi nickname (có phiên thì của tài khoản) | PlayerId (+ Session) | AC-DISC-02..04, AC-DISC-12, AC-AUTH-04 |
 | GET | `/me/streak` | Streak của tài khoản | Session | AC-DAILY-10 |
 | GET | `/discoveries` | Công thức gia truyền của các phần tử | - | AC-DISC-09 |
@@ -52,6 +53,16 @@ Mọi lỗi là RFC 9457 `application/problem+json` (`type`, `title`, `status`, 
 | PUT | `/votes` | Bỏ phiếu Ngon / Nhạt cho công thức | PlayerId | AC-FEEDBACK-01..03 |
 | POST | `/events` | Gửi lô sự kiện ẩn danh | PlayerId | AC-METRIC-02..04, AC-SHARE-06 |
 | GET | `/img/{key}` | Ảnh minh họa từ R2 (giai đoạn 2; ngoài `/api`: `/lau-meme/img/{key}`) | - | AC-ART-05 |
+
+### Đóng góp meme (CONTRIB, ADR 0013)
+| Method | Path | Mô tả | Xác thực | AC chính |
+|---|---|---|---|---|
+| POST | `/contributions` | Gửi đề xuất meme từ cặp 2 phần tử có sẵn | PlayerId + Session | AC-CONTRIB-01..05 |
+| GET | `/contributions/{id}` | Một đề xuất của tôi | Session | AC-CONTRIB-06 |
+| GET | `/me/contributions` | Đề xuất của tôi (mới nhất trước) | Session | AC-CONTRIB-06 |
+| GET | `/contributors/leaderboard` | Top cống hiến (top 20 cố định) | - hoặc Session | AC-CONTRIB-11, AC-CONTRIB-12 |
+
+> TODO(doc): Worker (`worker/src/index.ts`) chưa định tuyến các endpoint CONTRIB ở bảng này và ở nhóm quản trị đề xuất; bảng theo `openapi.yaml`. Xác nhận trạng thái triển khai trước khi dùng cho client.
 
 ### Pipeline
 | Method | Path | Mô tả | Xác thực | AC chính |
@@ -70,8 +81,13 @@ Mọi lỗi là RFC 9457 `application/problem+json` (`type`, `title`, `status`, 
 |---|---|---|---|---|
 | GET | `/admin/reports` | Báo cáo gom theo đích | AdminToken | AC-ADMIN-06 |
 | GET | `/admin/elements` | Danh mục phần tử (tìm không dấu, lọc trạng thái) | AdminToken | AC-ADMIN-03, AC-ADMIN-05 |
+| PUT | `/admin/elements/{id}/tier` | Gán tier 1-5 cho phần tử | AdminToken | AC-ADMIN-12, AC-ADMIN-09, AC-TIER-01 |
 | GET | `/admin/recipes` | Công thức có một phần tử | AdminToken | AC-ADMIN-04 |
 | POST | `/admin/moderation` | Ẩn / hiện / chặn / gỡ chặn / bỏ qua báo cáo | AdminToken | AC-ADMIN-03..05, AC-ADMIN-07, AC-ADMIN-09 |
+| GET | `/admin/contributions` | Đề xuất meme (cũ nhất trước, lọc theo trạng thái) | AdminToken | AC-CONTRIB-07, AC-ADMIN-10 |
+| PATCH | `/admin/contributions/{id}` | Sửa đề xuất chờ duyệt | AdminToken | AC-CONTRIB-07, AC-ADMIN-09 |
+| POST | `/admin/contributions/{id}/approve` | Duyệt đề xuất (kèm `image_hint`, tier tùy chọn) | AdminToken | AC-CONTRIB-08, AC-CONTRIB-09, AC-TIER-01, AC-ADMIN-09 |
+| POST | `/admin/contributions/{id}/reject` | Từ chối đề xuất (cần lý do) | AdminToken | AC-CONTRIB-08, AC-ADMIN-09 |
 | GET | `/admin/batches` | Nhật ký các đợt | AdminToken | AC-ADMIN-08 |
 | GET | `/admin/audit` | Nhật ký audit | AdminToken | AC-ADMIN-09 |
 
