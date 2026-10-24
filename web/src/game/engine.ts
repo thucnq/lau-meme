@@ -18,6 +18,8 @@ export type Progress = {
   /** The "hold to drag, swipe the gaps to scroll" hint on touch screens was dismissed (AC-GAME-21). */
   touch_hint_seen: boolean
   miss_streak: number
+  /** Sound for Vàng/Đỏ turned off with the speaker button (AC-GAME-26); absent means on. */
+  muted?: boolean
 }
 export type Starter = { id: string; name: string; emoji: string }
 export type Manifest = {
@@ -112,6 +114,7 @@ export function loadProgress(storage: Storage): Progress | null {
     tutorial_seen: data.tutorial_seen === true,
     touch_hint_seen: data.touch_hint_seen === true,
     miss_streak: typeof data.miss_streak === 'number' ? data.miss_streak : 0,
+    ...(data.muted === true ? { muted: true } : {}),
   }
 }
 
@@ -121,11 +124,6 @@ export function saveProgress(storage: Storage, p: Progress): void {
   } catch {
     // Storage full or blocked: the game keeps working for this session.
   }
-}
-
-/** Only the game progress is removed; UUID, nickname, Daily/streak and theme keys are kept (AC-GAME-11). */
-export function resetProgress(storage: Storage): void {
-  storage.removeItem(PROGRESS_KEY)
 }
 
 /** Progress made on an older graph version keeps every discovered item (AC-GAME-17). */
