@@ -462,7 +462,7 @@ def run_batch(
             step = "llm"
             if llm is None or crawl_http is None:
                 raise ValueError("mode full cần GEMINI_API_KEY (ADR 0011)")
-            step = "state"
+        step = "state"
         state = client.get_state()
         if mode == "full":
             step = "store"

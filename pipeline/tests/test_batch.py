@@ -56,9 +56,7 @@ def eid(name: str) -> str:
     return element_id(name)
 
 
-def make_state(
-    history: list | None = None, blocked_elements: list | None = None, catalog: list | None = None
-) -> dict:
+def make_state(history: list | None = None, blocked_elements: list | None = None, catalog: list | None = None) -> dict:
     return {
         "catalog": list(catalog or []),
         "current_version": None,
