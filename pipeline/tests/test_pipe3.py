@@ -569,6 +569,32 @@ def test_ac_pipe_17_threads_khong_luu_ten_nguoi_dang_anh_dai_dien_link_ho_so():
     assert THREADS_ACCESS not in dump
 
 
+class ThreadsMentionGet(ThreadsGet):
+    """Posts whose text tags people with @handles; one post is nothing but a handle."""
+
+    def __call__(self, url):
+        content_type, body = super().__call__(url)
+        if urlsplit(url).path.endswith("/robots.txt"):
+            return (content_type, body)
+        data = json.loads(body)["data"]
+        data[0]["text"] = "@nguoi_dang.01 Meme câu nói hot cùng @ban_be_02"
+        data[1]["text"] = "@chi_ten_thoi"
+        return (content_type, json.dumps({"data": data}))
+
+
+def test_ac_pipe_17_threads_bo_handle_trong_noi_dung_bai():
+    """AC-PIPE-17: @handle trong nội dung bài (người đăng hoặc người được nhắc) không vào tên, câu nói hay link;
+    bài chỉ có @handle thì bỏ."""
+    from lau_meme_pipeline.crawl import ThreadsAdapter
+
+    concepts = ThreadsAdapter(THREADS_ACCESS, ["meme"]).fetch(make_http(ThreadsMentionGet()))
+    dump = json.dumps([dataclasses.asdict(c) for c in concepts], ensure_ascii=False)
+    assert "@" not in dump
+    assert "nguoi_dang" not in dump and "ban_be" not in dump and "chi_ten_thoi" not in dump
+    assert concepts[0].name == "Meme câu nói hot cùng"
+    assert len(concepts) == 14
+
+
 def test_ac_pipe_17_threads_chi_goi_api_chinh_thuc_khong_tai_anh_video():
     """AC-PIPE-17: chỉ gọi host API chính thức của Meta (graph.threads.net), không scrape threads.net, không tải
     ảnh/video trong phản hồi."""

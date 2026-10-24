@@ -260,6 +260,8 @@ THREADS_MAX_POSTS = 50
 MAX_THREADS_NAME = 100
 # The permalink names the poster (`/@user/post/<code>`); the short form `/t/<code>` opens the same post without it.
 _THREADS_USER_LINK = re.compile(r"^https://(?:www\.)?threads\.(?:net|com)/@[^/]+/post/([\w-]+)")
+# The text may tag the poster or other people: handles are dropped before anything is kept.
+_THREADS_HANDLE = re.compile(r"@[\w.]+")
 
 
 def _threads_link(permalink: str) -> str:
@@ -303,11 +305,12 @@ class ThreadsAdapter:
                 f"&limit={THREADS_MAX_POSTS}&access_token={quote(self.access_token)}"
             )
             for post in json.loads(http.text(url)).get("data", []):
-                text = post.get("text") or ""
+                text = _THREADS_HANDLE.sub(" ", post.get("text") or "")
                 name, link = _threads_name(text), _threads_link(post.get("permalink") or "")
-                if not name or post.get("id") in seen:
+                post_id = post.get("id")
+                if not name or not post_id or post_id in seen:
                     continue
-                seen.add(post.get("id"))
+                seen.add(post_id)
                 out.append(RawConcept(name, _clip(text), "", link, self.name))
                 if len(out) >= THREADS_MAX_POSTS:
                     break
