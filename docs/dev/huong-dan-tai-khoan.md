@@ -338,15 +338,31 @@ Chưa được duyệt `threads_keyword_search` thì API chỉ tìm trong bài *
    https://threads.net/oauth/authorize?client_id=<APP_ID>&redirect_uri=https://staging.dinoduct.fun/lau-meme&scope=threads_basic,threads_keyword_search&response_type=code
    ```
    Đồng ý → trình duyệt chuyển về `https://staging.dinoduct.fun/lau-meme?code=...#_` (Worker chuyển tiếp sang `/lau-meme/?code=...`, giữ nguyên `code`). Chép giá trị `code` (bỏ đuôi `#_`). Code dùng một lần, hết hạn sau 1 giờ.
-2. Đổi code lấy token ngắn hạn (1 giờ), rồi đổi sang token dài hạn (60 ngày). Lệnh đọc secret/code bằng `read -s` nên không hiện trên màn hình và không nằm trong lịch sử shell:
-   ```bash
-   read -rp "App ID: " APP_ID; read -rsp "App secret: " APP_SECRET; echo; read -rsp "Code: " CODE; echo
-   SHORT=$(curl -fsS -X POST https://graph.threads.net/oauth/access_token \
-     -d client_id="$APP_ID" -d client_secret="$APP_SECRET" -d grant_type=authorization_code \
-     -d redirect_uri=https://staging.dinoduct.fun/lau-meme -d code="$CODE" | jq -r .access_token)
-   LONG=$(curl -fsS -G https://graph.threads.net/access_token -d grant_type=th_exchange_token \
-     --data-urlencode client_secret="$APP_SECRET" --data-urlencode access_token="$SHORT" | jq -r .access_token)
-   ```
+2. Đổi code lấy token. Làm **trong cùng một cửa sổ terminal** từ đây tới Bước 4 (biến shell mất khi đóng cửa sổ). Cần `jq` và `gh` (`sudo apt install jq`, `gh auth login`).
+   - a) Nhập thông tin. `read -s` không hiện chữ khi gõ/dán và không ghi vào lịch sử shell; dán xong bấm Enter:
+     ```bash
+     read -rp "Threads app ID: " APP_ID
+     read -rsp "Threads app secret: " APP_SECRET; echo
+     read -rsp "Code: " CODE; echo
+     CODE=${CODE%#_}
+     REDIRECT=https://staging.dinoduct.fun/lau-meme
+     ```
+   - b) Đổi code lấy token ngắn hạn (1 giờ). Thành công in `OK`; lỗi thì in thông báo của Meta (không chứa token):
+     ```bash
+     RESP=$(curl -sS -X POST https://graph.threads.net/oauth/access_token \
+       --data-urlencode client_id="$APP_ID" --data-urlencode client_secret="$APP_SECRET" \
+       -d grant_type=authorization_code --data-urlencode redirect_uri="$REDIRECT" --data-urlencode code="$CODE")
+     SHORT=$(jq -r '.access_token // empty' <<<"$RESP")
+     [ -n "$SHORT" ] && echo "OK: token ngắn hạn" || jq '.error // .' <<<"$RESP"
+     ```
+   - c) Đổi sang token dài hạn (60 ngày):
+     ```bash
+     RESP=$(curl -sS -G https://graph.threads.net/access_token -d grant_type=th_exchange_token \
+       --data-urlencode client_secret="$APP_SECRET" --data-urlencode access_token="$SHORT")
+     LONG=$(jq -r '.access_token // empty' <<<"$RESP")
+     [ -n "$LONG" ] && echo "OK: token dài hạn, còn $(( $(jq -r .expires_in <<<"$RESP") / 86400 )) ngày" || jq '.error // .' <<<"$RESP"
+     ```
+   - Lỗi thường gặp ở b): code đã dùng hoặc quá 1 giờ, hoặc báo `Error validating verification code` → mở lại link authorize lấy code mới rồi chạy lại a) và b). Báo sai `redirect_uri` → `REDIRECT` phải trùng từng ký tự với URI đã lưu trong app (không có `/` cuối). Báo sai `client_secret`/`client_id` → lấy lại cả hai ở **Settings** của use case Threads (không phải App settings → Basic).
 3. Thử token (in số bài, không in token):
    ```bash
    curl -fsS -G https://graph.threads.net/v1.0/keyword_search --data-urlencode q=meme \
