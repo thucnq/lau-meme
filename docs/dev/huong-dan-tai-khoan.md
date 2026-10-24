@@ -326,7 +326,7 @@ Pipeline gọi `GET https://graph.threads.net/v1.0/keyword_search` (API tìm the
 **Bước 1 - Tạo app Meta**
 1. Vào https://developers.facebook.com/apps → **Create app** → chọn use case **Access the Threads API**.
 2. **Use cases** → **Access the Threads API** → **Permissions**: giữ `threads_basic` (bắt buộc), bấm **Add** cạnh `threads_keyword_search`.
-3. **Settings** của use case: chép **Threads app ID** và **Threads app secret** (secret là bí mật, không dán vào chat/issue/commit). Ở **Client OAuth Settings** thêm redirect URI `https://staging.dinoduct.fun/lau-meme` (**không** có `/` ở cuối: có `/` thì Save báo "Please specify an OAuth redirect URI"; chỉ dùng để nhận `code` trên thanh địa chỉ, trang không xử lý gì). Điền **Deauthorize callback URL** và **Data Deletion Requests URL** (có thể dùng cùng URL trên) → **Save**.
+3. **Settings** của use case: chép **Threads app ID** và **Threads app secret** (secret là bí mật, không dán vào chat/issue/commit). Ở **Client OAuth Settings** thêm redirect URI `https://staging.dinoduct.fun/lau-meme` (nhập **không** có `/` ở cuối: có `/` thì Save báo "Please specify an OAuth redirect URI". Sau khi lưu, Meta tự thêm `/` thành `https://staging.dinoduct.fun/lau-meme/`, và đó là giá trị phải dùng ở Bước 3; chỉ dùng để nhận `code` trên thanh địa chỉ, trang không xử lý gì). Điền **Deauthorize callback URL** và **Data Deletion Requests URL** (có thể dùng cùng URL trên) → **Save**.
 4. **Add or Remove Threads Test Users** → **App roles > Roles** → **Add People** → vai trò **Threads Testers** → nhập tên tài khoản Threads. Mở app Threads bằng tài khoản đó → **Cài đặt → Tài khoản → Quyền đối với website → Lời mời** → chấp nhận.
 
 **Bước 2 - Duyệt quyền tìm theo từ khóa (App Review)**
@@ -335,9 +335,9 @@ Chưa được duyệt `threads_keyword_search` thì API chỉ tìm trong bài *
 **Bước 3 - Lấy token dài hạn (60 ngày)**
 1. Mở trình duyệt (đăng nhập Threads bằng tài khoản tester):
    ```
-   https://threads.net/oauth/authorize?client_id=<APP_ID>&redirect_uri=https://staging.dinoduct.fun/lau-meme&scope=threads_basic,threads_keyword_search&response_type=code
+   https://threads.net/oauth/authorize?client_id=<APP_ID>&redirect_uri=https://staging.dinoduct.fun/lau-meme/&scope=threads_basic,threads_keyword_search&response_type=code
    ```
-   Đồng ý → trình duyệt chuyển về `https://staging.dinoduct.fun/lau-meme?code=...#_` (Worker chuyển tiếp sang `/lau-meme/?code=...`, giữ nguyên `code`). Chép giá trị `code` (bỏ đuôi `#_`). Code dùng một lần, hết hạn sau 1 giờ.
+   Đồng ý → trình duyệt chuyển về `https://staging.dinoduct.fun/lau-meme/?code=...#_`. Chép giá trị `code` (bỏ đuôi `#_`). Code dùng một lần, hết hạn sau 1 giờ.
 2. Đổi code lấy token. Làm **trong cùng một cửa sổ terminal** từ đây tới Bước 4 (biến shell mất khi đóng cửa sổ). Cần `jq` và `gh` (`sudo apt install jq`, `gh auth login`).
    - a) Nhập thông tin. `read -s` không hiện chữ khi gõ/dán và không ghi vào lịch sử shell; dán xong bấm Enter:
      ```bash
@@ -345,7 +345,7 @@ Chưa được duyệt `threads_keyword_search` thì API chỉ tìm trong bài *
      read -rsp "Threads app secret: " APP_SECRET; echo
      read -rsp "Code: " CODE; echo
      CODE=${CODE%#_}
-     REDIRECT=https://staging.dinoduct.fun/lau-meme
+     REDIRECT=https://staging.dinoduct.fun/lau-meme/   # đúng giá trị dashboard hiện ở Redirect Callback URLs
      ```
    - b) Đổi code lấy token ngắn hạn (1 giờ). Thành công in `OK`; lỗi thì in thông báo của Meta (không chứa token):
      ```bash
@@ -362,7 +362,7 @@ Chưa được duyệt `threads_keyword_search` thì API chỉ tìm trong bài *
      LONG=$(jq -r '.access_token // empty' <<<"$RESP")
      [ -n "$LONG" ] && echo "OK: token dài hạn, còn $(( $(jq -r .expires_in <<<"$RESP") / 86400 )) ngày" || jq '.error // .' <<<"$RESP"
      ```
-   - Lỗi thường gặp ở b): code đã dùng hoặc quá 1 giờ, hoặc báo `Error validating verification code` → mở lại link authorize lấy code mới rồi chạy lại a) và b). Báo sai `redirect_uri` → `REDIRECT` phải trùng từng ký tự với URI đã lưu trong app (không có `/` cuối). Báo sai `client_secret`/`client_id` → lấy lại cả hai ở **Settings** của use case Threads (không phải App settings → Basic).
+   - Lỗi thường gặp ở b): code đã dùng hoặc quá 1 giờ, hoặc báo `Error validating verification code` → mở lại link authorize lấy code mới rồi chạy lại a) và b). Báo `Error validating verification code. Please make sure your redirect_uri is identical...` (subcode 36008) → `REDIRECT` và `redirect_uri` trong link authorize phải trùng từng ký tự với giá trị dashboard đang hiện (có `/` cuối); sửa rồi lấy code mới. Báo sai `client_secret`/`client_id` → lấy lại cả hai ở **Settings** của use case Threads (không phải App settings → Basic).
 3. Thử token (in số bài, không in token):
    ```bash
    curl -fsS -G https://graph.threads.net/v1.0/keyword_search --data-urlencode q=meme \
