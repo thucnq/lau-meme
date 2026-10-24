@@ -1,9 +1,9 @@
 # dk state (managed by dk-state.sh — do not edit)
-phase: build
+phase: design
 project: lau-meme
 stack: py-ts-cloudflare
-spec: approved 2026-10-24 by nguyenquythuc at d254a60
-contract: approved 2026-10-24 by nguyenquythuc at 1579e99
+spec: approved 2026-10-24 by nguyenquythuc at 4648ddb
+contract: draft
 feature: pipe
 review-feat-seed: approved
 review-feat-graph: approved

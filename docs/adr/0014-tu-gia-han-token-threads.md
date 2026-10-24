@@ -21,7 +21,7 @@
   - Ghi lại bằng `gh secret set THREADS_ACCESS_TOKEN --env <env> < "$THREADS_TOKEN_OUT"` với `GH_TOKEN: ${{ secrets.GH_SECRETS_TOKEN }}`, rồi xóa file.
   - Job lỗi thì `gh issue create` "Threads token: gia hạn lỗi" kèm link run.
   - Mỗi tuần một lần: đủ xa mốc 24 giờ, và token vẫn còn khoảng 7 tuần nếu vài lần liền bị lỗi.
-- **`GH_SECRETS_TOKEN`:** fine-grained PAT chỉ cho repo lau-meme, quyền `Secrets: Read and write` (và `Issues: write` để mở Issue), hạn 1 năm, chủ dự án tạo và giữ. Chỉ workflow `threads-token.yml` đọc secret này.
+- **`GH_SECRETS_TOKEN`:** fine-grained PAT chỉ cho repo lau-meme, quyền `Secrets: Read and write`, hạn 1 năm. Issue lỗi mở bằng `GITHUB_TOKEN` của workflow (`permissions: issues: write`), không dùng PAT, chủ dự án tạo và giữ. Chỉ workflow `threads-token.yml` đọc secret này.
 - **Cảnh báo 0 bài (AC-PIPE-20):** adapter Threads trả thêm cờ "mọi từ khóa 200 nhưng 0 bài". `batch.py` hiện thành một dòng cảnh báo cạnh dòng "thiếu cấu hình". Đây không phải lỗi nguồn.
 - **Trang chính sách (AC-SUBPATH-13):** trong `asset()` của Worker, `GET`/`HEAD` có đường dẫn `<base>/chinh-sach` hoặc `<base>/chinh-sach/` luôn nhận `index.html`, không cần `isNavigation`. Mọi đường dẫn khác giữ nguyên.
 - Không thêm bảng, endpoint hay dịch vụ trả phí.
