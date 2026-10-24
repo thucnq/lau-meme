@@ -417,12 +417,14 @@ def test_ac_pipe_04_content_type_van_ban_duoc_chap_nhan(content_type):
 
 
 def test_ac_pipe_04_khong_co_adapter_facebook_tiktok():
-    """AC-PIPE-04: default_adapters đúng 5 loại, không có Facebook hoặc TikTok."""
+    """AC-PIPE-04: default_adapters đúng 7 loại (AC-PIPE-03 cập nhật 2026-10-23), không có Facebook hoặc TikTok."""
     from lau_meme_pipeline.crawl import (
         GoogleTrendsVnAdapter,
         KnowYourMemeAdapter,
         RedditAdapter,
         RssAdapter,
+        ThreadsAdapter,
+        TuoiTreAdapter,
         YoutubeTrendingAdapter,
         default_adapters,
     )
@@ -434,8 +436,10 @@ def test_ac_pipe_04_khong_co_adapter_facebook_tiktok():
         GoogleTrendsVnAdapter,
         YoutubeTrendingAdapter,
         RssAdapter,
+        TuoiTreAdapter,
+        ThreadsAdapter,
     }
-    assert len(adapters) == 5
+    assert len(adapters) == 7
     for a in adapters:
         label = f"{a.name} {type(a).__name__}".lower()
         assert "facebook" not in label
