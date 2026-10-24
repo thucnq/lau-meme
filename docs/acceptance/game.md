@@ -63,10 +63,10 @@
 - **Thì** Đĩa, vị trí các phần tử trên bàn, lựa chọn sắp xếp và trạng thái đã xem hướng dẫn được khôi phục; không gọi API ghi nào để làm việc này
 - Ưu tiên: Bắt buộc
 
-### AC-GAME-11: Dọn bàn và Chơi lại từ đầu
+### AC-GAME-11: Dọn bàn (cập nhật 2026-10-24: bỏ "Chơi lại từ đầu" - câu hỏi mở 71)
 - **Cho** bàn có phần tử và Đĩa có hơn 4 phần tử
-- **Khi** bấm "Dọn bàn"; sau đó bấm "Chơi lại từ đầu" → hộp xác nhận → "Hủy"; rồi lặp lại và chọn "Xóa"
-- **Thì** "Dọn bàn" chỉ xóa phần tử trên bàn, Đĩa giữ nguyên; "Hủy" không đổi gì; "Xóa" đưa Đĩa về 4 phần tử khởi đầu và xóa tiến độ cục bộ, nhưng **giữ** UUID, nickname và lịch sử Daily/streak
+- **Khi** bấm "Dọn bàn"
+- **Thì** "Dọn bàn" chỉ xóa phần tử trên bàn, Đĩa giữ nguyên; giao diện không còn nút "Chơi lại từ đầu" hay cách nào khác để xóa Đĩa (cả khi chưa đăng nhập); UUID, nickname và lịch sử Daily/streak không đổi
 - Ưu tiên: Bắt buộc
 
 ### AC-GAME-12: Hướng dẫn lần đầu
@@ -115,7 +115,7 @@
 ### AC-GAME-19: Nút điều khiển nằm ở khu bàn lẩu, đăng nhập ở đầu trang (thêm 2026-10-22)
 - **Cho** thực khách mở trang ở khung nhìn 1366×768 (PC) và 390×844 (mobile)
 - **Khi** trang vừa tải xong; rồi đăng nhập Google thành công
-- **Thì** đầu trang chỉ có tên game, nút đổi giao diện sáng/tối và khu tài khoản: chưa đăng nhập là nút "Đăng nhập bằng Google" (ở vị trí cũ của "Dọn bàn"), đã đăng nhập là "Đã đăng nhập: <nickname>" như AC-AUTH-02; chân trang không còn nút đăng nhập. "Dọn bàn", "Chơi lại từ đầu" và "?" nằm trong khu bàn lẩu (PC: góc trên bên phải mặt bàn; mobile: một hàng ngay trên mặt bàn), không đè lên nồi lẩu hay món trên bàn; hành vi của ba nút giữ nguyên như AC-GAME-11 và hướng dẫn
+- **Thì** đầu trang chỉ có tên game, nút đổi giao diện sáng/tối và khu tài khoản: chưa đăng nhập là nút "Đăng nhập bằng Google" (ở vị trí cũ của "Dọn bàn"), đã đăng nhập là "Đã đăng nhập: <nickname>" như AC-AUTH-02; chân trang không còn nút đăng nhập. "Dọn bàn" và "?" (cập nhật 2026-10-24: không còn "Chơi lại từ đầu" - AC-GAME-11) nằm trong khu bàn lẩu (PC: góc trên bên phải mặt bàn; mobile: một hàng ngay trên mặt bàn), không đè lên nồi lẩu hay món trên bàn; hành vi của hai nút giữ nguyên như AC-GAME-11 và hướng dẫn
 - Ưu tiên: Bắt buộc
 
 ### AC-GAME-20: Nồi lẩu vẽ trọn, quai ngang thân nồi (thêm 2026-10-22)
@@ -131,7 +131,7 @@
 - Ưu tiên: Bắt buộc
 
 ### AC-GAME-22: Vùng cấm đặt món (thêm 2026-10-24)
-- **Cho** khu bàn lẩu có hàng nút "Dọn bàn", "Chơi lại từ đầu", "?" (AC-GAME-19), vùng câu Nồi trào + gợi ý khi đang hiện (AC-GAME-05/06), và gợi ý vuốt cuộn khi đang hiện (AC-GAME-21); khung nhìn 1366×768 và 390×844
+- **Cho** khu bàn lẩu có hàng nút "Dọn bàn", "?" (AC-GAME-19), vùng câu Nồi trào + gợi ý khi đang hiện (AC-GAME-05/06), và gợi ý vuốt cuộn khi đang hiện (AC-GAME-21); khung nhìn 1366×768 và 390×844
 - **Khi** kéo một món từ Đĩa hoặc trên bàn thả vào giữa vùng nút hoặc vùng gợi ý; và khi ghép trượt đưa A, B trở lại bàn (AC-GAME-05) hay ghép thành công đặt món mới lên bàn (AC-GAME-02) trong lúc các vùng đó đang hiện
 - **Thì** không món nào nằm (dù một phần) trong hộp bao của vùng nút hay vùng gợi ý: món thả vào đó được đặt ở chỗ trống gần nhất ngoài các vùng cấm và vẫn nằm trọn trong mặt bàn; vị trí món tự đặt sau ghép cũng tránh các vùng này; nút vẫn bấm được ngay sau đó (không món nào đè lên nút). Kiểm bằng Vitest browser mode như AC-GAME-18: hộp bao của mọi món không giao với hộp bao của vùng cấm
 - Ưu tiên: Bắt buộc

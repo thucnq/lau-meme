@@ -1,0 +1,61 @@
+# Tự gia hạn token Threads (AC-PIPE-19, ADR 0014). Đề xuất - người chép vào .github/workflows/threads-token.yml
+# (guard chặn agent sửa workflow) và tạo secret GH_SECRETS_TOKEN (fine-grained PAT chỉ repo này, quyền
+# Secrets: Read and write, hạn 1 năm). Token dài hạn 60 ngày; gia hạn mỗi thứ Hai 02:00 UTC, xa mốc 24 giờ tối thiểu.
+# Một token dùng chung cho staging và production-no-approval (câu hỏi mở 65): đọc từ staging, ghi lại cả hai.
+# Lệnh không in token; file token chỉ tồn tại khi gia hạn thành công và bị xóa ngay sau khi ghi secret.
+name: threads-token
+
+on:
+  schedule:
+    - cron: '0 2 * * 1'
+  workflow_dispatch:
+
+concurrency:
+  group: threads-token
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    environment: staging
+    permissions:
+      contents: read
+      issues: write
+    defaults: { run: { working-directory: pipeline } }
+    steps:
+      - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@v6
+      - run: uv sync --frozen --no-dev
+      - name: Gia hạn token
+        env:
+          THREADS_ACCESS_TOKEN: ${{ secrets.THREADS_ACCESS_TOKEN }}
+          THREADS_TOKEN_OUT: ${{ runner.temp }}/threads-token
+        run: uv run python -m lau_meme_pipeline.threads_token
+      - name: Ghi secret cho staging và production-no-approval
+        env:
+          # GITHUB_TOKEN không có quyền ghi secret: chỉ bước này dùng PAT.
+          GH_TOKEN: ${{ secrets.GH_SECRETS_TOKEN }}
+          THREADS_TOKEN_OUT: ${{ runner.temp }}/threads-token
+        run: |
+          set -euo pipefail
+          if [ ! -s "$THREADS_TOKEN_OUT" ]; then
+            echo "Threads token: không có token mới (thiếu cấu hình), không ghi secret"
+            exit 0
+          fi
+          trap 'rm -f "$THREADS_TOKEN_OUT"' EXIT
+          for env in staging production-no-approval; do
+            gh secret set THREADS_ACCESS_TOKEN --env "$env" --repo "$GITHUB_REPOSITORY" < "$THREADS_TOKEN_OUT"
+          done
+          rm -f "$THREADS_TOKEN_OUT"
+      - name: Mở Issue khi lỗi
+        if: failure()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          gh issue create --repo "$GITHUB_REPOSITORY" --title "Threads token: gia hạn lỗi" \
+            --body "Workflow threads-token lỗi: $RUN_URL - xem log của run và runbook (gia hạn tay hoặc tạo lại token/PAT)."

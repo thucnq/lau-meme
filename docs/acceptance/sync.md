@@ -41,10 +41,10 @@
 - **Thì** H và I vẫn vào Đĩa cục bộ ngay, không hiện lỗi chặn người chơi; client gửi bù H và I khi API hoạt động lại (thử lại có giới hạn, không gửi trùng khi đã nhận 200); tải lại trang trong lúc lỗi thì dùng Đĩa cục bộ, không mất phần tử nào
 - Ưu tiên: Bắt buộc
 
-### AC-SYNC-07: "Chơi lại từ đầu" không xóa Đĩa của tài khoản
+### AC-SYNC-07: Không có cách xóa Đĩa của tài khoản từ giao diện (cập nhật 2026-10-24 - câu hỏi mở 71)
 - **Cho** T đã đăng nhập ở máy 1, Đĩa của T có 30 phần tử, trên bàn có món
-- **Khi** bấm "Chơi lại từ đầu" → hộp xác nhận → "Xóa"; rồi tải lại trang
-- **Thì** hộp xác nhận ghi rõ "Đĩa của tài khoản vẫn giữ nguyên"; bàn trống, bộ đếm trượt, nhãn "MỚI" và trạng thái hướng dẫn được đặt lại như AC-GAME-11; Đĩa vẫn có đủ 30 phần tử của T cả trước và sau khi tải lại; không có request xóa nào tới API Đĩa. Chưa đăng nhập thì "Xóa" giữ nguyên hành vi AC-GAME-11 (Đĩa về 4 phần tử khởi đầu)
+- **Khi** bấm "Dọn bàn"; rồi tải lại trang
+- **Thì** bàn trống, Đĩa vẫn có đủ 30 phần tử của T cả trước và sau khi tải lại; giao diện không có nút "Chơi lại từ đầu" hay nút xóa Đĩa nào (AC-GAME-11); API Đĩa không có endpoint xóa và không có request xóa nào được gửi
 - Ưu tiên: Bắt buộc
 
 ### AC-SYNC-08: Phần tử bị chặn và graph đổi version
