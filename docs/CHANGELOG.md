@@ -37,3 +37,8 @@
 - Mức mặn phần tử (AC-PIPE-16): mỗi phần tử giữ mức trending cao nhất từng ghi (`trend_peak`); mẻ không thu lại phần tử thì giữ giá trị cũ.
 - Quản trị (AC-ADMIN-11): trang Đợt có ô tổng (meme thu thập, thêm, hàng chờ, thiếu ảnh) và số liệu crawl theo từng nguồn; `GET /admin/batches` trả thêm `summary`.
 - Triển khai staging: Worker version `9349181e-13d9-4a82-855e-d73c4bed6825`, git sha `a736f0d`, health ok.
+- Trang chính sách (AC-SUBPATH-13, ADR 0014): `GET` và `HEAD` tới `/lau-meme/chinh-sach` (và `/chinh-sach/`) trả `index.html` cho mọi request, kể cả khi không gửi `Accept: text/html`, để bot App Review của Meta đọc được. Đường dẫn khác không đổi.
+- Nguồn Threads (AC-PIPE-18): API tìm theo từ khóa chuyển sang host `graph.threads.com` (trước là `graph.threads.net`).
+- Gia hạn token Threads (AC-PIPE-19, ADR 0014): lệnh `python -m lau_meme_pipeline.threads_token` và workflow đề xuất `threads-token` gia hạn token dài hạn mỗi tuần, ghi secret cho `staging` và `production-no-approval`, mở Issue khi lỗi. Token không in ra log. Workflow chờ người chép vào `.github/workflows/` và tạo secret `GH_SECRETS_TOKEN`.
+- Báo cáo đợt (AC-PIPE-20): khi Threads trả 0 bài cho mọi từ khóa, báo cáo có dòng cảnh báo "Threads: 0 bài cho mọi từ khóa" (app chưa được Meta duyệt `threads_keyword_search`). Đây không phải lỗi nguồn, đợt vẫn đăng.
+- Triển khai staging: Worker version `e34921cb-dc66-4043-adb8-893ea0e91179`, git sha `2cec259`.
