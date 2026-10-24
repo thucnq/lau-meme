@@ -467,6 +467,27 @@
       "question": "Meta có cấp quyền tìm theo từ khóa (threads_keyword_search) cho app cá nhân không? Nếu không, AC-PIPE-17 chỉ còn bỏ qua êm khi thiếu token (-2 điểm)"
     },
     {
+      "id": "PIPE4",
+      "module": "Nội dung",
+      "name": "Threads sau khi có token, trang chính sách cho bot Meta (giai đoạn 2)",
+      "desc": "PIPE + SUBPATH · AC-PIPE-18..20, AC-SUBPATH-13 (thêm 2026-10-24) · host graph.threads.com (0.5); lệnh gia hạn token + workflow threads-token.yml ghi lại GitHub Secret, mở Issue khi lỗi (2); cảnh báo Threads 0 bài trong báo cáo đợt (1); /chinh-sach trả HTML cho mọi GET (0.5)",
+      "points": 4,
+      "deps": [
+        "PIPE3",
+        "SUBPATH"
+      ],
+      "ac": [
+        "AC-PIPE-18",
+        "AC-PIPE-19",
+        "AC-PIPE-20",
+        "AC-SUBPATH-13"
+      ],
+      "risk": "MEDIUM",
+      "owner": "Thuc",
+      "open": true,
+      "question": "Tự gia hạn token cần fine-grained PAT quyền ghi secret (GH_SECRETS_TOKEN): ai tạo và giữ; hai environment dùng chung một token Threads? (open-questions #65 - mặc định: chủ dự án tạo PAT 1 năm, dùng chung)"
+    },
+    {
       "id": "ART",
       "module": "Nội dung",
       "name": "Ảnh minh họa tự tạo (giai đoạn 2)",
@@ -502,8 +523,8 @@
       "id": "UAT2",
       "module": "Kiểm thử",
       "name": "Kiểm thử nghiệm thu & sửa lỗi (giai đoạn 2)",
-      "desc": "15% điểm tính năng giai đoạn 2; chạy pipeline crawl thật vài đợt trên staging trước khi bật tự động đăng; thêm PIPE3, ART-11 2026-10-23",
-      "points": 6.5,
+      "desc": "15% điểm tính năng giai đoạn 2; chạy pipeline crawl thật vài đợt trên staging trước khi bật tự động đăng; thêm PIPE3, ART-11 2026-10-23; thêm PIPE4 2026-10-24",
+      "points": 7,
       "deps": [
         "*"
       ],
