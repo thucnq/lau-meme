@@ -24,6 +24,20 @@ export type ElementItem = Ref & {
   last_version: number
 }
 export type RecipeItem = { id: string; a: Ref; b: Ref; result: Ref; state: 'active' | 'hidden' }
+/** Số liệu do pipeline gửi kèm nhật ký đợt (BatchStats, AC-ADMIN-11): nguồn lỗi có `error` và `concepts` null. */
+export type BatchStats = {
+  crawled?: number
+  added?: number
+  blocked?: Record<string, number>
+  queued?: number
+  queue_size?: number
+  quota_used?: number
+  source_errors?: { source: string; error: string }[]
+  sources?: { source: string; concepts: number | null; error: string | null }[]
+  images?: { drawn: number; fallback: number; pending: number }
+  without_image?: number
+}
+export type BatchSummary = { crawled_total: number; added_total: number; queue_size: number | null; without_image: number | null }
 export type BatchItem = {
   id: string
   version: number | null
@@ -32,7 +46,7 @@ export type BatchItem = {
   status: 'success' | 'error' | 'rollback'
   failed_step?: string | null
   rollback_to?: number | null
-  stats: { added?: number; blocked?: Record<string, number>; queued?: number; source_errors?: { source: string; error: string }[] }
+  stats: BatchStats
   issue_url?: string | null
   created_at: string
 }

@@ -8,6 +8,8 @@ import {
   type Action,
   type AuditItem,
   type BatchItem,
+  type BatchStats,
+  type BatchSummary,
   type ElementItem,
   type Kind,
   type Page,
@@ -128,13 +130,13 @@ function Console({ token, onAuthError, onSignOut }: Ctx & { onSignOut: () => voi
 }
 
 /** GET one admin list; reloads when `path` or `reload` changes; a 401 signs out. */
-function useList<T>({ token, onAuthError }: Ctx, path: string | null, reload: number) {
-  const [data, setData] = useState<Page<T> | null>(null)
+function useList<T, Extra = unknown>({ token, onAuthError }: Ctx, path: string | null, reload: number) {
+  const [data, setData] = useState<(Page<T> & Extra) | null>(null)
   const [error, setError] = useState<string | null>(null)
   useEffect(() => {
     if (path === null) return
     let live = true
-    call<Page<T>>(token, path).then(
+    call<Page<T> & Extra>(token, path).then(
       (d) => {
         if (!live) return
         setData(d)
@@ -385,15 +387,36 @@ function ContentTab(ctx: Ctx) {
   )
 }
 
+/** Số khái niệm theo nguồn; nguồn lỗi hiện loại lỗi thay vì số (AC-ADMIN-11). Đợt cũ chưa có `sources` chỉ có lỗi nguồn. */
+function sourcesText(stats: BatchStats): string {
+  if (stats.sources) return stats.sources.map((s) => `${s.source} ${s.error ?? s.concepts ?? 0}`).join(' · ')
+  return (stats.source_errors ?? []).map((e) => `${e.source} ${e.error}`).join(' · ')
+}
+
+/** Thêm, vào hàng chờ, bị chặn theo danh mục (chỉ số đếm), quota Gemini. */
+function resultText(stats: BatchStats): string {
+  const blocked = Object.entries(stats.blocked ?? {}).map(([k, n]) => `${k} ${n}`)
+  return [`thêm ${stats.added ?? 0}`, `hàng chờ ${stats.queued ?? 0}`, ...blocked, `quota ${stats.quota_used ?? 0}`].join(' · ')
+}
+
 function LogsTab(ctx: Ctx) {
   const [batchPage, setBatchPage] = useState(1)
   const [auditPage, setAuditPage] = useState(1)
-  const batches = useList<BatchItem>(ctx, `batches?page=${batchPage}&size=20`, 0)
+  const batches = useList<BatchItem, { summary?: BatchSummary }>(ctx, `batches?page=${batchPage}&size=20`, 0)
+  const summary = batches.data?.summary
   const audit = useList<AuditItem>(ctx, `audit?page=${auditPage}&size=20`, 0)
   return (
     <>
       <h2>Các đợt</h2>
       <Alert>{batches.error}</Alert>
+      {summary && (
+        <ul className="admin-summary">
+          <li>Tổng khái niệm đã crawl: {summary.crawled_total}</li>
+          <li>Tổng phần tử đã thêm: {summary.added_total}</li>
+          <li>Meme đang trong hàng chờ: {summary.queue_size ?? '-'}</li>
+          <li>Phần tử chưa có ảnh: {summary.without_image ?? '-'}</li>
+        </ul>
+      )}
       <table className="admin-table">
         <thead>
           <tr>
@@ -401,8 +424,9 @@ function LogsTab(ctx: Ctx) {
             <th>Giờ mẻ</th>
             <th>Chế độ</th>
             <th>Trạng thái</th>
-            <th>Thêm / chặn / hàng chờ</th>
-            <th>Lỗi nguồn</th>
+            <th>Nguồn crawl</th>
+            <th>Kết quả</th>
+            <th>Ảnh</th>
             <th>Issue</th>
           </tr>
         </thead>
@@ -417,21 +441,23 @@ function LogsTab(ctx: Ctx) {
                 {b.failed_step && ` (${b.failed_step})`}
                 {b.rollback_to != null && ` → v${b.rollback_to}`}
               </td>
+              {b.mode === 'core' ? <td>không crawl</td> : <td>{sourcesText(b.stats)}</td>}
+              <td>{resultText(b.stats)}</td>
+              <td>{b.stats.images ? `vẽ ${b.stats.images.drawn} · emoji ${b.stats.images.fallback} · chờ vẽ ${b.stats.images.pending}` : '-'}</td>
               <td>
-                {b.stats.added ?? 0} / {Object.values(b.stats.blocked ?? {}).reduce((s, n) => s + n, 0)} / {b.stats.queued ?? 0}
-              </td>
-              <td>{Array.isArray(b.stats.source_errors) ? b.stats.source_errors.map((e) => e.source).join(', ') : ''}</td>
-              <td>
-                {b.issue_url?.startsWith('https://github.com/') && (
+                {b.issue_url?.startsWith('https://github.com/') ? (
                   <a href={b.issue_url} target="_blank" rel="noreferrer">
                     Báo cáo
                   </a>
+                ) : (
+                  '-'
                 )}
               </td>
             </tr>
           ))}
         </tbody>
       </table>
+      {batches.data?.items.length === 0 && <p>Chưa có đợt nào</p>}
       <Pager page={batches.data} onPage={setBatchPage} />
 
       <h2>Audit</h2>

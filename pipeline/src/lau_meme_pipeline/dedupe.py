@@ -20,6 +20,7 @@ def dedupe_key(name: str) -> str:
 class DedupeResult:
     kept: list[RawConcept] = field(default_factory=list)
     dropped: dict[str, str] = field(default_factory=dict)
+    same_as: dict[str, str] = field(default_factory=dict)  # name → the known name the LLM said it is (AC-PIPE-16)
 
 
 def _closest(key: str, existing: Sequence[tuple[str, str]]) -> tuple[float, str]:
@@ -57,10 +58,12 @@ def dedupe(
     if near:
         same = ask_same([{"name": c.name, "existing": closest} for c, closest in near])
     answers = {c.name: s for (c, _), s in zip(near, same, strict=False) if isinstance(s, bool)}
+    closest_of = {c.name: closest for c, closest in near}
     near_names = {c.name for c, _ in near}
     for c in candidates:
         if answers.get(c.name) is True:
             result.dropped[c.name] = "llm_same"
+            result.same_as[c.name] = closest_of[c.name]
         elif c.name in near_names and c.name not in answers:
             # No clear answer (quota, failed call): never published as new; crawled again next batch.
             result.dropped[c.name] = "no_answer"

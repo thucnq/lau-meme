@@ -69,4 +69,7 @@ jobs:
           # Câu hỏi mở 25: danh sách phân tách bằng dấu phẩy; trống thì adapter đó không thu gì.
           REDDIT_SUBREDDITS: ${{ vars.REDDIT_SUBREDDITS }}
           RSS_FEEDS: ${{ vars.RSS_FEEDS }}
+          # Threads qua API chính thức (AC-PIPE-17): thiếu token hoặc từ khóa thì nguồn không thu gì, báo cáo đợt cảnh báo.
+          THREADS_ACCESS_TOKEN: ${{ secrets.THREADS_ACCESS_TOKEN }}
+          THREADS_KEYWORDS: ${{ vars.THREADS_KEYWORDS }}
         run: uv run python -m lau_meme_pipeline.batch --mode "$MODE" --core ../docs/input/noi-dung-loi.json

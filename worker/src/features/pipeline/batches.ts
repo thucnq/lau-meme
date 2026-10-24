@@ -10,7 +10,16 @@ const MAX_STORE_BYTES = 1_900_000
 const STORE_KEYS = ['elements', 'recipes', 'queue', 'asked_pairs', 'llm_cache', 'art_pending', 'core_art'] as const
 const MODES = ['core', 'full'] as const
 
-type Element = { id: string; name: string; fold: string; emoji: string; depth: number; origin: string | null; image_key: string | null }
+type Element = {
+  id: string
+  name: string
+  fold: string
+  emoji: string
+  depth: number
+  origin: string | null
+  image_key: string | null
+  trend_peak: number | null
+}
 type Recipe = { id: string; a: string; b: string; result: string; score: number | null }
 
 type BatchRunRow = {
@@ -41,9 +50,36 @@ export function toBatchRun(row: BatchRunRow) {
   }
 }
 
+const COUNT_KEYS = ['crawled', 'added', 'queued', 'quota_used', 'queue_size', 'without_image', 'core_without_image', 'contributions_waiting']
+const STATS_KEYS = [...COUNT_KEYS, 'blocked', 'source_errors', 'sources', 'images', 'daily_pool_exhausted']
+
+/** BatchStats of the contract: stored as sent and shown on the admin page (AC-ADMIN-11), so checked key by key. */
 function parseStats(value: unknown): string {
-  const keys = ['crawled', 'added', 'blocked', 'queued', 'source_errors', 'quota_used', 'daily_pool_exhausted']
-  const stats = obj(value, 'stats', keys, [])
+  const stats = obj(value, 'stats', STATS_KEYS, [])
+  for (const k of COUNT_KEYS) if (k in stats) int(stats[k], `stats.${k}`, 0)
+  if ('blocked' in stats) {
+    // counts per category only: never element names
+    const blocked = obj(stats.blocked, 'stats.blocked', Object.keys(stats.blocked ?? {}), [])
+    for (const [k, n] of Object.entries(blocked)) int(n, `stats.blocked.${k}`, 0)
+  }
+  if ('source_errors' in stats)
+    arr(stats.source_errors, 'stats.source_errors', 1000).forEach((v, i) => {
+      const e = obj(v, `stats.source_errors[${i}]`, ['source', 'error'])
+      str(e.source, `stats.source_errors[${i}].source`, 50)
+      str(e.error, `stats.source_errors[${i}].error`, 200)
+    })
+  if ('sources' in stats)
+    arr(stats.sources, 'stats.sources', 1000).forEach((v, i) => {
+      const p = `stats.sources[${i}]`
+      const s = obj(v, p, ['source', 'concepts', 'error'])
+      str(s.source, `${p}.source`, 50)
+      if (s.concepts !== null) int(s.concepts, `${p}.concepts`, 0)
+      if (s.error !== null) str(s.error, `${p}.error`, 100)
+    })
+  if ('images' in stats) {
+    const im = obj(stats.images, 'stats.images', ['drawn', 'fallback', 'pending'])
+    for (const k of ['drawn', 'fallback', 'pending']) int(im[k], `stats.images.${k}`, 0)
+  }
   // "Pool thử thách cạn" (AC-DAILY-01)
   if ('daily_pool_exhausted' in stats && typeof stats.daily_pool_exhausted !== 'boolean') fail('stats.daily_pool_exhausted: phải là boolean')
   return JSON.stringify(stats)
@@ -52,7 +88,7 @@ function parseStats(value: unknown): string {
 function parseElements(value: unknown): Element[] {
   return arr(value, 'content.elements', 20000, 1).map((v, i) => {
     const p = `content.elements[${i}]`
-    const e = obj(v, p, ['id', 'name', 'fold', 'emoji', 'depth', 'origin', 'image_key'], ['id', 'name', 'fold', 'emoji', 'depth'])
+    const e = obj(v, p, ['id', 'name', 'fold', 'emoji', 'depth', 'origin', 'image_key', 'trend_peak'], ['id', 'name', 'fold', 'emoji', 'depth'])
     const imageKey = e.image_key ?? null
     if (imageKey !== null && (typeof imageKey !== 'string' || !/^[0-9a-f]{12}\.webp$/.test(imageKey))) fail(`${p}.image_key: sai định dạng`)
     return {
@@ -63,6 +99,8 @@ function parseElements(value: unknown): Element[] {
       depth: int(e.depth, `${p}.depth`, 0),
       origin: e.origin === undefined ? null : oneOf(e.origin, `${p}.origin`, ['vn', 'intl']),
       image_key: imageKey as string | null,
+      // AC-PIPE-16: absent → the stored value is kept
+      trend_peak: e.trend_peak === undefined ? null : int(e.trend_peak, `${p}.trend_peak`, 0),
     }
   })
 }
@@ -224,13 +262,14 @@ export async function publishBatch(req: Request, env: Env): Promise<Response> {
   await db.batch([
     db
       .prepare(
-        `INSERT INTO element (id, name, name_fold, emoji, depth, origin, image_key, first_version, last_version, updated_at)
+        `INSERT INTO element (id, name, name_fold, emoji, depth, origin, image_key, trend_peak, first_version, last_version, updated_at)
          SELECT json_extract(value, '$.id'), json_extract(value, '$.name'), json_extract(value, '$.fold'),
                 json_extract(value, '$.emoji'), json_extract(value, '$.depth'), json_extract(value, '$.origin'),
-                json_extract(value, '$.image_key'), ?2, ?2, ?3
+                json_extract(value, '$.image_key'), json_extract(value, '$.trend_peak'), ?2, ?2, ?3
          FROM json_each(?1) WHERE true
          ON CONFLICT (id) DO UPDATE SET name = excluded.name, name_fold = excluded.name_fold, emoji = excluded.emoji,
            depth = excluded.depth, origin = excluded.origin, image_key = excluded.image_key,
+           trend_peak = COALESCE(excluded.trend_peak, element.trend_peak),
            last_version = excluded.last_version, updated_at = excluded.updated_at`,
       )
       .bind(JSON.stringify(elements), version, now),

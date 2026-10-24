@@ -2,7 +2,7 @@
 
 An adapter returns names, quotes and source passages - never images or videos - and goes through `Http`, which
 reads robots.txt before any page and refuses media. One failing source never fails the batch. There is no
-Facebook or TikTok adapter (BRD 6).
+Facebook or TikTok adapter (BRD 6); Threads only through Meta's official API (AC-PIPE-17).
 """
 
 import http.client
@@ -11,6 +11,7 @@ import re
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, field
 from html import unescape
+from html.parser import HTMLParser
 from urllib.parse import quote, urljoin, urlsplit
 from urllib.robotparser import RobotFileParser
 from xml.etree.ElementTree import Element
@@ -40,6 +41,12 @@ class RobotsDenied(Exception):
 
 class NotText(Exception):
     """The URL or the response is media (image/video) or not a text format."""
+
+
+class PageUnreadable(Exception):
+    """The page answered but none of its articles could be read (its HTML changed, AC-PIPE-15)."""
+
+    report = "không đọc được trang"
 
 
 class Redirect(Exception):
@@ -200,16 +207,128 @@ class YoutubeTrendingAdapter:
         return out
 
 
+class _TuoiTreList(HTMLParser):
+    """Articles of a Tuổi Trẻ category page: `box-category-item` blocks, each with a title link
+    (`box-category-link-title`) and a summary (`box-category-sapo`). Thumbnails and other links are never read."""
+
+    def __init__(self) -> None:
+        super().__init__(convert_charrefs=True)
+        self.items: list[dict[str, str]] = []
+        self._field: str | None = None
+
+    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        a = dict(attrs)
+        classes = (a.get("class") or "").split()
+        if "box-category-item" in classes:
+            self.items.append({"title": "", "href": "", "sapo": ""})
+        elif self.items and "box-category-link-title" in classes:
+            self.items[-1]["href"] = a.get("href") or ""
+            self._field = "title"
+        elif self.items and "box-category-sapo" in classes:
+            self._field = "sapo"
+
+    def handle_endtag(self, tag: str) -> None:
+        if tag in ("a", "p", "h3", "div"):
+            self._field = None
+
+    def handle_data(self, data: str) -> None:
+        if self._field and self.items:
+            self.items[-1][self._field] += data
+
+
+class TuoiTreAdapter:
+    """Category page 1 of tuoitre.vn/meme.html only (AC-PIPE-15): no article page, no next page, no image."""
+
+    name = "Tuổi Trẻ"
+    url = "https://tuoitre.vn/meme.html"
+
+    def fetch(self, http: Http) -> list[RawConcept]:
+        page = _TuoiTreList()
+        page.feed(http.text(self.url))
+        out: list[RawConcept] = []
+        for item in page.items:
+            name, href = _clip(item["title"]), item["href"].strip()
+            if name and href:
+                out.append(RawConcept(name, "", _clip(item["sapo"]), urljoin(self.url, href), self.name))
+        if not out:
+            raise PageUnreadable()
+        return out
+
+
+THREADS_API = "https://graph.threads.net/v1.0/keyword_search"
+THREADS_MAX_POSTS = 50
+MAX_THREADS_NAME = 100
+# The permalink names the poster (`/@user/post/<code>`); the short form `/t/<code>` opens the same post without it.
+_THREADS_USER_LINK = re.compile(r"^https://(?:www\.)?threads\.(?:net|com)/@[^/]+/post/([\w-]+)")
+
+
+def _threads_link(permalink: str) -> str:
+    match = _THREADS_USER_LINK.match(permalink)
+    if match:
+        return f"https://www.threads.net/t/{match.group(1)}"
+    return "" if "@" in permalink else permalink
+
+
+def _threads_name(text: str) -> str:
+    line = _clip(text.strip().splitlines()[0] if text.strip() else "")
+    if len(line) <= MAX_THREADS_NAME:
+        return line
+    return line[:MAX_THREADS_NAME].rsplit(" ", 1)[0] or line[:MAX_THREADS_NAME]
+
+
+class ThreadsAdapter:
+    """Keyword search of the official Threads API (AC-PIPE-17). Only text and permalink are asked for and kept: no
+    username, avatar, profile link or media. Without a token or keywords it collects nothing (a config warning)."""
+
+    name = "Threads"
+
+    def __init__(self, access_token: str | None, keywords: Sequence[str]) -> None:
+        self.access_token = access_token or ""
+        self.keywords = [k.strip() for k in keywords if k and k.strip()]
+
+    @property
+    def missing_config(self) -> bool:
+        return not self.access_token or not self.keywords
+
+    def fetch(self, http: Http) -> list[RawConcept]:
+        if self.missing_config:
+            return []
+        out: list[RawConcept] = []
+        seen: set[str] = set()
+        for keyword in self.keywords:
+            if len(out) >= THREADS_MAX_POSTS:
+                break
+            url = (
+                f"{THREADS_API}?q={quote(keyword)}&search_type=TOP&fields=id,text,permalink"
+                f"&limit={THREADS_MAX_POSTS}&access_token={quote(self.access_token)}"
+            )
+            for post in json.loads(http.text(url)).get("data", []):
+                text = post.get("text") or ""
+                name, link = _threads_name(text), _threads_link(post.get("permalink") or "")
+                if not name or post.get("id") in seen:
+                    continue
+                seen.add(post.get("id"))
+                out.append(RawConcept(name, _clip(text), "", link, self.name))
+                if len(out) >= THREADS_MAX_POSTS:
+                    break
+        return out
+
+
+def _csv(value: str) -> list[str]:
+    return [v.strip() for v in value.split(",") if v.strip()]
+
+
 def default_adapters(env: Mapping[str, str]) -> list:
-    """The five sources of BRD 6. Subreddits and RSS feeds come from configuration (open question #25)."""
-    subs = [s for s in env.get("REDDIT_SUBREDDITS", "").split(",") if s.strip()]
-    feeds = [f for f in env.get("RSS_FEEDS", "").split(",") if f.strip()]
+    """The sources of BRD 6 plus Tuổi Trẻ and Threads (AC-PIPE-15/17). Subreddits, RSS feeds and Threads keywords
+    come from configuration (open question #25)."""
     return [
-        RedditAdapter(subs),
+        RedditAdapter(_csv(env.get("REDDIT_SUBREDDITS", ""))),
         KnowYourMemeAdapter(),
         GoogleTrendsVnAdapter(),
         YoutubeTrendingAdapter(env.get("YOUTUBE_API_KEY", "")),
-        RssAdapter(feeds),
+        RssAdapter(_csv(env.get("RSS_FEEDS", ""))),
+        TuoiTreAdapter(),
+        ThreadsAdapter(env.get("THREADS_ACCESS_TOKEN", ""), _csv(env.get("THREADS_KEYWORDS", ""))),
     ]
 
 
@@ -250,20 +369,37 @@ def http_get(url: str) -> tuple[str, str]:
 class CrawlResult:
     concepts: list[RawConcept] = field(default_factory=list)
     errors: list[dict] = field(default_factory=list)
+    # One entry per adapter, in order (AC-ADMIN-11): concepts collected, or the error and `concepts` None.
+    sources: list[dict] = field(default_factory=list)
+    unconfigured: list[str] = field(default_factory=list)
 
 
 def crawl(adapters: Sequence, http: Http) -> CrawlResult:
     """Every adapter runs; a failing one is reported by error type only (its message may hold a URL or key)."""
     result = CrawlResult()
     for adapter in adapters:
+        if getattr(adapter, "missing_config", False):
+            result.unconfigured.append(adapter.name)
         try:
-            result.concepts.extend(adapter.fetch(http))
+            found = adapter.fetch(http)
         except Exception as exc:
-            result.errors.append({"source": adapter.name, "error": type(exc).__name__})
+            error = getattr(exc, "report", None) or type(exc).__name__
+            result.errors.append({"source": adapter.name, "error": error})
+            result.sources.append({"source": adapter.name, "concepts": None, "error": error})
+            continue
+        result.concepts.extend(found)
+        result.sources.append({"source": adapter.name, "concepts": len(found), "error": None})
     return result
 
 
 def crawl_report_line(result: CrawlResult) -> str:
     if not result.errors:
         return "Lỗi nguồn: không có"
-    return ", ".join(f"{e['source']}: lỗi {e['error']}" for e in result.errors)
+    return ", ".join(source_error_text(e) for e in result.errors)
+
+
+def source_error_text(error: Mapping[str, str]) -> str:
+    """An exception type reads "Reddit: lỗi RobotsDenied"; a described error as is ("Tuổi Trẻ: không đọc được
+    trang", AC-PIPE-15)."""
+    text = str(error.get("error", ""))
+    return f"{error.get('source')}: {text}" if " " in text else f"{error.get('source')}: lỗi {text}"
