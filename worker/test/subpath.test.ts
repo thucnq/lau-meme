@@ -2,7 +2,7 @@
 /// <reference types="vite/client" />
 // Worker tests run on the real static assets (web/dist), so the web must be built before this file runs.
 import { SELF, env } from 'cloudflare:test'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import stackToml from '../../.dk/stack.toml?raw'
 import wranglerRaw from '../wrangler.jsonc?raw'
 
@@ -185,5 +185,67 @@ describe('subpath', () => {
       expect(res.headers.get('content-type')).toContain('application/problem+json')
       expect(await res.text()).not.toContain('<div id="root">')
     }
+  })
+
+  // ============================================================== AC-SUBPATH-13
+  // Trang chính sách /lau-meme/chinh-sach phải mở được bằng GET/HEAD không cần Accept: text/html
+  // (trình quét của Meta/Threads gửi Accept */* hoặc không có Accept).
+  const POLICY_PATHS = ['/lau-meme/chinh-sach', '/lau-meme/chinh-sach/']
+  const POLICY_HEADER_SETS: Array<[string, Record<string, string>]> = [
+    ['không Accept', {}],
+    ['Accept */*', { Accept: '*/*' }],
+    ['User-Agent facebookexternalhit/1.1', { 'User-Agent': 'facebookexternalhit/1.1' }],
+  ]
+
+  it('AC-SUBPATH-13: GET trang chính sách (có và không có dấu / cuối) trả 200 text/html là index.html dù không có Accept: text/html', async () => {
+    const dbSpy = vi.spyOn(env.DB, 'prepare')
+    for (const p of POLICY_PATHS) {
+      for (const [name, headers] of POLICY_HEADER_SETS) {
+        const label = `GET ${p} (${name})`
+        const res = await get(p, headers)
+        expect(res.status, label).toBe(200)
+        expect(isHtml(res), label).toBe(true)
+        expect(await res.text(), label).toContain('<div id="root">')
+      }
+    }
+    expect(dbSpy).not.toHaveBeenCalled()
+    dbSpy.mockRestore()
+  })
+
+  it('AC-SUBPATH-13: HEAD trang chính sách trả 200 text/html và body rỗng', async () => {
+    for (const p of POLICY_PATHS) {
+      for (const [name, headers] of POLICY_HEADER_SETS) {
+        const label = `HEAD ${p} (${name})`
+        const res = await get(p, headers, { method: 'HEAD' })
+        expect(res.status, label).toBe(200)
+        expect(isHtml(res), label).toBe(true)
+        expect(await res.text(), label).toBe('')
+      }
+    }
+  })
+
+  it('AC-SUBPATH-13: POST /lau-meme/chinh-sach không trả HTML của game', async () => {
+    const headerSets: Array<Record<string, string>> = [{}, { Accept: '*/*' }, HTML]
+    for (const headers of headerSets) {
+      const res = await get('/lau-meme/chinh-sach', headers, { method: 'POST', body: '{}' })
+      const label = JSON.stringify(headers)
+      expect(res.status, label).toBeGreaterThanOrEqual(400)
+      expect(isHtml(res), label).toBe(false)
+      expect(await res.text(), label).not.toContain('<div id="root">')
+    }
+  })
+
+  it('AC-SUBPATH-13: file không có trong /lau-meme/assets/ với Accept */* vẫn 404, không trả HTML', async () => {
+    const res = await get('/lau-meme/assets/khong-co.js', { Accept: '*/*' })
+    expect(res.status).toBe(404)
+    expect(isHtml(res)).toBe(false)
+    expect(await res.text()).not.toContain('<div id="root">')
+  })
+
+  it('AC-SUBPATH-13: /lau-meme/chinh-sach-abc không có Accept vẫn 404, không trả HTML', async () => {
+    const res = await get('/lau-meme/chinh-sach-abc')
+    expect(res.status).toBe(404)
+    expect(isHtml(res)).toBe(false)
+    expect(await res.text()).not.toContain('<div id="root">')
   })
 })
