@@ -24,7 +24,6 @@
  *   fn:     initialProgress(manifest, now: Date): Progress            // 4 starters, bàn rỗng, sort 'newest'
  *           loadProgress(storage: Storage): Progress | null           // null nếu chưa có / hỏng
  *           saveProgress(storage: Storage, p: Progress): void
- *           resetProgress(storage: Storage): void                     // CHỈ xóa PROGRESS_KEY
  *           migrateProgress(p: Progress, manifest: Manifest): Progress // giữ items, graph_version = manifest.version
  *           visibleItems(p, blocklist): Item[]                        // lọc phần tử bị chặn, KHÔNG sửa p
  *           visibleTable(p, blocklist): TableItem[]
@@ -54,7 +53,6 @@ import {
   lookupRecipe,
   migrateProgress,
   missLine,
-  resetProgress,
   resolveTheme,
   saveProgress,
   sortItems,
@@ -421,27 +419,8 @@ describe('game engine', () => {
   })
 
   // ------------------------------------------------------------ AC-GAME-11
-  it('AC-GAME-11: resetProgress xóa tiến độ nhưng giữ mọi khóa khác (UUID, nickname, Daily/streak)', () => {
-    const p = base()
-    for (let i = 0; i < 4; i++) p.items.push(item(`Món ${i}`, '🍲', 1, 7, '2026-10-20T04:00:00.000Z'))
-    saveProgress(localStorage, p)
-    const keep: Record<string, string> = {
-      'lm.player_id': '3f0a7f0e-2f52-4c7a-9f5f-0c2b1a1d9e11',
-      'lm.nickname': 'Thực khách',
-      'lm.daily.7': '{"steps":9}',
-      'lm.streak': '{"current":3}',
-      unrelated: 'x',
-    }
-    for (const [k, v] of Object.entries(keep)) localStorage.setItem(k, v)
-    localStorage.setItem(THEME_KEY, 'dark')
-
-    resetProgress(localStorage)
-
-    expect(localStorage.getItem(PROGRESS_KEY)).toBeNull()
-    expect(loadProgress(localStorage)).toBeNull()
-    for (const [k, v] of Object.entries(keep)) expect(localStorage.getItem(k)).toBe(v)
-    expect(localStorage.getItem(THEME_KEY)).toBe('dark')
-  })
+  // Cập nhật 2026-10-24 (câu hỏi mở 71): bỏ "Chơi lại từ đầu" nên không còn hàm xóa tiến độ nào để kiểm ở tầng engine.
+  // Hành vi "Dọn bàn chỉ xóa bàn, giữ Đĩa/UUID/nickname/Daily" và "không còn nút Chơi lại từ đầu" được kiểm ở Game.test.tsx.
 
   // ------------------------------------------------------------ AC-GAME-12
   it('AC-GAME-12: trạng thái đã xem hướng dẫn được lưu; tiến độ mới chưa xem', () => {

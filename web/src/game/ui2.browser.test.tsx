@@ -1,6 +1,6 @@
 /**
  * UI2 layout acceptance tests in real Chromium (Vitest browser mode + Playwright), as AC-GAME-18:
- * AC-GAME-19 (nút điều khiển trong khu bàn, không đè nồi), AC-GAME-20 (hàng lửa và quai nồi),
+ * AC-GAME-19 (nút điều khiển "Dọn bàn" và "?" trong khu bàn, không đè nồi; không còn "Chơi lại từ đầu" - cập nhật 2026-10-24), AC-GAME-20 (hàng lửa và quai nồi),
  * AC-GAME-21 (touch-action), AC-DAILY-16 (cỡ chữ và màu nền thẻ).
  *
  * PUBLIC SURFACE THIS FILE REQUIRES (data-testid hooks for geometry, since roles carry no boxes)
@@ -134,11 +134,12 @@ describe.each([
   { name: 'PC', width: 1366, height: 768 },
   { name: 'mobile', width: 390, height: 844 },
 ])('ui2 bố cục nút điều khiển ($name $width×$height)', (vp) => {
-  it(`AC-GAME-19: "Dọn bàn", "Chơi lại từ đầu", "?" nằm trong khu bàn lẩu, không đè lên nồi (${vp.name})`, async () => {
+  it(`AC-GAME-19: "Dọn bàn" và "?" nằm trong khu bàn lẩu, không đè lên nồi, không có "Chơi lại từ đầu" (${vp.name})`, async () => {
     await open(vp)
     const table = rect(screen.getByTestId('table'))
     const potBox = rect(screen.getByTestId('pot'))
-    const buttons = ['Dọn bàn', 'Chơi lại từ đầu', '?'].map((n) => screen.getByRole('button', { name: n }))
+    expect(screen.queryAllByRole('button', { name: /chơi lại từ đầu/i })).toHaveLength(0)
+    const buttons = ['Dọn bàn', '?'].map((n) => screen.getByRole('button', { name: n }))
     const header = screen.getByRole('banner')
     for (const b of buttons) {
       const r = rect(b)
@@ -162,14 +163,14 @@ describe.each([
     }
     if (vp.name !== 'PC') {
       const tops = buttons.map((b) => rect(b).top)
-      expect(Math.max(...tops) - Math.min(...tops), 'ba nút cùng một hàng').toBeLessThan(8)
+      expect(Math.max(...tops) - Math.min(...tops), 'hai nút cùng một hàng').toBeLessThan(8)
     }
   })
 
-  it(`AC-GAME-19: đầu trang không chứa ba nút điều khiển và không bị đẩy ra ngoài khung nhìn (${vp.name})`, async () => {
+  it(`AC-GAME-19: đầu trang không chứa hai nút điều khiển và không bị đẩy ra ngoài khung nhìn (${vp.name})`, async () => {
     await open(vp)
     const header = screen.getByRole('banner')
-    for (const n of ['Dọn bàn', 'Chơi lại từ đầu', '?']) expect(within(header).queryByRole('button', { name: n })).toBeNull()
+    for (const n of ['Dọn bàn', '?']) expect(within(header).queryByRole('button', { name: n })).toBeNull()
     const r = rect(header)
     expect(r.right).toBeLessThanOrEqual(window.innerWidth + 0.5)
     expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(window.innerWidth)
