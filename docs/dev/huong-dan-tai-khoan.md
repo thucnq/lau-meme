@@ -315,7 +315,61 @@ Mẻ `full` crawl meme rồi gọi Gemini để khử trùng, mô tả, kiểm d
    - Variable `REDDIT_SUBREDDITS`, `RSS_FEEDS`: danh sách phân tách bằng dấu phẩy (câu hỏi mở 25). Để trống thì nguồn đó không thu gì; Know Your Meme và Google Trends VN chạy không cần cấu hình.
    - Secret `YOUTUBE_API_KEY` (tùy chọn): khóa YouTube Data API v3; không có thì nguồn YouTube báo lỗi trong báo cáo đợt, các nguồn khác vẫn chạy (AC-PIPE-03).
    - Tuổi Trẻ (`https://tuoitre.vn/meme.html`, AC-PIPE-15) chạy không cần cấu hình; giao diện trang đổi thì báo cáo đợt ghi "Tuổi Trẻ: không đọc được trang".
-   - Secret `THREADS_ACCESS_TOKEN` và variable `THREADS_KEYWORDS` (vd. `meme,trend`) cho nguồn Threads qua API chính thức (AC-PIPE-17). Token lấy từ app Meta đã được duyệt quyền tìm theo từ khóa; thiếu một trong hai thì nguồn Threads không thu gì và báo cáo đợt cảnh báo "Threads: thiếu cấu hình". Token hết hạn / chưa được duyệt (401, 403) hoặc bị giới hạn (429) hiện ở dòng lỗi nguồn.
+   - Secret `THREADS_ACCESS_TOKEN` và variable `THREADS_KEYWORDS` (vd. `meme,trend`) cho nguồn Threads qua API chính thức (AC-PIPE-17). Cách lấy và cài: mục 8.1. Token lấy từ app Meta đã được duyệt quyền tìm theo từ khóa; thiếu một trong hai thì nguồn Threads không thu gì và báo cáo đợt cảnh báo "Threads: thiếu cấu hình". Token hết hạn / chưa được duyệt (401, 403) hoặc bị giới hạn (429) hiện ở dòng lỗi nguồn.
    - Variable `BATCH_MODE`: để trống (cron chạy `core`) cho tới khi chạy tay `full` ổn định, rồi đặt `full` để cron tự crawl.
 3. Chép `docs/dev/workflows/batch.yml` vào `.github/workflows/batch.yml` (agent không được sửa workflow).
 4. Thử: Actions → batch → Run workflow → mode `full`, target `staging`. Xem GitHub Issue báo cáo đợt: số crawl/thêm/bị chặn/hàng chờ, lỗi từng nguồn, quota Gemini.
+
+### 8.1. Threads - `THREADS_ACCESS_TOKEN` và `THREADS_KEYWORDS`
+Pipeline gọi `GET https://graph.threads.net/v1.0/keyword_search` (API tìm theo từ khóa của Meta) bằng token người dùng Threads. Cần một tài khoản Threads (đăng nhập bằng Instagram) để làm chủ app; tài khoản này là "người dùng" của token, mọi lượt tìm tính vào hạn mức của nó.
+
+**Bước 1 - Tạo app Meta**
+1. Vào https://developers.facebook.com/apps → **Create app** → chọn use case **Access the Threads API**.
+2. **Use cases** → **Access the Threads API** → **Permissions**: giữ `threads_basic` (bắt buộc), bấm **Add** cạnh `threads_keyword_search`.
+3. **Settings** của use case: chép **Threads app ID** và **Threads app secret** (secret là bí mật, không dán vào chat/issue/commit). Ở **Client OAuth Settings** thêm redirect URI `https://staging.dinoduct.fun/lau-meme/` (chỉ dùng để nhận `code` trên thanh địa chỉ, trang không xử lý gì). Điền **Deauthorize callback URL** và **Data Deletion Requests URL** (có thể dùng cùng URL trên) → **Save**.
+4. **Add or Remove Threads Test Users** → **App roles > Roles** → **Add People** → vai trò **Threads Testers** → nhập tên tài khoản Threads. Mở app Threads bằng tài khoản đó → **Cài đặt → Tài khoản → Quyền đối với website → Lời mời** → chấp nhận.
+
+**Bước 2 - Duyệt quyền tìm theo từ khóa (App Review)**
+Chưa được duyệt `threads_keyword_search` thì API chỉ tìm trong bài **của chính tài khoản** cấp token: không lỗi nhưng gần như không thu được meme. Để tìm bài công khai, gửi App Review cho `threads_keyword_search` (mục **Testing** rồi **App Review** trong dashboard). Meta yêu cầu app được publish, mà publish cần: icon app (512x512 đến 1024x1024), URL chính sách quyền riêng tư, URL/callback xóa dữ liệu. Hiện lau-meme chưa có trang chính sách quyền riêng tư công khai: cần quyết định trước khi gửi duyệt.
+
+**Bước 3 - Lấy token dài hạn (60 ngày)**
+1. Mở trình duyệt (đăng nhập Threads bằng tài khoản tester):
+   ```
+   https://threads.net/oauth/authorize?client_id=<APP_ID>&redirect_uri=https://staging.dinoduct.fun/lau-meme/&scope=threads_basic,threads_keyword_search&response_type=code
+   ```
+   Đồng ý → trình duyệt chuyển về `https://staging.dinoduct.fun/lau-meme/?code=...#_`. Chép giá trị `code` (bỏ đuôi `#_`). Code dùng một lần, hết hạn sau 1 giờ.
+2. Đổi code lấy token ngắn hạn (1 giờ), rồi đổi sang token dài hạn (60 ngày). Lệnh đọc secret/code bằng `read -s` nên không hiện trên màn hình và không nằm trong lịch sử shell:
+   ```bash
+   read -rp "App ID: " APP_ID; read -rsp "App secret: " APP_SECRET; echo; read -rsp "Code: " CODE; echo
+   SHORT=$(curl -fsS -X POST https://graph.threads.net/oauth/access_token \
+     -d client_id="$APP_ID" -d client_secret="$APP_SECRET" -d grant_type=authorization_code \
+     -d redirect_uri=https://staging.dinoduct.fun/lau-meme/ -d code="$CODE" | jq -r .access_token)
+   LONG=$(curl -fsS -G https://graph.threads.net/access_token -d grant_type=th_exchange_token \
+     --data-urlencode client_secret="$APP_SECRET" --data-urlencode access_token="$SHORT" | jq -r .access_token)
+   ```
+3. Thử token (in số bài, không in token):
+   ```bash
+   curl -fsS -G https://graph.threads.net/v1.0/keyword_search --data-urlencode q=meme \
+     -d search_type=TOP -d fields=id,text,permalink --data-urlencode access_token="$LONG" | jq '.data | length'
+   ```
+   Ra số > 0 với từ khóa phổ biến là ổn. Chưa qua Bước 2 thì thường ra `0`.
+
+**Bước 4 - Cài vào GitHub** (lặp cho `staging` và `production-no-approval`)
+```bash
+printf %s "$LONG" | gh secret set THREADS_ACCESS_TOKEN --env staging
+gh variable set THREADS_KEYWORDS --env staging --body "meme,meme việt,trend,hài"
+unset APP_SECRET CODE SHORT LONG
+```
+Hoặc trên web: GitHub → Settings → Environments → `staging` → **Add environment secret** / **Add environment variable**.
+- `THREADS_KEYWORDS`: phân tách bằng dấu phẩy, khoảng trắng hai bên mỗi từ được bỏ. Mỗi từ khóa là một lượt gọi API mỗi mẻ; pipeline dừng khi đủ 50 bài nên từ khóa đặt trước được ưu tiên. Hạn mức của Meta: 2.200 lượt tìm mỗi 24 giờ cho mỗi tài khoản (cộng dồn mọi app), thừa sức cho 12 mẻ/ngày ở staging.
+- Kiểm tra: Actions → batch → Run workflow → mode `full`, target `staging`; báo cáo đợt có dòng nguồn Threads, không có "Threads: thiếu cấu hình".
+
+**Gia hạn token (trước 60 ngày)**
+Token dài hạn hết hạn sau 60 ngày; hết hạn thì không gia hạn được, phải làm lại Bước 3 (báo cáo đợt sẽ ghi "Threads: 401"). Gia hạn được khi token đã cấp ít nhất 24 giờ và chưa hết hạn; mỗi lần gia hạn tính lại 60 ngày. Đặt lịch nhắc khoảng 50 ngày một lần:
+```bash
+read -rsp "Token hiện tại: " LONG; echo
+NEW=$(curl -fsS -G https://graph.threads.net/refresh_access_token -d grant_type=th_refresh_token \
+  --data-urlencode access_token="$LONG" | jq -r .access_token)
+for e in staging production-no-approval; do printf %s "$NEW" | gh secret set THREADS_ACCESS_TOKEN --env "$e"; done
+unset LONG NEW
+```
