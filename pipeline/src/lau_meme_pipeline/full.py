@@ -422,6 +422,8 @@ def _illustrate(
             and eid not in blocked
             and not e.get("image_key")
             and not e.get("image_fallback")
+            # a core element with no hint is only skipped (and not counted) until the core file gives it one
+            and (eid not in core_art or bool(hint(eid).strip()))
         )
 
     def hint(eid: str) -> str:
