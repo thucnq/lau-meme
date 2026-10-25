@@ -50,8 +50,8 @@
   }
  },
  "green": {
-  "ts": "2026-10-25T17:09:02+00:00",
-  "commit": "9fadba8",
+  "ts": "2026-10-25T19:31:28+00:00",
+  "commit": "25ddd97",
   "results": {
    "AC-ART-01": {
     "status": "PASS",
@@ -104,6 +104,10 @@
    "AC-ART-13": {
     "status": "PASS",
     "test": "test_art_admin_images#test_ac_art_13_pipeline_khong_ve_phan_tu_co_anh_admin_va_giu_khoa_admin_trong_content_va_graph"
+   },
+   "AC-ART-14": {
+    "status": "PASS",
+    "test": "test_art_image_links#test_ac_art_14_check_target_chap_nhan_https_voi_dia_chi_cong_khai"
    },
    "AC-ART-VALIDATION": {
     "status": "PASS",

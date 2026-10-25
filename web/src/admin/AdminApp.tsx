@@ -320,6 +320,7 @@ function ContributionsTab(ctx: Ctx) {
   const [draft, setDraft] = useState<Record<EditField, string>>({ name: '', emoji: '', description: '', image_url: '' })
   const [hint, setHint] = useState('')
   const [tier, setTierValue] = useState(1)
+  const [useLink, setUseLink] = useState(false)
   const [reason, setReason] = useState('')
   const [actionError, setActionError] = useState<string | null>(null)
 
@@ -329,6 +330,7 @@ function ContributionsTab(ctx: Ctx) {
     setDraft({ name: c.name, emoji: c.emoji ?? '', description: c.description ?? '', image_url: c.image_url ?? '' })
     setHint('')
     setTierValue(1)
+    setUseLink(false)
     setReason('')
   }
   const run = (task: Promise<unknown>) =>
@@ -373,7 +375,7 @@ function ContributionsTab(ctx: Ctx) {
       return (
         <form
           className="admin-inline"
-          onSubmit={(e: FormEvent) => (e.preventDefault(), void run(approveContribution(ctx.token, c.id, hint.trim(), tier)))}
+          onSubmit={(e: FormEvent) => (e.preventDefault(), void run(approveContribution(ctx.token, c.id, hint.trim(), tier, useLink && c.image_url !== null)))}
         >
           <label>
             Gợi ý ảnh
@@ -389,6 +391,12 @@ function ContributionsTab(ctx: Ctx) {
               ))}
             </select>
           </label>
+          {c.image_url !== null && (
+            <label>
+              <input type="checkbox" checked={useLink} onChange={(e) => setUseLink(e.target.checked)} />
+              Dùng link làm ảnh
+            </label>
+          )}
           <button type="submit">Xác nhận duyệt</button>
           <button type="button" onClick={() => setOpen(null)}>
             Hủy

@@ -131,6 +131,7 @@ export type ContributionItem = {
   status: ContributionStatus
   reject_reason: string | null
   image_hint: string | null
+  use_image_url?: boolean
   tier: number
   element_id: string | null
   nickname: string
@@ -142,8 +143,12 @@ export type ContributionEdit = Partial<Pick<ContributionItem, 'name' | 'emoji' |
 export const editContribution = (token: string, id: string, body: ContributionEdit) =>
   call<ContributionItem>(token, `contributions/${id}`, { method: 'PATCH', body })
 
-export const approveContribution = (token: string, id: string, image_hint: string, tier: number) =>
-  call<ContributionItem>(token, `contributions/${id}/approve`, { method: 'POST', body: { image_hint, tier } })
+/** `useLink` (AC-ART-14): the pipeline fetches the proposal's image link in the next full batch; sent only when chosen. */
+export const approveContribution = (token: string, id: string, image_hint: string, tier: number, useLink = false) =>
+  call<ContributionItem>(token, `contributions/${id}/approve`, {
+    method: 'POST',
+    body: useLink ? { image_hint, tier, use_image_url: true } : { image_hint, tier },
+  })
 
 export const rejectContribution = (token: string, id: string, reason: string) =>
   call<ContributionItem>(token, `contributions/${id}/reject`, { method: 'POST', body: { reason } })

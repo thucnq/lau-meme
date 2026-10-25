@@ -144,6 +144,8 @@ def run_full(
     tiers: Sequence[Mapping] = (),
     blocked_images: frozenset[str] = frozenset(),
     admin_images: Mapping[str, str] | None = None,
+    image_links: Mapping[str, str] | None = None,
+    link_image: Callable[[str], str] | None = None,
     contributions: Sequence[Mapping] = (),
     first_versions: Mapping[str, int] | None = None,
     trend_peaks: Mapping[str, int] | None = None,
@@ -380,6 +382,20 @@ def run_full(
             batch=CLASSIC if held_now else e.batch,  # no "MỚI" while held (AC-MOD-08)
         )
     content = replace(content, elements=elements)
+    # links the admin chose as the picture (AC-ART-14, ADR 0018), for elements in this graph only: never drawn, a
+    # failure keeps the emoji and the next batch retries; the url itself goes nowhere else
+    linked = {eid: url for eid, url in (image_links or {}).items() if eid in content.elements and eid not in drawings}
+    fetched: dict[str, str] = {}
+    report["link_images_failed"] = 0
+    for eid, url in sorted(linked.items()):
+        if link_image is None or content.elements[eid].status != ACTIVE:
+            continue
+        try:
+            fetched[eid] = link_image(url)
+        except Exception:
+            report["link_images_failed"] += 1
+    content = apply_images(content, fetched)
+    drawings |= fetched
     for e in out_store["elements"]:
         e["depth"] = depths.get(e["id"], 0)
     report["supplement_needed"] = len(needs_supplement(_graph(content, frozenset(blocked))))
@@ -401,7 +417,7 @@ def run_full(
             report,
             tiers,
             blocked_images,
-            frozenset(drawings),
+            frozenset(drawings) | frozenset(linked),
         )
 
     # 7. Daily (AC-DAILY-01): core elements with a hand-written hint, plus trend elements with an approved hint that
@@ -485,7 +501,7 @@ def _illustrate(
     batches keeps its emoji for good (AC-ART-02). One with no hint yet is only skipped: a later hint is drawn.
     Approved contributions are drawn like this batch's new elements, from the admin's hint only (AC-CONTRIB-09).
     Core elements without an image come last, shallowest first, then by folded name (AC-ART-11).
-    Elements with an admin drawing are never drawn, even when that drawing is hidden (AC-ART-13)."""
+    Elements with an admin drawing or an image link are never drawn, even when that drawing is hidden (AC-ART-13/14)."""
     trend = {e["id"]: e for e in out_store["elements"]} | dict(core_art) | dict(contrib_art)
     # elements whose hint is in the content (core file, admin's hint) rather than in the store entry
     fixed = {**core_art, **contrib_art}
