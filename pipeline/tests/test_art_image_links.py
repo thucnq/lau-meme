@@ -123,6 +123,7 @@ def test_ac_art_14_check_target_chap_nhan_https_voi_dia_chi_cong_khai():
     check_target(URL, [PUBLIC_V4])
     check_target(URL, [PUBLIC_V6])
     check_target(URL, [PUBLIC_V4, PUBLIC_V6])
+    check_target("https://example.com:443/a.png", [PUBLIC_V4])
 
 
 @pytest.mark.parametrize(
@@ -150,6 +151,8 @@ def test_ac_art_14_check_target_chap_nhan_https_voi_dia_chi_cong_khai():
         "100.127.255.254",
         "::ffff:127.0.0.1",
         "::ffff:10.0.0.1",
+        "64:ff9b::7f00:1",  # NAT64 of 127.0.0.1
+        "2002:7f00:1::1",  # 6to4 of 127.0.0.1
     ],
 )
 def test_ac_art_14_check_target_tu_choi_dia_chi_noi_bo_loopback_mang_rieng(address):
@@ -183,6 +186,9 @@ def test_ac_art_14_check_target_tu_choi_danh_sach_dia_chi_rong():
         "https:///a.png",
         "https://",
         "",
+        "https://example.com:6379/a.png",
+        "https://example.com:8443/a.png",
+        "https://example.com:99999/a.png",
     ],
 )
 def test_ac_art_14_check_target_chi_nhan_https_co_may_chu(url):
@@ -417,7 +423,29 @@ def test_ac_art_14_link_loi_thi_giu_emoji_khong_ve_va_bao_cao_dem_khong_ghi_link
     assert failed_count(reporter) == 1
     text = reporter.issues[0][1]
     assert URL not in text and "example.com" not in text
+    assert f"- Lỗi link ảnh theo loại: {type(exc).__name__} 1" in text
     assert client.puts == []
+
+
+def test_ac_art_14_read_body_doc_theo_khuc_toi_da_1_mb_va_het_gio_tong():
+    """AC-ART-14: thân đọc theo khúc, dừng ở MAX_LINK_BYTES + 1 byte; máy chủ trả nhỏ giọt quá hạn chót tổng
+    (15 giây cho cả lần tải) thì bị từ chối."""
+    from lau_meme_pipeline.links import MAX_LINK_BYTES, LinkRefused, read_body
+
+    data = b"x" * (MAX_LINK_BYTES + 100)
+    sent = []
+
+    def read(n):
+        chunk = data[sum(sent) : sum(sent) + n]
+        sent.append(len(chunk))
+        return chunk
+
+    assert len(read_body(read, deadline=10.0, clock=lambda: 0.0)) == MAX_LINK_BYTES + 1
+    chunks = iter([b"ab", b"c", b""])
+    assert read_body(lambda n: next(chunks), deadline=10.0, clock=lambda: 0.0) == b"abc"
+    ticks = iter([0.0, 5.0, 16.0])
+    with pytest.raises(LinkRefused):
+        read_body(lambda n: b"a", deadline=15.0, clock=lambda: next(ticks))
 
 
 def test_ac_art_14_khong_co_ham_tai_link_van_khong_ve_phan_tu_va_me_thanh_cong():

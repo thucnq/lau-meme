@@ -13,9 +13,9 @@
 - **Lựa chọn lưu lúc duyệt:** `POST /admin/contributions/{id}/approve` nhận `use_image_url` (mặc định `false`). `true` mà đề xuất không có link → 400. Lưu ở cột mới `contribution.use_image_url` (migration `0009`, thêm cột có mặc định, expand-only). Audit `approve_contribution` ghi kèm giá trị này.
 - **Pipeline tải ở mẻ `full`:**
   - `PipelineState.image_links` = các đề xuất đã duyệt có `use_image_url = 1` mà phần tử chưa có ảnh admin: `{element_id, url}`.
-  - Adapter mạng riêng (mock trong test): chỉ `https://`, tối đa 1 MB, hết giờ 15 giây, tối đa 3 lần chuyển hướng và mỗi lần đều kiểm lại. Phân giải tên miền rồi từ chối địa chỉ loopback, riêng, link-local, dành riêng.
+  - Adapter mạng riêng (mock trong test): chỉ `https://` cổng 443, tối đa 1 MB, hạn chót 15 giây cho cả lần tải (mọi bước chuyển hướng và mọi khúc thân), tối đa 3 lần chuyển hướng và mỗi lần đều kiểm lại. Phân giải tên miền rồi từ chối địa chỉ loopback, riêng, link-local, dành riêng, NAT64/6to4; kết nối ghim vào địa chỉ đã kiểm (không DNS rebinding).
   - Thành công: `to_webp_256`, tải lên R2 như ảnh vẽ, gắn `image_key` vào phần tử trong mẻ đó.
-  - Phần tử có trong `image_links` không bao giờ được vẽ bằng Workers AI. Link lỗi thì giữ emoji, mẻ sau thử lại; báo cáo đợt chỉ ghi số đếm "Link ảnh lỗi: N".
+  - Phần tử có trong `image_links` không bao giờ được vẽ bằng Workers AI. Link lỗi thì giữ emoji, mẻ sau thử lại; báo cáo đợt chỉ ghi số đếm "Link ảnh lỗi: N" và số lỗi theo loại (tên lớp lỗi, không có link), để lỗi lập trình vẫn lộ ra dù `link_image` là ranh giới adapter bắt mọi lỗi như `draw`.
   - Link không bao giờ gửi cho Gemini hay ghi vào log/Issue.
 - **Worker đánh dấu `image_source = 'admin'`** khi đăng mẻ: phần tử là đề xuất đã duyệt có `use_image_url = 1` và mẻ gửi `image_key` khác null. Từ đó phần tử nằm trong `admin_images`, mẻ sau không vẽ đè (ADR 0016), và rời khỏi `image_links`.
   - Pipeline không tự khai nguồn ảnh: Worker suy ra từ D1, nên token pipeline không biến được ảnh vẽ thành ảnh admin.
@@ -25,4 +25,5 @@
 - Contract 0.6.0: `use_image_url` trong yêu cầu duyệt và `AdminContribution`; `PipelineState.image_links`.
 - `PipelineState` có link do người chơi gửi (đã qua admin duyệt). Đây là nội dung game sau duyệt như tên và gợi ý ảnh (câu 55), không phải dữ liệu tài khoản; pipeline không gửi nó cho LLM.
 - Ảnh từ link không qua kiểm duyệt LLM; admin chịu trách nhiệm nội dung và bản quyền như tranh tải tay (câu 70).
+- Admin duyệt khi chưa thấy ảnh: trang quản trị không nhúng ảnh từ link (CSP, và không để trình duyệt admin gọi ra máy chủ lạ). Muốn xem thì admin tự mở link trong tab riêng trước khi duyệt. Kiểm duyệt sau: ảnh đã đăng hiện ở cột ảnh của mục "Nội dung"; ảnh không ổn thì chặn ảnh (AC-ART-07, client chỉ hiện emoji) hoặc tải tranh thay (AC-ART-13).
 - Ảnh chỉ có từ mẻ `full` kế tiếp (staging 2 tiếng, production 12 tiếng). Mẻ `core` không tải link.

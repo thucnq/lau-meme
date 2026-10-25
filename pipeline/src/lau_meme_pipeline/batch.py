@@ -36,6 +36,7 @@ from lau_meme_pipeline.full import run_full
 from lau_meme_pipeline.graph import build_manifest, decrypt_entry, export_graph
 from lau_meme_pipeline.ids import element_id
 from lau_meme_pipeline.invariants import InvariantError, check_all, miss_rate_warning, simulate_miss_rate
+from lau_meme_pipeline.links import TIMEOUT_SECONDS as LINK_TIMEOUT_SECONDS
 from lau_meme_pipeline.links import fetch_link, https_get, resolve_host
 from lau_meme_pipeline.moderation import QUOTA_LABEL, ModLists
 from lau_meme_pipeline.seed import ACTIVE, ContentStore, load_core
@@ -285,7 +286,7 @@ def _render_report(
     trending: Sequence[tuple[str, int]] = (),
     source_warnings: Sequence[str] = (),
     tier_lines: Sequence[str] = (),
-    links_failed: int = 0,
+    links_failed: Mapping[str, int] | None = None,
 ) -> tuple[str, str]:
     """Title shows the dish's emoji only, never its name (AC-PIPE-14)."""
     status = "error" if failed_step else "success"
@@ -316,7 +317,12 @@ def _render_report(
             else []
         ),
         # AC-ART-14: a count only - the links are players' data and never go into the public report
-        *([f"- Link ảnh lỗi: {links_failed}"] if links_failed else []),
+        *([f"- Link ảnh lỗi: {sum(links_failed.values())}"] if links_failed else []),
+        *(
+            ["- Lỗi link ảnh theo loại: " + ", ".join(f"{k} {v}" for k, v in sorted(links_failed.items()))]
+            if links_failed
+            else []
+        ),
         f"- quota: {stats.get('quota_used', 0)} lượt gọi Gemini",
         *(["- ⚠️ Gemini hết quota: phần chưa xử lý nằm trong hàng chờ, đợt sau làm tiếp"] if quota_hit else []),
         *(
@@ -468,7 +474,8 @@ def _link_imager(client: BatchClient) -> Callable[[str], str]:
     """`link_image` of run_full (AC-ART-14, ADR 0018): fetch the admin-chosen link, encode, upload like a drawing."""
 
     def link_image(url: str) -> str:
-        webp = to_webp_256(fetch_link(url, http=https_get, resolve=resolve_host))
+        deadline = time.monotonic() + LINK_TIMEOUT_SECONDS  # one budget for every hop of this link
+        webp = to_webp_256(fetch_link(url, http=lambda u: https_get(u, deadline=deadline), resolve=resolve_host))
         key = image_key(webp)
         if not client.image_exists(key):
             client.put_image(key, webp)
@@ -527,7 +534,7 @@ def run_batch(
     trending: list[tuple[str, int]] = []
     tier_lines: list[str] = []
     source_warnings: list[str] = []
-    links_failed = 0
+    links_failed: dict[str, int] = {}
     step = "state"
     try:
         if mode not in ("core", "full"):
@@ -579,7 +586,7 @@ def run_batch(
             graph, manifest, store_out = full.graph, full.manifest, full.store
             emoji = manifest["daily"]["emoji"]
             quota_hit = bool(full.report.get("quota"))
-            links_failed = int(full.report.get("link_images_failed", 0))
+            links_failed = dict(full.report.get("link_errors", {}))
             art_report = full.report.get("art")
             if art_report is not None:
                 art_report = {
@@ -764,7 +771,7 @@ def _finish(
     trending: Sequence[tuple[str, int]] = (),
     source_warnings: Sequence[str] = (),
     tier_lines: Sequence[str] = (),
-    links_failed: int = 0,
+    links_failed: Mapping[str, int] | None = None,
 ) -> BatchOutcome:
     title, report = _render_report(
         version=version,

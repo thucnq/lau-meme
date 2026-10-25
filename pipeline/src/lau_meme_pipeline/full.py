@@ -386,14 +386,16 @@ def run_full(
     # failure keeps the emoji and the next batch retries; the url itself goes nowhere else
     linked = {eid: url for eid, url in (image_links or {}).items() if eid in content.elements and eid not in drawings}
     fetched: dict[str, str] = {}
-    report["link_images_failed"] = 0
+    errors: dict[str, int] = {}
     for eid, url in sorted(linked.items()):
         if link_image is None or content.elements[eid].status != ACTIVE:
             continue
         try:
             fetched[eid] = link_image(url)
-        except Exception:
-            report["link_images_failed"] += 1
+        except Exception as exc:  # the adapter boundary, like `draw`: counted by type so a bug still shows
+            errors[type(exc).__name__] = errors.get(type(exc).__name__, 0) + 1
+    report["link_images_failed"] = sum(errors.values())
+    report["link_errors"] = errors
     content = apply_images(content, fetched)
     drawings |= fetched
     for e in out_store["elements"]:
