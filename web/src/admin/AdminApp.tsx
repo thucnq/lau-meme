@@ -2,6 +2,9 @@ import { useCallback, useEffect, useState, type FormEvent, type ReactNode } from
 import {
   ApiError,
   AuthError,
+  approveContribution,
+  editContribution,
+  rejectContribution,
   setTier,
   LockedError,
   call,
@@ -11,6 +14,9 @@ import {
   type BatchItem,
   type BatchStats,
   type BatchSummary,
+  type ContributionEdit,
+  type ContributionItem,
+  type ContributionStatus,
   type ElementItem,
   type Kind,
   type Page,
@@ -99,7 +105,7 @@ function Login({ onSignIn, notice }: { onSignIn: (token: string) => void; notice
   )
 }
 
-const TABS = ['Báo cáo', 'Nội dung', 'Đợt + Audit'] as const
+const TABS = ['Báo cáo', 'Nội dung', 'Đề xuất meme', 'Đợt + Audit'] as const
 type Tab = (typeof TABS)[number]
 type Ctx = { token: string; onAuthError: () => void }
 
@@ -124,6 +130,7 @@ function Console({ token, onAuthError, onSignOut }: Ctx & { onSignOut: () => voi
       <section role="tabpanel" aria-label={tab}>
         {tab === 'Báo cáo' && <ReportsTab {...ctx} />}
         {tab === 'Nội dung' && <ContentTab {...ctx} />}
+        {tab === 'Đề xuất meme' && <ContributionsTab {...ctx} />}
         {tab === 'Đợt + Audit' && <LogsTab {...ctx} />}
       </section>
     </main>
@@ -276,6 +283,203 @@ function ReportsTab(ctx: Ctx) {
         </tbody>
       </table>
       {data?.items.length === 0 && <p>Không có báo cáo.</p>}
+      <Pager page={data} onPage={setPage} />
+    </>
+  )
+}
+
+const CONTRIB_SIZE = 20
+const CONTRIB_STATUS: Array<[ContributionStatus, string]> = [
+  ['pending', 'Chờ duyệt'],
+  ['approved', 'Đã duyệt'],
+  ['rejected', 'Bị từ chối'],
+]
+const EDIT_FIELDS = [
+  ['name', 'Tên meme'],
+  ['emoji', 'Biểu tượng'],
+  ['description', 'Mô tả'],
+  ['image_url', 'Link ảnh'],
+] as const
+type EditField = (typeof EDIT_FIELDS)[number][0]
+type Open = { id: string; mode: 'edit' | 'approve' | 'reject' }
+
+/**
+ * "Đề xuất meme" (AC-CONTRIB-07/08): oldest first, filtered by status. Edit sends only the changed fields; approve
+ * needs the image hint the illustration is drawn from; reject needs a reason. The image link is plain text - the
+ * page never loads it.
+ */
+function ContributionsTab(ctx: Ctx) {
+  const [status, setStatus] = useState<ContributionStatus>('pending')
+  const [page, setPage] = useState(1)
+  const [reload, setReload] = useState(0)
+  const { data, error } = useList<ContributionItem>(ctx, `contributions?status=${status}&page=${page}&size=${CONTRIB_SIZE}`, reload)
+  const [open, setOpen] = useState<Open | null>(null)
+  const [draft, setDraft] = useState<Record<EditField, string>>({ name: '', emoji: '', description: '', image_url: '' })
+  const [hint, setHint] = useState('')
+  const [tier, setTierValue] = useState(1)
+  const [reason, setReason] = useState('')
+  const [actionError, setActionError] = useState<string | null>(null)
+
+  const start = (c: ContributionItem, mode: Open['mode']) => {
+    setOpen({ id: c.id, mode })
+    setActionError(null)
+    setDraft({ name: c.name, emoji: c.emoji ?? '', description: c.description ?? '', image_url: c.image_url ?? '' })
+    setHint('')
+    setTierValue(1)
+    setReason('')
+  }
+  const run = (task: Promise<unknown>) =>
+    task.then(
+      () => {
+        setOpen(null)
+        setReload((n) => n + 1)
+      },
+      (err: unknown) => (err instanceof AuthError ? ctx.onAuthError() : setActionError(errorText(err))),
+    )
+  const save = (c: ContributionItem) => {
+    const body: ContributionEdit = {}
+    for (const [key] of EDIT_FIELDS) {
+      const value = draft[key].trim()
+      const before = c[key] ?? ''
+      if (value === before) continue
+      if (key === 'name') body.name = value
+      else body[key] = value === '' ? null : value // an emptied optional field is cleared
+    }
+    if (Object.keys(body).length === 0) return setOpen(null)
+    void run(editContribution(ctx.token, c.id, body))
+  }
+
+  const form = (c: ContributionItem) => {
+    if (open?.id !== c.id) return null
+    if (open.mode === 'edit')
+      return (
+        <form className="admin-inline" onSubmit={(e: FormEvent) => (e.preventDefault(), save(c))}>
+          {EDIT_FIELDS.map(([key, label]) => (
+            <label key={key}>
+              {label}
+              <input value={draft[key]} onChange={(e) => setDraft((d) => ({ ...d, [key]: e.target.value }))} />
+            </label>
+          ))}
+          <button type="submit">Lưu</button>
+          <button type="button" onClick={() => setOpen(null)}>
+            Hủy
+          </button>
+        </form>
+      )
+    if (open.mode === 'approve')
+      return (
+        <form
+          className="admin-inline"
+          onSubmit={(e: FormEvent) => (e.preventDefault(), void run(approveContribution(ctx.token, c.id, hint.trim(), tier)))}
+        >
+          <label>
+            Gợi ý ảnh
+            <textarea value={hint} maxLength={300} onChange={(e) => setHint(e.target.value)} />
+          </label>
+          <label>
+            Tier
+            <select value={tier} onChange={(e) => setTierValue(Number(e.target.value))}>
+              {[1, 2, 3, 4, 5].map((t) => (
+                <option key={t} value={t}>
+                  {t}
+                </option>
+              ))}
+            </select>
+          </label>
+          <button type="submit">Xác nhận duyệt</button>
+          <button type="button" onClick={() => setOpen(null)}>
+            Hủy
+          </button>
+        </form>
+      )
+    return (
+      <form
+        className="admin-inline"
+        onSubmit={(e: FormEvent) => (e.preventDefault(), void run(rejectContribution(ctx.token, c.id, reason.trim())))}
+      >
+        <label>
+          Lý do
+          <input value={reason} maxLength={200} onChange={(e) => setReason(e.target.value)} />
+        </label>
+        <button type="submit">Xác nhận từ chối</button>
+        <button type="button" onClick={() => setOpen(null)}>
+          Hủy
+        </button>
+      </form>
+    )
+  }
+
+  return (
+    <>
+      <div className="admin-filters">
+        <label>
+          Trạng thái
+          <select
+            value={status}
+            onChange={(e) => {
+              setStatus(e.target.value as ContributionStatus)
+              setPage(1)
+              setOpen(null)
+            }}
+          >
+            {CONTRIB_STATUS.map(([value, label]) => (
+              <option key={value} value={value}>
+                {label}
+              </option>
+            ))}
+          </select>
+        </label>
+      </div>
+      <Alert>{error ?? actionError}</Alert>
+      <table className="admin-table">
+        <thead>
+          <tr>
+            <th>Cặp</th>
+            <th>Đề xuất</th>
+            <th>Mô tả</th>
+            <th>Link ảnh</th>
+            <th>Người gửi</th>
+            <th>Gửi lúc</th>
+            <th>Thao tác</th>
+          </tr>
+        </thead>
+        <tbody>
+          {data?.items.map((c) => (
+            <tr key={c.id}>
+              <td>
+                {c.a.emoji} {c.a.name} + {c.b.emoji} {c.b.name}
+              </td>
+              <td>
+                {c.emoji ?? ''} {c.name}
+                {c.status === 'approved' && ` (tier ${c.tier})`}
+                {c.reject_reason && ` - ${c.reject_reason}`}
+              </td>
+              <td>{c.description ?? ''}</td>
+              {/* text only: the admin page never loads or links the sender's image (AC-CONTRIB-07) */}
+              <td className="admin-url">{c.image_url ?? ''}</td>
+              <td>{c.nickname}</td>
+              <td>{when(c.created_at)}</td>
+              <td>
+                {c.status === 'pending' && (
+                  <>
+                    <button type="button" onClick={() => start(c, 'edit')}>
+                      Sửa
+                    </button>
+                    <button type="button" onClick={() => start(c, 'approve')}>
+                      Duyệt
+                    </button>
+                    <button type="button" onClick={() => start(c, 'reject')}>
+                      Từ chối
+                    </button>
+                  </>
+                )}
+                {form(c)}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      {data?.items.length === 0 && <p>Không có đề xuất.</p>}
       <Pager page={data} onPage={setPage} />
     </>
   )

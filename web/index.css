@@ -397,3 +397,27 @@ a { color: var(--color-accent); }
 @media (prefers-reduced-motion: reduce) {
   .celebrate *, .celebrate[data-kind], .game-table[data-shake='true'] { animation: none; }
 }
+
+/* AC-CONTRIB-10: "Meme của ..." above a contributed element, on hover, focus or a touch hold */
+.chip:not(.on-table) { position: relative; }
+.creator-tip {
+  position: absolute; left: 50%; bottom: calc(100% + var(--space-1)); transform: translateX(-50%); z-index: 5;
+  padding: var(--space-1) var(--space-2); border-radius: var(--radius-md); white-space: nowrap; pointer-events: none;
+  background: var(--color-text); color: var(--color-bg); font-size: var(--text-xs); font-weight: 600;
+}
+.creator-tip[hidden] { display: none; }
+
+/* AC-CONTRIB-01..06: "Đóng góp meme" */
+.contrib-entry { margin-top: var(--space-4); }
+.contrib {
+  margin-top: var(--space-3); padding: var(--space-4) var(--space-5); background: var(--color-surface);
+  border-radius: var(--radius-lg);
+}
+.contrib h2 { font-size: var(--text-lg); margin: var(--space-4) 0 var(--space-2); }
+.contrib-form { display: grid; grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr)); gap: var(--space-2) var(--space-3); align-items: end; }
+.contrib-form label { display: grid; gap: var(--space-1); font-size: var(--text-sm); font-weight: 600; }
+.contrib-form input { font: inherit; padding: var(--space-1) var(--space-2); border: 1px solid var(--color-control); border-radius: var(--radius-md); }
+.contrib-list { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--space-2); }
+.contrib-list li { display: flex; flex-wrap: wrap; gap: var(--space-1) var(--space-3); padding: var(--space-2) var(--space-3); border-radius: var(--radius-md); background: var(--color-soft); }
+.contrib-status { font-weight: 600; }
+.contrib-invite { margin: var(--space-3) 0; }

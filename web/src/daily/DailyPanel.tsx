@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useSession } from '../auth/session'
 import { SITE_URL } from '../base'
+import { getContributorLeaderboard, type ContributorLeaderboard, type ContributorRow } from '../contrib/api'
 import { SendError } from '../disc/api'
 import type { Manifest } from '../game/engine'
 import { trackDailyStart } from '../metrics/app'
@@ -22,8 +23,11 @@ import type { SolvedDaily } from './solved'
 
 type Props = { manifest: Manifest; storage: Storage | null; solved: SolvedDaily | null; onShowBoard?: () => void }
 type Sent = { kind: 'result'; result: DailyResult } | { kind: 'consent' } | { kind: 'error'; text: string }
-type Tab = 'batch' | 'week' | 'month'
-type Board = { tab: 'batch'; data: DailyLeaderboard } | { tab: 'week' | 'month'; data: PeriodLeaderboard }
+type Tab = 'batch' | 'week' | 'month' | 'contrib'
+type Board =
+  | { tab: 'batch'; data: DailyLeaderboard }
+  | { tab: 'week' | 'month'; data: PeriodLeaderboard }
+  | { tab: 'contrib'; data: ContributorLeaderboard }
 
 const INVITE = 'Đăng nhập bằng Google để lên bảng xếp hạng'
 const BOARD_INVITE = 'Đăng nhập bằng Google để có tên trên bảng xếp hạng'
@@ -31,6 +35,7 @@ const TABS: Array<[Tab, string]> = [
   ['batch', 'Mẻ này'],
   ['week', 'Tuần'],
   ['month', 'Tháng'],
+  ['contrib', 'Cống hiến'], // Top cống hiến (AC-CONTRIB-11)
 ]
 const MEDALS = ['🥇', '🥈', '🥉']
 const GMT7_MS = 7 * 3_600_000
@@ -122,7 +127,8 @@ export function DailyPanel({ manifest, storage, solved, onShowBoard }: Props) {
 }
 
 /**
- * The "Bảng xếp hạng" screen (AC-DAILY-09, 14, 15, 17): batch, week and month boards, medals for the first three,
+ * The "Bảng xếp hạng" screen (AC-DAILY-09, 14, 15, 17, AC-CONTRIB-11): batch, week and month boards and the approved
+ * meme contributions ("Cống hiến"), medals for the first three,
  * the viewer's own row marked with `aria-current` (found by `me.rank`).
  */
 export function Leaderboards({ version }: { version: number }) {
@@ -138,7 +144,9 @@ export function Leaderboards({ version }: { version: number }) {
     const load: Promise<Board> =
       tab === 'batch'
         ? getDailyLeaderboard(version).then((data) => ({ tab, data }))
-        : getPeriodLeaderboard(periods[tab]).then((data) => ({ tab, data }))
+        : tab === 'contrib'
+          ? getContributorLeaderboard().then((data) => ({ tab, data }))
+          : getPeriodLeaderboard(periods[tab]).then((data) => ({ tab, data }))
     load.then(
       (b) => {
         if (!live) return
@@ -207,6 +215,19 @@ function BoardList({ board }: { board: Board }) {
         {me && !rows.some((r) => r.rank === me.rank) && (
           <Row rank={me.rank} mine text={`Bạn: #${me.rank} ${me.nickname} - ${formatSolveTime(me.value)}`} />
         )}
+      </ol>
+    )
+  }
+  if (board.tab === 'contrib') {
+    const { rows, me } = board.data
+    if (rows.length === 0 && !me) return <p>Chưa có meme đóng góp nào được duyệt</p>
+    const line = (r: ContributorRow) => `#${r.rank} ${r.nickname} - ${r.approved} meme`
+    return (
+      <ol role="tabpanel" className="board-rows">
+        {rows.map((r) => (
+          <Row key={r.rank} rank={r.rank} mine={me?.rank === r.rank} text={line(r)} />
+        ))}
+        {me && !rows.some((r) => r.rank === me.rank) && <Row rank={me.rank} mine text={`Bạn: ${line(me)}`} />}
       </ol>
     )
   }

@@ -302,7 +302,10 @@ describe('daily ui: bảng xếp hạng', () => {
     render(panel())
     await openBoard()
     const tabs = screen.getAllByRole('tab')
-    expect(tabs.map((t) => t.textContent?.trim())).toEqual(['Mẻ này', 'Tuần', 'Tháng'])
+    // thẻ "Cống hiến" thứ 4 được phép (AC-CONTRIB-11); 3 thẻ kỳ đứng đầu theo thứ tự
+    expect(tabs.map((t) => t.textContent?.trim()).slice(0, 3)).toEqual(['Mẻ này', 'Tuần', 'Tháng'])
+    expect(tabs.length).toBeGreaterThanOrEqual(3)
+    expect(tabs.length).toBeLessThanOrEqual(4)
     expect(screen.getByRole('tab', { name: 'Mẻ này' }).getAttribute('aria-selected')).toBe('true')
     await waitFor(() => expect(batchBoardGets().length).toBeGreaterThanOrEqual(1))
     expect(batchBoardGets()[0]!.url).toContain(`/lau-meme/api/daily/${VERSION}/leaderboard`)
