@@ -118,7 +118,7 @@ describe('metric events (POST /events)', () => {
       expect(r.player_id).toBe(u)
       expect(r.id as string).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/)
       expect(r.received_at as number).toBeGreaterThanOrEqual(before - 2000)
-      expect(r.received_at as number).toBeLessThanOrEqual(Date.now() + 2000)
+      expect(r.received_at as number).toBeLessThanOrEqual(Date.now() + 10_000) // the test isolate clock only moves on I/O and lags under load
       expect(r.day).toBe(new Date((r.received_at as number) + GMT7).toISOString().slice(0, 10))
     }
     const props = (type: string) => JSON.parse(rows.find((r) => r.type === type)!.props_json as string) as Record<string, unknown>

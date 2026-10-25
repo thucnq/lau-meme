@@ -387,7 +387,7 @@ describe('disc', () => {
     const c = await elementId('Tới Công Chuyện')
     expect(body).toMatchObject({ element_id: c, nickname: 'Bếp Trưởng', first: true })
     expect(Date.parse(body.discovered_at)).toBeGreaterThanOrEqual(before - 2000)
-    expect(Date.parse(body.discovered_at)).toBeLessThanOrEqual(Date.now() + 2000)
+    expect(Date.parse(body.discovered_at)).toBeLessThanOrEqual(Date.now() + 10_000) // the test isolate clock only moves on I/O and lags under load
     expect(Object.keys(body).sort()).toEqual(['discovered_at', 'element_id', 'first', 'nickname'])
 
     const rows = (await env.DB.prepare('SELECT * FROM discovery').all<Record<string, unknown>>()).results

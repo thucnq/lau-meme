@@ -219,7 +219,7 @@ describe('report', () => {
     expect(body).toMatchObject({ target: 'element', id: p, reason: 'real_person', status: 'new' })
     expect(Object.keys(body).sort()).toEqual(['created_at', 'id', 'reason', 'status', 'target'])
     expect(Date.parse(body.created_at)).toBeGreaterThanOrEqual(before - 2000)
-    expect(Date.parse(body.created_at)).toBeLessThanOrEqual(Date.now() + 2000)
+    expect(Date.parse(body.created_at)).toBeLessThanOrEqual(Date.now() + 10_000) // the test isolate clock only moves on I/O and lags under load
     expect(JSON.stringify(body)).not.toContain(u) // the response never echoes the UUID
 
     const rows = await reportRows()
