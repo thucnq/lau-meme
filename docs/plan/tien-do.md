@@ -217,7 +217,7 @@
   - [x] AC-PIPE-02 Lịch chạy và chạy tay (cập nhật 2026-10-23)
 
 ## Nội dung
-- [x] **TIER** Tier của meme · 8.5đ · rủi ro: LOW · KH: 2027-10-12 → 2027-10-22 · tiến độ: 100% · người: Thuc · bắt đầu: 2026-10-23 · xong: 2026-10-25 · ghi chú: AC-TIER-02 cập nhật 2026-10-25 (viền món cùng màu hình nhỏ) ở PR #96
+- [x] **TIER** Tier của meme · 8.5đ · rủi ro: LOW · KH: 2027-10-12 → 2027-10-22 · tiến độ: 100% · người: Thuc · bắt đầu: 2026-10-23 · xong: 2026-10-25 · ghi chú: AC-TIER-02 cập nhật 2026-10-25 (viền món cùng màu hình nhỏ)
   - [x] AC-ADMIN-12 Gán tier cho phần tử (thêm 2026-10-23)
   - [x] AC-TIER-01 Tier mặc định và giữ qua các mẻ
   - [x] AC-TIER-02 Hiển thị tier trên phần tử
@@ -241,18 +241,18 @@
   - [ ] AC-CONTRIB-12 Xóa tài khoản và xuất dữ liệu
 
 ## Trò chơi
-- [ ] **SYNC** Đĩa nhúng theo tài khoản · 10.5đ · rủi ro: HIGH · KH: 2027-12-20 → 2028-01-20 · tiến độ: 90% · người: Thuc · bắt đầu: 2026-10-24 · xong:  · ghi chú: PR #94 đã APPROVE, CI xanh, chờ merge
-  - [ ] AC-SYNC-01 Ghép ra món mới thì ghi vào Đĩa của tài khoản
-  - [ ] AC-SYNC-02 Tải lại trang kéo Đĩa tổng hợp của mọi phiên
-  - [ ] AC-SYNC-03 Tiến độ trước khi đăng nhập được gộp vào tài khoản
-  - [ ] AC-SYNC-04 Từ chối phần tử không ghép ra được
-  - [ ] AC-SYNC-05 Chưa đăng nhập, phiên hết hạn và cách ly tài khoản
-  - [ ] AC-SYNC-06 Mất mạng thì chơi tiếp, gửi bù sau
-  - [ ] AC-SYNC-07 Không có cách xóa Đĩa của tài khoản từ giao diện (cập nhật 2026-10-24 - câu hỏi mở 71)
-  - [ ] AC-SYNC-08 Phần tử bị chặn và graph đổi version
-  - [ ] AC-SYNC-09 Giới hạn tần suất và kích thước
-  - [ ] AC-SYNC-10 Xóa và xuất dữ liệu
-- [x] **UI3** Giao diện mới và cảm giác chơi - góp ý 2026-10-24 · 10đ · rủi ro: MEDIUM · KH: 2028-01-21 → 2028-02-21 · tiến độ: 100% · người: Thuc · bắt đầu: 2026-10-24 · xong: 2026-10-25 · ghi chú: AC-GAME-27 cập nhật 2026-10-25 (không cuộn ngang khi đã đăng nhập) ở PR #96
+- [x] **SYNC** Đĩa nhúng theo tài khoản · 10.5đ · rủi ro: HIGH · KH: 2027-12-20 → 2028-01-20 · tiến độ: 100% · người: Thuc · bắt đầu: 2026-10-24 · xong: 2026-10-25 · ghi chú: 
+  - [x] AC-SYNC-01 Ghép ra món mới thì ghi vào Đĩa của tài khoản
+  - [x] AC-SYNC-02 Tải lại trang kéo Đĩa tổng hợp của mọi phiên
+  - [x] AC-SYNC-03 Tiến độ trước khi đăng nhập được gộp vào tài khoản
+  - [x] AC-SYNC-04 Từ chối phần tử không ghép ra được
+  - [x] AC-SYNC-05 Chưa đăng nhập, phiên hết hạn và cách ly tài khoản
+  - [x] AC-SYNC-06 Mất mạng thì chơi tiếp, gửi bù sau
+  - [x] AC-SYNC-07 Không có cách xóa Đĩa của tài khoản từ giao diện (cập nhật 2026-10-24 - câu hỏi mở 71)
+  - [x] AC-SYNC-08 Phần tử bị chặn và graph đổi version
+  - [x] AC-SYNC-09 Giới hạn tần suất và kích thước
+  - [x] AC-SYNC-10 Xóa và xuất dữ liệu
+- [x] **UI3** Giao diện mới và cảm giác chơi - góp ý 2026-10-24 · 10đ · rủi ro: MEDIUM · KH: 2028-01-21 → 2028-02-21 · tiến độ: 100% · người: Thuc · bắt đầu: 2026-10-24 · xong: 2026-10-25 · ghi chú: AC-GAME-27 cập nhật 2026-10-25 (không cuộn ngang khi đã đăng nhập)
   - [x] AC-GAME-11 Dọn bàn (cập nhật 2026-10-24: bỏ "Chơi lại từ đầu" - câu hỏi mở 71)
   - [x] AC-GAME-18 Nồi lẩu nằm trong màn hình đầu tiên (thêm 2026-10-21)
   - [x] AC-GAME-19 Nút điều khiển nằm ở khu bàn lẩu, đăng nhập ở đầu trang (thêm 2026-10-22)
