@@ -1,6 +1,6 @@
 # API - Lẩu Meme
 
-> Nguồn sự thật: [`openapi.yaml`](openapi.yaml) (OpenAPI 3, `lau-meme API 0.4.0`). File này chỉ là mục lục; khi hai nơi khác nhau thì `openapi.yaml` đúng. Mỗi endpoint mang `x-ac` trỏ về AC trong `docs/acceptance/`.
+> Nguồn sự thật: [`openapi.yaml`](openapi.yaml) (OpenAPI 3, `lau-meme API 0.5.0`). File này chỉ là mục lục; khi hai nơi khác nhau thì `openapi.yaml` đúng. Mỗi endpoint mang `x-ac` trỏ về AC trong `docs/acceptance/`.
 
 ## Địa chỉ
 | Nhóm | Production | Staging |
@@ -39,8 +39,11 @@ Mọi lỗi là RFC 9457 `application/problem+json` (`type`, `title`, `status`, 
 | POST | `/auth/google` | Đăng nhập bằng ID token Google, mở phiên | PlayerId | AC-AUTH-01, AC-AUTH-03, AC-AUTH-04, AC-AUTH-07 |
 | GET | `/auth/session` | Phiên hiện tại (gia hạn) | Session | AC-AUTH-02 |
 | DELETE | `/auth/session` | Đăng xuất | - hoặc Session | AC-AUTH-05 |
-| GET | `/me` | Xem / xuất dữ liệu của tôi (có phiên thì kèm tài khoản và đề xuất meme) | PlayerId (+ Session) | AC-PRIV-08, AC-AUTH-06, AC-CONTRIB-12 |
-| DELETE | `/me` | Xóa dữ liệu của tôi (có phiên thì xóa cả tài khoản) | PlayerId (+ Session) | AC-PRIV-05, AC-AUTH-06, AC-CONTRIB-12 |
+| GET | `/me` | Xem / xuất dữ liệu của tôi (có phiên thì kèm tài khoản, Đĩa và đề xuất meme) | PlayerId (+ Session) | AC-PRIV-08, AC-AUTH-06, AC-CONTRIB-12, AC-SYNC-10 |
+| DELETE | `/me` | Xóa dữ liệu của tôi (có phiên thì xóa cả tài khoản và Đĩa) | PlayerId (+ Session) | AC-PRIV-05, AC-AUTH-06, AC-CONTRIB-12, AC-SYNC-10 |
+| GET | `/me/plate` | Đĩa của tài khoản (gộp mọi máy), không gồm 4 phần tử khởi đầu | PlayerId + Session | AC-SYNC-02, AC-SYNC-05, AC-SYNC-08 |
+| POST | `/me/plate` | Ghi một món vừa ghép ra vào Đĩa của tài khoản (gửi lại vẫn 200) | PlayerId + Session | AC-SYNC-01, AC-SYNC-04..06, AC-SYNC-09 |
+| POST | `/me/plate/merge` | Gộp nhiều món vào Đĩa sau đăng nhập hoặc gửi bù (tối đa 500 mục) | PlayerId + Session | AC-SYNC-03, AC-SYNC-06, AC-SYNC-09 |
 | PUT | `/me/nickname` | Đặt / đổi nickname (có phiên thì của tài khoản) | PlayerId (+ Session) | AC-DISC-02..04, AC-DISC-12, AC-AUTH-04 |
 | GET | `/me/streak` | Streak của tài khoản | Session | AC-DAILY-10 |
 | GET | `/discoveries` | Công thức gia truyền của các phần tử | - | AC-DISC-09 |
@@ -81,7 +84,8 @@ Mọi lỗi là RFC 9457 `application/problem+json` (`type`, `title`, `status`, 
 |---|---|---|---|---|
 | GET | `/admin/reports` | Báo cáo gom theo đích | AdminToken | AC-ADMIN-06 |
 | GET | `/admin/elements` | Danh mục phần tử (tìm không dấu, lọc trạng thái) | AdminToken | AC-ADMIN-03, AC-ADMIN-05 |
-| PUT | `/admin/elements/{id}/tier` | Gán tier 1-5 cho phần tử | AdminToken | AC-ADMIN-12, AC-ADMIN-09, AC-TIER-01 |
+| PUT | `/admin/elements/{id}/tier` | Gán tier 1-5, hoặc `"auto"` để trả về tier theo độ sâu; gán 4-5 khi chưa có ảnh → 409 | AdminToken | AC-ADMIN-12, AC-ADMIN-09, AC-TIER-01, AC-TIER-04, AC-TIER-05 |
+| PUT | `/admin/elements/{id}/image` | Tải tranh vẽ tay WebP 256×256 cho phần tử (Tùy chọn, ADR 0016) | AdminToken | AC-ART-13, AC-ADMIN-09 |
 | GET | `/admin/recipes` | Công thức có một phần tử | AdminToken | AC-ADMIN-04 |
 | POST | `/admin/moderation` | Ẩn / hiện / chặn / gỡ chặn / bỏ qua báo cáo | AdminToken | AC-ADMIN-03..05, AC-ADMIN-07, AC-ADMIN-09 |
 | GET | `/admin/contributions` | Đề xuất meme (cũ nhất trước, lọc theo trạng thái) | AdminToken | AC-CONTRIB-07, AC-ADMIN-10 |
@@ -90,6 +94,8 @@ Mọi lỗi là RFC 9457 `application/problem+json` (`type`, `title`, `status`, 
 | POST | `/admin/contributions/{id}/reject` | Từ chối đề xuất (cần lý do) | AdminToken | AC-CONTRIB-08, AC-ADMIN-09 |
 | GET | `/admin/batches` | Nhật ký các đợt, kèm `summary` (tổng crawl và thêm của các đợt `full` thành công, hàng chờ và thiếu ảnh của đợt gần nhất) | AdminToken | AC-ADMIN-08, AC-ADMIN-11 |
 | GET | `/admin/audit` | Nhật ký audit | AdminToken | AC-ADMIN-09 |
+
+> Chưa triển khai (staging 2026-10-25): `/me/plate`, `/me/plate/merge` (SYNC chưa build) và `/admin/elements/{id}/image` (AC-ART-13, Tùy chọn, chưa build) đã có trong contract 0.5.0 nhưng Worker chưa định tuyến; migration 0008 tạo sẵn bảng `account_element`, `image_source`, `admin_image_change` cho hai phần này (chỉ mở rộng).
 
 ## Thử nhanh
 ```bash
