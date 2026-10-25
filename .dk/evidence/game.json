@@ -112,12 +112,18 @@
     "test": "table-style.ui.test.tsx#đổi kiểu mặt bàn ",
     "ts": "2026-10-25T03:13:43+00:00",
     "commit": "18d9fb2"
+   },
+   "AC-GAME-27": {
+    "status": "FAIL",
+    "test": "ui27.browser.test.tsx#ui27 giao diện mới ",
+    "ts": "2026-10-25T03:27:35+00:00",
+    "commit": "d88c002 (CSS) + test 2026-10-25"
    }
   }
  },
  "green": {
-  "ts": "2026-10-25T03:22:06+00:00",
-  "commit": "18d9fb2",
+  "ts": "2026-10-25T03:29:08+00:00",
+  "commit": "ff4d698",
   "results": {
    "AC-GAME-01": {
     "status": "PASS",
@@ -222,6 +228,10 @@
    "AC-GAME-26": {
     "status": "PASS",
     "test": "ui3.ui.test.tsx#ui3: âm thanh và nút loa "
+   },
+   "AC-GAME-27": {
+    "status": "PASS",
+    "test": "ui27.browser.test.tsx#ui27 giao diện mới "
    },
    "AC-GAME-28": {
     "status": "PASS",
