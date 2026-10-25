@@ -206,6 +206,19 @@ describe('touch-scroll: vuốt trên món (AC-GAME-21, cập nhật 2026-10-25)'
     expect(touchMovePrevented(), 'sau khi thả không còn chặn cuộn').toBe(false)
   })
 
+  it('AC-GAME-21: bút cảm ứng (pen) vuốt dọc trên món cũng cuộn trang như ngón tay, không kéo món', async () => {
+    await mountReady()
+    const cay = plateItem('Cay')
+    const before = copiesOf('Cay')
+    const pen = { ...base, pointerType: 'pen' }
+    fireEvent.pointerDown(cay, { ...pen, buttons: 1, clientX: START.x, clientY: START.y })
+    fireEvent.pointerMove(cay, { ...pen, buttons: 1, clientX: START.x + 1, clientY: START.y + 20 })
+    fireEvent.pointerMove(cay, { ...pen, buttons: 1, clientX: START.x + 3, clientY: START.y + 40 })
+    expect(copiesOf('Cay'), 'bút vuốt dọc không được hiện món bóng').toBe(before)
+    fireEvent.pointerUp(cay, { ...pen, buttons: 0, clientX: START.x + 3, clientY: START.y + 40 })
+    expect(screen.queryAllByTestId('table-item')).toHaveLength(0)
+  })
+
   it('AC-GAME-21: cảm ứng, bấm nhanh (không di chuyển, nhả < 500 ms) vẫn cho món vào nồi như AC-GAME-24', async () => {
     await mountReady()
     const cay = plateItem('Cay')

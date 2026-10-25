@@ -2,7 +2,7 @@
  "meta": {
   "title": "ƯỚC LƯỢNG - LẨU MEME",
   "start": "2026-10-20",
-  "today": "2026-10-24",
+  "today": "2026-10-25",
   "lanes": [
    "Thuc"
   ],
@@ -11,8 +11,8 @@
    "2028-06-06"
   ],
   "fcUat": [
-   "2027-09-28",
-   "2027-09-28"
+   "2027-07-27",
+   "2027-07-27"
   ],
   "holidays": [
    "2027-01-01",
@@ -27,11 +27,11 @@
    "2027-05-01",
    "2027-09-02"
   ],
-  "pct": 64.5,
+  "pct": 89.2,
   "counts": {
-   "done": 19,
+   "done": 28,
    "doing": 0,
-   "todo": 12,
+   "todo": 3,
    "late": 0
   },
   "slip": 0,
@@ -1198,20 +1198,20 @@
    ],
    "owner": "Thuc",
    "lane": "Thuc",
-   "pct": 0,
+   "pct": 100,
    "pctAuto": false,
-   "status": "todo",
+   "status": "done",
    "slip": 0,
    "note": "",
-   "startActual": "",
-   "finishActual": "",
+   "startActual": "2026-10-23",
+   "finishActual": "2026-10-23",
    "kh": [
     "2027-04-07",
     "2027-04-19"
    ],
    "fc": [
-    "2026-10-26",
-    "2026-11-05"
+    "2026-10-23",
+    "2026-10-23"
    ],
    "line": 136,
    "acs": [
@@ -1220,7 +1220,7 @@
      "title": "Thẻ Daily dạng chữ",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 137
     },
     {
@@ -1228,7 +1228,7 @@
      "title": "Thời gian giải trên thẻ (cập nhật 2026-10-21, thay chuỗi emoji các bước)",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 138
     },
     {
@@ -1236,7 +1236,7 @@
      "title": "Thẻ Daily dạng ảnh PNG",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 139
     },
     {
@@ -1244,7 +1244,7 @@
      "title": "Thẻ Công thức gia truyền",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 140
     },
     {
@@ -1252,7 +1252,7 @@
      "title": "Sao chép và chia sẻ hệ thống",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 141
     },
     {
@@ -1260,7 +1260,7 @@
      "title": "Ghi sự kiện chia sẻ",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 142
     }
    ]
@@ -1507,20 +1507,20 @@
    ],
    "owner": "Thuc",
    "lane": "Thuc",
-   "pct": 0,
+   "pct": 100,
    "pctAuto": false,
-   "status": "todo",
+   "status": "done",
    "slip": 0,
    "note": "",
-   "startActual": "",
-   "finishActual": "",
+   "startActual": "2026-10-23",
+   "finishActual": "2026-10-23",
    "kh": [
     "2027-05-28",
     "2027-06-10"
    ],
    "fc": [
-    "2026-11-06",
-    "2026-11-20"
+    "2026-10-23",
+    "2026-10-23"
    ],
    "line": 170,
    "acs": [
@@ -1529,7 +1529,7 @@
      "title": "Cloudflare Web Analytics không cookie",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 171
     },
     {
@@ -1537,7 +1537,7 @@
      "title": "Nhận sự kiện theo danh sách cho phép",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 172
     },
     {
@@ -1545,7 +1545,7 @@
      "title": "Sự kiện không hợp lệ",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 173
     },
     {
@@ -1553,7 +1553,7 @@
      "title": "Client gom sự kiện ghép",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 174
     },
     {
@@ -1561,7 +1561,7 @@
      "title": "Tổng hợp chỉ số",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 175
     },
     {
@@ -1569,7 +1569,7 @@
      "title": "Đưa số liệu vào báo cáo đợt",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 176
     },
     {
@@ -1577,7 +1577,7 @@
      "title": "Dọn sự kiện quá hạn",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 177
     },
     {
@@ -1585,7 +1585,7 @@
      "title": "Client gửi sự kiện Món đặc biệt (thêm 2026-10-23, câu hỏi mở 62)",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 178
     }
    ]
@@ -1868,20 +1868,20 @@
    ],
    "owner": "Thuc",
    "lane": "Thuc",
-   "pct": 0,
-   "pctAuto": true,
-   "status": "todo",
+   "pct": 100,
+   "pctAuto": false,
+   "status": "done",
    "slip": 0,
    "note": "",
-   "startActual": "",
-   "finishActual": "",
+   "startActual": "2026-10-24",
+   "finishActual": "2026-10-24",
    "kh": [
     "2027-09-29",
     "2027-10-11"
    ],
    "fc": [
-    "2026-11-23",
-    "2026-12-03"
+    "2026-10-24",
+    "2026-10-24"
    ],
    "line": 212,
    "acs": [
@@ -1890,7 +1890,7 @@
      "title": "Chọn Món đặc biệt (cập nhật 2026-10-23)",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 213
     },
     {
@@ -1898,7 +1898,7 @@
      "title": "Đồng hồ đếm ngược theo manifest thật (cập nhật 2026-10-23)",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 214
     },
     {
@@ -1906,7 +1906,7 @@
      "title": "Pool thử thách từ lõi không lặp trong 30 mẻ (thêm 2026-10-23)",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 215
     },
     {
@@ -1914,7 +1914,7 @@
      "title": "Lịch chạy và chạy tay (cập nhật 2026-10-23)",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 216
     }
    ]
@@ -1932,20 +1932,20 @@
    ],
    "owner": "Thuc",
    "lane": "Thuc",
-   "pct": 0,
-   "pctAuto": true,
-   "status": "todo",
+   "pct": 100,
+   "pctAuto": false,
+   "status": "done",
    "slip": 0,
-   "note": "",
-   "startActual": "",
-   "finishActual": "",
+   "note": "AC-TIER-02 cập nhật 2026-10-25 (viền món cùng màu hình nhỏ)",
+   "startActual": "2026-10-23",
+   "finishActual": "2026-10-25",
    "kh": [
     "2027-10-12",
     "2027-10-22"
    ],
    "fc": [
-    "2026-12-04",
-    "2026-12-30"
+    "2026-10-23",
+    "2026-10-25"
    ],
    "line": 219,
    "acs": [
@@ -1954,7 +1954,7 @@
      "title": "Gán tier cho phần tử (thêm 2026-10-23)",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 220
     },
     {
@@ -1962,7 +1962,7 @@
      "title": "Tier mặc định và giữ qua các mẻ",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 221
     },
     {
@@ -1970,7 +1970,7 @@
      "title": "Hiển thị tier trên phần tử",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 222
     },
     {
@@ -1978,23 +1978,23 @@
      "title": "Graph cũ chưa có tier",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 223
     },
     {
      "id": "AC-TIER-04",
      "title": "Tier tự động theo độ sâu (thêm 2026-10-24)",
      "optional": false,
-     "tested": false,
-     "done": false,
+     "tested": true,
+     "done": true,
      "line": 224
     },
     {
      "id": "AC-TIER-05",
      "title": "Admin sửa tier và trả về tự động (thêm 2026-10-24)",
      "optional": false,
-     "tested": false,
-     "done": false,
+     "tested": true,
+     "done": true,
      "line": 225
     }
    ]
@@ -2025,8 +2025,8 @@
     "2027-12-02"
    ],
    "fc": [
-    "2026-12-31",
-    "2027-02-17"
+    "2026-10-26",
+    "2026-12-03"
    ],
    "line": 228,
    "acs": [
@@ -2142,20 +2142,20 @@
    ],
    "owner": "Thuc",
    "lane": "Thuc",
-   "pct": 0,
-   "pctAuto": true,
-   "status": "todo",
+   "pct": 100,
+   "pctAuto": false,
+   "status": "done",
    "slip": 0,
    "note": "",
-   "startActual": "",
-   "finishActual": "",
+   "startActual": "2026-10-24",
+   "finishActual": "2026-10-25",
    "kh": [
     "2027-12-20",
     "2028-01-20"
    ],
    "fc": [
-    "2027-02-18",
-    "2027-03-23"
+    "2026-10-24",
+    "2026-10-25"
    ],
    "line": 243,
    "acs": [
@@ -2163,80 +2163,80 @@
      "id": "AC-SYNC-01",
      "title": "Ghép ra món mới thì ghi vào Đĩa của tài khoản",
      "optional": false,
-     "tested": false,
-     "done": false,
+     "tested": true,
+     "done": true,
      "line": 244
     },
     {
      "id": "AC-SYNC-02",
      "title": "Tải lại trang kéo Đĩa tổng hợp của mọi phiên",
      "optional": false,
-     "tested": false,
-     "done": false,
+     "tested": true,
+     "done": true,
      "line": 245
     },
     {
      "id": "AC-SYNC-03",
      "title": "Tiến độ trước khi đăng nhập được gộp vào tài khoản",
      "optional": false,
-     "tested": false,
-     "done": false,
+     "tested": true,
+     "done": true,
      "line": 246
     },
     {
      "id": "AC-SYNC-04",
      "title": "Từ chối phần tử không ghép ra được",
      "optional": false,
-     "tested": false,
-     "done": false,
+     "tested": true,
+     "done": true,
      "line": 247
     },
     {
      "id": "AC-SYNC-05",
      "title": "Chưa đăng nhập, phiên hết hạn và cách ly tài khoản",
      "optional": false,
-     "tested": false,
-     "done": false,
+     "tested": true,
+     "done": true,
      "line": 248
     },
     {
      "id": "AC-SYNC-06",
      "title": "Mất mạng thì chơi tiếp, gửi bù sau",
      "optional": false,
-     "tested": false,
-     "done": false,
+     "tested": true,
+     "done": true,
      "line": 249
     },
     {
      "id": "AC-SYNC-07",
      "title": "Không có cách xóa Đĩa của tài khoản từ giao diện (cập nhật 2026-10-24 - câu hỏi mở 71)",
      "optional": false,
-     "tested": false,
-     "done": false,
+     "tested": true,
+     "done": true,
      "line": 250
     },
     {
      "id": "AC-SYNC-08",
      "title": "Phần tử bị chặn và graph đổi version",
      "optional": false,
-     "tested": false,
-     "done": false,
+     "tested": true,
+     "done": true,
      "line": 251
     },
     {
      "id": "AC-SYNC-09",
      "title": "Giới hạn tần suất và kích thước",
      "optional": false,
-     "tested": false,
-     "done": false,
+     "tested": true,
+     "done": true,
      "line": 252
     },
     {
      "id": "AC-SYNC-10",
      "title": "Xóa và xuất dữ liệu",
      "optional": false,
-     "tested": false,
-     "done": false,
+     "tested": true,
+     "done": true,
      "line": 253
     }
    ]
@@ -2254,20 +2254,20 @@
    ],
    "owner": "Thuc",
    "lane": "Thuc",
-   "pct": 0,
-   "pctAuto": true,
-   "status": "todo",
+   "pct": 100,
+   "pctAuto": false,
+   "status": "done",
    "slip": 0,
-   "note": "",
-   "startActual": "",
-   "finishActual": "",
+   "note": "AC-GAME-27 cập nhật 2026-10-25 (không cuộn ngang khi đã đăng nhập)",
+   "startActual": "2026-10-24",
+   "finishActual": "2026-10-25",
    "kh": [
     "2028-01-21",
     "2028-02-21"
    ],
    "fc": [
-    "2027-06-07",
-    "2027-07-06"
+    "2026-10-24",
+    "2026-10-25"
    ],
    "line": 254,
    "acs": [
@@ -2276,7 +2276,7 @@
      "title": "Dọn bàn (cập nhật 2026-10-24: bỏ \"Chơi lại từ đầu\" - câu hỏi mở 71)",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 255
     },
     {
@@ -2284,7 +2284,7 @@
      "title": "Nồi lẩu nằm trong màn hình đầu tiên (thêm 2026-10-21)",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 256
     },
     {
@@ -2292,47 +2292,47 @@
      "title": "Nút điều khiển nằm ở khu bàn lẩu, đăng nhập ở đầu trang (thêm 2026-10-22)",
      "optional": false,
      "tested": true,
-     "done": false,
+     "done": true,
      "line": 257
     },
     {
      "id": "AC-GAME-22",
      "title": "Vùng cấm đặt món (thêm 2026-10-24)",
      "optional": false,
-     "tested": false,
-     "done": false,
+     "tested": true,
+     "done": true,
      "line": 258
     },
     {
      "id": "AC-GAME-23",
      "title": "Đĩa nhúng cao bằng bàn lẩu, thanh cuộn mỏng (thêm 2026-10-24)",
      "optional": false,
-     "tested": false,
-     "done": false,
+     "tested": true,
+     "done": true,
      "line": 259
     },
     {
      "id": "AC-GAME-24",
      "title": "Bấm món là cho vào nồi (thêm 2026-10-24)",
      "optional": false,
-     "tested": false,
-     "done": false,
+     "tested": true,
+     "done": true,
      "line": 260
     },
     {
      "id": "AC-GAME-25",
      "title": "Hiệu ứng khi ghép ra món Vàng và Đỏ (thêm 2026-10-24)",
      "optional": false,
-     "tested": false,
-     "done": false,
+     "tested": true,
+     "done": true,
      "line": 261
     },
     {
      "id": "AC-GAME-27",
      "title": "Giao diện mới - phông chữ, bảng màu và hệ thống thiết kế (thêm 2026-10-24)",
      "optional": false,
-     "tested": false,
-     "done": false,
+     "tested": true,
+     "done": true,
      "line": 262
     }
    ]
@@ -2363,8 +2363,8 @@
     "2028-03-03"
    ],
    "fc": [
-    "2027-07-07",
-    "2027-07-19"
+    "2026-12-04",
+    "2026-12-16"
    ],
    "line": 265,
    "acs": []
@@ -2570,7 +2570,7 @@
      "id": "AC-GAME-22",
      "title": "Vùng cấm đặt món (thêm 2026-10-24)",
      "optional": false,
-     "tested": false,
+     "tested": true,
      "done": false,
      "line": 288
     },
@@ -2578,7 +2578,7 @@
      "id": "AC-GAME-23",
      "title": "Đĩa nhúng cao bằng bàn lẩu, thanh cuộn mỏng (thêm 2026-10-24)",
      "optional": false,
-     "tested": false,
+     "tested": true,
      "done": false,
      "line": 289
     },
@@ -2586,7 +2586,7 @@
      "id": "AC-GAME-24",
      "title": "Bấm món là cho vào nồi (thêm 2026-10-24)",
      "optional": false,
-     "tested": false,
+     "tested": true,
      "done": false,
      "line": 290
     },
@@ -2594,7 +2594,7 @@
      "id": "AC-GAME-25",
      "title": "Hiệu ứng khi ghép ra món Vàng và Đỏ (thêm 2026-10-24)",
      "optional": false,
-     "tested": false,
+     "tested": true,
      "done": false,
      "line": 291
     },
@@ -2602,7 +2602,7 @@
      "id": "AC-GAME-26",
      "title": "Âm thanh khi ghép ra món Vàng và Đỏ (thêm 2026-10-24)",
      "optional": true,
-     "tested": false,
+     "tested": true,
      "done": false,
      "line": 292
     },
@@ -2610,9 +2610,17 @@
      "id": "AC-GAME-27",
      "title": "Giao diện mới - phông chữ, bảng màu và hệ thống thiết kế (thêm 2026-10-24)",
      "optional": false,
-     "tested": false,
+     "tested": true,
      "done": false,
      "line": 293
+    },
+    {
+     "id": "AC-GAME-28",
+     "title": "Đổi kiểu mặt bàn (thêm 2026-10-25)",
+     "optional": true,
+     "tested": true,
+     "done": false,
+     "line": 294
     },
     {
      "id": "AC-METRIC-01",
@@ -2620,7 +2628,7 @@
      "optional": false,
      "tested": true,
      "done": false,
-     "line": 294
+     "line": 295
     },
     {
      "id": "AC-METRIC-02",
@@ -2628,7 +2636,7 @@
      "optional": false,
      "tested": true,
      "done": false,
-     "line": 295
+     "line": 296
     },
     {
      "id": "AC-METRIC-03",
@@ -2636,7 +2644,7 @@
      "optional": false,
      "tested": true,
      "done": false,
-     "line": 296
+     "line": 297
     },
     {
      "id": "AC-METRIC-04",
@@ -2644,7 +2652,7 @@
      "optional": false,
      "tested": true,
      "done": false,
-     "line": 297
+     "line": 298
     },
     {
      "id": "AC-METRIC-05",
@@ -2652,7 +2660,7 @@
      "optional": false,
      "tested": true,
      "done": false,
-     "line": 298
+     "line": 299
     },
     {
      "id": "AC-METRIC-06",
@@ -2660,7 +2668,7 @@
      "optional": false,
      "tested": true,
      "done": false,
-     "line": 299
+     "line": 300
     },
     {
      "id": "AC-METRIC-07",
@@ -2668,7 +2676,7 @@
      "optional": false,
      "tested": true,
      "done": false,
-     "line": 300
+     "line": 301
     },
     {
      "id": "AC-METRIC-08",
@@ -2676,7 +2684,7 @@
      "optional": false,
      "tested": true,
      "done": false,
-     "line": 301
+     "line": 302
     }
    ]
   },
@@ -2707,7 +2715,7 @@
     "2026-10-20",
     "2026-10-20"
    ],
-   "line": 304,
+   "line": 305,
    "acs": [
     {
      "id": "AC-MOD-01",
@@ -2715,7 +2723,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 305
+     "line": 306
     },
     {
      "id": "AC-MOD-02",
@@ -2723,7 +2731,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 306
+     "line": 307
     },
     {
      "id": "AC-MOD-03",
@@ -2731,7 +2739,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 307
+     "line": 308
     },
     {
      "id": "AC-MOD-04",
@@ -2739,7 +2747,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 308
+     "line": 309
     },
     {
      "id": "AC-MOD-05",
@@ -2747,7 +2755,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 309
+     "line": 310
     },
     {
      "id": "AC-MOD-06",
@@ -2755,7 +2763,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 310
+     "line": 311
     },
     {
      "id": "AC-MOD-07",
@@ -2763,7 +2771,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 311
+     "line": 312
     },
     {
      "id": "AC-MOD-08",
@@ -2771,7 +2779,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 312
+     "line": 313
     },
     {
      "id": "AC-MOD-09",
@@ -2779,7 +2787,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 313
+     "line": 314
     },
     {
      "id": "AC-MOD-10",
@@ -2787,7 +2795,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 314
+     "line": 315
     }
    ]
   },
@@ -2818,7 +2826,7 @@
     "2026-10-21",
     "2026-10-21"
    ],
-   "line": 315,
+   "line": 316,
    "acs": [
     {
      "id": "AC-PIPE-03",
@@ -2826,7 +2834,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 316
+     "line": 317
     },
     {
      "id": "AC-PIPE-04",
@@ -2834,7 +2842,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 317
+     "line": 318
     },
     {
      "id": "AC-PIPE-05",
@@ -2842,7 +2850,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 318
+     "line": 319
     },
     {
      "id": "AC-PIPE-06",
@@ -2850,7 +2858,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 319
+     "line": 320
     },
     {
      "id": "AC-PIPE-07",
@@ -2858,7 +2866,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 320
+     "line": 321
     },
     {
      "id": "AC-PIPE-08",
@@ -2866,7 +2874,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 321
+     "line": 322
     },
     {
      "id": "AC-PIPE-09",
@@ -2874,7 +2882,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 322
+     "line": 323
     },
     {
      "id": "AC-PIPE-10",
@@ -2882,7 +2890,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 323
+     "line": 324
     },
     {
      "id": "AC-PIPE-12",
@@ -2890,7 +2898,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 324
+     "line": 325
     }
    ]
   },
@@ -2907,54 +2915,54 @@
    ],
    "owner": "Thuc",
    "lane": "Thuc",
-   "pct": 0,
-   "pctAuto": true,
-   "status": "todo",
+   "pct": 100,
+   "pctAuto": false,
+   "status": "done",
    "slip": 0,
    "note": "",
-   "startActual": "",
-   "finishActual": "",
+   "startActual": "2026-10-24",
+   "finishActual": "2026-10-24",
    "kh": [
     "2028-04-10",
     "2028-05-03"
    ],
    "fc": [
-    "2027-07-20",
-    "2027-08-11"
+    "2026-10-24",
+    "2026-10-24"
    ],
-   "line": 325,
+   "line": 326,
    "acs": [
     {
      "id": "AC-ADMIN-11",
      "title": "Thống kê kết quả crawl (thêm 2026-10-23)",
      "optional": false,
      "tested": true,
-     "done": false,
-     "line": 326
+     "done": true,
+     "line": 327
     },
     {
      "id": "AC-PIPE-15",
      "title": "Nguồn Tuổi Trẻ chuyên mục meme (thêm 2026-10-23)",
      "optional": false,
      "tested": true,
-     "done": false,
-     "line": 327
+     "done": true,
+     "line": 328
     },
     {
      "id": "AC-PIPE-16",
      "title": "Ghi mức trending (mặn) của phần tử (thêm 2026-10-23)",
      "optional": false,
      "tested": true,
-     "done": false,
-     "line": 328
+     "done": true,
+     "line": 329
     },
     {
      "id": "AC-PIPE-17",
      "title": "Nguồn Threads qua API chính thức (thêm 2026-10-23)",
      "optional": false,
      "tested": true,
-     "done": false,
-     "line": 329
+     "done": true,
+     "line": 330
     }
    ]
   },
@@ -2971,54 +2979,54 @@
    ],
    "owner": "Thuc",
    "lane": "Thuc",
-   "pct": 0,
-   "pctAuto": true,
-   "status": "todo",
+   "pct": 100,
+   "pctAuto": false,
+   "status": "done",
    "slip": 0,
    "note": "",
-   "startActual": "",
-   "finishActual": "",
+   "startActual": "2026-10-24",
+   "finishActual": "2026-10-24",
    "kh": [
     "2028-05-05",
     "2028-05-17"
    ],
    "fc": [
-    "2027-08-12",
-    "2027-08-24"
+    "2026-10-24",
+    "2026-10-24"
    ],
-   "line": 330,
+   "line": 331,
    "acs": [
     {
      "id": "AC-PIPE-18",
      "title": "Threads gọi host `graph.threads.com` (thêm 2026-10-24)",
      "optional": false,
      "tested": true,
-     "done": false,
-     "line": 331
+     "done": true,
+     "line": 332
     },
     {
      "id": "AC-PIPE-19",
      "title": "Tự gia hạn token Threads (thêm 2026-10-24)",
      "optional": false,
      "tested": true,
-     "done": false,
-     "line": 332
+     "done": true,
+     "line": 333
     },
     {
      "id": "AC-PIPE-20",
      "title": "Cảnh báo Threads trả 0 bài (thêm 2026-10-24)",
      "optional": false,
      "tested": true,
-     "done": false,
-     "line": 333
+     "done": true,
+     "line": 334
     },
     {
      "id": "AC-SUBPATH-13",
      "title": "Trang chính sách trả về cho mọi GET (thêm 2026-10-24)",
      "optional": false,
      "tested": true,
-     "done": false,
-     "line": 334
+     "done": true,
+     "line": 335
     }
    ]
   },
@@ -3049,7 +3057,7 @@
     "2026-10-21",
     "2026-10-22"
    ],
-   "line": 335,
+   "line": 336,
    "acs": [
     {
      "id": "AC-ART-01",
@@ -3057,7 +3065,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 336
+     "line": 337
     },
     {
      "id": "AC-ART-02",
@@ -3065,7 +3073,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 337
+     "line": 338
     },
     {
      "id": "AC-ART-03",
@@ -3073,7 +3081,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 338
+     "line": 339
     },
     {
      "id": "AC-ART-04",
@@ -3081,7 +3089,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 339
+     "line": 340
     },
     {
      "id": "AC-ART-05",
@@ -3089,7 +3097,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 340
+     "line": 341
     },
     {
      "id": "AC-ART-06",
@@ -3097,7 +3105,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 341
+     "line": 342
     },
     {
      "id": "AC-ART-07",
@@ -3105,7 +3113,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 342
+     "line": 343
     },
     {
      "id": "AC-ART-08",
@@ -3113,7 +3121,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 343
+     "line": 344
     },
     {
      "id": "AC-ART-09",
@@ -3121,7 +3129,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 344
+     "line": 345
     },
     {
      "id": "AC-ART-10",
@@ -3129,7 +3137,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 345
+     "line": 346
     },
     {
      "id": "AC-ART-11",
@@ -3137,15 +3145,15 @@
      "optional": false,
      "tested": true,
      "done": false,
-     "line": 346
+     "line": 347
     },
     {
      "id": "AC-ART-12",
      "title": "Ưu tiên vẽ ảnh cho món sắp lên Vàng/Đỏ (thêm 2026-10-24)",
      "optional": false,
-     "tested": false,
+     "tested": true,
      "done": false,
-     "line": 347
+     "line": 348
     },
     {
      "id": "AC-ART-13",
@@ -3153,7 +3161,7 @@
      "optional": true,
      "tested": false,
      "done": false,
-     "line": 348
+     "line": 349
     }
    ]
   },
@@ -3170,38 +3178,38 @@
    ],
    "owner": "Thuc",
    "lane": "Thuc",
-   "pct": 0,
-   "pctAuto": true,
-   "status": "todo",
+   "pct": 100,
+   "pctAuto": false,
+   "status": "done",
    "slip": 0,
-   "note": "",
-   "startActual": "",
-   "finishActual": "",
+   "note": "AC-ART-12 GREEN chạy tay 2026-10-25, .dk/evidence/art.json chưa ghi lại GREEN",
+   "startActual": "2026-10-23",
+   "finishActual": "2026-10-25",
    "kh": [
     "2028-06-01",
     "2028-06-05"
    ],
    "fc": [
-    "2027-08-25",
-    "2027-09-01"
+    "2026-10-23",
+    "2026-10-25"
    ],
-   "line": 349,
+   "line": 350,
    "acs": [
     {
      "id": "AC-ART-11",
      "title": "Vẽ bù ảnh cho phần tử lõi (thêm 2026-10-23)",
      "optional": false,
      "tested": true,
-     "done": false,
-     "line": 350
+     "done": true,
+     "line": 351
     },
     {
      "id": "AC-ART-12",
      "title": "Ưu tiên vẽ ảnh cho món sắp lên Vàng/Đỏ (thêm 2026-10-24)",
      "optional": false,
-     "tested": false,
-     "done": false,
-     "line": 351
+     "tested": true,
+     "done": true,
+     "line": 352
     }
    ]
   },
@@ -3229,10 +3237,10 @@
     "2027-11-22"
    ],
    "fc": [
-    "2027-09-03",
-    "2027-09-27"
+    "2027-07-02",
+    "2027-07-26"
    ],
-   "line": 354,
+   "line": 355,
    "acs": [
     {
      "id": "AC-ART-01",
@@ -3240,7 +3248,7 @@
      "optional": false,
      "tested": true,
      "done": false,
-     "line": 355
+     "line": 356
     },
     {
      "id": "AC-ART-02",
@@ -3248,7 +3256,7 @@
      "optional": false,
      "tested": true,
      "done": false,
-     "line": 356
+     "line": 357
     },
     {
      "id": "AC-ART-03",
@@ -3256,7 +3264,7 @@
      "optional": false,
      "tested": true,
      "done": false,
-     "line": 357
+     "line": 358
     },
     {
      "id": "AC-ART-04",
@@ -3264,7 +3272,7 @@
      "optional": false,
      "tested": true,
      "done": false,
-     "line": 358
+     "line": 359
     },
     {
      "id": "AC-ART-05",
@@ -3272,7 +3280,7 @@
      "optional": false,
      "tested": true,
      "done": false,
-     "line": 359
+     "line": 360
     },
     {
      "id": "AC-ART-06",
@@ -3280,7 +3288,7 @@
      "optional": false,
      "tested": true,
      "done": false,
-     "line": 360
+     "line": 361
     },
     {
      "id": "AC-ART-07",
@@ -3288,7 +3296,7 @@
      "optional": false,
      "tested": true,
      "done": false,
-     "line": 361
+     "line": 362
     },
     {
      "id": "AC-ART-08",
@@ -3296,7 +3304,7 @@
      "optional": false,
      "tested": true,
      "done": false,
-     "line": 362
+     "line": 363
     },
     {
      "id": "AC-ART-09",
@@ -3304,7 +3312,7 @@
      "optional": false,
      "tested": true,
      "done": false,
-     "line": 363
+     "line": 364
     },
     {
      "id": "AC-ART-10",
@@ -3312,7 +3320,7 @@
      "optional": false,
      "tested": true,
      "done": false,
-     "line": 364
+     "line": 365
     },
     {
      "id": "AC-ART-11",
@@ -3320,15 +3328,15 @@
      "optional": false,
      "tested": true,
      "done": false,
-     "line": 365
+     "line": 366
     },
     {
      "id": "AC-ART-12",
      "title": "Ưu tiên vẽ ảnh cho món sắp lên Vàng/Đỏ (thêm 2026-10-24)",
      "optional": false,
-     "tested": false,
+     "tested": true,
      "done": false,
-     "line": 366
+     "line": 367
     },
     {
      "id": "AC-ART-13",
@@ -3336,7 +3344,7 @@
      "optional": true,
      "tested": false,
      "done": false,
-     "line": 367
+     "line": 368
     }
    ]
   }
@@ -3345,7 +3353,7 @@
   "# Tiến độ - ƯỚC LƯỢNG - LẨU MEME",
   "",
   "> Sinh bởi `/dk:plan` (gen-plan.py) từ `docs/estimate/items.json`. **Người sửa trực tiếp file này**: dấu `[x]` (hạng mục hoặc AC), `tiến độ: N%`, `người`, `bắt đầu`, `xong` (YYYY-MM-DD), `ghi chú` - giữ nguyên dấu ` · ` giữa các trường. Chạy lại `/dk:plan` để tính dự báo và vẽ lại `gantt.html`. `KH` là kế hoạch gốc, chỉ đổi bằng `/dk:plan rebaseline`.",
-  "> Bắt đầu dự án: 2026-10-20 · Kỹ sư: 1 (Thuc) · Giờ/tuần: 20 · Nghiệm thu KH: 2028-06-06 · Dự báo: 2027-09-28 · Cập nhật: 2026-10-24",
+  "> Bắt đầu dự án: 2026-10-20 · Kỹ sư: 1 (Thuc) · Giờ/tuần: 20 · Nghiệm thu KH: 2028-06-06 · Dự báo: 2027-07-27 · Cập nhật: 2026-10-25",
   "",
   "",
   "## Nền tảng",
@@ -3478,13 +3486,13 @@
   "  - [x] AC-GAME-21 Vuốt cuộn trang trên màn hình cảm ứng (thêm 2026-10-22)",
   "",
   "## Cộng đồng",
-  "- [ ] **SHARE** Thẻ chia sẻ · 4đ · rủi ro: MEDIUM · KH: 2027-04-07 → 2027-04-19 · tiến độ: 0% · người: Thuc · bắt đầu:  · xong:  · ghi chú: ",
-  "  - [ ] AC-SHARE-01 Thẻ Daily dạng chữ",
-  "  - [ ] AC-SHARE-02 Thời gian giải trên thẻ (cập nhật 2026-10-21, thay chuỗi emoji các bước)",
-  "  - [ ] AC-SHARE-03 Thẻ Daily dạng ảnh PNG",
-  "  - [ ] AC-SHARE-04 Thẻ Công thức gia truyền",
-  "  - [ ] AC-SHARE-05 Sao chép và chia sẻ hệ thống",
-  "  - [ ] AC-SHARE-06 Ghi sự kiện chia sẻ",
+  "- [x] **SHARE** Thẻ chia sẻ · 4đ · rủi ro: MEDIUM · KH: 2027-04-07 → 2027-04-19 · tiến độ: 100% · người: Thuc · bắt đầu: 2026-10-23 · xong: 2026-10-23 · ghi chú: ",
+  "  - [x] AC-SHARE-01 Thẻ Daily dạng chữ",
+  "  - [x] AC-SHARE-02 Thời gian giải trên thẻ (cập nhật 2026-10-21, thay chuỗi emoji các bước)",
+  "  - [x] AC-SHARE-03 Thẻ Daily dạng ảnh PNG",
+  "  - [x] AC-SHARE-04 Thẻ Công thức gia truyền",
+  "  - [x] AC-SHARE-05 Sao chép và chia sẻ hệ thống",
+  "  - [x] AC-SHARE-06 Ghi sự kiện chia sẻ",
   "",
   "## An toàn",
   "- [x] **REPORT** Báo cáo + chặn nóng · 5.5đ · rủi ro: MEDIUM · KH: 2027-04-20 → 2027-05-07 · tiến độ: 100% · người: Thuc · bắt đầu: 2026-10-20 · xong: 2026-10-20 · ghi chú: ",
@@ -3512,15 +3520,15 @@
   "  - [ ] AC-ADMIN-12 Gán tier cho phần tử (thêm 2026-10-23)",
   "",
   "## Vận hành",
-  "- [ ] **METRIC** Đo chỉ số thành công · 5đ · rủi ro: MEDIUM · KH: 2027-05-28 → 2027-06-10 · tiến độ: 0% · người: Thuc · bắt đầu:  · xong:  · ghi chú: ",
-  "  - [ ] AC-METRIC-01 Cloudflare Web Analytics không cookie",
-  "  - [ ] AC-METRIC-02 Nhận sự kiện theo danh sách cho phép",
-  "  - [ ] AC-METRIC-03 Sự kiện không hợp lệ",
-  "  - [ ] AC-METRIC-04 Client gom sự kiện ghép",
-  "  - [ ] AC-METRIC-05 Tổng hợp chỉ số",
-  "  - [ ] AC-METRIC-06 Đưa số liệu vào báo cáo đợt",
-  "  - [ ] AC-METRIC-07 Dọn sự kiện quá hạn",
-  "  - [ ] AC-METRIC-08 Client gửi sự kiện Món đặc biệt (thêm 2026-10-23, câu hỏi mở 62)",
+  "- [x] **METRIC** Đo chỉ số thành công · 5đ · rủi ro: MEDIUM · KH: 2027-05-28 → 2027-06-10 · tiến độ: 100% · người: Thuc · bắt đầu: 2026-10-23 · xong: 2026-10-23 · ghi chú: ",
+  "  - [x] AC-METRIC-01 Cloudflare Web Analytics không cookie",
+  "  - [x] AC-METRIC-02 Nhận sự kiện theo danh sách cho phép",
+  "  - [x] AC-METRIC-03 Sự kiện không hợp lệ",
+  "  - [x] AC-METRIC-04 Client gom sự kiện ghép",
+  "  - [x] AC-METRIC-05 Tổng hợp chỉ số",
+  "  - [x] AC-METRIC-06 Đưa số liệu vào báo cáo đợt",
+  "  - [x] AC-METRIC-07 Dọn sự kiện quá hạn",
+  "  - [x] AC-METRIC-08 Client gửi sự kiện Món đặc biệt (thêm 2026-10-23, câu hỏi mở 62)",
   "",
   "## Kiểm thử",
   "- [x] **INV** Bất biến nội dung và trò chơi · 6đ · rủi ro: HIGH · KH: 2027-06-11 → 2027-06-30 · tiến độ: 100% · người: Thuc · bắt đầu: 2026-10-20 · xong: 2026-10-20 · ghi chú: ",
@@ -3554,20 +3562,20 @@
   "  - [ ] AC-SUBPATH-13 Trang chính sách trả về cho mọi GET (thêm 2026-10-24)",
   "",
   "## Trò chơi",
-  "- [ ] **DAILY3** Món đặc biệt - pool mặn/mới, lịch mẻ theo manifest · 4đ · rủi ro: MEDIUM · KH: 2027-09-29 → 2027-10-11 · tiến độ: 0% (theo AC) · người: Thuc · bắt đầu:  · xong:  · ghi chú: ",
-  "  - [ ] AC-DAILY-01 Chọn Món đặc biệt (cập nhật 2026-10-23)",
-  "  - [ ] AC-DAILY-12 Đồng hồ đếm ngược theo manifest thật (cập nhật 2026-10-23)",
-  "  - [ ] AC-DAILY-18 Pool thử thách từ lõi không lặp trong 30 mẻ (thêm 2026-10-23)",
-  "  - [ ] AC-PIPE-02 Lịch chạy và chạy tay (cập nhật 2026-10-23)",
+  "- [x] **DAILY3** Món đặc biệt - pool mặn/mới, lịch mẻ theo manifest · 4đ · rủi ro: MEDIUM · KH: 2027-09-29 → 2027-10-11 · tiến độ: 100% · người: Thuc · bắt đầu: 2026-10-24 · xong: 2026-10-24 · ghi chú: ",
+  "  - [x] AC-DAILY-01 Chọn Món đặc biệt (cập nhật 2026-10-23)",
+  "  - [x] AC-DAILY-12 Đồng hồ đếm ngược theo manifest thật (cập nhật 2026-10-23)",
+  "  - [x] AC-DAILY-18 Pool thử thách từ lõi không lặp trong 30 mẻ (thêm 2026-10-23)",
+  "  - [x] AC-PIPE-02 Lịch chạy và chạy tay (cập nhật 2026-10-23)",
   "",
   "## Nội dung",
-  "- [ ] **TIER** Tier của meme · 8.5đ · rủi ro: LOW · KH: 2027-10-12 → 2027-10-22 · tiến độ: 0% (theo AC) · người: Thuc · bắt đầu:  · xong:  · ghi chú: ",
-  "  - [ ] AC-ADMIN-12 Gán tier cho phần tử (thêm 2026-10-23)",
-  "  - [ ] AC-TIER-01 Tier mặc định và giữ qua các mẻ",
-  "  - [ ] AC-TIER-02 Hiển thị tier trên phần tử",
-  "  - [ ] AC-TIER-03 Graph cũ chưa có tier",
-  "  - [ ] AC-TIER-04 Tier tự động theo độ sâu (thêm 2026-10-24)",
-  "  - [ ] AC-TIER-05 Admin sửa tier và trả về tự động (thêm 2026-10-24)",
+  "- [x] **TIER** Tier của meme · 8.5đ · rủi ro: LOW · KH: 2027-10-12 → 2027-10-22 · tiến độ: 100% · người: Thuc · bắt đầu: 2026-10-23 · xong: 2026-10-25 · ghi chú: AC-TIER-02 cập nhật 2026-10-25 (viền món cùng màu hình nhỏ)",
+  "  - [x] AC-ADMIN-12 Gán tier cho phần tử (thêm 2026-10-23)",
+  "  - [x] AC-TIER-01 Tier mặc định và giữ qua các mẻ",
+  "  - [x] AC-TIER-02 Hiển thị tier trên phần tử",
+  "  - [x] AC-TIER-03 Graph cũ chưa có tier",
+  "  - [x] AC-TIER-04 Tier tự động theo độ sâu (thêm 2026-10-24)",
+  "  - [x] AC-TIER-05 Admin sửa tier và trả về tự động (thêm 2026-10-24)",
   "",
   "## Cộng đồng",
   "- [ ] **CONTRIB** Đóng góp meme · 13đ · rủi ro: HIGH · KH: 2027-10-25 → 2027-12-02 · tiến độ: 0% (theo AC) · người: Thuc · bắt đầu:  · xong:  · ghi chú: ",
@@ -3585,26 +3593,26 @@
   "  - [ ] AC-CONTRIB-12 Xóa tài khoản và xuất dữ liệu",
   "",
   "## Trò chơi",
-  "- [ ] **SYNC** Đĩa nhúng theo tài khoản · 10.5đ · rủi ro: HIGH · KH: 2027-12-20 → 2028-01-20 · tiến độ: 0% (theo AC) · người: Thuc · bắt đầu:  · xong:  · ghi chú: ",
-  "  - [ ] AC-SYNC-01 Ghép ra món mới thì ghi vào Đĩa của tài khoản",
-  "  - [ ] AC-SYNC-02 Tải lại trang kéo Đĩa tổng hợp của mọi phiên",
-  "  - [ ] AC-SYNC-03 Tiến độ trước khi đăng nhập được gộp vào tài khoản",
-  "  - [ ] AC-SYNC-04 Từ chối phần tử không ghép ra được",
-  "  - [ ] AC-SYNC-05 Chưa đăng nhập, phiên hết hạn và cách ly tài khoản",
-  "  - [ ] AC-SYNC-06 Mất mạng thì chơi tiếp, gửi bù sau",
-  "  - [ ] AC-SYNC-07 Không có cách xóa Đĩa của tài khoản từ giao diện (cập nhật 2026-10-24 - câu hỏi mở 71)",
-  "  - [ ] AC-SYNC-08 Phần tử bị chặn và graph đổi version",
-  "  - [ ] AC-SYNC-09 Giới hạn tần suất và kích thước",
-  "  - [ ] AC-SYNC-10 Xóa và xuất dữ liệu",
-  "- [ ] **UI3** Giao diện mới và cảm giác chơi - góp ý 2026-10-24 · 10đ · rủi ro: MEDIUM · KH: 2028-01-21 → 2028-02-21 · tiến độ: 0% (theo AC) · người: Thuc · bắt đầu:  · xong:  · ghi chú: ",
-  "  - [ ] AC-GAME-11 Dọn bàn (cập nhật 2026-10-24: bỏ \"Chơi lại từ đầu\" - câu hỏi mở 71)",
-  "  - [ ] AC-GAME-18 Nồi lẩu nằm trong màn hình đầu tiên (thêm 2026-10-21)",
-  "  - [ ] AC-GAME-19 Nút điều khiển nằm ở khu bàn lẩu, đăng nhập ở đầu trang (thêm 2026-10-22)",
-  "  - [ ] AC-GAME-22 Vùng cấm đặt món (thêm 2026-10-24)",
-  "  - [ ] AC-GAME-23 Đĩa nhúng cao bằng bàn lẩu, thanh cuộn mỏng (thêm 2026-10-24)",
-  "  - [ ] AC-GAME-24 Bấm món là cho vào nồi (thêm 2026-10-24)",
-  "  - [ ] AC-GAME-25 Hiệu ứng khi ghép ra món Vàng và Đỏ (thêm 2026-10-24)",
-  "  - [ ] AC-GAME-27 Giao diện mới - phông chữ, bảng màu và hệ thống thiết kế (thêm 2026-10-24)",
+  "- [x] **SYNC** Đĩa nhúng theo tài khoản · 10.5đ · rủi ro: HIGH · KH: 2027-12-20 → 2028-01-20 · tiến độ: 100% · người: Thuc · bắt đầu: 2026-10-24 · xong: 2026-10-25 · ghi chú: ",
+  "  - [x] AC-SYNC-01 Ghép ra món mới thì ghi vào Đĩa của tài khoản",
+  "  - [x] AC-SYNC-02 Tải lại trang kéo Đĩa tổng hợp của mọi phiên",
+  "  - [x] AC-SYNC-03 Tiến độ trước khi đăng nhập được gộp vào tài khoản",
+  "  - [x] AC-SYNC-04 Từ chối phần tử không ghép ra được",
+  "  - [x] AC-SYNC-05 Chưa đăng nhập, phiên hết hạn và cách ly tài khoản",
+  "  - [x] AC-SYNC-06 Mất mạng thì chơi tiếp, gửi bù sau",
+  "  - [x] AC-SYNC-07 Không có cách xóa Đĩa của tài khoản từ giao diện (cập nhật 2026-10-24 - câu hỏi mở 71)",
+  "  - [x] AC-SYNC-08 Phần tử bị chặn và graph đổi version",
+  "  - [x] AC-SYNC-09 Giới hạn tần suất và kích thước",
+  "  - [x] AC-SYNC-10 Xóa và xuất dữ liệu",
+  "- [x] **UI3** Giao diện mới và cảm giác chơi - góp ý 2026-10-24 · 10đ · rủi ro: MEDIUM · KH: 2028-01-21 → 2028-02-21 · tiến độ: 100% · người: Thuc · bắt đầu: 2026-10-24 · xong: 2026-10-25 · ghi chú: AC-GAME-27 cập nhật 2026-10-25 (không cuộn ngang khi đã đăng nhập)",
+  "  - [x] AC-GAME-11 Dọn bàn (cập nhật 2026-10-24: bỏ \"Chơi lại từ đầu\" - câu hỏi mở 71)",
+  "  - [x] AC-GAME-18 Nồi lẩu nằm trong màn hình đầu tiên (thêm 2026-10-21)",
+  "  - [x] AC-GAME-19 Nút điều khiển nằm ở khu bàn lẩu, đăng nhập ở đầu trang (thêm 2026-10-22)",
+  "  - [x] AC-GAME-22 Vùng cấm đặt món (thêm 2026-10-24)",
+  "  - [x] AC-GAME-23 Đĩa nhúng cao bằng bàn lẩu, thanh cuộn mỏng (thêm 2026-10-24)",
+  "  - [x] AC-GAME-24 Bấm món là cho vào nồi (thêm 2026-10-24)",
+  "  - [x] AC-GAME-25 Hiệu ứng khi ghép ra món Vàng và Đỏ (thêm 2026-10-24)",
+  "  - [x] AC-GAME-27 Giao diện mới - phông chữ, bảng màu và hệ thống thiết kế (thêm 2026-10-24)",
   "",
   "## Kiểm thử",
   "- [ ] **UAT3** Kiểm thử nghiệm thu & sửa lỗi (góp ý 2026-10-24) · 4đ · rủi ro: MEDIUM · KH: 2028-02-22 → 2028-03-03 · tiến độ: 0% · người: Thuc · bắt đầu:  · xong:  · ghi chú: ",
@@ -3636,6 +3644,7 @@
   "  - [ ] AC-GAME-25 Hiệu ứng khi ghép ra món Vàng và Đỏ (thêm 2026-10-24)",
   "  - [ ] AC-GAME-26 Âm thanh khi ghép ra món Vàng và Đỏ (thêm 2026-10-24) _(tùy chọn)_",
   "  - [ ] AC-GAME-27 Giao diện mới - phông chữ, bảng màu và hệ thống thiết kế (thêm 2026-10-24)",
+  "  - [ ] AC-GAME-28 Đổi kiểu mặt bàn (thêm 2026-10-25) _(tùy chọn)_",
   "  - [ ] AC-METRIC-01 Cloudflare Web Analytics không cookie",
   "  - [ ] AC-METRIC-02 Nhận sự kiện theo danh sách cho phép",
   "  - [ ] AC-METRIC-03 Sự kiện không hợp lệ",
@@ -3667,16 +3676,16 @@
   "  - [x] AC-PIPE-09 Giám khảo hài",
   "  - [x] AC-PIPE-10 Idempotent",
   "  - [x] AC-PIPE-12 Gom lô Gemini, backoff, hết quota dừng êm",
-  "- [ ] **PIPE3** Nguồn Tuổi Trẻ, Threads, mức mặn, thống kê crawl (giai đoạn 2) · 7.5đ · rủi ro: HIGH · KH: 2028-04-10 → 2028-05-03 · tiến độ: 0% (theo AC) · người: Thuc · bắt đầu:  · xong:  · ghi chú: ",
-  "  - [ ] AC-ADMIN-11 Thống kê kết quả crawl (thêm 2026-10-23)",
-  "  - [ ] AC-PIPE-15 Nguồn Tuổi Trẻ chuyên mục meme (thêm 2026-10-23)",
-  "  - [ ] AC-PIPE-16 Ghi mức trending (mặn) của phần tử (thêm 2026-10-23)",
-  "  - [ ] AC-PIPE-17 Nguồn Threads qua API chính thức (thêm 2026-10-23)",
-  "- [ ] **PIPE4** Threads sau khi có token, trang chính sách cho bot Meta (giai đoạn 2) · 4đ · rủi ro: MEDIUM · KH: 2028-05-05 → 2028-05-17 · tiến độ: 0% (theo AC) · người: Thuc · bắt đầu:  · xong:  · ghi chú: ",
-  "  - [ ] AC-PIPE-18 Threads gọi host `graph.threads.com` (thêm 2026-10-24)",
-  "  - [ ] AC-PIPE-19 Tự gia hạn token Threads (thêm 2026-10-24)",
-  "  - [ ] AC-PIPE-20 Cảnh báo Threads trả 0 bài (thêm 2026-10-24)",
-  "  - [ ] AC-SUBPATH-13 Trang chính sách trả về cho mọi GET (thêm 2026-10-24)",
+  "- [x] **PIPE3** Nguồn Tuổi Trẻ, Threads, mức mặn, thống kê crawl (giai đoạn 2) · 7.5đ · rủi ro: HIGH · KH: 2028-04-10 → 2028-05-03 · tiến độ: 100% · người: Thuc · bắt đầu: 2026-10-24 · xong: 2026-10-24 · ghi chú: ",
+  "  - [x] AC-ADMIN-11 Thống kê kết quả crawl (thêm 2026-10-23)",
+  "  - [x] AC-PIPE-15 Nguồn Tuổi Trẻ chuyên mục meme (thêm 2026-10-23)",
+  "  - [x] AC-PIPE-16 Ghi mức trending (mặn) của phần tử (thêm 2026-10-23)",
+  "  - [x] AC-PIPE-17 Nguồn Threads qua API chính thức (thêm 2026-10-23)",
+  "- [x] **PIPE4** Threads sau khi có token, trang chính sách cho bot Meta (giai đoạn 2) · 4đ · rủi ro: MEDIUM · KH: 2028-05-05 → 2028-05-17 · tiến độ: 100% · người: Thuc · bắt đầu: 2026-10-24 · xong: 2026-10-24 · ghi chú: ",
+  "  - [x] AC-PIPE-18 Threads gọi host `graph.threads.com` (thêm 2026-10-24)",
+  "  - [x] AC-PIPE-19 Tự gia hạn token Threads (thêm 2026-10-24)",
+  "  - [x] AC-PIPE-20 Cảnh báo Threads trả 0 bài (thêm 2026-10-24)",
+  "  - [x] AC-SUBPATH-13 Trang chính sách trả về cho mọi GET (thêm 2026-10-24)",
   "- [x] **ART** Ảnh minh họa tự tạo (giai đoạn 2) · 9đ · rủi ro: HIGH · KH: 2027-10-18 → 2027-11-08 · tiến độ: 100% · người: Thuc · bắt đầu: 2026-10-21 · xong: 2026-10-22 · ghi chú: đã nối vào mẻ full (ADR 0012, nhánh feat/art-wiring); cần WORKERS_AI_TOKEN + CLOUDFLARE_ACCOUNT_ID để vẽ thật; hạn mức Workers AI vẫn chờ kiểm (câu hỏi mở 13)",
   "  - [x] AC-ART-01 Prompt vẽ khái niệm, không người thật",
   "  - [x] AC-ART-02 Kiểm duyệt ảnh, vẽ lại một lần rồi về emoji",
@@ -3691,9 +3700,9 @@
   "  - [ ] AC-ART-11 Vẽ bù ảnh cho phần tử lõi (thêm 2026-10-23)",
   "  - [ ] AC-ART-12 Ưu tiên vẽ ảnh cho món sắp lên Vàng/Đỏ (thêm 2026-10-24)",
   "  - [ ] AC-ART-13 Admin tải tranh vẽ tay cho phần tử (thêm 2026-10-24) _(tùy chọn)_",
-  "- [ ] **ART2** Vẽ bù ảnh phần tử lõi, ưu tiên món Vàng/Đỏ (giai đoạn 2) · 2.5đ · rủi ro: LOW · KH: 2028-06-01 → 2028-06-05 · tiến độ: 0% (theo AC) · người: Thuc · bắt đầu:  · xong:  · ghi chú: ",
-  "  - [ ] AC-ART-11 Vẽ bù ảnh cho phần tử lõi (thêm 2026-10-23)",
-  "  - [ ] AC-ART-12 Ưu tiên vẽ ảnh cho món sắp lên Vàng/Đỏ (thêm 2026-10-24)",
+  "- [x] **ART2** Vẽ bù ảnh phần tử lõi, ưu tiên món Vàng/Đỏ (giai đoạn 2) · 2.5đ · rủi ro: LOW · KH: 2028-06-01 → 2028-06-05 · tiến độ: 100% · người: Thuc · bắt đầu: 2026-10-23 · xong: 2026-10-25 · ghi chú: AC-ART-12 GREEN chạy tay 2026-10-25, .dk/evidence/art.json chưa ghi lại GREEN",
+  "  - [x] AC-ART-11 Vẽ bù ảnh cho phần tử lõi (thêm 2026-10-23)",
+  "  - [x] AC-ART-12 Ưu tiên vẽ ảnh cho món sắp lên Vàng/Đỏ (thêm 2026-10-24)",
   "",
   "## Kiểm thử",
   "- [ ] **UAT2** Kiểm thử nghiệm thu & sửa lỗi (giai đoạn 2) · 7.5đ · rủi ro: MEDIUM · KH: 2027-11-09 → 2027-11-22 · tiến độ: 0% · người: Thuc · bắt đầu:  · xong:  · ghi chú: ",

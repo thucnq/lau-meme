@@ -231,7 +231,17 @@ export function Game({ onDiscover, onItems, heirlooms = {}, onReport, blocklistR
     document.documentElement.dataset.theme = theme
   }, [theme])
 
-  useEffect(() => () => timers.current.forEach((t) => window.clearTimeout(t)), [])
+  useEffect(
+    () => () => {
+      timers.current.forEach((t) => window.clearTimeout(t))
+      const press = pressRef.current
+      if (press) {
+        window.clearTimeout(press.timer)
+        window.clearTimeout(press.armTimer)
+      }
+    },
+    [],
+  )
 
   // A touch drag, held or sideways, keeps the page still; a plain swipe is left to scroll it (AC-GAME-21).
   useEffect(() => {
@@ -549,7 +559,7 @@ export function Game({ onDiscover, onItems, heirlooms = {}, onReport, blocklistR
       if (typeof e.currentTarget.setPointerCapture === 'function') e.currentTarget.setPointerCapture(e.pointerId)
       clearPress()
       const { width: w, height: h } = e.currentTarget.getBoundingClientRect()
-      const touch = e.pointerType === 'touch'
+      const touch = e.pointerType !== 'mouse' // a pen gets the chip's pan-y too, so it follows the touch rules
       const press: Press = {
         source, x: e.clientX, y: e.clientY, w, h, moved: false, held: false, timer: 0,
         touch, armed: false, swiping: false, armTimer: 0,
