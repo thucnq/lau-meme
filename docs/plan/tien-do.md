@@ -347,7 +347,8 @@
   - [x] AC-ART-10 Thiếu cấu hình hoặc lỗi vẽ kéo dài không làm hỏng mẻ (thêm 2026-10-21, ADR 0012)
   - [ ] AC-ART-11 Vẽ bù ảnh cho phần tử lõi (thêm 2026-10-23)
   - [ ] AC-ART-12 Ưu tiên vẽ ảnh cho món sắp lên Vàng/Đỏ (thêm 2026-10-24)
-  - [ ] AC-ART-13 Admin tải tranh vẽ tay cho phần tử (thêm 2026-10-24) _(tùy chọn)_
+  - [x] AC-ART-13 Admin tải tranh vẽ tay cho phần tử (thêm 2026-10-24) _(tùy chọn)_
+  - [x] AC-ART-14 Dùng link ảnh của đề xuất làm ảnh món (thêm 2026-10-25, ADR 0018)
 - [x] **ART2** Vẽ bù ảnh phần tử lõi, ưu tiên món Vàng/Đỏ (giai đoạn 2) · 2.5đ · rủi ro: LOW · KH: 2028-06-01 → 2028-06-05 · tiến độ: 100% · người: Thuc · bắt đầu: 2026-10-23 · xong: 2026-10-25 · ghi chú: AC-ART-12 GREEN chạy tay 2026-10-25, .dk/evidence/art.json chưa ghi lại GREEN
   - [x] AC-ART-11 Vẽ bù ảnh cho phần tử lõi (thêm 2026-10-23)
   - [x] AC-ART-12 Ưu tiên vẽ ảnh cho món sắp lên Vàng/Đỏ (thêm 2026-10-24)
@@ -367,3 +368,4 @@
   - [ ] AC-ART-11 Vẽ bù ảnh cho phần tử lõi (thêm 2026-10-23)
   - [ ] AC-ART-12 Ưu tiên vẽ ảnh cho món sắp lên Vàng/Đỏ (thêm 2026-10-24)
   - [ ] AC-ART-13 Admin tải tranh vẽ tay cho phần tử (thêm 2026-10-24) _(tùy chọn)_
+  - [ ] AC-ART-14 Dùng link ảnh của đề xuất làm ảnh món (thêm 2026-10-25, ADR 0018)

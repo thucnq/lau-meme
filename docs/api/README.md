@@ -88,12 +88,12 @@ Mọi lỗi là RFC 9457 `application/problem+json` (`type`, `title`, `status`, 
 | POST | `/admin/moderation` | Ẩn / hiện / chặn / gỡ chặn / bỏ qua báo cáo | AdminToken | AC-ADMIN-03..05, AC-ADMIN-07, AC-ADMIN-09 |
 | GET | `/admin/contributions` | Đề xuất meme (cũ nhất trước, lọc theo trạng thái) | AdminToken | AC-CONTRIB-07, AC-ADMIN-10 |
 | PATCH | `/admin/contributions/{id}` | Sửa đề xuất chờ duyệt | AdminToken | AC-CONTRIB-07, AC-ADMIN-09 |
-| POST | `/admin/contributions/{id}/approve` | Duyệt đề xuất (kèm `image_hint`, tier tùy chọn) | AdminToken | AC-CONTRIB-08, AC-CONTRIB-09, AC-TIER-01, AC-ADMIN-09 |
+| POST | `/admin/contributions/{id}/approve` | Duyệt đề xuất (kèm `image_hint`, tier tùy chọn, `use_image_url` để dùng link làm ảnh món; link trống mà bật thì 400) | AdminToken | AC-CONTRIB-08, AC-CONTRIB-09, AC-TIER-01, AC-ADMIN-09, AC-ART-14 |
 | POST | `/admin/contributions/{id}/reject` | Từ chối đề xuất (cần lý do) | AdminToken | AC-CONTRIB-08, AC-ADMIN-09 |
 | GET | `/admin/batches` | Nhật ký các đợt, kèm `summary` (tổng crawl và thêm của các đợt `full` thành công, hàng chờ và thiếu ảnh của đợt gần nhất) | AdminToken | AC-ADMIN-08, AC-ADMIN-11 |
 | GET | `/admin/audit` | Nhật ký audit | AdminToken | AC-ADMIN-09 |
 
-> `/admin/elements/{id}/image` (AC-ART-13) đã định tuyến từ 2026-10-25 (nhánh `feat/art-upload`); host quản trị phục vụ thêm `/lau-meme/img/*` (chỉ đọc) để trang quản trị hiện ảnh dưới CSP `default-src 'self'` (ADR 0016). `/me/plate` và `/me/plate/merge` (SYNC) đã định tuyến trong `worker/src/index.ts`. Contract 0.6.0 thêm `use_image_url` khi duyệt đề xuất và `PipelineState.image_links` (AC-ART-14, ADR 0018) - đã triển khai 2026-10-25 (migration 0009).
+> `/admin/elements/{id}/image` (AC-ART-13) đã định tuyến và triển khai staging 2026-10-25 (PR #107, git sha `ccb0b5d`); host quản trị phục vụ thêm `/lau-meme/img/*` (chỉ đọc) để trang quản trị hiện ảnh dưới CSP `default-src 'self'` (ADR 0016). `/me/plate` và `/me/plate/merge` (SYNC) đã định tuyến trong `worker/src/index.ts`. Contract 0.6.0 thêm `use_image_url` khi duyệt đề xuất và `PipelineState.image_links` (AC-ART-14, ADR 0018) - đã triển khai 2026-10-25 (migration 0009).
 
 ## Thử nhanh
 ```bash
