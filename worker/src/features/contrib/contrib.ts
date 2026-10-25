@@ -52,6 +52,7 @@ export type ContributionRow = {
 }
 type AdminRow = ContributionRow & {
   image_hint: string | null
+  use_image_url: number
   tier: number | null
   element_id: string | null
   nickname: string | null
@@ -81,6 +82,7 @@ function adminContribution(r: AdminRow) {
   return {
     ...contribution(r),
     image_hint: r.image_hint,
+    use_image_url: r.use_image_url === 1,
     tier: r.tier ?? 1,
     element_id: r.element_id,
     nickname: r.nickname ?? ANONYMOUS,
@@ -365,7 +367,7 @@ export async function getCreators(_req: Request, env: Env, _ctx: ExecutionContex
 
 async function loadAdminRow(db: D1Database, id: string): Promise<AdminRow> {
   const row = await db.prepare(`SELECT c.id, c.a_id, c.b_id, ea.name AS a_name, ea.emoji AS a_emoji, eb.name AS b_name, eb.emoji AS b_emoji,
-         c.name, c.emoji, c.description, c.image_url, c.status, c.reject_reason, c.created_at, c.image_hint, c.element_id, c.decided_at, acc.nickname, t.tier
+         c.name, c.emoji, c.description, c.image_url, c.status, c.reject_reason, c.created_at, c.image_hint, c.use_image_url, c.element_id, c.decided_at, acc.nickname, t.tier
        FROM contribution c LEFT JOIN element ea ON ea.id = c.a_id LEFT JOIN element eb ON eb.id = c.b_id
        LEFT JOIN account acc ON acc.id = c.account_id LEFT JOIN element_tier t ON t.element_id = c.element_id WHERE c.id = ?`).bind(id).first<AdminRow>()
   if (!row) throw notFound()
@@ -410,7 +412,7 @@ export async function adminListContributions(req: Request, env: Env): Promise<Re
   const [items, total] = await db.batch([
     db
       .prepare(`SELECT c.id, c.a_id, c.b_id, ea.name AS a_name, ea.emoji AS a_emoji, eb.name AS b_name, eb.emoji AS b_emoji,
-         c.name, c.emoji, c.description, c.image_url, c.status, c.reject_reason, c.created_at, c.image_hint, c.element_id, c.decided_at, acc.nickname, t.tier
+         c.name, c.emoji, c.description, c.image_url, c.status, c.reject_reason, c.created_at, c.image_hint, c.use_image_url, c.element_id, c.decided_at, acc.nickname, t.tier
        FROM contribution c LEFT JOIN element ea ON ea.id = c.a_id LEFT JOIN element eb ON eb.id = c.b_id
        LEFT JOIN account acc ON acc.id = c.account_id LEFT JOIN element_tier t ON t.element_id = c.element_id WHERE ?1 IS NULL OR c.status = ?1 ORDER BY c.created_at, c.id LIMIT ?2 OFFSET ?3`)
       .bind(status, p.size, p.offset),
@@ -433,7 +435,7 @@ export async function adminEditContribution(req: Request, env: Env, _ctx: Execut
   const db = env.DB
   const [found, elementFolds, approvedFolds] = await db.batch([
     db.prepare(`SELECT c.id, c.a_id, c.b_id, ea.name AS a_name, ea.emoji AS a_emoji, eb.name AS b_name, eb.emoji AS b_emoji,
-         c.name, c.emoji, c.description, c.image_url, c.status, c.reject_reason, c.created_at, c.image_hint, c.element_id, c.decided_at, acc.nickname, t.tier
+         c.name, c.emoji, c.description, c.image_url, c.status, c.reject_reason, c.created_at, c.image_hint, c.use_image_url, c.element_id, c.decided_at, acc.nickname, t.tier
        FROM contribution c LEFT JOIN element ea ON ea.id = c.a_id LEFT JOIN element eb ON eb.id = c.b_id
        LEFT JOIN account acc ON acc.id = c.account_id LEFT JOIN element_tier t ON t.element_id = c.element_id WHERE c.id = ?`).bind(id),
     ...nameFoldsStatements(db),
@@ -474,14 +476,18 @@ export async function adminEditContribution(req: Request, env: Env, _ctx: Execut
 export async function adminApproveContribution(req: Request, env: Env, _ctx: ExecutionContext, params: string[]): Promise<Response> {
   const id = contributionId(params[0])
   const body = await readJson(req)
-  onlyKeys(body, ['image_hint', 'tier'])
+  onlyKeys(body, ['image_hint', 'tier', 'use_image_url'])
   const hint = body.image_hint
   if (typeof hint !== 'string' || hint.trim() === '' || [...hint].length > MAX_HINT) bad(`image_hint: chuỗi 1-${MAX_HINT} ký tự`)
   const tier = body.tier ?? 1
   if (typeof tier !== 'number' || !Number.isInteger(tier) || tier < 1 || tier > 5) bad('tier: số nguyên 1-5')
+  const useLink = 'use_image_url' in body ? body.use_image_url : false
+  if (typeof useLink !== 'boolean') bad('use_image_url: true hoặc false')
   const db = env.DB
   const row = await loadAdminRow(db, id)
   if (row.status !== 'pending') throw conflict('Đề xuất không còn chờ duyệt')
+  // AC-ART-14, ADR 0018: the pipeline fetches the link in the next full batch
+  if (useLink && row.image_url === null) bad('use_image_url: đề xuất không có link ảnh')
   const [pair, elementFolds, approvedFolds, others] = await db.batch([
     pairTakenStatement(db, row.a_id, row.b_id),
     ...nameFoldsStatements(db),
@@ -497,13 +503,13 @@ export async function adminApproveContribution(req: Request, env: Env, _ctx: Exe
   const fp = await tokenFp(env)
   const element = await elementId(row.name)
   const writes = [
-    changeStatement(db, 'approve_contribution', id, { status: 'pending' }, { status: 'approved', element_id: element, tier, image_hint: imageHint }, null, fp, now),
+    changeStatement(db, 'approve_contribution', id, { status: 'pending' }, { status: 'approved', element_id: element, tier, image_hint: imageHint, ...(useLink ? { use_image_url: true } : {}) }, null, fp, now),
     db
       .prepare(
-        `UPDATE contribution SET status = 'approved', element_id = ?, image_hint = ?, decided_at = ?, updated_at = ?
+        `UPDATE contribution SET status = 'approved', element_id = ?, image_hint = ?, use_image_url = ?, decided_at = ?, updated_at = ?
          WHERE id = ? AND status = 'pending'`,
       )
-      .bind(element, imageHint, now, now, id),
+      .bind(element, imageHint, useLink ? 1 : 0, now, now, id),
   ]
   if (tier !== 1)
     writes.push(

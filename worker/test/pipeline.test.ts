@@ -121,9 +121,11 @@ describe('pipeline state', () => {
     expect(res.status).toBe(200)
     const state = (await res.json()) as Record<string, unknown>
     expect(Object.keys(state).sort()).toEqual(
-      ['admin_blocked', 'banned_aliases', 'blocklist', 'catalog', 'contributions', 'current_version', 'daily_history', 'feedback', 'tiers'].sort(),
+      ['admin_blocked', 'admin_images', 'banned_aliases', 'blocklist', 'catalog', 'contributions', 'current_version', 'daily_history', 'feedback', 'image_links', 'tiers'].sort(),
     )
     expect(state.current_version).toBe(1)
+    expect(state.admin_images).toEqual([])
+    expect(state.image_links).toEqual([])
     const blocklist = state.blocklist as { elements: string[]; recipes: string[]; images: string[] }
     expect(Object.keys(blocklist).sort()).toEqual(['elements', 'images', 'recipes'])
     expect(blocklist.elements).toContain('blocked-element-id')

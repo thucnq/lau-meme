@@ -158,7 +158,7 @@ export async function listElements(req: Request, env: Env): Promise<Response> {
         `SELECT e.id, e.name, e.emoji, e.depth, e.image_key, e.last_version, COALESCE(be.state, 'active') AS state,
                 CASE WHEN e.image_key IS NULL THEN 'none' WHEN bi.target_id IS NULL THEN 'active' ELSE 'hidden' END AS image_state,
                 COALESCE(t.tier, e.auto_tier, 1) AS tier, CASE WHEN t.tier IS NULL THEN 'auto' ELSE 'admin' END AS tier_source,
-                e.auto_tier
+                e.auto_tier, e.image_source
          FROM element e
          LEFT JOIN block be ON be.kind = 'element' AND be.target_id = e.id
          LEFT JOIN block bi ON bi.kind = 'image' AND bi.target_id = e.id
@@ -190,6 +190,7 @@ export async function listElements(req: Request, env: Env): Promise<Response> {
     tier: number
     tier_source: 'auto' | 'admin'
     auto_tier: number | null
+    image_source: 'ai' | 'admin' | null
   }
   const items = ((rows?.results ?? []) as Row[]).map((r) => ({
     id: r.id,
@@ -203,6 +204,7 @@ export async function listElements(req: Request, env: Env): Promise<Response> {
     tier: r.tier,
     tier_source: r.tier_source,
     auto_tier: r.auto_tier,
+    image_source: r.image_source,
   }))
   return page(p, totalOf(total), items)
 }
@@ -302,7 +304,8 @@ export async function listBatches(req: Request, env: Env): Promise<Response> {
 export async function listAudit(req: Request, env: Env): Promise<Response> {
   const p = paging(new URL(req.url).searchParams)
   const db = env.DB
-  // admin_audit (moderation states) and admin_change (tier, contributions; ADR 0013) read as one log
+  // admin_audit (moderation states), admin_change (tier, contributions; ADR 0013) and admin_image_change (drawings;
+  // ADR 0016) read as one log
   const [rows, total] = await db.batch([
     db
       .prepare(
@@ -311,10 +314,16 @@ export async function listAudit(req: Request, env: Env): Promise<Response> {
          UNION ALL
          SELECT id, action, target_kind, target_id, before_json, after_json, 1, reason, token_fp, created_at
          FROM admin_change
+         UNION ALL
+         SELECT id, 'set_image', 'element', element_id, json_object('image_key', before_key), json_object('image_key', after_key),
+                1, NULL, token_fp, created_at
+         FROM admin_image_change
          ORDER BY created_at DESC, id DESC LIMIT ? OFFSET ?`,
       )
       .bind(p.size, p.offset),
-    db.prepare('SELECT (SELECT COUNT(*) FROM admin_audit) + (SELECT COUNT(*) FROM admin_change) AS n'),
+    db.prepare(
+      'SELECT (SELECT COUNT(*) FROM admin_audit) + (SELECT COUNT(*) FROM admin_change) + (SELECT COUNT(*) FROM admin_image_change) AS n',
+    ),
   ])
   type Row = {
     action: string

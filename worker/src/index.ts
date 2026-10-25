@@ -1,5 +1,6 @@
 import { hasBearer } from './auth'
 import { adminOnly, listAudit, listBatches, listElements, listRecipes, listReports, moderate, setElementTier } from './features/admin/admin'
+import { setElementImage } from './features/admin/image'
 import { getGraph, getImage, getManifest } from './features/content/content'
 import {
   adminApproveContribution,
@@ -87,6 +88,7 @@ const adminRoutes: Route[] = [
   { pattern: /^\/api\/admin\/reports$/, methods: { GET: adminOnly(listReports) } },
   { pattern: /^\/api\/admin\/elements$/, methods: { GET: adminOnly(listElements) } },
   { pattern: /^\/api\/admin\/elements\/([^/]+)\/tier$/, methods: { PUT: adminOnly(setElementTier) } },
+  { pattern: /^\/api\/admin\/elements\/([^/]+)\/image$/, methods: { PUT: adminOnly(setElementImage) } },
   { pattern: /^\/api\/admin\/recipes$/, methods: { GET: adminOnly(listRecipes) } },
   { pattern: /^\/api\/admin\/moderation$/, methods: { POST: adminOnly(moderate) } },
   { pattern: /^\/api\/admin\/batches$/, methods: { GET: adminOnly(listBatches) } },
@@ -165,7 +167,7 @@ function withHeaders(res: Response, headers: Record<string, string>): Response {
 
 /**
  * The admin origin (ADR 0008): `/` is the admin page (web/admin.html, built under the base path like every web
- * file), `/api/admin/*` its API, and the page's hashed build files; everything else is 404.
+ * file), `/api/admin/*` its API, the page's hashed build files and element images; everything else is 404.
  */
 async function adminHost(req: Request, env: Env, ctx: ExecutionContext, url: URL): Promise<Response> {
   const path = url.pathname
@@ -175,6 +177,10 @@ async function adminHost(req: Request, env: Env, ctx: ExecutionContext, url: URL
     return withHeaders(page, ADMIN_PAGE_HEADERS)
   }
   if (isRead(req) && path.startsWith(`${env.BASE_PATH}/assets/`)) return withHeaders(await env.ASSETS.fetch(req), ADMIN_HEADERS)
+  // the page shows element images, and its CSP only allows its own origin (AC-ART-13)
+  if (isRead(req) && path.startsWith(`${env.BASE_PATH}/img/`)) {
+    return withHeaders(await getImage(req, env, ctx, path.slice(`${env.BASE_PATH}/img/`.length)), ADMIN_HEADERS)
+  }
   return withHeaders(problem(404, 'Không tìm thấy'), ADMIN_HEADERS)
 }
 

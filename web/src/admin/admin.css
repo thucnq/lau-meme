@@ -17,3 +17,5 @@
 .admin-pager { display: flex; gap: 0.75rem; align-items: center; margin: 0.75rem 0; }
 .admin-recipes li { margin-bottom: 0.4rem; }
 @media (max-width: 40rem) { .admin-table { display: block; overflow-x: auto; } }
+.admin-thumb { display: block; margin-bottom: 0.25rem; border-radius: 4px; }
+.admin-upload { display: block; margin-top: 0.25rem; font-size: 0.85rem; }

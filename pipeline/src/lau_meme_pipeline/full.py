@@ -143,6 +143,9 @@ def run_full(
     draw: Callable[[list[ArtItem]], ArtResult] | None = None,
     tiers: Sequence[Mapping] = (),
     blocked_images: frozenset[str] = frozenset(),
+    admin_images: Mapping[str, str] | None = None,
+    image_links: Mapping[str, str] | None = None,
+    link_image: Callable[[str], str] | None = None,
     contributions: Sequence[Mapping] = (),
     first_versions: Mapping[str, int] | None = None,
     trend_peaks: Mapping[str, int] | None = None,
@@ -364,6 +367,9 @@ def run_full(
         eid: {**stored_contrib.get(eid, {}), "id": eid, "name": content.elements[eid].name} for eid in contrib_ids
     }
     content = apply_images(content, {eid: c["image_key"] for eid, c in contrib_art.items() if c.get("image_key")})
+    # admin drawings (AC-ART-13) win over any drawn image and are never drawn over
+    drawings = {eid: key for eid, key in (admin_images or {}).items() if eid in content.elements}
+    content = apply_images(content, drawings)
     depths = bfs_depths(_graph(content, frozenset(blocked)))
     elements = {}
     for eid, e in content.elements.items():
@@ -376,6 +382,22 @@ def run_full(
             batch=CLASSIC if held_now else e.batch,  # no "MỚI" while held (AC-MOD-08)
         )
     content = replace(content, elements=elements)
+    # links the admin chose as the picture (AC-ART-14, ADR 0018), for elements in this graph only: never drawn, a
+    # failure keeps the emoji and the next batch retries; the url itself goes nowhere else
+    linked = {eid: url for eid, url in (image_links or {}).items() if eid in content.elements and eid not in drawings}
+    fetched: dict[str, str] = {}
+    errors: dict[str, int] = {}
+    for eid, url in sorted(linked.items()):
+        if link_image is None or content.elements[eid].status != ACTIVE:
+            continue
+        try:
+            fetched[eid] = link_image(url)
+        except Exception as exc:  # the adapter boundary, like `draw`: counted by type so a bug still shows
+            errors[type(exc).__name__] = errors.get(type(exc).__name__, 0) + 1
+    report["link_images_failed"] = sum(errors.values())
+    report["link_errors"] = errors
+    content = apply_images(content, fetched)
+    drawings |= fetched
     for e in out_store["elements"]:
         e["depth"] = depths.get(e["id"], 0)
     report["supplement_needed"] = len(needs_supplement(_graph(content, frozenset(blocked))))
@@ -397,6 +419,7 @@ def run_full(
             report,
             tiers,
             blocked_images,
+            frozenset(drawings) | frozenset(linked),
         )
 
     # 7. Daily (AC-DAILY-01): core elements with a hand-written hint, plus trend elements with an approved hint that
@@ -471,6 +494,7 @@ def _illustrate(
     report: dict,
     tiers: Sequence[Mapping] = (),
     blocked_images: frozenset[str] = frozenset(),
+    drawn_by_admin: frozenset[str] = frozenset(),
 ) -> ContentStore:
     """Vàng/Đỏ elements without a usable image first - auto-tiered by depth or admin-assigned, a hidden image counts
     as none - deepest first, then by folded name (AC-ART-12). Then elements waiting from earlier batches, then this
@@ -478,7 +502,8 @@ def _illustrate(
     An element whose draws were refused, whose hint failed moderation, or that kept failing for MAX_ART_ATTEMPTS
     batches keeps its emoji for good (AC-ART-02). One with no hint yet is only skipped: a later hint is drawn.
     Approved contributions are drawn like this batch's new elements, from the admin's hint only (AC-CONTRIB-09).
-    Core elements without an image come last, shallowest first, then by folded name (AC-ART-11)."""
+    Core elements without an image come last, shallowest first, then by folded name (AC-ART-11).
+    Elements with an admin drawing or an image link are never drawn, even when that drawing is hidden (AC-ART-13/14)."""
     trend = {e["id"]: e for e in out_store["elements"]} | dict(core_art) | dict(contrib_art)
     # elements whose hint is in the content (core file, admin's hint) rather than in the store entry
     fixed = {**core_art, **contrib_art}
@@ -492,6 +517,7 @@ def _illustrate(
             and el is not None
             and el.status == ACTIVE
             and eid not in blocked
+            and eid not in drawn_by_admin
             and (not e.get("image_key") or (redraw_hidden and eid in blocked_images))
             and not e.get("image_fallback")
             # a core element with no hint is only skipped (and not counted) until the core file gives it one

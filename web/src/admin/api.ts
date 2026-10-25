@@ -26,6 +26,8 @@ export type ElementItem = Ref & {
   tier_source: 'auto' | 'admin'
   /** Tier tự động của mẻ gần nhất (AC-TIER-04); null = mẻ trước TIER-04. */
   auto_tier: number | null
+  /** Ai làm ra ảnh: Workers AI hay admin tải tay (AC-ART-13); null = không có ảnh hoặc mẻ trước cột này. */
+  image_source?: 'ai' | 'admin' | null
 }
 export type RecipeItem = { id: string; a: Ref; b: Ref; result: Ref; state: 'active' | 'hidden' }
 /** Số liệu do pipeline gửi kèm nhật ký đợt (BatchStats, AC-ADMIN-11): nguồn lỗi có `error` và `concepts` null. */
@@ -83,13 +85,15 @@ export class ApiError extends Error {
   }
 }
 
-export async function call<T>(token: string, path: string, init: { method?: string; body?: unknown } = {}): Promise<T> {
+/** `body` is sent as JSON; `webp` as the raw image (AC-ART-13). */
+export async function call<T>(token: string, path: string, init: { method?: string; body?: unknown; webp?: Blob } = {}): Promise<T> {
   const headers: Record<string, string> = { Authorization: `Bearer ${token}` }
-  if (init.body !== undefined) headers['Content-Type'] = 'application/json'
+  if (init.webp) headers['Content-Type'] = 'image/webp'
+  else if (init.body !== undefined) headers['Content-Type'] = 'application/json'
   const res = await fetch(`api/admin/${path}`, {
     method: init.method ?? 'GET',
     headers,
-    body: init.body === undefined ? undefined : JSON.stringify(init.body),
+    body: init.webp ?? (init.body === undefined ? undefined : JSON.stringify(init.body)),
   })
   if (res.status === 401) throw new AuthError('unauthorized')
   if (res.status === 429) throw new LockedError(Number(res.headers.get('Retry-After')) || 900)
@@ -103,6 +107,10 @@ export async function call<T>(token: string, path: string, init: { method?: stri
 /** AC-ADMIN-12, AC-TIER-05: `auto` bỏ giá trị admin gán, phần tử quay về tier theo độ sâu. */
 export const setTier = (token: string, id: string, tier: number | 'auto') =>
   call<{ before: number; after: number }>(token, `elements/${id}/tier`, { method: 'PUT', body: { tier } })
+
+/** AC-ART-13: tranh vẽ tay đã chuẩn hóa về WebP 256×256 (`drawing.ts`). */
+export const setImage = (token: string, id: string, webp: Blob) =>
+  call<{ element_id: string; before_key: string | null; after_key: string }>(token, `elements/${id}/image`, { method: 'PUT', webp })
 
 export const moderate = (token: string, target_kind: Kind, target_id: string, action: Action, reason: string) =>
   call<{ before: State; after: State }>(token, 'moderation', {
@@ -123,6 +131,7 @@ export type ContributionItem = {
   status: ContributionStatus
   reject_reason: string | null
   image_hint: string | null
+  use_image_url?: boolean
   tier: number
   element_id: string | null
   nickname: string
@@ -134,8 +143,12 @@ export type ContributionEdit = Partial<Pick<ContributionItem, 'name' | 'emoji' |
 export const editContribution = (token: string, id: string, body: ContributionEdit) =>
   call<ContributionItem>(token, `contributions/${id}`, { method: 'PATCH', body })
 
-export const approveContribution = (token: string, id: string, image_hint: string, tier: number) =>
-  call<ContributionItem>(token, `contributions/${id}/approve`, { method: 'POST', body: { image_hint, tier } })
+/** `useLink` (AC-ART-14): the pipeline fetches the proposal's image link in the next full batch; sent only when chosen. */
+export const approveContribution = (token: string, id: string, image_hint: string, tier: number, useLink = false) =>
+  call<ContributionItem>(token, `contributions/${id}/approve`, {
+    method: 'POST',
+    body: useLink ? { image_hint, tier, use_image_url: true } : { image_hint, tier },
+  })
 
 export const rejectContribution = (token: string, id: string, reason: string) =>
   call<ContributionItem>(token, `contributions/${id}/reject`, { method: 'POST', body: { reason } })

@@ -265,13 +265,24 @@ export async function publishBatch(req: Request, env: Env): Promise<Response> {
   await db.batch([
     db
       .prepare(
-        `INSERT INTO element (id, name, name_fold, emoji, depth, origin, image_key, trend_peak, auto_tier, first_version, last_version, updated_at)
+        `INSERT INTO element (id, name, name_fold, emoji, depth, origin, image_key, image_source, trend_peak, auto_tier, first_version, last_version, updated_at)
          SELECT json_extract(value, '$.id'), json_extract(value, '$.name'), json_extract(value, '$.fold'),
                 json_extract(value, '$.emoji'), json_extract(value, '$.depth'), json_extract(value, '$.origin'),
-                json_extract(value, '$.image_key'), json_extract(value, '$.trend_peak'), json_extract(value, '$.auto_tier'), ?2, ?2, ?3
+                json_extract(value, '$.image_key'),
+                CASE WHEN json_extract(value, '$.image_key') IS NULL THEN NULL
+                  -- the image the pipeline fetched from the link the admin chose (AC-ART-14, ADR 0018): never drawn
+                  WHEN json_extract(value, '$.id') IN (SELECT element_id FROM contribution WHERE status = 'approved' AND use_image_url = 1)
+                    THEN 'admin'
+                  ELSE 'ai' END,
+                json_extract(value, '$.trend_peak'), json_extract(value, '$.auto_tier'), ?2, ?2, ?3
          FROM json_each(?1) WHERE true
          ON CONFLICT (id) DO UPDATE SET name = excluded.name, name_fold = excluded.name_fold, emoji = excluded.emoji,
-           depth = excluded.depth, origin = excluded.origin, image_key = excluded.image_key,
+           depth = excluded.depth, origin = excluded.origin,
+           -- an admin drawing stays whatever the batch sends (AC-ART-13, ADR 0016)
+           image_key = CASE WHEN element.image_source = 'admin' THEN element.image_key ELSE excluded.image_key END,
+           image_source = CASE WHEN element.image_source = 'admin' THEN 'admin' WHEN excluded.image_key IS NULL THEN NULL
+             WHEN excluded.id IN (SELECT element_id FROM contribution WHERE status = 'approved' AND use_image_url = 1) THEN 'admin'
+             ELSE 'ai' END,
            trend_peak = COALESCE(excluded.trend_peak, element.trend_peak),
            auto_tier = COALESCE(excluded.auto_tier, element.auto_tier),
            last_version = excluded.last_version, updated_at = excluded.updated_at`,
@@ -413,7 +424,7 @@ const DAILY_HISTORY_LIMIT = 1000
  */
 export async function getPipelineState(_req: Request, env: Env): Promise<Response> {
   const db = env.DB
-  const [current, blocks, aliases, history, admin, catalog, tiers, contributions] = await db.batch([
+  const [current, blocks, aliases, history, admin, catalog, tiers, contributions, drawings, links] = await db.batch([
     db.prepare('SELECT value FROM app_meta WHERE key = ?').bind('current_version'),
     db.prepare('SELECT kind, target_id FROM block ORDER BY kind, target_id'),
     db.prepare("SELECT term_fold FROM banned_term WHERE source IN ('mod', 'admin') ORDER BY term_fold"),
@@ -428,6 +439,15 @@ export async function getPipelineState(_req: Request, env: Env): Promise<Respons
     db.prepare(
       `SELECT element_id, name, emoji, a_id, b_id, image_hint, decided_at FROM contribution
        WHERE status = 'approved' ORDER BY decided_at, id`,
+    ),
+    // admin drawings (AC-ART-13): the pipeline keeps these keys and never draws over them
+    db.prepare("SELECT id AS element_id, image_key FROM element WHERE image_source = 'admin' AND image_key IS NOT NULL ORDER BY id"),
+    // links the admin chose as the picture (AC-ART-14, ADR 0018), until a batch has published the fetched image
+    db.prepare(
+      `SELECT c.element_id, c.image_url AS url FROM contribution c LEFT JOIN element e ON e.id = c.element_id
+       WHERE c.status = 'approved' AND c.use_image_url = 1 AND c.image_url IS NOT NULL
+         AND NOT (e.image_source IS 'admin' AND e.image_key IS NOT NULL)
+       ORDER BY c.element_id`,
     ),
   ])
   const value = (current?.results[0] as { value: string } | undefined)?.value
@@ -465,6 +485,8 @@ export async function getPipelineState(_req: Request, env: Env): Promise<Respons
       image_hint: r.image_hint ?? '',
       approved_at: new Date(r.decided_at).toISOString(),
     })),
+    admin_images: (drawings?.results ?? []) as { element_id: string; image_key: string }[],
+    image_links: (links?.results ?? []) as { element_id: string; url: string }[],
   })
 }
 

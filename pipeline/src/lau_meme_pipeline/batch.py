@@ -19,7 +19,16 @@ from pathlib import Path
 from typing import Protocol
 from urllib.parse import urlsplit
 
-from lau_meme_pipeline.art import ArtAdapters, ArtItem, ArtResult, UploadFailed, draw_images, image_key, to_webp_256
+from lau_meme_pipeline.art import (
+    ArtAdapters,
+    ArtItem,
+    ArtResult,
+    UploadFailed,
+    apply_images,
+    draw_images,
+    image_key,
+    to_webp_256,
+)
 from lau_meme_pipeline.contrib import add_contributions
 from lau_meme_pipeline.crawl import Http, crawl, source_error_text
 from lau_meme_pipeline.daily import build_daily_block, core_hints, pick_daily
@@ -27,6 +36,8 @@ from lau_meme_pipeline.full import run_full
 from lau_meme_pipeline.graph import build_manifest, decrypt_entry, export_graph
 from lau_meme_pipeline.ids import element_id
 from lau_meme_pipeline.invariants import InvariantError, check_all, miss_rate_warning, simulate_miss_rate
+from lau_meme_pipeline.links import TIMEOUT_SECONDS as LINK_TIMEOUT_SECONDS
+from lau_meme_pipeline.links import fetch_link, https_get, resolve_host
 from lau_meme_pipeline.moderation import QUOTA_LABEL, ModLists
 from lau_meme_pipeline.seed import ACTIVE, ContentStore, load_core
 from lau_meme_pipeline.text import fold
@@ -189,6 +200,11 @@ def _blocked_images(state: Mapping) -> frozenset[str]:
     return frozenset(state.get("blocklist", {}).get("images", []))
 
 
+def _admin_images(state: Mapping) -> dict[str, str]:
+    """Drawings the admin uploaded (AC-ART-13, ADR 0016): element id -> image key, kept as is and never redrawn."""
+    return {a["element_id"]: a["image_key"] for a in state.get("admin_images", [])}
+
+
 def _first_versions(state: Mapping) -> dict[str, int]:
     return {c["id"]: c["first_version"] for c in state.get("catalog", [])}
 
@@ -270,6 +286,7 @@ def _render_report(
     trending: Sequence[tuple[str, int]] = (),
     source_warnings: Sequence[str] = (),
     tier_lines: Sequence[str] = (),
+    links_failed: Mapping[str, int] | None = None,
 ) -> tuple[str, str]:
     """Title shows the dish's emoji only, never its name (AC-PIPE-14)."""
     status = "error" if failed_step else "success"
@@ -297,6 +314,13 @@ def _render_report(
         *(
             [f"- Đề xuất đã duyệt chưa vào được graph (cha bị ẩn/chặn): {stats['contributions_waiting']}"]
             if stats.get("contributions_waiting")
+            else []
+        ),
+        # AC-ART-14: a count only - the links are players' data and never go into the public report
+        *([f"- Link ảnh lỗi: {sum(links_failed.values())}"] if links_failed else []),
+        *(
+            ["- Lỗi link ảnh theo loại: " + ", ".join(f"{k} {v}" for k, v in sorted(links_failed.items()))]
+            if links_failed
             else []
         ),
         f"- quota: {stats.get('quota_used', 0)} lượt gọi Gemini",
@@ -446,6 +470,20 @@ def _drawer(art: ArtAdapters | None, client: BatchClient) -> Callable[[list[ArtI
     return draw
 
 
+def _link_imager(client: BatchClient) -> Callable[[str], str]:
+    """`link_image` of run_full (AC-ART-14, ADR 0018): fetch the admin-chosen link, encode, upload like a drawing."""
+
+    def link_image(url: str) -> str:
+        deadline = time.monotonic() + LINK_TIMEOUT_SECONDS  # one budget for every hop of this link
+        webp = to_webp_256(fetch_link(url, http=lambda u: https_get(u, deadline=deadline), resolve=resolve_host))
+        key = image_key(webp)
+        if not client.image_exists(key):
+            client.put_image(key, webp)
+        return key
+
+    return link_image
+
+
 def _send_aliases(client: BatchClient, state: Mapping, new_aliases: frozenset[str], log: Callable[[str], None]) -> None:
     """AC-MOD-06, after a successful publish only: a discarded batch never changes the alias list. The `mod` source
     is replaced whole, so the old aliases go with the new. A failure is logged; the next full batch sends them
@@ -473,6 +511,7 @@ def run_batch(
     log: Callable[[str], None] = print,
     banned_words: Sequence[str] = (),
     art: ArtAdapters | None = None,
+    link_image: Callable[[str], str] | None = None,
     schedule_hours: str | None = None,
 ) -> BatchOutcome:
     """Run one batch. Never raises: a failure posts an error run, keeps the current version and is reported.
@@ -495,6 +534,7 @@ def run_batch(
     trending: list[tuple[str, int]] = []
     tier_lines: list[str] = []
     source_warnings: list[str] = []
+    links_failed: dict[str, int] = {}
     step = "state"
     try:
         if mode not in ("core", "full"):
@@ -534,6 +574,9 @@ def run_batch(
                 draw=_drawer(art, client),
                 tiers=state.get("tiers", []),
                 blocked_images=_blocked_images(state),
+                admin_images=_admin_images(state),
+                image_links={x["element_id"]: x["url"] for x in state.get("image_links", [])},
+                link_image=link_image,
                 contributions=state.get("contributions", []),
                 first_versions=_first_versions(state),
                 trend_peaks=_trend_peaks(state),
@@ -543,6 +586,7 @@ def run_batch(
             graph, manifest, store_out = full.graph, full.manifest, full.store
             emoji = manifest["daily"]["emoji"]
             quota_hit = bool(full.report.get("quota"))
+            links_failed = dict(full.report.get("link_errors", {}))
             art_report = full.report.get("art")
             if art_report is not None:
                 art_report = {
@@ -582,6 +626,8 @@ def run_batch(
             store = joined.store
             if joined.waiting:
                 stats["contributions_waiting"] = joined.waiting
+            drawings = _admin_images(state)
+            store = apply_images(store, {eid: key for eid, key in drawings.items() if eid in store.elements})
             store = apply_tiers(store, state.get("tiers", []), _blocked_images(state))
             step = "daily"
             daily, exhausted = _pick_daily(store, core, state, version)
@@ -649,6 +695,7 @@ def run_batch(
                 trending,
                 source_warnings,
                 tier_lines,
+                links_failed=links_failed,
             )
         failed_step, version = step, None
         # Network errors may carry the API host: the public workflow log only gets their type.
@@ -688,6 +735,7 @@ def run_batch(
         trending,
         source_warnings,
         tier_lines,
+        links_failed=links_failed,
     )
 
 
@@ -723,6 +771,7 @@ def _finish(
     trending: Sequence[tuple[str, int]] = (),
     source_warnings: Sequence[str] = (),
     tier_lines: Sequence[str] = (),
+    links_failed: Mapping[str, int] | None = None,
 ) -> BatchOutcome:
     title, report = _render_report(
         version=version,
@@ -741,6 +790,7 @@ def _finish(
         trending=trending,
         source_warnings=source_warnings,
         tier_lines=tier_lines,
+        links_failed=links_failed,
     )
     return BatchOutcome(
         ok=failed_step is None,
@@ -920,6 +970,7 @@ def main(argv: list[str], *, client=None, reporter=None, now: Callable[[], datet
         llm=llm,
         banned_words=banned_words,
         art=art,
+        link_image=_link_imager(client) if args.mode == "full" else None,
         schedule_hours=os.environ.get("BATCH_HOURS_UTC"),
     )
     print(outcome.report_title)

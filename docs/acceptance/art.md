@@ -81,3 +81,9 @@
 - **Khi** admin tải lên một file PNG hoặc WebP ≤ 1 MB cho P; tải file sai định dạng, quá cỡ hoặc cho phần tử không tồn tại
 - **Thì** file hợp lệ được chuẩn hóa về WebP 256×256 và lưu theo băm nội dung như AC-ART-04, gắn vào P thay ảnh cũ, ghi audit (trước/sau khóa ảnh) theo AC-ADMIN-09, có trong graph từ mẻ kế tiếp; ảnh do admin tải không qua kiểm duyệt LLM và không bị mẻ sau vẽ đè; sai định dạng hoặc quá cỡ trả 400, phần tử không tồn tại trả 404, không đổi gì (câu hỏi mở 70)
 - Ưu tiên: Tùy chọn
+
+### AC-ART-14: Dùng link ảnh của đề xuất làm ảnh món (thêm 2026-10-25, câu hỏi mở 46)
+- **Cho** token admin đúng; đề xuất X chờ duyệt có link ảnh `https://example.com/a.png` (admin có thể sửa link trước theo AC-CONTRIB-07); đề xuất Y chờ duyệt không có link ảnh
+- **Khi** admin duyệt X và chọn "Dùng link làm ảnh"; duyệt Y và chọn "Dùng link làm ảnh"; mẻ `full` kế tiếp chạy khi link trả ảnh PNG, JPEG hoặc WebP hợp lệ; và khi link lỗi (không tải được, không phải ảnh, quá 1 MB, chuyển hướng sang `http://`, trỏ vào địa chỉ nội bộ, loopback hoặc mạng riêng)
+- **Thì** duyệt X trả 200, lựa chọn được lưu và có trong audit `approve_contribution`; duyệt Y trả 400, không đổi gì; mẻ kế tiếp pipeline tải link (chỉ `https://`, tối đa 1 MB, hết giờ sau 15 giây), chuẩn hóa về WebP 256×256 và lưu theo băm nội dung như AC-ART-04, gắn vào phần tử như ảnh admin tải (AC-ART-13: không qua kiểm duyệt LLM, mẻ sau không vẽ đè, coi là có ảnh khi tính tier); phần tử chọn dùng link không bao giờ được vẽ bằng Workers AI; link lỗi thì phần tử giữ emoji, mẻ sau thử lại, báo cáo đợt ghi "Link ảnh lỗi: N" (chỉ số đếm, không ghi link), admin vẫn có thể tải tranh thay theo AC-ART-13; link không bao giờ gửi cho Gemini, không hiện cho người chơi, trang quản trị vẫn không nhúng ảnh từ link
+- Ưu tiên: Tùy chọn

@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: lau-meme API
-  version: 0.5.0
+  version: 0.6.0
   description: |
     API của Worker Lẩu Meme. Bốn chủ thể (BRD mục 2): thực khách ẩn danh (header `X-Player-Id` = UUID v4
     sinh trên trình duyệt), thực khách đã đăng nhập Google (cookie phiên `laumeme_sid`, ADR 0010 - kết quả Daily,
@@ -1008,7 +1008,8 @@ paths:
       summary: Đề xuất meme (cũ nhất trước, lọc theo trạng thái)
       description: |
         Mỗi dòng có nickname người gửi (hoặc "Thực khách ẩn danh"), không bao giờ có mã tài khoản hay UUID.
-        `image_url` chỉ là chữ để admin tham khảo: trang quản trị không tải hay nhúng ảnh từ link.
+        `image_url` chỉ hiện dạng chữ: trang quản trị không tải hay nhúng ảnh từ link. Khi duyệt, admin có thể chọn dùng
+        link làm ảnh món (`use_image_url`, AC-ART-14) - pipeline tải ở mẻ full kế tiếp.
       security: [{ AdminToken: [] }]
       x-ac: [AC-CONTRIB-07, AC-ADMIN-10]
       parameters:
@@ -1073,9 +1074,10 @@ paths:
         ghi `element_tier`; mọi đề xuất `pending` khác cùng cặp thành `rejected` với lý do "Cặp đã có công thức";
         ghi audit `approve_contribution` (và `reject_contribution` cho từng đề xuất bị từ chối theo). Không sửa graph
         đang phục vụ: pipeline đọc đề xuất đã duyệt ở mẻ kế tiếp (`/pipeline/state`). Đề xuất không còn `pending` →
-        409; cặp hoặc tên đã bị chiếm từ lúc gửi → 409.
+        409; cặp hoặc tên đã bị chiếm từ lúc gửi → 409. `use_image_url: true` mà đề xuất không có link ảnh → 400
+        (AC-ART-14, ADR 0018); giá trị này nằm trong audit `approve_contribution`.
       security: [{ AdminToken: [] }]
-      x-ac: [AC-CONTRIB-08, AC-CONTRIB-09, AC-TIER-01, AC-ADMIN-09]
+      x-ac: [AC-CONTRIB-08, AC-CONTRIB-09, AC-TIER-01, AC-ADMIN-09, AC-ART-14]
       parameters:
         - $ref: '#/components/parameters/ContributionId'
       requestBody:
@@ -1089,6 +1091,10 @@ paths:
               properties:
                 image_hint: { type: string, minLength: 1, maxLength: 300, description: 'Gợi ý ảnh do admin viết - ART chỉ vẽ từ đây, không dùng link của người gửi' }
                 tier: { $ref: '#/components/schemas/Tier' }
+                use_image_url:
+                  type: boolean
+                  default: false
+                  description: 'Dùng link ảnh của đề xuất làm ảnh món: pipeline tải ở mẻ full kế tiếp, không vẽ Workers AI (AC-ART-14, ADR 0018)'
       responses:
         '200':
           description: Đã duyệt
@@ -1220,9 +1226,10 @@ paths:
         Chỉ dữ liệu nội dung và tổng hợp ẩn danh: version hiện hành, danh sách chặn, bí danh bị chặn
         (nguồn `mod`/`admin`), lịch sử Món đặc biệt, tỉ lệ "Nhạt" theo công thức, danh mục phần tử (mẻ đầu có mặt,
         mức mặn), tier admin đã gán, đề xuất meme đã duyệt. Không có dữ liệu người chơi: đề xuất chỉ có nội dung game
-        (không mô tả, link ảnh gốc, tài khoản hay nickname - AC-CONTRIB-09, ADR 0013).
+        (không mô tả, tài khoản hay nickname - AC-CONTRIB-09, ADR 0013); link ảnh chỉ có khi admin đã chọn dùng nó làm
+        ảnh món (`image_links`, AC-ART-14, ADR 0018).
       security: [{ PipelineToken: [] }]
-      x-ac: [AC-PIPE-13, AC-DAILY-01, AC-DAILY-18, AC-MOD-10, AC-FEEDBACK-04, AC-INV-03, AC-TIER-01, AC-PIPE-16, AC-CONTRIB-08, AC-CONTRIB-09]
+      x-ac: [AC-PIPE-13, AC-DAILY-01, AC-DAILY-18, AC-MOD-10, AC-FEEDBACK-04, AC-INV-03, AC-TIER-01, AC-PIPE-16, AC-CONTRIB-08, AC-CONTRIB-09, AC-ART-14]
       responses:
         '200':
           description: Trạng thái
@@ -1638,7 +1645,7 @@ components:
         name: { type: string, maxLength: 100, description: 'Sau khi cắt khoảng trắng dài 1-40 (rỗng/dài hơn → 400, câu hỏi mở 51)' }
         emoji: { type: [string, 'null'], maxLength: 16, description: Đúng 1 emoji (sai → 400) }
         description: { type: [string, 'null'], maxLength: 1000, description: 'Tối đa 200 ký tự sau khi cắt (dài hơn → 400)' }
-        image_url: { type: [string, 'null'], maxLength: 1000, description: '`https://`, tối đa 500 ký tự (sai → 400); chỉ admin xem, không bao giờ tải' }
+        image_url: { type: [string, 'null'], maxLength: 1000, description: '`https://`, tối đa 500 ký tự (sai → 400); không hiện cho người chơi; chỉ được tải khi admin chọn dùng làm ảnh lúc duyệt (AC-ART-14)' }
     ContributionEdit:
       type: object
       additionalProperties: false
@@ -1676,7 +1683,7 @@ components:
     AdminContribution:
       type: object
       additionalProperties: false
-      required: [id, a, b, name, emoji, description, image_url, status, reject_reason, image_hint, tier, element_id, nickname, created_at, decided_at]
+      required: [id, a, b, name, emoji, description, image_url, use_image_url, status, reject_reason, image_hint, tier, element_id, nickname, created_at, decided_at]
       properties:
         id: { type: string, format: uuid }
         a: { $ref: '#/components/schemas/Starter' }
@@ -1685,6 +1692,7 @@ components:
         emoji: { type: [string, 'null'] }
         description: { type: [string, 'null'] }
         image_url: { type: [string, 'null'], description: Chỉ hiện dạng chữ }
+        use_image_url: { type: boolean, description: 'Admin chọn dùng link làm ảnh lúc duyệt (AC-ART-14); `false` với đề xuất chưa duyệt' }
         status: { $ref: '#/components/schemas/ContributionStatus' }
         reject_reason: { type: [string, 'null'] }
         image_hint: { type: [string, 'null'] }
@@ -2351,7 +2359,7 @@ components:
     PipelineState:
       type: object
       additionalProperties: false
-      required: [current_version, blocklist, banned_aliases, admin_blocked, daily_history, feedback, catalog, tiers, contributions, admin_images]
+      required: [current_version, blocklist, banned_aliases, admin_blocked, daily_history, feedback, catalog, tiers, contributions, admin_images, image_links]
       properties:
         current_version: { type: [integer, 'null'] }
         blocklist: { $ref: '#/components/schemas/Blocklist' }
@@ -2432,6 +2440,19 @@ components:
             properties:
               element_id: { $ref: '#/components/schemas/ElementId' }
               image_key: { type: string, pattern: '^[0-9a-f]{12}\.webp$' }
+        image_links:
+          type: array
+          description: |
+            Đề xuất đã duyệt mà admin chọn dùng link làm ảnh, phần tử chưa có ảnh admin (AC-ART-14, ADR 0018). Mẻ full tải
+            link (chỉ https, ≤ 1 MB, chặn địa chỉ nội bộ), không vẽ Workers AI cho các phần tử này, không gửi link cho LLM.
+            Khi đăng mẻ có `image_key` cho phần tử này, Worker đặt `image_source = 'admin'` và phần tử rời danh sách.
+          items:
+            type: object
+            additionalProperties: false
+            required: [element_id, url]
+            properties:
+              element_id: { $ref: '#/components/schemas/ElementId' }
+              url: { type: string, maxLength: 500, pattern: '^https://' }
 
     PipelineStore:
       type: object

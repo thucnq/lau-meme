@@ -4,13 +4,13 @@ import { problem } from '../../http'
 const IMAGE_KEY = /^[0-9a-f]{12}\.webp$/
 const MAX_IMAGE_BYTES = 524_288
 
-function isWebp(bytes: Uint8Array): boolean {
+export function isWebp(bytes: Uint8Array): boolean {
   const ascii = (from: number, to: number) => String.fromCharCode(...bytes.subarray(from, to))
   return bytes.length >= 12 && ascii(0, 4) === 'RIFF' && ascii(8, 12) === 'WEBP'
 }
 
 /** The body up to `max` bytes, or null past it - stops reading a chunked body without a Content-Length early. */
-async function readCapped(req: Request, max: number): Promise<Uint8Array | null> {
+export async function readCapped(req: Request, max: number): Promise<Uint8Array | null> {
   if (!req.body) return new Uint8Array()
   const reader = req.body.getReader()
   const chunks: Uint8Array[] = []
@@ -34,7 +34,7 @@ async function readCapped(req: Request, max: number): Promise<Uint8Array | null>
   return out
 }
 
-async function hashKey(bytes: Uint8Array): Promise<string> {
+export async function hashKey(bytes: Uint8Array): Promise<string> {
   const digest = new Uint8Array(await crypto.subtle.digest('SHA-256', bytes))
   return [...digest.slice(0, 6)].map((b) => b.toString(16).padStart(2, '0')).join('') + '.webp'
 }

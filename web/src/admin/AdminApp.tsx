@@ -5,6 +5,7 @@ import {
   approveContribution,
   editContribution,
   rejectContribution,
+  setImage,
   setTier,
   LockedError,
   call,
@@ -23,6 +24,8 @@ import {
   type RecipeItem,
   type ReportItem,
 } from './api'
+import { withBase } from '../base'
+import { DRAWING_TYPES, DrawingError, drawingProblem, toWebp256 } from './drawing'
 
 /**
  * Trang quản trị (AC-ADMIN-10, ADR 0008). Runs on its own origin; the token lives only in this tab's
@@ -317,6 +320,7 @@ function ContributionsTab(ctx: Ctx) {
   const [draft, setDraft] = useState<Record<EditField, string>>({ name: '', emoji: '', description: '', image_url: '' })
   const [hint, setHint] = useState('')
   const [tier, setTierValue] = useState(1)
+  const [useLink, setUseLink] = useState(false)
   const [reason, setReason] = useState('')
   const [actionError, setActionError] = useState<string | null>(null)
 
@@ -326,6 +330,7 @@ function ContributionsTab(ctx: Ctx) {
     setDraft({ name: c.name, emoji: c.emoji ?? '', description: c.description ?? '', image_url: c.image_url ?? '' })
     setHint('')
     setTierValue(1)
+    setUseLink(false)
     setReason('')
   }
   const run = (task: Promise<unknown>) =>
@@ -370,7 +375,7 @@ function ContributionsTab(ctx: Ctx) {
       return (
         <form
           className="admin-inline"
-          onSubmit={(e: FormEvent) => (e.preventDefault(), void run(approveContribution(ctx.token, c.id, hint.trim(), tier)))}
+          onSubmit={(e: FormEvent) => (e.preventDefault(), void run(approveContribution(ctx.token, c.id, hint.trim(), tier, useLink && c.image_url !== null)))}
         >
           <label>
             Gợi ý ảnh
@@ -386,6 +391,12 @@ function ContributionsTab(ctx: Ctx) {
               ))}
             </select>
           </label>
+          {c.image_url !== null && (
+            <label>
+              <input type="checkbox" checked={useLink} onChange={(e) => setUseLink(e.target.checked)} />
+              Dùng link làm ảnh
+            </label>
+          )}
           <button type="submit">Xác nhận duyệt</button>
           <button type="button" onClick={() => setOpen(null)}>
             Hủy
@@ -497,6 +508,7 @@ function ContentTab(ctx: Ctx) {
   const [reload, setReload] = useState(0)
   const [open, setOpen] = useState<ElementItem | null>(null)
   const [tierError, setTierError] = useState<string | null>(null)
+  const [imageError, setImageError] = useState<string | null>(null)
   const params = new URLSearchParams({ page: String(page) })
   if (query) params.set('q', query)
   if (state) params.set('state', state)
@@ -516,6 +528,20 @@ function ContentTab(ctx: Ctx) {
       () => setReload((n) => n + 1),
       (err: unknown) => (err instanceof AuthError ? ctx.onAuthError() : setTierError(errorText(err))),
     )
+  }
+  // AC-ART-13: checked and normalized here, so a refused file never reaches the server
+  const uploadDrawing = (id: string, file: File | undefined) => {
+    if (!file) return
+    const refused = drawingProblem(file)
+    setImageError(refused) // null on a valid pick also clears the error of an earlier upload
+    if (refused) return
+    toWebp256(file)
+      .then((webp) => setImage(ctx.token, id, webp))
+      .then(
+        () => setReload((n) => n + 1),
+        (err: unknown) =>
+          err instanceof AuthError ? ctx.onAuthError() : setImageError(err instanceof DrawingError ? err.message : errorText(err)),
+      )
   }
   const button = (label: string, kind: Kind, id: string, action: Action) => (
     <button type="button" onClick={() => mod.run(kind, id, action)}>
@@ -565,7 +591,7 @@ function ContentTab(ctx: Ctx) {
         <button type="submit">Tìm</button>
         {mod.reasonBox}
       </form>
-      <Alert>{error ?? mod.error ?? tierError ?? recipes.error}</Alert>
+      <Alert>{error ?? mod.error ?? tierError ?? imageError ?? recipes.error}</Alert>
       <table className="admin-table">
         <thead>
           <tr>
@@ -586,9 +612,23 @@ function ContentTab(ctx: Ctx) {
               <td>{e.depth}</td>
               <td>{STATE_LABEL[e.state]}</td>
               <td>
+                {e.image_key && <img className="admin-thumb" src={withBase(`img/${e.image_key}`)} alt={`Ảnh của ${e.name}`} width={48} height={48} />}
                 {STATE_LABEL[e.image_state]}
+                {e.image_source === 'admin' && ' · admin tải'}
                 {e.image_state === 'active' && button('Ẩn ảnh', 'image', e.id, 'hide')}
                 {e.image_state === 'hidden' && button('Hiện ảnh', 'image', e.id, 'show')}
+                <label className="admin-upload">
+                  Tải tranh vẽ
+                  <input
+                    type="file"
+                    accept={DRAWING_TYPES.join(',')}
+                    aria-label={`Tải tranh vẽ cho ${e.name}`}
+                    onChange={(ev) => {
+                      uploadDrawing(e.id, ev.target.files?.[0])
+                      ev.target.value = ''
+                    }}
+                  />
+                </label>
               </td>
               <td>
                 {tierName(e.tier)} · {e.tier_source === 'admin' ? 'Admin gán' : 'Tự động'}
