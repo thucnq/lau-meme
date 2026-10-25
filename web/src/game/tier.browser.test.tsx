@@ -239,6 +239,11 @@ function assertTier(holder: HTMLElement, name: string, tier: number, theme: 'lig
   expect(fill.join(), `${label}: hình phải khác màu nền`).not.toBe(bg.join())
   expect(hueClass(fill), `${label}: hình cùng họ màu với nền`).toBe(hueClass(bg))
   if (theme === 'light') expect(lum(fill), `${label}: hình đậm hơn nền`).toBeLessThan(lum(bg))
+  // cập nhật 2026-10-25: a light ring round the shape keeps it apart from the tabletop (AC-GAME-28)
+  const ring = getComputedStyle(shape)
+  expect(ring.stroke, `${label}: hình thiếu viền`).not.toMatch(/^(none|rgba\(0, 0, 0, 0\))$/)
+  expect(Number.parseFloat(ring.strokeWidth), `${label}: viền quá mảnh`).toBeGreaterThanOrEqual(1)
+  expect(lum(toRgb(ring.stroke, bg)), `${label}: viền phải sáng`).toBeGreaterThan(0.7)
 
   // place (cập nhật 2026-10-24): hình nhỏ đè lên đường viền dưới, căn giữa ngang; tâm hình nằm trên đường viền dưới
   // (sai lệch <= 2 px cả hai chiều), nửa trên trong phần tử, nửa dưới lòi ra ngoài và không bị khung nào cắt.

@@ -165,3 +165,9 @@
 - **Khi** mở trang chơi, hộp xác nhận, bảng xếp hạng và trang chính sách ở 5 khung nhìn của AC-GAME-18, sáng và tối
 - **Thì** (cập nhật 2026-10-25, người duyệt chọn Helvetica và màu chủ đạo xanh lá) mọi chữ dùng một họ phông Helvetica của hệ điều hành (`"Helvetica Neue", Helvetica, Arial`, không tải file phông nào), hiển thị đủ dấu tiếng Việt (kiểm chuỗi "Ầ ẫ ặ ỡ ự Đ"), emoji hiện bằng phông emoji màu của hệ điều hành (không thành ô vuông hay nét đen); không gọi Google Fonts hay CDN; màu nhấn (nút chính, nhãn, tiêu đề) là xanh lá; màu, cỡ chữ, khoảng cách, bo góc lấy từ một bộ token duy nhất (biến CSS) có bản sáng và tối; chữ thường đạt tương phản ≥ 4,5:1 và chữ lớn/biểu tượng ≥ 3:1 ở cả hai chế độ; không có cuộn ngang ở khung nhìn 360 px; các AC bố cục GAME-18..23, TIER-02 vẫn đạt. Kiểm bằng Vitest browser mode (họ phông tính ra của chữ, tương phản tính từ màu thực tế, không request ra ngoài tiền tố)
 - Ưu tiên: Bắt buộc
+
+### AC-GAME-28: Đổi kiểu mặt bàn (thêm 2026-10-25)
+- **Cho** thực khách mở trang chơi lần đầu (chưa chọn kiểu bàn); giao diện sáng và tối
+- **Khi** trang tải xong; rồi bấm nút đổi bàn trong hàng nút trên bàn ("Dọn bàn", loa, "?"); rồi tải lại trang
+- **Thì** mặc định mặt bàn là bàn nhựa vỉa hè (xanh dương, gờ nhựa đúc quanh mép, chấm nổi nhỏ); bấm nút thì đổi sang bàn vân gỗ (ván gỗ sáng, vân dọc), bấm lần nữa thì về bàn nhựa; tên nút cho trình đọc màn hình nói kiểu sẽ đổi sang ("Đổi sang bàn gỗ" / "Đổi sang bàn nhựa"); lựa chọn lưu ở localStorage với khóa `laumeme:table` (giá trị `plastic` hoặc `wood`) và được giữ sau khi tải lại; giá trị lạ hoặc localStorage bị chặn thì dùng bàn nhựa, không báo lỗi; cả hai kiểu vẽ bằng CSS (không tải ảnh), lửa dưới nồi vẫn nhìn rõ trên cả hai mặt bàn; nút nằm trong vùng cấm đặt món của AC-GAME-22
+- Ưu tiên: Tùy chọn
