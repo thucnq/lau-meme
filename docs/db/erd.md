@@ -208,6 +208,7 @@ erDiagram
     TEXT reject_reason
     TEXT image_hint
     TEXT element_id
+    INTEGER use_image_url "0/1, admin chọn dùng link làm ảnh (0009)"
     INTEGER created_at
     INTEGER updated_at
     INTEGER decided_at
