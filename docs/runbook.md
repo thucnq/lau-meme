@@ -34,6 +34,8 @@ Game chạy dưới đường dẫn con (ADR 0007). Tiền tố nằm ở `base-
 
 Trang chính sách `/lau-meme/chinh-sach` (và `/lau-meme/chinh-sach/`) trả `index.html` cho mọi GET/HEAD, không cần `Accept: text/html`, để bot App Review của Meta đọc được (AC-SUBPATH-13, ADR 0014). Nội dung do JS vẽ, nên bot đi theo canonical về production chưa chạy (câu hỏi mở 66). URL khai với Meta là `/lau-meme/chinh-sach-tinh` (AC-SUBPATH-14): HTML tĩnh viết sẵn chữ, không script, không canonical hay `og:url`, lấy từ `web/chinh-sach-tinh.html`; tầng assets phục vụ file này, Worker không đổi.
 
+`/robots.txt` của host game (AC-SUBPATH-15, ADR 0007): gốc `dinoduct.fun` và `staging.dinoduct.fun` không có máy chủ nên trả 522, và bot của Meta coi đó là bị chặn. `wrangler.jsonc` vì vậy khai thêm route `dinoduct.fun/robots.txt` (production) và `staging.dinoduct.fun/robots.txt` (staging). Nội dung theo `APP_ENV`: production cho mọi bot; môi trường khác (staging, preview) chỉ cho `facebookexternalhit`, bot khác bị cấm. Khi có hub ở gốc miền thì hub giữ file này và gỡ hai route khỏi repo.
+
 Trang quản trị chạy trên host riêng (ADR 0008), cùng Worker, phân biệt bằng biến `ADMIN_HOST` trong `wrangler.jsonc` (mỗi môi trường một giá trị). Trên host game, `/lau-meme/admin*` và `/lau-meme/api/admin/*` trả 404. Bản ghi DNS của hai host quản trị nằm trong `docs/dev/huong-dan-tai-khoan.md` mục 1.
 
 Gốc `https://dinoduct.fun/` được Redirect Rule (không có trong code) chuyển 302 về `/lau-meme/`. `*.workers.dev` vẫn bật để `deploy-cf.sh` kiểm tra sức khỏe. Ở đó mọi đường dẫn ngoài `/lau-meme/` trả 404.
