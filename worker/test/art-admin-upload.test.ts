@@ -307,6 +307,8 @@ describe('art admin upload (worker)', () => {
       const p = await elementId(P)
       const wave = webp('vp8x', 256, 256, 4)
       wave.set(ascii('WAVE'), 8)
+      const animated = webp('vp8x', 256, 256, 9)
+      animated[20] = 0x02 // VP8X flags: animation
       const bad: Array<[string, Uint8Array]> = [
         ['512x512 vp8x', webp('vp8x', 512, 512, 5)],
         ['256x512 vp8l', webp('vp8l', 256, 512, 6)],
@@ -316,6 +318,8 @@ describe('art admin upload (worker)', () => {
         ['wave', wave],
         ['cut header', Uint8Array.from([...ascii('RIFF'), 4, 0, 0, 0, ...ascii('WEBP')])],
         ['empty', new Uint8Array(0)],
+        ['truncated body', webp('vp8l', 256, 256, 10, 64).subarray(0, 60)], // header intact, RIFF size says more
+        ['animated vp8x', animated],
         ['over 1 MB', webpOfSize('vp8l', 256, 256, 8, MAX_BYTES + 2)], // RIFF chunks are even-sized: +1 cannot be built
       ]
       const keys: string[] = []

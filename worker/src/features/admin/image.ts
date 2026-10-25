@@ -10,13 +10,19 @@ const SIDE = 256
 
 const u16 = (b: Uint8Array, at: number) => b[at]! | (b[at + 1]! << 8)
 const u24 = (b: Uint8Array, at: number) => u16(b, at) | (b[at + 2]! << 16)
+const u32 = (b: Uint8Array, at: number) => (u16(b, at) | (u16(b, at + 2) << 16)) >>> 0
 const fourcc = (b: Uint8Array, at: number) => String.fromCharCode(...b.subarray(at, at + 4))
 
-/** Width and height from the first chunk header (VP8X canvas, VP8L or lossy VP8 frame), or null when unreadable. */
+/**
+ * Width and height from the first chunk header (VP8X canvas, VP8L or lossy VP8 frame), or null when unreadable.
+ * The RIFF size must match the body (no truncated or padded files) and VP8X must not be animated: the key is
+ * content-addressed, so a bad file stored once could not be fixed later.
+ */
 export function webpSize(b: Uint8Array): { w: number; h: number } | null {
-  if (!isWebp(b) || b.length < 30) return null
+  if (!isWebp(b) || b.length < 30 || u32(b, 4) + 8 !== b.length) return null
   switch (fourcc(b, 12)) {
     case 'VP8X':
+      if (b[20]! & 0x02) return null
       return { w: u24(b, 24) + 1, h: u24(b, 27) + 1 }
     case 'VP8L': {
       if (b[20] !== 0x2f) return null
@@ -50,9 +56,10 @@ export async function setElementImage(req: Request, env: Env, _ctx: ExecutionCon
   if (size!.w !== SIDE || size!.h !== SIDE) bad(`Ảnh phải là WebP ${SIDE}x${SIDE}`)
 
   const db = env.DB
-  const row = await db.prepare('SELECT image_key FROM element WHERE id = ?').bind(id).first<{ image_key: string | null }>()
-  if (!row) return problem(404, 'Không tìm thấy phần tử')
+  const exists = await db.prepare('SELECT 1 FROM element WHERE id = ?').bind(id).first()
+  if (!exists) return problem(404, 'Không tìm thấy phần tử')
 
+  // Written before D1: if the batch fails the object stays orphaned, which is harmless (same bytes, same key).
   const key = await hashKey(bytes!)
   const r2Key = `img/${key}`
   if ((await env.IMG.head(r2Key)) === null) {
@@ -60,11 +67,17 @@ export async function setElementImage(req: Request, env: Env, _ctx: ExecutionCon
   }
   const now = Date.now()
   const fp = (await sha256hex(env.ADMIN_TOKEN ?? '')).slice(0, 8)
-  await db.batch([
-    db.prepare("UPDATE element SET image_key = ?, image_source = 'admin', updated_at = ? WHERE id = ?").bind(key, now, id),
+  // before_key is read inside the batch, ahead of the UPDATE, so concurrent uploads each audit the key they replaced.
+  const [audit] = await db.batch<{ before_key: string | null }>([
     db
-      .prepare('INSERT INTO admin_image_change (id, element_id, before_key, after_key, token_fp, created_at) VALUES (?, ?, ?, ?, ?, ?)')
-      .bind(uuidv7(now), id, row.image_key, key, fp, now),
+      .prepare(
+        'INSERT INTO admin_image_change (id, element_id, before_key, after_key, token_fp, created_at) ' +
+          'SELECT ?, id, image_key, ?, ?, ? FROM element WHERE id = ? RETURNING before_key',
+      )
+      .bind(uuidv7(now), key, fp, now, id),
+    db.prepare("UPDATE element SET image_key = ?, image_source = 'admin', updated_at = ? WHERE id = ?").bind(key, now, id),
   ])
-  return json({ element_id: id, before_key: row.image_key, after_key: key })
+  const row = audit?.results[0]
+  if (!row) return problem(404, 'Không tìm thấy phần tử')
+  return json({ element_id: id, before_key: row.before_key, after_key: key })
 }
