@@ -525,7 +525,7 @@ function ContentTab(ctx: Ctx) {
   const uploadDrawing = (id: string, file: File | undefined) => {
     if (!file) return
     const refused = drawingProblem(file)
-    setImageError(refused)
+    setImageError(refused) // null on a valid pick also clears the error of an earlier upload
     if (refused) return
     toWebp256(file)
       .then((webp) => setImage(ctx.token, id, webp))

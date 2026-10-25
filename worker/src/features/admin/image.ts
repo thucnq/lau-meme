@@ -47,8 +47,8 @@ export async function setElementImage(req: Request, env: Env, _ctx: ExecutionCon
   if (!ID43.test(id)) bad('id: id phần tử không hợp lệ')
   const type = (req.headers.get('content-type') ?? '').split(';')[0]!.trim().toLowerCase()
   if (type !== 'image/webp') bad('Thân phải là image/webp')
-  const declared = Number(req.headers.get('content-length'))
-  if (Number.isFinite(declared) && declared > MAX_DRAWING_BYTES) bad('Ảnh quá lớn (tối đa 1 MB)')
+  const declared = req.headers.has('content-length') ? Number(req.headers.get('content-length')) : 0
+  if (declared > MAX_DRAWING_BYTES) bad('Ảnh quá lớn (tối đa 1 MB)')
   const bytes = await readCapped(req, MAX_DRAWING_BYTES)
   if (bytes === null) bad('Ảnh quá lớn (tối đa 1 MB)')
   const size = webpSize(bytes!)

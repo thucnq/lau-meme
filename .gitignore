@@ -26,6 +26,10 @@ htmlcov/
 .dk/junit/
 .dk/tmp/
 .dk/log/.sessions/
+# dk state written when a tool runs from a component folder (the real one is the root .dk/)
+pipeline/.dk/
+web/.dk/
+worker/.dk/
 # personal Claude Code settings / plugins
 .claude/settings.local.json
 # raw inputs that must not be published
