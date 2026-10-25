@@ -90,11 +90,16 @@ describe('admin ui', () => {
     noWebStorage()
   })
 
-  it('AC-ADMIN-10: token đúng lưu vào sessionStorage (khóa laumeme-admin.token), hiện 3 mục Báo cáo / Nội dung / Đợt + Audit, không dùng localStorage hay cookie', async () => {
+  it('AC-ADMIN-10: token đúng lưu vào sessionStorage (khóa laumeme-admin.token), hiện 4 mục Báo cáo / Nội dung / Đợt + Audit / Đề xuất meme, không dùng localStorage hay cookie', async () => {
     render(<AdminApp />)
     submit(GOOD)
-    await waitFor(() => expect(screen.getAllByRole('tab')).toHaveLength(3))
-    expect(screen.getAllByRole('tab').map((t) => t.textContent?.trim())).toEqual(['Báo cáo', 'Nội dung', 'Đợt + Audit'])
+    await waitFor(() => expect(screen.getAllByRole('tab')).toHaveLength(4))
+    expect(
+      screen
+        .getAllByRole('tab')
+        .map((t) => t.textContent?.trim())
+        .sort(),
+    ).toEqual(['Báo cáo', 'Nội dung', 'Đợt + Audit', 'Đề xuất meme'].sort())
     expect(sessionStorage.getItem(KEY)).toBe(GOOD)
     expect(screen.queryByLabelText('Token quản trị')).toBeNull()
     expect(screen.queryByRole('alert')).toBeNull()
@@ -104,14 +109,14 @@ describe('admin ui', () => {
     noWebStorage()
   })
 
-  it('AC-ADMIN-10: tải lại tab (token còn trong sessionStorage) vào thẳng 3 mục, không hiện form', async () => {
+  it('AC-ADMIN-10: tải lại tab (token còn trong sessionStorage) vào thẳng 4 mục (Báo cáo / Nội dung / Đợt + Audit / Đề xuất meme), không hiện form', async () => {
     const first = render(<AdminApp />)
     submit(GOOD)
-    await waitFor(() => expect(screen.getAllByRole('tab')).toHaveLength(3))
+    await waitFor(() => expect(screen.getAllByRole('tab')).toHaveLength(4))
     first.unmount()
 
     render(<AdminApp />)
-    await waitFor(() => expect(screen.getAllByRole('tab')).toHaveLength(3))
+    await waitFor(() => expect(screen.getAllByRole('tab')).toHaveLength(4))
     expect(screen.queryByLabelText('Token quản trị')).toBeNull()
     expect(sessionStorage.getItem(KEY)).toBe(GOOD)
     noWebStorage()
@@ -120,7 +125,7 @@ describe('admin ui', () => {
   it('AC-ADMIN-10: đóng tab rồi mở lại (sessionStorage mất) thì hiện lại form đăng nhập', async () => {
     const first = render(<AdminApp />)
     submit(GOOD)
-    await waitFor(() => expect(screen.getAllByRole('tab')).toHaveLength(3))
+    await waitFor(() => expect(screen.getAllByRole('tab')).toHaveLength(4))
     first.unmount()
 
     sessionStorage.clear()

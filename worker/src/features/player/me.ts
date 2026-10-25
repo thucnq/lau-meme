@@ -6,6 +6,7 @@ import { clearedCookie, hasSessionCookie, readSession, sessionCookie } from '../
 import { uuidv7 } from '../../uuid'
 import { fail, int, obj, oneOf } from '../../validate'
 import { accountStreakStatement, liveCurrent } from '../daily/daily'
+import { contribution, myContributionsStatement, type ContributionRow } from '../contrib/contrib'
 import { bannedKey } from '../disc/disc'
 import { policyVersion } from '../content/content'
 import {
@@ -136,7 +137,7 @@ export async function getMyData(req: Request, env: Env): Promise<Response> {
   const session = await readSession(req, env)
   const accountId = session?.accountId ?? ''
   const now = Date.now()
-  const [nick, discoveries, daily, streak, reports, votes, consents, events, account, sessions, entries, accStreak, plate] =
+  const [nick, discoveries, daily, streak, reports, votes, consents, events, account, sessions, entries, accStreak, plate, contribs] =
     await limited(req, env, player, [
     db.prepare('SELECT nickname FROM player WHERE id = ?').bind(player),
     db.prepare('SELECT element_id, discovered_at FROM discovery WHERE player_id = ? ORDER BY discovered_at').bind(player),
@@ -169,6 +170,7 @@ export async function getMyData(req: Request, env: Env): Promise<Response> {
       .bind(accountId),
     accountStreakStatement(db, accountId),
     db.prepare('SELECT element_id, found_at FROM account_element WHERE account_id = ? ORDER BY found_at, element_id').bind(accountId),
+    myContributionsStatement(db, accountId),
   ])
   const acc = rows<{ nickname: string | null; created_at: number }>(account)[0]
   const accRow = rows<StreakRow & { reached_at: number }>(accStreak)[0] ?? null
@@ -225,6 +227,8 @@ export async function getMyData(req: Request, env: Env): Promise<Response> {
               element_id: r.element_id,
               found_at: iso(r.found_at),
             })),
+            // every proposal of the account with what it sent and its status (AC-CONTRIB-12)
+            contributions: rows<ContributionRow>(contribs).map(contribution),
           }
         : null,
     },
@@ -275,7 +279,21 @@ export async function deleteMyData(req: Request, env: Env): Promise<Response> {
     const id = session.accountId
     for (const table of ['session', 'account_player', 'daily_entry', 'account_streak', 'account_element'] as const)
       statements.push(db.prepare(ACCOUNT_DELETES[table]).bind(id))
-    statements.push(db.prepare('DELETE FROM account WHERE id = ?').bind(id))
+    // AC-CONTRIB-12: pending proposals go; approved/rejected ones stay unlinked, and the account's entries in every
+    // kept creators snapshot become null (shown as "Thực khách ẩn danh")
+    statements.push(
+      db
+        .prepare(
+          `UPDATE batch_content SET creators_json = (
+             SELECT json_group_object(j.key, CASE WHEN j.key IN (SELECT element_id FROM contribution WHERE account_id = ?1
+               AND element_id IS NOT NULL) THEN NULL ELSE j.value END) FROM json_each(batch_content.creators_json) j)
+           WHERE creators_json IS NOT NULL AND creators_json <> '{}'`,
+        )
+        .bind(id),
+      db.prepare("DELETE FROM contribution WHERE account_id = ? AND status = 'pending'").bind(id),
+      db.prepare('UPDATE contribution SET account_id = NULL WHERE account_id = ?').bind(id),
+      db.prepare('DELETE FROM account WHERE id = ?').bind(id),
+    )
   }
   await db.batch(statements)
   const headers: Record<string, string> = hasSessionCookie(req) ? { 'Set-Cookie': clearedCookie(env) } : {}

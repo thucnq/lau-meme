@@ -17,12 +17,12 @@ const LOCK_MS = 15 * 60_000 // …lock that IP hash for 15 minutes, right token 
 
 const enc = new TextEncoder()
 
-async function sha256hex(text: string): Promise<string> {
+export async function sha256hex(text: string): Promise<string> {
   const bytes = new Uint8Array(await crypto.subtle.digest('SHA-256', enc.encode(text)))
   return Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('')
 }
 
-const bad = (detail: string): never => {
+export const bad = (detail: string): never => {
   throw new HttpError(400, 'Dữ liệu không hợp lệ', detail)
 }
 
@@ -71,9 +71,9 @@ export function adminOnly(handler: Handler): Handler {
 
 // ------------------------------------------------------------------------------------------------ query params
 
-type Paging = { page: number; size: number; offset: number }
+export type Paging = { page: number; size: number; offset: number }
 
-function paging(params: URLSearchParams): Paging {
+export function paging(params: URLSearchParams): Paging {
   const num = (name: string, fallback: number, max: number): number => {
     const raw = params.get(name)
     if (raw === null) return fallback
@@ -86,16 +86,16 @@ function paging(params: URLSearchParams): Paging {
   return { page, size, offset: (page - 1) * size }
 }
 
-function choice<T extends string>(params: URLSearchParams, name: string, options: readonly T[]): T | null {
+export function choice<T extends string>(params: URLSearchParams, name: string, options: readonly T[]): T | null {
   const raw = params.get(name)
   if (raw === null) return null
   if (!options.includes(raw as T)) bad(`${name}: phải là một trong ${options.join(', ')}`)
   return raw as T
 }
 
-const page = (p: Paging, total: number, items: unknown[]) => json({ page: p.page, size: p.size, total, items })
+export const page = (p: Paging, total: number, items: unknown[]) => json({ page: p.page, size: p.size, total, items })
 const iso = (ms: number) => new Date(ms).toISOString()
-const totalOf = (r: D1Result | undefined) => (r?.results[0] as { n: number } | undefined)?.n ?? 0
+export const totalOf = (r: D1Result | undefined) => (r?.results[0] as { n: number } | undefined)?.n ?? 0
 
 // ------------------------------------------------------------------------------------------------ lists
 

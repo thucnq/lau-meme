@@ -109,3 +109,33 @@ export const moderate = (token: string, target_kind: Kind, target_id: string, ac
     method: 'POST',
     body: { target_kind, target_id, action, ...(reason.trim() ? { reason: reason.trim().slice(0, 200) } : {}) },
   })
+
+/** A meme proposal as the admin sees it (AC-CONTRIB-07): `image_url` is only ever shown as text. */
+export type ContributionStatus = 'pending' | 'approved' | 'rejected'
+export type ContributionItem = {
+  id: string
+  a: Ref
+  b: Ref
+  name: string
+  emoji: string | null
+  description: string | null
+  image_url: string | null
+  status: ContributionStatus
+  reject_reason: string | null
+  image_hint: string | null
+  tier: number
+  element_id: string | null
+  nickname: string
+  created_at: string
+  decided_at: string | null
+}
+export type ContributionEdit = Partial<Pick<ContributionItem, 'name' | 'emoji' | 'description' | 'image_url'>>
+
+export const editContribution = (token: string, id: string, body: ContributionEdit) =>
+  call<ContributionItem>(token, `contributions/${id}`, { method: 'PATCH', body })
+
+export const approveContribution = (token: string, id: string, image_hint: string, tier: number) =>
+  call<ContributionItem>(token, `contributions/${id}/approve`, { method: 'POST', body: { image_hint, tier } })
+
+export const rejectContribution = (token: string, id: string, reason: string) =>
+  call<ContributionItem>(token, `contributions/${id}/reject`, { method: 'POST', body: { reason } })

@@ -384,7 +384,7 @@ describe('ui2: gợi ý cảm ứng (AC-GAME-21)', () => {
     seed()
     await mountReady()
     await seeText(HINT)
-    const close = screen.getAllByRole('button', { name: /đóng/i })
+    const close = screen.getAllByRole('button', { name: /đóng(?! góp)/i }) // loại nút "Đóng góp meme" (AC-CONTRIB-05)
     expect(close).toHaveLength(1) // hướng dẫn đã xem, chỉ còn nút đóng của gợi ý
     fireEvent.click(close[0]!)
     await waitFor(() => expect(hasText(HINT)).toBe(false))

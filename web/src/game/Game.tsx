@@ -9,6 +9,8 @@ import { getGraph, getManifest } from '../api'
 import { DiscoveryZoom, prefersReducedMotion } from '../art/DiscoveryZoom'
 import { AuthBar } from '../auth/AuthBar'
 import { useSession } from '../auth/session'
+import { getCreators, type Creators } from '../contrib/api'
+import { ContribPanel } from '../contrib/ContribPanel'
 import { ElementIcon } from '../art/ElementIcon'
 import { startManifestWatch } from '../daily/countdown'
 import { DailyPanel, Leaderboards } from '../daily/DailyPanel'
@@ -49,12 +51,15 @@ const TAP_MS = 500
 const HOLD_DRAG_MS = 250 // AC-GAME-21: on touch, a hold this long turns a vertical move into a drag, not a scroll
 const TABLE_GAP = 8 // AC-GAME-18: the table ends this far above the bottom of the first screen
 const TABLE_MIN = 240
+const ANONYMOUS = 'Thực khách ẩn danh'
 
 type Loaded = { manifest: Manifest; graph: Graph; blocklist: Blocklist }
 type Source = { item: Item; uid: string | null }
 type Drag = { source: Source; x: number; y: number }
 type Press = {
   source: Source; x: number; y: number; w: number; h: number; moved: boolean; held: boolean; timer: number
+  /** the creator line this press shows after a still touch hold of TAP_MS (AC-CONTRIB-10), if the item has one */
+  tip: string | null
   /** touch only: armed after HOLD_DRAG_MS still; swiping once a vertical move without that hold went to the page */
   touch: boolean; armed: boolean; swiping: boolean; armTimer: number
 }
@@ -219,6 +224,10 @@ export function Game({ onDiscover, onItems, heirlooms = {}, onReport, blocklistR
   const gameRef = useRef<HTMLDivElement>(null)
   const session = useSession()
   const syncRef = useRef<PlateSync | null>(null)
+  const [contribOpen, setContribOpen] = useState(false)
+  // Creators of contributed elements in this version (AC-CONTRIB-10); a failed load just shows no line.
+  const [creators, setCreators] = useState<Creators>({})
+  const [tip, setTip] = useState<string | null>(null)
 
   const commit = (next: Progress) => {
     progressRef.current = next
@@ -329,6 +338,19 @@ export function Game({ onDiscover, onItems, heirlooms = {}, onReport, blocklistR
     )
     return () => ctrl.abort()
   }, [reloadKey])
+
+  const loadedVersion = loaded?.manifest.version
+  useEffect(() => {
+    if (loadedVersion === undefined) return
+    let live = true
+    getCreators(loadedVersion).then(
+      (map) => live && setCreators(map && typeof map === 'object' ? map : {}),
+      () => live && setCreators({}),
+    )
+    return () => {
+      live = false
+    }
+  }, [loadedVersion])
 
   // Đĩa of the signed-in account (AC-SYNC-01..06): read and merged on load and at sign-in, then fed every new discovery.
   const graph = loaded?.graph
@@ -552,6 +574,35 @@ export function Game({ onDiscover, onItems, heirlooms = {}, onReport, blocklistR
     pressRef.current = null
   }
 
+  /** The creator line of an item, one per plate item and per table chip; null for core and crawled elements. */
+  const tipKeyOf = (source: Source): string | null =>
+    source.item.id in creators ? (source.uid ? `t-${source.uid}` : `p-${source.item.id}`) : null
+
+  /** Hover, keyboard focus and a still touch hold show the line; it is tied to the item by aria-describedby. */
+  const creatorProps = (source: Source) => {
+    const key = tipKeyOf(source)
+    if (!key) return {}
+    return {
+      'aria-describedby': `creator-${key}`,
+      onPointerEnter: (e: ReactPointerEvent<HTMLElement>) => e.pointerType === 'mouse' && setTip(key),
+      onPointerLeave: (e: ReactPointerEvent<HTMLElement>) => e.pointerType === 'mouse' && setTip((t) => (t === key ? null : t)),
+      onMouseEnter: () => setTip(key),
+      onMouseLeave: () => setTip((t) => (t === key ? null : t)),
+      onFocus: () => setTip(key),
+      onBlur: () => setTip((t) => (t === key ? null : t)),
+    }
+  }
+
+  const creatorLine = (source: Source) => {
+    const key = tipKeyOf(source)
+    if (!key) return null
+    return (
+      <span role="tooltip" id={`creator-${key}`} className="creator-tip" hidden={tip !== key}>
+        Meme của {creators[source.item.id] ?? ANONYMOUS}
+      </span>
+    )
+  }
+
   const dragHandlers = (source: Source) => ({
     onPointerDown: (e: ReactPointerEvent<HTMLElement>) => {
       if (boilingRef.current || busyRef.current || e.button !== 0) return
@@ -562,9 +613,13 @@ export function Game({ onDiscover, onItems, heirlooms = {}, onReport, blocklistR
       const touch = e.pointerType !== 'mouse' // a pen gets the chip's pan-y too, so it follows the touch rules
       const press: Press = {
         source, x: e.clientX, y: e.clientY, w, h, moved: false, held: false, timer: 0,
-        touch, armed: false, swiping: false, armTimer: 0,
+        tip: touch ? tipKeyOf(source) : null, touch, armed: false, swiping: false, armTimer: 0,
       }
-      press.timer = window.setTimeout(() => (press.held = true), TAP_MS)
+      press.timer = window.setTimeout(() => {
+        press.held = true
+        // a still touch hold shows the creator line instead of a tooltip on hover (AC-CONTRIB-10)
+        if (press.tip && !press.moved && !press.swiping && pressRef.current === press) setTip(press.tip)
+      }, TAP_MS)
       if (touch) press.armTimer = window.setTimeout(() => (press.armed = true), HOLD_DRAG_MS)
       pressRef.current = press
     },
@@ -585,6 +640,7 @@ export function Game({ onDiscover, onItems, heirlooms = {}, onReport, blocklistR
     onPointerUp: (e: ReactPointerEvent<HTMLElement>) => {
       const press = pressRef.current
       pressRef.current = null
+      if (press?.tip) setTip(null)
       dragRef.current = null
       setDrag(null)
       if (!press) return
@@ -595,6 +651,7 @@ export function Game({ onDiscover, onItems, heirlooms = {}, onReport, blocklistR
       else if (!press.held) toPot(press.source)
     },
     onPointerCancel: () => {
+      if (pressRef.current?.tip) setTip(null)
       clearPress()
       dragRef.current = null
       setDrag(null)
@@ -791,10 +848,12 @@ export function Game({ onDiscover, onItems, heirlooms = {}, onReport, blocklistR
               tabIndex={0}
               onKeyDown={keyToPot(tableSource(t))}
               {...dragHandlers(tableSource(t))}
+              {...creatorProps(tableSource(t))}
             >
               <ElementIcon emoji={t.emoji} imageKey={imageOf(byId.get(t.id))} /> <span>{t.name}</span>
               {badge(byId.get(t.id))}
               <TierBadge tier={tierOf(byId.get(t.id))} />
+              {creatorLine(tableSource(t))}
             </div>
           ))}
           {steam && (
@@ -890,10 +949,12 @@ export function Game({ onDiscover, onItems, heirlooms = {}, onReport, blocklistR
                 tabIndex={0}
                 onKeyDown={keyToPot({ item: it, uid: null })}
                 {...dragHandlers({ item: it, uid: null })}
+                {...creatorProps({ item: it, uid: null })}
               >
                 <ElementIcon emoji={it.emoji} imageKey={imageOf(it)} /> <span>{it.name}</span>
                 {badge(it)}
                 <TierBadge tier={tierOf(it)} />
+                {creatorLine({ item: it, uid: null })}
                 {onReport && (
                   <button
                     type="button"
@@ -913,6 +974,16 @@ export function Game({ onDiscover, onItems, heirlooms = {}, onReport, blocklistR
           </ul>
         </aside>
       </div>
+
+      {/* Below the table, not in the header (AC-GAME-19 keeps the header to title, account and theme). */}
+      {loaded && (
+        <div className="contrib-entry">
+          <button type="button" aria-expanded={contribOpen} onClick={() => setContribOpen((o) => !o)}>
+            Đóng góp meme
+          </button>
+          {contribOpen && <ContribPanel policyVersion={loaded.manifest.policy_version} storage={storage()} />}
+        </div>
+      )}
 
       {drag && (
         <div className="chip ghost" style={{ left: drag.x, top: drag.y }} aria-hidden="true">
