@@ -4,7 +4,7 @@ body {
   margin: 0; background: var(--color-bg); color: var(--color-text); -webkit-font-smoothing: antialiased;
   font-family: var(--font-body); font-size: var(--text-md); line-height: 1.5;
 }
-/* Baloo 2 is for the game's name, dish names and the discovery card only; everything else is Be Vietnam Pro. */
+/* One family (Helvetica); the game's name, dish names and the discovery card only go bold. */
 h1 {
   margin: 0; font-family: var(--font-display); font-size: var(--text-2xl); font-weight: 700; line-height: 1.1;
   color: var(--color-accent); white-space: nowrap;
@@ -55,6 +55,22 @@ a { color: var(--color-accent); }
   touch-action: pan-y; /* AC-GAME-21: a swipe on the gaps scrolls the page; only chips hold the drag */
   background: var(--color-table); border-radius: var(--radius-lg);
 }
+/* Vân gỗ trẻ trung: four light planks with a fine grain running along them. */
+.game-table[data-table='wood'] {
+  background:
+    repeating-linear-gradient(90deg, transparent 0 calc(25% - 2px), var(--wood-seam) calc(25% - 2px) 25%),
+    repeating-linear-gradient(90deg, transparent 0 6px, var(--wood-grain) 6px 8px, transparent 8px 19px, var(--wood-grain) 19px 20px, transparent 20px 31px),
+    linear-gradient(180deg, var(--wood-1), var(--wood-2));
+}
+/* Bàn nhựa vỉa hè (default, AC-GAME-28): a moulded lip round the edge and the small embossed dots of the plastic top;
+   the burner turns amber so it still shows on the blue. */
+.game-table[data-table='plastic'] {
+  background:
+    radial-gradient(circle, var(--plastic-dot) 0 1.5px, transparent 2px) 0 0 / 0.9rem 0.9rem,
+    linear-gradient(180deg, var(--plastic-1), var(--plastic-2));
+  box-shadow: inset 0 0 0 0.45rem var(--plastic-rim), inset 0 0 0 0.6rem var(--color-veil);
+  --color-flame: var(--color-broth);
+}
 /* On a phone shorter than ~760 px the table gives up height so the pot stays on the first screen (AC-GAME-18). */
 @media (max-width: 40rem) { .game-table { height: clamp(15rem, calc(100svh - 24rem), 18rem); } }
 /* Dọn bàn / loa / ? (AC-GAME-19): top right inside the table on wide screens, one row above it on a phone. */
@@ -88,9 +104,9 @@ a { color: var(--color-accent); }
   background: linear-gradient(90deg, var(--color-broth-chili) 50%, var(--color-broth) 50%);
   box-shadow: inset 0 0.35rem 0.6rem var(--color-veil);
 }
-.pot-rim::after { /* the divider between the two broths */
-  content: ''; position: absolute; top: 0.2rem; bottom: 0.2rem; left: calc(50% - 0.1rem); width: 0.2rem;
-  background: var(--color-metal); border-radius: var(--radius-pill);
+.pot-rim::after { /* the divider between the two broths: runs into the metal rim at both ends, no seam left showing */
+  content: ''; position: absolute; top: -0.2rem; bottom: -0.2rem; left: calc(50% - 0.15rem); width: 0.3rem;
+  background: var(--color-metal);
 }
 .pot-slot {
   flex: 1; min-width: 0; min-height: 2.2rem; display: flex; align-items: center; justify-content: center;
@@ -245,6 +261,7 @@ a { color: var(--color-accent); }
 .daily-lead { font-weight: 600; flex-basis: 100%; }
 .daily-dish { display: grid; grid-template-columns: auto 1fr; gap: 0 var(--space-3); align-items: center; }
 .daily-dish h2 { font-family: var(--font-display); font-size: var(--text-xl); font-weight: 700; line-height: 1.1; }
+.emoji, .daily-emoji { font-family: var(--font-emoji); font-style: normal; font-weight: 400; }
 .daily-emoji { font-size: 2.5rem; line-height: 1; grid-row: span 2; }
 .daily-hint { font-size: var(--text-lg); }
 .daily-side { display: flex; flex-direction: column; align-items: flex-end; gap: var(--space-1); text-align: right; }
@@ -291,11 +308,14 @@ a { color: var(--color-accent); }
 .tier-4 { --tier-bg: var(--tier-4); --tier-mark: var(--tier-4-strong); }
 .tier-5 { --tier-bg: var(--tier-5); --tier-mark: var(--tier-5-strong); }
 .tier-badge {
-  position: absolute; left: 50%; bottom: 0.08rem; width: 0.5rem; height: 0.5rem; transform: translateX(-50%);
+  /* AC-TIER-02: centred on the bottom border, upper half inside the box, lower half outside */
+  position: absolute; left: 50%; bottom: 0; width: 0.5rem; height: 0.5rem; transform: translate(-50%, 50%);
   pointer-events: none;
 }
-.tier-badge circle, .tier-badge polygon { fill: var(--tier-mark); }
-.discovery-card .tier-badge { width: 0.8rem; height: 0.8rem; bottom: 0.3rem; }
+/* a light ring keeps the half that sticks out apart from the tabletop, plastic or wood (AC-GAME-28) */
+.tier-badge circle, .tier-badge polygon { fill: var(--tier-mark); stroke: var(--color-badge-ring); stroke-width: 1.6px; paint-order: stroke; }
+.tier-badge { overflow: visible; width: 0.6rem; height: 0.6rem; }
+.discovery-card .tier-badge { width: 0.9rem; height: 0.9rem; }
 .slot-item { display: inline-flex; align-items: center; gap: var(--space-1); padding: 0.15rem var(--space-2); border-radius: var(--radius-pill); max-width: 100%; }
 
 /* Illustrations (ART): emoji first, the drawing once it has loaded; the loading image takes no room (AC-ART-06) */

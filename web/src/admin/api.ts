@@ -22,6 +22,10 @@ export type ElementItem = Ref & {
   image_key: string | null
   image_state: 'none' | 'active' | 'hidden'
   last_version: number
+  tier: number
+  tier_source: 'auto' | 'admin'
+  /** Tier tự động của mẻ gần nhất (AC-TIER-04); null = mẻ trước TIER-04. */
+  auto_tier: number | null
 }
 export type RecipeItem = { id: string; a: Ref; b: Ref; result: Ref; state: 'active' | 'hidden' }
 /** Số liệu do pipeline gửi kèm nhật ký đợt (BatchStats, AC-ADMIN-11): nguồn lỗi có `error` và `concepts` null. */
@@ -95,6 +99,10 @@ export async function call<T>(token: string, path: string, init: { method?: stri
   }
   return (await res.json()) as T
 }
+
+/** AC-ADMIN-12, AC-TIER-05: `auto` bỏ giá trị admin gán, phần tử quay về tier theo độ sâu. */
+export const setTier = (token: string, id: string, tier: number | 'auto') =>
+  call<{ before: number; after: number }>(token, `elements/${id}/tier`, { method: 'PUT', body: { tier } })
 
 export const moderate = (token: string, target_kind: Kind, target_id: string, action: Action, reason: string) =>
   call<{ before: State; after: State }>(token, 'moderation', {

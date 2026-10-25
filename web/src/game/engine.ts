@@ -46,6 +46,9 @@ export type CombineOutcome =
 
 export const PROGRESS_KEY = storageKey('game.progress')
 export const THEME_KEY = storageKey('theme')
+/** Tabletop style (AC-GAME-28): 'plastic' (default) | 'wood'. */
+export const TABLE_KEY = storageKey('table')
+export type TableStyle = 'plastic' | 'wood'
 export const HINT_AFTER_MISSES = 3 // open question 9 - default
 export const EMPTY_BLOCKLIST: Blocklist = { elements: [], recipes: [], images: [] }
 
@@ -247,6 +250,10 @@ export function tierOf(item: { tier?: unknown } | undefined): number {
 
 export function isNew(item: Item, manifestVersion: number, bl: Blocklist): boolean {
   return item.added_version === manifestVersion && !bl.elements.includes(item.id)
+}
+
+export function resolveTableStyle(stored: string | null): TableStyle {
+  return stored === 'wood' ? 'wood' : 'plastic'
 }
 
 export function resolveTheme(stored: string | null, systemDark: boolean): 'light' | 'dark' {

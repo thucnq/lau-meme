@@ -19,6 +19,7 @@ import type { Graph } from '../graph/crypto'
 import { localStore as storage, migrateLegacyKeys } from '../storage'
 import {
   EMPTY_BLOCKLIST,
+  TABLE_KEY,
   THEME_KEY,
   combine,
   filterItems,
@@ -26,6 +27,7 @@ import {
   isNew,
   loadProgress,
   migrateProgress,
+  resolveTableStyle,
   resolveTheme,
   saveProgress,
   sortItems,
@@ -33,7 +35,7 @@ import {
   visibleItems,
   visibleTable,
 } from './engine'
-import type { Blocklist, Item, Manifest, Progress, SortMode, TableItem } from './engine'
+import type { Blocklist, Item, Manifest, Progress, SortMode, TableItem, TableStyle } from './engine'
 import { CELEBRATE_MS, Celebrate } from './Celebrate'
 import type { CelebrationKind } from './Celebrate'
 import { createTierSound } from './sound'
@@ -68,6 +70,14 @@ function readTheme(): 'light' | 'dark' {
   }
   // no stored choice: keep a theme the page already applied, else follow the system
   return resolveTheme(stored ?? document.documentElement.dataset.theme ?? null, systemDark())
+}
+
+function readTableStyle(): TableStyle {
+  try {
+    return resolveTableStyle(storage()?.getItem(TABLE_KEY) ?? null)
+  } catch {
+    return 'plastic' // storage blocked
+  }
 }
 
 const newUid = (): string => crypto.randomUUID()
@@ -192,6 +202,7 @@ export function Game({ onDiscover, onItems, heirlooms = {}, onReport, blocklistR
   const [steam, setSteam] = useState<{ x: number; y: number } | null>(null)
   const [query, setQuery] = useState('')
   const [theme, setTheme] = useState(readTheme)
+  const [tableStyle, setTableStyle] = useState(readTableStyle)
   const [drag, setDrag] = useState<Drag | null>(null)
   const dragRef = useRef<Source | null>(null)
   const pressRef = useRef<Press | null>(null)
@@ -586,6 +597,16 @@ export function Game({ onDiscover, onItems, heirlooms = {}, onReport, blocklistR
     setTheme(next)
   }
 
+  const toggleTable = () => {
+    const next: TableStyle = tableStyle === 'wood' ? 'plastic' : 'wood'
+    try {
+      storage()?.setItem(TABLE_KEY, next)
+    } catch {
+      // storage blocked: the choice lasts for this session only
+    }
+    setTableStyle(next)
+  }
+
   const setSort = (sort: SortMode) => {
     const p = progressRef.current
     if (p) commit({ ...p, sort })
@@ -678,6 +699,15 @@ export function Game({ onDiscover, onItems, heirlooms = {}, onReport, blocklistR
             >
               <SpeakerIcon muted={progress?.muted === true} />
             </button>
+            <button
+              type="button"
+              className="icon-button"
+              onClick={toggleTable}
+              aria-label={tableStyle === 'wood' ? 'Đổi sang bàn nhựa' : 'Đổi sang bàn gỗ'}
+              title={tableStyle === 'wood' ? 'Đổi sang bàn nhựa' : 'Đổi sang bàn gỗ'}
+            >
+              <TableIcon />
+            </button>
             <button type="button" onClick={() => setTutorialOpen(true)} title="Hướng dẫn">
               ?
             </button>
@@ -686,6 +716,7 @@ export function Game({ onDiscover, onItems, heirlooms = {}, onReport, blocklistR
             ref={tableRef}
             className="game-table"
             data-testid="table"
+            data-table={tableStyle}
             data-shake={celebration?.kind === 'red' && celebration.animated ? 'true' : undefined}
             aria-label="Mặt bàn"
             style={tableHeight ? { height: tableHeight } : undefined}
@@ -737,7 +768,7 @@ export function Game({ onDiscover, onItems, heirlooms = {}, onReport, blocklistR
                   <div key={n} className="pot-slot" data-testid={`pot-slot-${n}`} data-slot={n}>
                     {it && (
                       <span className={`slot-item tier-${tierOf(byId.get(it.id) ?? it)}`} data-tier={tierOf(byId.get(it.id) ?? it)}>
-                        <span aria-hidden="true">{it.emoji}</span> <span>{it.name}</span>
+                        <span className="emoji" aria-hidden="true">{it.emoji}</span> <span>{it.name}</span>
                         <TierBadge tier={tierOf(byId.get(it.id) ?? it)} />
                       </span>
                     )}
@@ -837,7 +868,7 @@ export function Game({ onDiscover, onItems, heirlooms = {}, onReport, blocklistR
 
       {drag && (
         <div className="chip ghost" style={{ left: drag.x, top: drag.y }} aria-hidden="true">
-          {drag.source.item.emoji} {drag.source.item.name}
+          <span className="emoji">{drag.source.item.emoji}</span> {drag.source.item.name}
         </div>
       )}
 
@@ -903,6 +934,25 @@ function SpeakerIcon({ muted }: { muted: boolean }) {
     >
       <path d="M4 9h4l5-4v14l-5-4H4z" />
       {muted ? <path d="M17 9l5 6M22 9l-5 6" /> : <path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12" />}
+    </svg>
+  )
+}
+
+/** Outline table: a top and two legs (AC-GAME-28). */
+function TableIcon() {
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M3 8h18M5 8l-1 11M19 8l1 11M7 13h10" />
     </svg>
   )
 }

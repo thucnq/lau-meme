@@ -1,47 +1,9 @@
 /*
  * The one set of design tokens (ADR 0017, AC-GAME-27): colour, type, space, radius, shadow and motion, light and
  * dark. Components use these variables only; no colour value is written anywhere else.
- * Direction "quán lẩu đêm": a warm stone ground, an oak tabletop one tone step off it, chili red for actions,
- * amber for the broth. Surfaces are flat; only what floats (a dragged chip, a dialog, the discovery card) casts a shadow.
+ * Direction "quán lẩu đêm": a warm stone ground, an oak tabletop one tone step off it, herb green for actions
+ * (owner's pick 2026-10-25), amber and chili for the broth. Surfaces are flat; only what floats (a dragged chip, a dialog, the discovery card) casts a shadow.
  */
-
-/* Fonts are served from our own origin under the sub-path (AC-SUBPATH-07): latin + vietnamese subsets, OFL. */
-@font-face {
-  font-family: 'Be Vietnam Pro'; font-style: normal; font-weight: 400; font-display: swap;
-  src: url('./fonts/be-vietnam-pro-vietnamese-400-normal.woff2') format('woff2');
-  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304,
-    U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
-}
-@font-face {
-  font-family: 'Be Vietnam Pro'; font-style: normal; font-weight: 400; font-display: swap;
-  src: url('./fonts/be-vietnam-pro-latin-400-normal.woff2') format('woff2');
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329,
-    U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
-}
-@font-face {
-  font-family: 'Be Vietnam Pro'; font-style: normal; font-weight: 600; font-display: swap;
-  src: url('./fonts/be-vietnam-pro-vietnamese-600-normal.woff2') format('woff2');
-  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304,
-    U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
-}
-@font-face {
-  font-family: 'Be Vietnam Pro'; font-style: normal; font-weight: 600; font-display: swap;
-  src: url('./fonts/be-vietnam-pro-latin-600-normal.woff2') format('woff2');
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329,
-    U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
-}
-@font-face {
-  font-family: 'Baloo 2'; font-style: normal; font-weight: 700; font-display: swap;
-  src: url('./fonts/baloo-2-vietnamese-700-normal.woff2') format('woff2');
-  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304,
-    U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
-}
-@font-face {
-  font-family: 'Baloo 2'; font-style: normal; font-weight: 700; font-display: swap;
-  src: url('./fonts/baloo-2-latin-700-normal.woff2') format('woff2');
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329,
-    U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
-}
 
 :root {
   color-scheme: light;
@@ -49,12 +11,15 @@
   --color-bg: #f5f1ec;
   --color-surface: #fffdfa;
   --color-table: #ecdfcd; /* mặt bàn: oak, one step off the ground */
-  --color-soft: #f8e4dc; /* chili tint: the Món đặc biệt card, selected rows */
+  /* tabletop styles, drawn with gradients only: light wood planks, or the blue plastic table of a sidewalk stall */
+  --wood-1: #e8c79a; --wood-2: #dcb582; --wood-grain: rgb(140 90 40 / 0.1); --wood-seam: rgb(110 70 30 / 0.28);
+  --plastic-1: #3b86d6; --plastic-2: #2f74c0; --plastic-rim: #5c9de2; --plastic-dot: rgb(255 255 255 / 0.12);
+  --color-soft: #e2f1e4; /* herb tint: the Món đặc biệt card, selected rows */
   --color-line: #e2d6c7;
   --color-control: #c9bcac;
   --color-text: #1d1714;
   --color-text-muted: #5f544a;
-  --color-accent: #b42318; /* đỏ ớt */
+  --color-accent: #13703a; /* xanh lá rau thơm */
   --color-on-accent: #ffffff;
   --color-broth: #e1a032; /* nước lẩu hổ phách */
   --color-broth-chili: #d4462f;
@@ -67,6 +32,7 @@
   --color-veil: rgb(29 23 20 / 0.25); /* inner shade of the pot rim */
   --color-steam: #8c8178;
   /* tiers (AC-TIER-02): background, and a deeper shade for the small mark; text keeps --color-text */
+  --color-badge-ring: #ffffff; /* ring round the small tier shape */
   --tier-1: #e5e7eb; --tier-1-strong: #6b7280;
   --tier-2: #bbf7d0; --tier-2-strong: #16a34a;
   --tier-3: #bfdbfe; --tier-3-strong: #2563eb;
@@ -74,8 +40,11 @@
   --tier-5: #fecaca; --tier-5-strong: #dc2626;
 
   /* type */
-  --font-body: 'Be Vietnam Pro', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-  --font-display: 'Baloo 2', var(--font-body);
+  /* colour emoji of the OS, never downloaded; without it Windows/Linux pick black outline glyphs or boxes */
+  --font-emoji: 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', 'Twemoji Mozilla', 'Android Emoji', sans-serif;
+  /* Helvetica is licensed, so it is the system's own (owner's pick 2026-10-25); Arial stands in where it is missing */
+  --font-body: 'Helvetica Neue', Helvetica, Arial, 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', sans-serif;
+  --font-display: var(--font-body);
   --text-xs: 0.75rem;
   --text-sm: 0.875rem;
   --text-md: 1rem;
@@ -113,13 +82,17 @@
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) {
     color-scheme: dark;
-    --color-bg: #14110f; --color-surface: #1e1a17; --color-table: #2a221d; --color-soft: #3a1f19;
+    --color-bg: #14110f; --color-surface: #1e1a17; --color-table: #2a221d; --color-soft: #17301f;
+    --wood-1: #5b4330; --wood-2: #4e3827; --wood-grain: rgb(0 0 0 / 0.14); --wood-seam: rgb(0 0 0 / 0.35);
+    --plastic-1: #1f5a99; --plastic-2: #1a4c84; --plastic-rim: #2c6db3; --plastic-dot: rgb(255 255 255 / 0.07);
     --color-line: #362d27; --color-control: #5a4d43; --color-text: #f4eee8; --color-text-muted: #b9ada2;
-    --color-accent: #ff735c; --color-on-accent: #1d0905; --color-broth: #c98b2a; --color-broth-chili: #b23e2a;
+    --color-accent: #4ade80; --color-on-accent: #052e16; --color-broth: #c98b2a; --color-broth-chili: #b23e2a;
     --color-metal: #645b54; --color-metal-dark: #37312c; --color-flame: #6aa2ff; --color-focus: #8ab4ff;
     --color-slot: rgb(30 26 23 / 0.85); --color-slot-empty: rgb(30 26 23 / 0.25); --color-veil: rgb(0 0 0 / 0.35);
     --color-steam: #8c8178;
-    --tier-1: #4b5563; --tier-1-strong: #9ca3af;
+    --color-badge-ring: #f4eee8;
+    --color-badge-ring: #f4eee8;
+  --tier-1: #4b5563; --tier-1-strong: #9ca3af;
     --tier-2: #166534; --tier-2-strong: #4ade80;
     --tier-3: #1e40af; --tier-3-strong: #60a5fa;
     --tier-4: #7a5c00; --tier-4-strong: #facc15;
@@ -131,9 +104,11 @@
 }
 :root[data-theme='dark'] {
   color-scheme: dark;
-  --color-bg: #14110f; --color-surface: #1e1a17; --color-table: #2a221d; --color-soft: #3a1f19;
+  --color-bg: #14110f; --color-surface: #1e1a17; --color-table: #2a221d; --color-soft: #17301f;
+    --wood-1: #5b4330; --wood-2: #4e3827; --wood-grain: rgb(0 0 0 / 0.14); --wood-seam: rgb(0 0 0 / 0.35);
+    --plastic-1: #1f5a99; --plastic-2: #1a4c84; --plastic-rim: #2c6db3; --plastic-dot: rgb(255 255 255 / 0.07);
   --color-line: #362d27; --color-control: #5a4d43; --color-text: #f4eee8; --color-text-muted: #b9ada2;
-  --color-accent: #ff735c; --color-on-accent: #1d0905; --color-broth: #c98b2a; --color-broth-chili: #b23e2a;
+  --color-accent: #4ade80; --color-on-accent: #052e16; --color-broth: #c98b2a; --color-broth-chili: #b23e2a;
   --color-metal: #645b54; --color-metal-dark: #37312c; --color-flame: #6aa2ff; --color-focus: #8ab4ff;
   --color-slot: rgb(30 26 23 / 0.85); --color-slot-empty: rgb(30 26 23 / 0.25); --color-veil: rgb(0 0 0 / 0.35);
   --color-steam: #8c8178;

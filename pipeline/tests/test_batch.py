@@ -217,7 +217,10 @@ def test_ac_pipe_01_graph_la_export_graph_cua_kho_loi_o_version_moi():
     client = FakeClient()
     run(client)
     (body,) = client.success_posts
-    store = load_core(real_core(), ContentStore.empty()).store
+    from lau_meme_pipeline.tier import apply_tiers
+
+    # AC-TIER-01/04: không có tier admin thì mỗi phần tử mang tier tự động theo độ sâu
+    store = apply_tiers(load_core(real_core(), ContentStore.empty()).store, [])
     assert body["graph"] == export_graph(store, T_VERSION)
     assert body["graph"]["version"] == T_VERSION
     path = real_core()["daily_examples"][0]["path"]
@@ -268,7 +271,7 @@ def test_ac_pipe_01_content_phan_tu_cong_thuc_va_khoi_dau_khop_kho_loi():
         assert (
             {"id", "name", "fold", "emoji", "depth"}
             <= set(got)
-            <= {"id", "name", "fold", "emoji", "depth", "origin", "image_key"}
+            <= {"id", "name", "fold", "emoji", "depth", "origin", "image_key", "auto_tier"}  # auto_tier: AC-TIER-04
         )
         if "origin" in got:
             assert got["origin"] in ("vn", "intl")

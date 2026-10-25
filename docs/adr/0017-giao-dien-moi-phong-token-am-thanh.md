@@ -1,6 +1,6 @@
 # 0017 - Giao diện mới: hai họ phông tự phục vụ, một bộ token CSS, âm thanh tạo bằng Web Audio
 
-- Trạng thái: Đề xuất (hướng hình ảnh chờ duyệt bằng ảnh chụp)
+- Trạng thái: Chấp nhận (người duyệt duyệt ảnh chụp 2026-10-25, với phông Helvetica, màu chủ đạo xanh lá và hai kiểu mặt bàn - xem mục Cập nhật; tông tier Xanh lá giữ nguyên)
 - Ngày: 2026-10-24
 - Nguồn: AC-GAME-27, AC-GAME-25/26, AC-GAME-18/22/23, AC-TIER-02, AC-SUBPATH-07; câu hỏi mở 72, 73, 74
 
@@ -34,6 +34,16 @@
   - Không có vấn đề giấy phép, 0 KB tải về, không gọi ra ngoài.
   - `AudioContext` chỉ tạo sau thao tác ghép đầu tiên của người chơi.
   - Mặc định bật, nút loa lưu lựa chọn ở khóa `laumeme:` (câu hỏi mở 73).
+
+## Cập nhật 2026-10-25 (góp ý khi duyệt ảnh chụp)
+- **Phông:** người duyệt chọn **Helvetica** cho mọi chữ, thay Be Vietnam Pro + Baloo 2.
+  - Helvetica có bản quyền, không tự phục vụ được: dùng phông của hệ điều hành `"Helvetica Neue", Helvetica, Arial, sans-serif`. Máy không có Helvetica (Windows, Android) dùng Arial/Roboto, đều đủ dấu tiếng Việt.
+  - Bỏ 6 file woff2 trong `web/src/styles/fonts/`: 0 KB phông tải về, không còn `@font-face`.
+- **Màu nhấn:** xanh lá thay đỏ ớt. Sáng `#13703a` (≥ 4,7:1 trên nền kem, mặt bàn và chữ trắng trên nút); tối `#4ade80` với chữ trên nút `#052e16`. Nồi lẩu giữ đỏ ớt và vàng nước dùng.
+- **Emoji:** token `--font-emoji` (Apple Color Emoji, Segoe UI Emoji, Noto Color Emoji) cho mọi chỗ hiện emoji, và thêm vào `--font-body` trước `sans-serif`. Thiếu nó, Windows/Linux vẽ emoji thành nét đen hoặc ô vuông (góp ý 2026-10-25).
+
+- **Mặt bàn** (AC-GAME-28): bàn nhựa vỉa hè xanh dương (mặc định) và bàn vân gỗ, vẽ bằng gradient CSS (0 KB ảnh), nút đổi bàn lưu ở `laumeme:table`. Trên bàn nhựa lửa dưới nồi dùng màu hổ phách. Hình nhỏ tier có viền sáng `--color-badge-ring` để tách khỏi mặt bàn (AC-TIER-02).
+- **Kiểm tra:** `web/src/game/ui27.browser.test.tsx` kiểm họ phông tính ra, không có `@font-face` hay file phông, không request ra ngoài, emoji màu, màu nhấn xanh lá, tương phản thực tế và không có màu viết cứng trong `index.css`. Ảnh chia sẻ (canvas, `src/share`) là PNG, không thuộc phạm vi token.
 
 ## Hệ quả
 - Thêm khoảng ≤ 150 KB phông vào lần tải đầu (cache bất biến). Không thêm phụ thuộc npm.
