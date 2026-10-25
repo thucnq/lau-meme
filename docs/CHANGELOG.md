@@ -53,3 +53,6 @@
 - Mặt bàn (AC-GAME-28): mặc định bàn nhựa vỉa hè; nút trên bàn đổi sang bàn vân gỗ và ngược lại, lựa chọn được giữ sau khi tải lại.
 - Hình nhỏ tier (AC-TIER-02): đè lên đường viền dưới của phần tử, có viền sáng tách khỏi mặt bàn.
 - Triển khai staging: Worker version `86e7ddc0-60b9-48b6-a9ba-10923586eef6`, git sha `0a7d18c`, D1 migration `0008_account_plate_auto_tier.sql` đã áp dụng.
+- Trang chính sách tĩnh cho bot App Review (AC-SUBPATH-14, ADR 0014): `/lau-meme/chinh-sach-tinh` trả HTML có sẵn chữ chính sách, không cần JS, không có canonical hay `og:url`, để bot của Meta đọc được khi production chưa chạy. Nội dung giống trang `/lau-meme/chinh-sach`.
+- Đóng góp meme (AC-CONTRIB-01..12, ADR 0013): form "Đóng góp meme" dưới bảng gửi đề xuất từ cặp 2 phần tử có sẵn, cần đăng nhập Google. Meme được duyệt hiện "Meme của <nickname>" trên phần tử và trong tab Cống hiến (top 20); meme lên game ở mẻ kế tiếp. Trang quản trị có tab Đề xuất meme để sửa, duyệt hoặc từ chối.
+- Đĩa theo tài khoản (AC-SYNC-01..10, ADR 0015): khi đã đăng nhập Google, Đĩa lưu theo tài khoản và gộp giữa các máy đã đăng nhập; ghi nền, không chặn chơi. Chưa đăng nhập thì Đĩa vẫn lưu trên trình duyệt như trước. `GET /me/plate` và `POST /me/plate/merge` trả Đĩa và nhận món mới; xuất dữ liệu có thêm `account.plate`, xóa tài khoản xóa Đĩa.
