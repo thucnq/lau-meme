@@ -1,19 +1,51 @@
 {
  "red": {
-  "ts": "2026-10-25T15:48:22+00:00",
-  "commit": "a1b8ec8",
+  "ts": "2026-10-25T18:56:07+00:00",
+  "commit": "e6f027d",
   "results": {
+   "AC-ART-03": {
+    "status": "PASS",
+    "test": "art-upload.test.ts#art: PipelineStore.art_pending > AC-ART-03: mẻ full kèm store.art_pending "
+   },
+   "AC-ART-04": {
+    "status": "PASS",
+    "test": "art-upload.test.ts#art: PUT /pipeline/images/{key} > AC-ART-04: ảnh WebP hợp lệ, khóa = 12 hex đầu SHA-256 thân thì 204, R2 có đúng byte, GET /img/<key> trả lại"
+   },
+   "AC-ART-05": {
+    "status": "PASS",
+    "test": "art.test.ts#art: GET /img/{key} > AC-ART-05: ảnh tồn tại trả 200 image/webp, đúng byte, Cache-Control public immutable một năm"
+   },
+   "AC-ART-06": {
+    "status": "PASS",
+    "test": "art.ui.test.tsx#art: emoji trước, ảnh sau > AC-ART-06: phần tử có khóa ảnh hiện emoji ngay, kèm <img> trỏ tới /lau-meme/img/<khóa>"
+   },
+   "AC-ART-07": {
+    "status": "PASS",
+    "test": "art.ui.test.tsx#art: ảnh bị chặn không được tải > AC-ART-07: id phần tử có trong images của danh sách chặn thì chỉ hiện emoji, không <img>, không yêu cầu /img/..."
+   },
+   "AC-ART-08": {
+    "status": "PASS",
+    "test": "art.ui.test.tsx#art: phóng lớn khi ghép ra món lần đầu > AC-ART-08: ghép ra phần tử chưa có thì lớp phủ hiện tên, emoji "
+   },
+   "AC-ART-11": {
+    "status": "PASS",
+    "test": "art-upload.test.ts#art: PipelineStore.art_pending > AC-ART-11: mẻ full kèm store.core_art "
+   },
    "AC-ART-13": {
+    "status": "PASS",
+    "test": "art-upload.ui.test.tsx#admin art upload ui > AC-ART-13: mỗi dòng phần tử ở \"Nội dung\" có ô chọn file tranh vẽ chấp nhận PNG/WebP"
+   },
+   "AC-ART-14": {
     "status": "FAIL",
-    "test": "art-admin-upload.test.ts#art admin upload "
+    "test": "art-image-links.test.ts#art image links "
    },
    "AC-ART-VALIDATION": {
-    "status": "PASS",
-    "test": "art-admin-upload.test.ts#art admin upload "
+    "status": "FAIL",
+    "test": "art-image-links.test.ts#art image links "
    },
    "AC-ART-ABUSE": {
     "status": "FAIL",
-    "test": "art-admin-upload.test.ts#art admin upload "
+    "test": "art-image-links.test.ts#art image links "
    }
   }
  },

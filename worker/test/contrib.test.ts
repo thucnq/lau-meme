@@ -64,6 +64,7 @@ type Contribution = {
 }
 type AdminContribution = Omit<Contribution, 'created_at'> & {
   image_hint: string | null
+  use_image_url: boolean
   tier: number
   element_id: string | null
   nickname: string
@@ -77,7 +78,7 @@ type Board = { rows: Array<{ rank: number; nickname: string; approved: number }>
 const CONTRIB_KEYS = ['a', 'b', 'created_at', 'description', 'emoji', 'id', 'image_url', 'name', 'reject_reason', 'status']
 const ADMIN_KEYS = [
   'a', 'b', 'created_at', 'decided_at', 'description', 'element_id', 'emoji', 'id', 'image_hint', 'image_url', 'name', 'nickname',
-  'reject_reason', 'status', 'tier',
+  'reject_reason', 'status', 'tier', 'use_image_url',
 ]
 const STATE_KEYS = ['a', 'approved_at', 'b', 'element_id', 'emoji', 'image_hint', 'name']
 
