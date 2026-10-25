@@ -5,6 +5,7 @@ import {
   approveContribution,
   editContribution,
   rejectContribution,
+  setImage,
   setTier,
   LockedError,
   call,
@@ -23,6 +24,8 @@ import {
   type RecipeItem,
   type ReportItem,
 } from './api'
+import { withBase } from '../base'
+import { DRAWING_TYPES, DrawingError, drawingProblem, toWebp256 } from './drawing'
 
 /**
  * Trang quản trị (AC-ADMIN-10, ADR 0008). Runs on its own origin; the token lives only in this tab's
@@ -497,6 +500,7 @@ function ContentTab(ctx: Ctx) {
   const [reload, setReload] = useState(0)
   const [open, setOpen] = useState<ElementItem | null>(null)
   const [tierError, setTierError] = useState<string | null>(null)
+  const [imageError, setImageError] = useState<string | null>(null)
   const params = new URLSearchParams({ page: String(page) })
   if (query) params.set('q', query)
   if (state) params.set('state', state)
@@ -516,6 +520,20 @@ function ContentTab(ctx: Ctx) {
       () => setReload((n) => n + 1),
       (err: unknown) => (err instanceof AuthError ? ctx.onAuthError() : setTierError(errorText(err))),
     )
+  }
+  // AC-ART-13: checked and normalized here, so a refused file never reaches the server
+  const uploadDrawing = (id: string, file: File | undefined) => {
+    if (!file) return
+    const refused = drawingProblem(file)
+    setImageError(refused)
+    if (refused) return
+    toWebp256(file)
+      .then((webp) => setImage(ctx.token, id, webp))
+      .then(
+        () => setReload((n) => n + 1),
+        (err: unknown) =>
+          err instanceof AuthError ? ctx.onAuthError() : setImageError(err instanceof DrawingError ? err.message : errorText(err)),
+      )
   }
   const button = (label: string, kind: Kind, id: string, action: Action) => (
     <button type="button" onClick={() => mod.run(kind, id, action)}>
@@ -565,7 +583,7 @@ function ContentTab(ctx: Ctx) {
         <button type="submit">Tìm</button>
         {mod.reasonBox}
       </form>
-      <Alert>{error ?? mod.error ?? tierError ?? recipes.error}</Alert>
+      <Alert>{error ?? mod.error ?? tierError ?? imageError ?? recipes.error}</Alert>
       <table className="admin-table">
         <thead>
           <tr>
@@ -586,9 +604,23 @@ function ContentTab(ctx: Ctx) {
               <td>{e.depth}</td>
               <td>{STATE_LABEL[e.state]}</td>
               <td>
+                {e.image_key && <img className="admin-thumb" src={withBase(`img/${e.image_key}`)} alt={`Ảnh của ${e.name}`} width={48} height={48} />}
                 {STATE_LABEL[e.image_state]}
+                {e.image_source === 'admin' && ' · admin tải'}
                 {e.image_state === 'active' && button('Ẩn ảnh', 'image', e.id, 'hide')}
                 {e.image_state === 'hidden' && button('Hiện ảnh', 'image', e.id, 'show')}
+                <label className="admin-upload">
+                  Tải tranh vẽ
+                  <input
+                    type="file"
+                    accept={DRAWING_TYPES.join(',')}
+                    aria-label={`Tải tranh vẽ cho ${e.name}`}
+                    onChange={(ev) => {
+                      uploadDrawing(e.id, ev.target.files?.[0])
+                      ev.target.value = ''
+                    }}
+                  />
+                </label>
               </td>
               <td>
                 {tierName(e.tier)} · {e.tier_source === 'admin' ? 'Admin gán' : 'Tự động'}

@@ -19,7 +19,16 @@ from pathlib import Path
 from typing import Protocol
 from urllib.parse import urlsplit
 
-from lau_meme_pipeline.art import ArtAdapters, ArtItem, ArtResult, UploadFailed, draw_images, image_key, to_webp_256
+from lau_meme_pipeline.art import (
+    ArtAdapters,
+    ArtItem,
+    ArtResult,
+    UploadFailed,
+    apply_images,
+    draw_images,
+    image_key,
+    to_webp_256,
+)
 from lau_meme_pipeline.contrib import add_contributions
 from lau_meme_pipeline.crawl import Http, crawl, source_error_text
 from lau_meme_pipeline.daily import build_daily_block, core_hints, pick_daily
@@ -187,6 +196,11 @@ def _check(store: ContentStore, graph: Mapping, content: Mapping) -> None:
 
 def _blocked_images(state: Mapping) -> frozenset[str]:
     return frozenset(state.get("blocklist", {}).get("images", []))
+
+
+def _admin_images(state: Mapping) -> dict[str, str]:
+    """Drawings the admin uploaded (AC-ART-13, ADR 0016): element id -> image key, kept as is and never redrawn."""
+    return {a["element_id"]: a["image_key"] for a in state.get("admin_images", [])}
 
 
 def _first_versions(state: Mapping) -> dict[str, int]:
@@ -534,6 +548,7 @@ def run_batch(
                 draw=_drawer(art, client),
                 tiers=state.get("tiers", []),
                 blocked_images=_blocked_images(state),
+                admin_images=_admin_images(state),
                 contributions=state.get("contributions", []),
                 first_versions=_first_versions(state),
                 trend_peaks=_trend_peaks(state),
@@ -582,6 +597,8 @@ def run_batch(
             store = joined.store
             if joined.waiting:
                 stats["contributions_waiting"] = joined.waiting
+            drawings = _admin_images(state)
+            store = apply_images(store, {eid: key for eid, key in drawings.items() if eid in store.elements})
             store = apply_tiers(store, state.get("tiers", []), _blocked_images(state))
             step = "daily"
             daily, exhausted = _pick_daily(store, core, state, version)

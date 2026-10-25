@@ -93,7 +93,7 @@ Mọi lỗi là RFC 9457 `application/problem+json` (`type`, `title`, `status`, 
 | GET | `/admin/batches` | Nhật ký các đợt, kèm `summary` (tổng crawl và thêm của các đợt `full` thành công, hàng chờ và thiếu ảnh của đợt gần nhất) | AdminToken | AC-ADMIN-08, AC-ADMIN-11 |
 | GET | `/admin/audit` | Nhật ký audit | AdminToken | AC-ADMIN-09 |
 
-> Chưa triển khai (staging 2026-10-25): `/admin/elements/{id}/image` (AC-ART-13, Tùy chọn, chưa build) đã có trong contract 0.5.0 nhưng Worker chưa định tuyến; migration 0008 đã tạo sẵn bảng `image_source` và `admin_image_change` cho phần này (chỉ mở rộng). `/me/plate` và `/me/plate/merge` (SYNC) đã định tuyến trong `worker/src/index.ts`.
+> `/admin/elements/{id}/image` (AC-ART-13) đã định tuyến từ 2026-10-25 (nhánh `feat/art-upload`); host quản trị phục vụ thêm `/lau-meme/img/*` (chỉ đọc) để trang quản trị hiện ảnh dưới CSP `default-src 'self'` (ADR 0016). `/me/plate` và `/me/plate/merge` (SYNC) đã định tuyến trong `worker/src/index.ts`.
 
 ## Thử nhanh
 ```bash

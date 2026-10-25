@@ -18,8 +18,8 @@
   }
  },
  "green": {
-  "ts": "2026-10-24T02:35:33+00:00",
-  "commit": "6628ab2",
+  "ts": "2026-10-25T17:09:02+00:00",
+  "commit": "9fadba8",
   "results": {
    "AC-ART-01": {
     "status": "PASS",
@@ -65,13 +65,21 @@
     "status": "PASS",
     "test": "test_art_core_backfill#test_ac_art_11_thu_tu_ve_cho_ve_roi_moi_roi_loi_dung_3_5_12"
    },
+   "AC-ART-12": {
+    "status": "PASS",
+    "test": "test_art_tier_priority#test_ac_art_12_thu_tu_ve_uu_tien_vang_do_roi_cho_ve_roi_moi_roi_loi_5_3_5_7"
+   },
+   "AC-ART-13": {
+    "status": "PASS",
+    "test": "test_art_admin_images#test_ac_art_13_pipeline_khong_ve_phan_tu_co_anh_admin_va_giu_khoa_admin_trong_content_va_graph"
+   },
    "AC-ART-VALIDATION": {
     "status": "PASS",
-    "test": "art-upload.test.ts#art: PipelineStore.art_pending > AC-ART-VALIDATION: art_pending sai dạng "
+    "test": "art-admin-upload.test.ts#art admin upload "
    },
    "AC-ART-ABUSE": {
     "status": "PASS",
-    "test": "art-upload.test.ts#art: PUT /pipeline/images/{key} > AC-ART-ABUSE: token pipeline bị lộ cũng không ghi đè được ảnh có sẵn bằng nội dung khác hay ghi khóa giả"
+    "test": "art-admin-upload.test.ts#art admin upload "
    }
   }
  }

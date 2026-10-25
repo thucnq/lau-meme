@@ -26,6 +26,8 @@ export type ElementItem = Ref & {
   tier_source: 'auto' | 'admin'
   /** Tier tự động của mẻ gần nhất (AC-TIER-04); null = mẻ trước TIER-04. */
   auto_tier: number | null
+  /** Ai làm ra ảnh: Workers AI hay admin tải tay (AC-ART-13); null = không có ảnh hoặc mẻ trước cột này. */
+  image_source?: 'ai' | 'admin' | null
 }
 export type RecipeItem = { id: string; a: Ref; b: Ref; result: Ref; state: 'active' | 'hidden' }
 /** Số liệu do pipeline gửi kèm nhật ký đợt (BatchStats, AC-ADMIN-11): nguồn lỗi có `error` và `concepts` null. */
@@ -83,13 +85,15 @@ export class ApiError extends Error {
   }
 }
 
-export async function call<T>(token: string, path: string, init: { method?: string; body?: unknown } = {}): Promise<T> {
+/** `body` is sent as JSON; `webp` as the raw image (AC-ART-13). */
+export async function call<T>(token: string, path: string, init: { method?: string; body?: unknown; webp?: Blob } = {}): Promise<T> {
   const headers: Record<string, string> = { Authorization: `Bearer ${token}` }
-  if (init.body !== undefined) headers['Content-Type'] = 'application/json'
+  if (init.webp) headers['Content-Type'] = 'image/webp'
+  else if (init.body !== undefined) headers['Content-Type'] = 'application/json'
   const res = await fetch(`api/admin/${path}`, {
     method: init.method ?? 'GET',
     headers,
-    body: init.body === undefined ? undefined : JSON.stringify(init.body),
+    body: init.webp ?? (init.body === undefined ? undefined : JSON.stringify(init.body)),
   })
   if (res.status === 401) throw new AuthError('unauthorized')
   if (res.status === 429) throw new LockedError(Number(res.headers.get('Retry-After')) || 900)
@@ -103,6 +107,10 @@ export async function call<T>(token: string, path: string, init: { method?: stri
 /** AC-ADMIN-12, AC-TIER-05: `auto` bỏ giá trị admin gán, phần tử quay về tier theo độ sâu. */
 export const setTier = (token: string, id: string, tier: number | 'auto') =>
   call<{ before: number; after: number }>(token, `elements/${id}/tier`, { method: 'PUT', body: { tier } })
+
+/** AC-ART-13: tranh vẽ tay đã chuẩn hóa về WebP 256×256 (`drawing.ts`). */
+export const setImage = (token: string, id: string, webp: Blob) =>
+  call<{ element_id: string; before_key: string | null; after_key: string }>(token, `elements/${id}/image`, { method: 'PUT', webp })
 
 export const moderate = (token: string, target_kind: Kind, target_id: string, action: Action, reason: string) =>
   call<{ before: State; after: State }>(token, 'moderation', {

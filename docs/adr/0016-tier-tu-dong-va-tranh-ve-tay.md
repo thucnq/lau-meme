@@ -31,6 +31,7 @@
 - `auto_tier` trên trang quản trị là giá trị của mẻ gần nhất. Độ sâu hoặc ảnh đổi thì tier tự động mới hiện sau mẻ kế tiếp, giống mọi thay đổi tier khác (câu hỏi mở 53).
 - Ảnh admin tải không qua kiểm duyệt LLM (câu hỏi mở 70): người tải là admin, chịu trách nhiệm nội dung. Báo cáo/chặn ảnh (AC-REPORT) vẫn áp dụng như ảnh Workers AI.
 - Gọi trực tiếp API bằng file PNG sẽ bị 400. Chỉ trang quản trị (đã chuẩn hóa) tải được.
+- (Thêm 2026-10-25 khi build) Host quản trị phục vụ `/lau-meme/img/*` (GET/HEAD, cùng handler với host game). CSP của trang quản trị là `default-src 'self'`, nên trang chỉ hiện được ảnh lấy từ chính host quản trị. Đây là ngoại lệ duy nhất thêm vào danh sách đường dẫn của ADR 0008.
 
 ## Phương án đã loại
 - **Tính tier tự động trong Worker (SQL hoặc TypeScript):** chép luật sang ngôn ngữ thứ hai, hai nơi có thể lệch nhau. Worker cũng không có độ sâu BFS của mẻ đang dựng.
