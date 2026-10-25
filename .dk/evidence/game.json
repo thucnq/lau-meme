@@ -110,8 +110,8 @@
   }
  },
  "green": {
-  "ts": "2026-10-22T02:56:58+00:00",
-  "commit": "8a6a260",
+  "ts": "2026-10-25T02:53:21+00:00",
+  "commit": "d88c002",
   "results": {
    "AC-GAME-01": {
     "status": "PASS",
@@ -155,7 +155,7 @@
    },
    "AC-GAME-11": {
     "status": "PASS",
-    "test": "Game.test.tsx#Game > AC-GAME-11: Dọn bàn chỉ xóa bàn; Hủy không đổi gì; Xóa đưa Đĩa về 4 phần tử và giữ UUID/nickname/Daily"
+    "test": "Game.test.tsx#Game > AC-GAME-11: không còn nút/menu \"Chơi lại từ đầu\" "
    },
    "AC-GAME-12": {
     "status": "PASS",
@@ -196,6 +196,26 @@
    "AC-GAME-21": {
     "status": "PASS",
     "test": "ui2.browser.test.tsx#ui2 touch-action "
+   },
+   "AC-GAME-22": {
+    "status": "PASS",
+    "test": "ui3.browser.test.tsx#ui3 vùng cấm đặt món "
+   },
+   "AC-GAME-23": {
+    "status": "PASS",
+    "test": "ui3.browser.test.tsx#ui3 Đĩa nhúng cao bằng bàn lẩu "
+   },
+   "AC-GAME-24": {
+    "status": "PASS",
+    "test": "ui3.ui.test.tsx#ui3: bấm món là cho vào nồi "
+   },
+   "AC-GAME-25": {
+    "status": "PASS",
+    "test": "ui3.browser.test.tsx#ui3 hiệu ứng Vàng/Đỏ không chặn kéo thả "
+   },
+   "AC-GAME-26": {
+    "status": "PASS",
+    "test": "ui3.ui.test.tsx#ui3: âm thanh và nút loa "
    }
   }
  }

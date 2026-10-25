@@ -157,13 +157,14 @@ export async function listElements(req: Request, env: Env): Promise<Response> {
       .prepare(
         `SELECT e.id, e.name, e.emoji, e.depth, e.image_key, e.last_version, COALESCE(be.state, 'active') AS state,
                 CASE WHEN e.image_key IS NULL THEN 'none' WHEN bi.target_id IS NULL THEN 'active' ELSE 'hidden' END AS image_state,
-                COALESCE(t.tier, 1) AS tier
+                COALESCE(t.tier, e.auto_tier, 1) AS tier, CASE WHEN t.tier IS NULL THEN 'auto' ELSE 'admin' END AS tier_source,
+                e.auto_tier
          FROM element e
          LEFT JOIN block be ON be.kind = 'element' AND be.target_id = e.id
          LEFT JOIN block bi ON bi.kind = 'image' AND bi.target_id = e.id
          LEFT JOIN element_tier t ON t.element_id = e.id
          WHERE (?1 = '' OR instr(e.name_fold, ?1) > 0) AND (?2 = '' OR COALESCE(be.state, 'active') = ?2)
-           AND (?5 = 0 OR COALESCE(t.tier, 1) = ?5)
+           AND (?5 = 0 OR COALESCE(t.tier, e.auto_tier, 1) = ?5)
          ORDER BY e.name_fold, e.id LIMIT ?3 OFFSET ?4`,
       )
       .bind(fold(q), state, p.size, p.offset, tier),
@@ -173,7 +174,7 @@ export async function listElements(req: Request, env: Env): Promise<Response> {
          LEFT JOIN block be ON be.kind = 'element' AND be.target_id = e.id
          LEFT JOIN element_tier t ON t.element_id = e.id
          WHERE (?1 = '' OR instr(e.name_fold, ?1) > 0) AND (?2 = '' OR COALESCE(be.state, 'active') = ?2)
-           AND (?3 = 0 OR COALESCE(t.tier, 1) = ?3)`,
+           AND (?3 = 0 OR COALESCE(t.tier, e.auto_tier, 1) = ?3)`,
       )
       .bind(fold(q), state, tier),
   ])
@@ -187,6 +188,8 @@ export async function listElements(req: Request, env: Env): Promise<Response> {
     state: string
     image_state: string
     tier: number
+    tier_source: 'auto' | 'admin'
+    auto_tier: number | null
   }
   const items = ((rows?.results ?? []) as Row[]).map((r) => ({
     id: r.id,
@@ -198,6 +201,8 @@ export async function listElements(req: Request, env: Env): Promise<Response> {
     image_state: r.image_state,
     last_version: r.last_version,
     tier: r.tier,
+    tier_source: r.tier_source,
+    auto_tier: r.auto_tier,
   }))
   return page(p, totalOf(total), items)
 }
@@ -465,30 +470,45 @@ export async function setElementTier(req: Request, env: Env, _ctx: ExecutionCont
   const body = await readJson(req)
   for (const k of Object.keys(body)) if (k !== 'tier') bad(`${k}: trường không được phép`)
   const tier = body.tier
-  if (typeof tier !== 'number' || !Number.isInteger(tier) || tier < 1 || tier > 5) bad('tier: số nguyên 1-5')
+  const auto = tier === 'auto'
+  if (!auto && (typeof tier !== 'number' || !Number.isInteger(tier) || tier < 1 || tier > 5)) bad('tier: số nguyên 1-5 hoặc "auto"')
 
   const db = env.DB
-  const [found, current] = await db.batch([
-    db.prepare('SELECT id FROM element WHERE id = ?').bind(id),
-    db.prepare('SELECT tier FROM element_tier WHERE element_id = ?').bind(id),
+  const [found] = await db.batch([
+    db
+      .prepare(
+        `SELECT e.auto_tier, t.tier, e.image_key IS NOT NULL AND bi.target_id IS NULL AS has_image
+         FROM element e
+         LEFT JOIN element_tier t ON t.element_id = e.id
+         LEFT JOIN block bi ON bi.kind = 'image' AND bi.target_id = e.id
+         WHERE e.id = ?`,
+      )
+      .bind(id),
   ])
-  if (!found?.results[0]) return problem(404, 'Không tìm thấy phần tử')
-  const before = (current?.results[0] as { tier: number } | undefined)?.tier ?? 1
+  const row = found?.results[0] as { auto_tier: number | null; tier: number | null; has_image: number } | undefined
+  if (!row) return problem(404, 'Không tìm thấy phần tử')
+  // AC-TIER-04 (open question 69): Vàng/Đỏ only with a usable image
+  if (!auto && (tier as number) >= 4 && !row.has_image) return problem(409, 'Món Vàng/Đỏ cần có ảnh trước')
+  const autoTier = row.auto_tier ?? 1
+  const before = { tier: row.tier ?? autoTier, source: row.tier === null ? 'auto' : 'admin' }
+  const after = auto ? { tier: autoTier, source: 'auto' } : { tier: tier as number, source: 'admin' }
   const now = Date.now()
   const fp = (await sha256hex(env.ADMIN_TOKEN ?? '')).slice(0, 8)
   await db.batch([
-    db
-      .prepare(
-        `INSERT INTO element_tier (element_id, tier, updated_at) VALUES (?1, ?2, ?3)
-         ON CONFLICT (element_id) DO UPDATE SET tier = excluded.tier, updated_at = excluded.updated_at`,
-      )
-      .bind(id, tier, now),
+    auto
+      ? db.prepare('DELETE FROM element_tier WHERE element_id = ?').bind(id)
+      : db
+          .prepare(
+            `INSERT INTO element_tier (element_id, tier, updated_at) VALUES (?1, ?2, ?3)
+             ON CONFLICT (element_id) DO UPDATE SET tier = excluded.tier, updated_at = excluded.updated_at`,
+          )
+          .bind(id, after.tier, now),
     db
       .prepare(
         `INSERT INTO admin_change (id, action, target_kind, target_id, before_json, after_json, reason, token_fp, created_at)
          VALUES (?, 'set_tier', 'element', ?, ?, ?, NULL, ?, ?)`,
       )
-      .bind(uuidv7(now), id, JSON.stringify({ tier: before }), JSON.stringify({ tier }), fp, now),
+      .bind(uuidv7(now), id, JSON.stringify(before), JSON.stringify(after), fp, now),
   ])
-  return json({ element_id: id, before, after: tier })
+  return json({ element_id: id, before: before.tier, after: after.tier, before_source: before.source, after_source: after.source })
 }

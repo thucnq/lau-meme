@@ -291,11 +291,12 @@ a { color: var(--color-accent); }
 .tier-4 { --tier-bg: var(--tier-4); --tier-mark: var(--tier-4-strong); }
 .tier-5 { --tier-bg: var(--tier-5); --tier-mark: var(--tier-5-strong); }
 .tier-badge {
-  position: absolute; left: 50%; bottom: 0.08rem; width: 0.5rem; height: 0.5rem; transform: translateX(-50%);
+  /* AC-TIER-02: centred on the bottom border, upper half inside the box, lower half outside */
+  position: absolute; left: 50%; bottom: 0; width: 0.5rem; height: 0.5rem; transform: translate(-50%, 50%);
   pointer-events: none;
 }
 .tier-badge circle, .tier-badge polygon { fill: var(--tier-mark); }
-.discovery-card .tier-badge { width: 0.8rem; height: 0.8rem; bottom: 0.3rem; }
+.discovery-card .tier-badge { width: 0.8rem; height: 0.8rem; }
 .slot-item { display: inline-flex; align-items: center; gap: var(--space-1); padding: 0.15rem var(--space-2); border-radius: var(--radius-pill); max-width: 100%; }
 
 /* Illustrations (ART): emoji first, the drawing once it has loaded; the loading image takes no room (AC-ART-06) */

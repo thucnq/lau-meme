@@ -19,6 +19,7 @@ type Element = {
   origin: string | null
   image_key: string | null
   trend_peak: number | null
+  auto_tier: number | null
 }
 type Recipe = { id: string; a: string; b: string; result: string; score: number | null }
 
@@ -88,7 +89,7 @@ function parseStats(value: unknown): string {
 function parseElements(value: unknown): Element[] {
   return arr(value, 'content.elements', 20000, 1).map((v, i) => {
     const p = `content.elements[${i}]`
-    const e = obj(v, p, ['id', 'name', 'fold', 'emoji', 'depth', 'origin', 'image_key', 'trend_peak'], ['id', 'name', 'fold', 'emoji', 'depth'])
+    const e = obj(v, p, ['id', 'name', 'fold', 'emoji', 'depth', 'origin', 'image_key', 'trend_peak', 'auto_tier'], ['id', 'name', 'fold', 'emoji', 'depth'])
     const imageKey = e.image_key ?? null
     if (imageKey !== null && (typeof imageKey !== 'string' || !/^[0-9a-f]{12}\.webp$/.test(imageKey))) fail(`${p}.image_key: sai định dạng`)
     return {
@@ -101,6 +102,8 @@ function parseElements(value: unknown): Element[] {
       image_key: imageKey as string | null,
       // AC-PIPE-16: absent → the stored value is kept
       trend_peak: e.trend_peak === undefined ? null : int(e.trend_peak, `${p}.trend_peak`, 0),
+      // AC-TIER-04: absent → the stored value is kept
+      auto_tier: e.auto_tier === undefined ? null : int(e.auto_tier, `${p}.auto_tier`, 1, 5),
     }
   })
 }
@@ -262,14 +265,15 @@ export async function publishBatch(req: Request, env: Env): Promise<Response> {
   await db.batch([
     db
       .prepare(
-        `INSERT INTO element (id, name, name_fold, emoji, depth, origin, image_key, trend_peak, first_version, last_version, updated_at)
+        `INSERT INTO element (id, name, name_fold, emoji, depth, origin, image_key, trend_peak, auto_tier, first_version, last_version, updated_at)
          SELECT json_extract(value, '$.id'), json_extract(value, '$.name'), json_extract(value, '$.fold'),
                 json_extract(value, '$.emoji'), json_extract(value, '$.depth'), json_extract(value, '$.origin'),
-                json_extract(value, '$.image_key'), json_extract(value, '$.trend_peak'), ?2, ?2, ?3
+                json_extract(value, '$.image_key'), json_extract(value, '$.trend_peak'), json_extract(value, '$.auto_tier'), ?2, ?2, ?3
          FROM json_each(?1) WHERE true
          ON CONFLICT (id) DO UPDATE SET name = excluded.name, name_fold = excluded.name_fold, emoji = excluded.emoji,
            depth = excluded.depth, origin = excluded.origin, image_key = excluded.image_key,
            trend_peak = COALESCE(excluded.trend_peak, element.trend_peak),
+           auto_tier = COALESCE(excluded.auto_tier, element.auto_tier),
            last_version = excluded.last_version, updated_at = excluded.updated_at`,
       )
       .bind(JSON.stringify(elements), version, now),

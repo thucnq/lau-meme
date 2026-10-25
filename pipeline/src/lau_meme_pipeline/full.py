@@ -142,6 +142,7 @@ def run_full(
     daily_history: Sequence[Mapping] = (),
     draw: Callable[[list[ArtItem]], ArtResult] | None = None,
     tiers: Sequence[Mapping] = (),
+    blocked_images: frozenset[str] = frozenset(),
     contributions: Sequence[Mapping] = (),
     first_versions: Mapping[str, int] | None = None,
     trend_peaks: Mapping[str, int] | None = None,
@@ -400,7 +401,7 @@ def run_full(
     counts = trend_counts(crawl_result.concepts, deduped)
     levels = {eid: counts[dedupe_key(e.name)] for eid, e in content.elements.items() if counts.get(dedupe_key(e.name))}
 
-    content = apply_tiers(content, tiers)
+    content = apply_tiers(content, tiers, blocked_images)
     graph_out = export_graph(content, version)
     manifest = build_manifest(
         content,

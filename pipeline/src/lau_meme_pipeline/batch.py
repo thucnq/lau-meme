@@ -30,7 +30,7 @@ from lau_meme_pipeline.invariants import InvariantError, check_all, miss_rate_wa
 from lau_meme_pipeline.moderation import QUOTA_LABEL, ModLists
 from lau_meme_pipeline.seed import ACTIVE, ContentStore, load_core
 from lau_meme_pipeline.text import fold
-from lau_meme_pipeline.tier import apply_tiers, invalid_tiers
+from lau_meme_pipeline.tier import apply_tiers, auto_tiers, invalid_tiers, tier_report
 
 STEPS = ("state", "seed", "daily", "export", "check", "invariants", "banned", "publish", "report")
 GMT7 = timezone(timedelta(hours=7))
@@ -149,7 +149,8 @@ def _pick_daily(store: ContentStore, core: Mapping, state: Mapping, version: int
     return build_daily_block(pick.chosen, pick.chosen["hint"]), pick.exhausted
 
 
-def _content(store: ContentStore, daily_id: str) -> dict:
+def _content(store: ContentStore, daily_id: str, blocked_images: frozenset[str] = frozenset()) -> dict:
+    auto = auto_tiers(store, blocked_images)  # AC-TIER-04: sent for every element, admin-tiered ones too
     elements = [store.elements[k] for k in sorted(store.elements) if store.elements[k].status == ACTIVE]
     active = {e.id for e in elements}
     recipes = [
@@ -161,6 +162,7 @@ def _content(store: ContentStore, daily_id: str) -> dict:
         "elements": [
             {"id": e.id, "name": e.name, "fold": e.fold, "emoji": e.emoji, "depth": e.depth, "origin": e.origin}
             | ({"image_key": e.image_key} if e.image_key else {})
+            | {"auto_tier": auto[e.id]}
             for e in elements
         ],
         "recipes": [{"id": r.id, "a": r.a, "b": r.b, "result": r.result} for r in recipes],
@@ -181,6 +183,10 @@ def _check(store: ContentStore, graph: Mapping, content: Mapping) -> None:
     bad = invalid_tiers(entries)
     if bad:  # missing or outside 1-5 (AC-TIER-01): nothing of this batch is published
         raise ValueError(f"tier không hợp lệ ở {len(bad)} mục graph, vd {bad[0]}")
+
+
+def _blocked_images(state: Mapping) -> frozenset[str]:
+    return frozenset(state.get("blocklist", {}).get("images", []))
 
 
 def _first_versions(state: Mapping) -> dict[str, int]:
@@ -263,6 +269,7 @@ def _render_report(
     unconfigured: Sequence[str] = (),
     trending: Sequence[tuple[str, int]] = (),
     source_warnings: Sequence[str] = (),
+    tier_lines: Sequence[str] = (),
 ) -> tuple[str, str]:
     """Title shows the dish's emoji only, never its name (AC-PIPE-14)."""
     status = "error" if failed_step else "success"
@@ -300,6 +307,7 @@ def _render_report(
             if trending and not failed_step
             else []
         ),
+        *([f"- {line}" for line in tier_lines] if not failed_step else []),
         f"- Món đặc biệt: {emoji or '-'}",
         *(
             ["- ⚠️ Pool thử thách cạn: mọi món đều đã ra trong 30 mẻ gần nhất, lấy lại món lâu chưa ra nhất"]
@@ -480,6 +488,7 @@ def run_batch(
     miss: tuple[float, float] | None = None
     unconfigured: list[str] = []
     trending: list[tuple[str, int]] = []
+    tier_lines: list[str] = []
     source_warnings: list[str] = []
     step = "state"
     try:
@@ -519,6 +528,7 @@ def run_batch(
                 daily_history=state.get("daily_history", []),
                 draw=_drawer(art, client),
                 tiers=state.get("tiers", []),
+                blocked_images=_blocked_images(state),
                 contributions=state.get("contributions", []),
                 first_versions=_first_versions(state),
                 trend_peaks=_trend_peaks(state),
@@ -544,11 +554,12 @@ def run_batch(
             miss = tuple(full.report["miss_rate"]) if full.report.get("miss_rate") else None
             if full.report.get("daily_pool_exhausted"):
                 stats["daily_pool_exhausted"] = True
-            content = _content(store, full.daily_element_id)
+            content = _content(store, full.daily_element_id, _blocked_images(state))
             if art_report is not None:
                 stats["images"] = {k: int(art_report.get(k, 0)) for k in ("drawn", "fallback", "pending")}
             stats["without_image"] = sum(1 for e in content["elements"] if not e.get("image_key"))
             trending = _with_trend_peaks(content, full.trend_levels, _trend_peaks(state))
+            tier_lines = tier_report(store, state.get("tiers", []), _blocked_images(state))
             step = "check"
             _check(store, graph, content)  # run_full already checked the invariants (AC-INV)
         else:
@@ -561,7 +572,7 @@ def run_batch(
                 first_versions=_first_versions(state),
                 blocked=frozenset(state["blocklist"]["elements"]),
             ).store
-            store = apply_tiers(store, state.get("tiers", []))
+            store = apply_tiers(store, state.get("tiers", []), _blocked_images(state))
             step = "daily"
             daily, exhausted = _pick_daily(store, core, state, version)
             if exhausted:
@@ -572,7 +583,8 @@ def run_batch(
             manifest = build_manifest(
                 store, version=version, batch_at=batch_at, daily=daily, previous_version=None, schedule_hours_utc=hours
             )
-            content = _content(store, daily["element_id"])
+            content = _content(store, daily["element_id"], _blocked_images(state))
+            tier_lines = tier_report(store, state.get("tiers", []), _blocked_images(state))
             step = "check"
             _check(store, graph, content)
             step = "invariants"
@@ -626,6 +638,7 @@ def run_batch(
                 unconfigured,
                 trending,
                 source_warnings,
+                tier_lines,
             )
         failed_step, version = step, None
         # Network errors may carry the API host: the public workflow log only gets their type.
@@ -664,6 +677,7 @@ def run_batch(
         unconfigured,
         trending,
         source_warnings,
+        tier_lines,
     )
 
 
@@ -698,6 +712,7 @@ def _finish(
     unconfigured: Sequence[str] = (),
     trending: Sequence[tuple[str, int]] = (),
     source_warnings: Sequence[str] = (),
+    tier_lines: Sequence[str] = (),
 ) -> BatchOutcome:
     title, report = _render_report(
         version=version,
@@ -715,6 +730,7 @@ def _finish(
         unconfigured=unconfigured,
         trending=trending,
         source_warnings=source_warnings,
+        tier_lines=tier_lines,
     )
     return BatchOutcome(
         ok=failed_step is None,
