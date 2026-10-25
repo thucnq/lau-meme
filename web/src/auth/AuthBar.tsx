@@ -123,8 +123,9 @@ export function AuthBar({ policyVersion, storage, onChange }: Props) {
     <div className="auth-bar">
       {state.kind === 'in' ? (
         <>
-          <span role="status">
-            Đã đăng nhập: <strong>{state.session.nickname ?? ANONYMOUS}</strong>
+          <span role="status" className="auth-name" title={state.session.nickname ?? ANONYMOUS}>
+            <span className="auth-label">Đã đăng nhập: </span>
+            <strong>{state.session.nickname ?? ANONYMOUS}</strong>
           </span>{' '}
           <button type="button" onClick={out}>
             Đăng xuất

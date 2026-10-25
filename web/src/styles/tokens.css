@@ -32,7 +32,8 @@
   --color-veil: rgb(29 23 20 / 0.25); /* inner shade of the pot rim */
   --color-steam: #8c8178;
   /* tiers (AC-TIER-02): background, and a deeper shade for the small mark; text keeps --color-text */
-  --color-badge-ring: #ffffff; /* ring round the small tier shape */
+  --color-badge-ring: #ffffff; /* ring round the small tier shape on hover, and round it outside a chip */
+  --color-chip-ring: #e3dbd3; /* chip border and its tier shape's ring at rest: one colour, still light (AC-TIER-02) but softer than the hover ring */
   --tier-1: #e5e7eb; --tier-1-strong: #6b7280;
   --tier-2: #bbf7d0; --tier-2-strong: #16a34a;
   --tier-3: #bfdbfe; --tier-3-strong: #2563eb;
@@ -90,8 +91,7 @@
     --color-metal: #645b54; --color-metal-dark: #37312c; --color-flame: #6aa2ff; --color-focus: #8ab4ff;
     --color-slot: rgb(30 26 23 / 0.85); --color-slot-empty: rgb(30 26 23 / 0.25); --color-veil: rgb(0 0 0 / 0.35);
     --color-steam: #8c8178;
-    --color-badge-ring: #f4eee8;
-    --color-badge-ring: #f4eee8;
+    --color-badge-ring: #f4eee8; --color-chip-ring: #e3dbd3;
   --tier-1: #4b5563; --tier-1-strong: #9ca3af;
     --tier-2: #166534; --tier-2-strong: #4ade80;
     --tier-3: #1e40af; --tier-3-strong: #60a5fa;
@@ -112,6 +112,7 @@
   --color-metal: #645b54; --color-metal-dark: #37312c; --color-flame: #6aa2ff; --color-focus: #8ab4ff;
   --color-slot: rgb(30 26 23 / 0.85); --color-slot-empty: rgb(30 26 23 / 0.25); --color-veil: rgb(0 0 0 / 0.35);
   --color-steam: #8c8178;
+  --color-badge-ring: #f4eee8; --color-chip-ring: #e3dbd3;
   --tier-1: #4b5563; --tier-1-strong: #9ca3af;
   --tier-2: #166534; --tier-2-strong: #4ade80;
   --tier-3: #1e40af; --tier-3-strong: #60a5fa;

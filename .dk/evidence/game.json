@@ -1,7 +1,7 @@
 {
  "red": {
-  "ts": "2026-10-24T18:23:52+00:00",
-  "commit": "3fc3c28",
+  "ts": "2026-10-25T06:22:44+00:00",
+  "commit": "f279f4d",
   "results": {
    "AC-GAME-01": {
     "status": "PASS",
@@ -44,7 +44,7 @@
     "test": "Game.test.tsx#Game > AC-GAME-10: tải lại khôi phục Đĩa, vị trí trên bàn, sắp xếp, đã xem hướng dẫn; không gọi API ghi"
    },
    "AC-GAME-11": {
-    "status": "FAIL",
+    "status": "PASS",
     "test": "Game.test.tsx#Game > AC-GAME-11: không còn nút/menu \"Chơi lại từ đầu\" "
    },
    "AC-GAME-12": {
@@ -72,58 +72,54 @@
     "test": "Game.test.tsx#Game > AC-GAME-17: tiến độ của V1 khi manifest là V2 - giữ mọi phần tử, tra theo graph V2, không hỏi gì"
    },
    "AC-GAME-18": {
-    "status": "FAIL",
-    "test": "Game.browser.test.tsx#AC-GAME-18: đổi cỡ khung nhìn tablet dọc -> PC thì mặt bàn đổi theo và món trên bàn không rơi ra ngoài mặt bàn"
+    "status": "PASS",
+    "test": "Game.browser.test.tsx#AC-GAME-18: nồi lẩu nằm trọn trong màn hình đầu tiên "
    },
    "AC-GAME-19": {
-    "status": "FAIL",
-    "test": "ui2.ui.test.tsx#ui2: đầu trang, khu bàn lẩu "
+    "status": "PASS",
+    "test": "ui2.browser.test.tsx#ui2 bố cục nút điều khiển "
    },
    "AC-GAME-20": {
     "status": "PASS",
     "test": "ui2.browser.test.tsx#ui2 nồi lẩu vẽ trọn "
    },
    "AC-GAME-21": {
-    "status": "PASS",
+    "status": "FAIL",
     "test": "ui2.browser.test.tsx#ui2 touch-action "
    },
    "AC-GAME-22": {
-    "status": "FAIL",
+    "status": "PASS",
     "test": "ui3.browser.test.tsx#ui3 vùng cấm đặt món "
    },
    "AC-GAME-23": {
-    "status": "FAIL",
-    "test": "ui3.browser.test.tsx#ui3 thanh cuộn của Đĩa: màu theo giao diện, vuốt trên cảm ứng > AC-GAME-23: 390×844, vùng cuộn của Đĩa cho phép vuốt dọc "
+    "status": "PASS",
+    "test": "ui3.browser.test.tsx#ui3 Đĩa nhúng cao bằng bàn lẩu "
    },
    "AC-GAME-24": {
-    "status": "FAIL",
+    "status": "PASS",
     "test": "ui3.ui.test.tsx#ui3: bấm món là cho vào nồi "
    },
    "AC-GAME-25": {
-    "status": "FAIL",
-    "test": "ui3.ui.test.tsx#ui3: hiệu ứng ghép ra món Vàng và Đỏ "
+    "status": "PASS",
+    "test": "ui3.browser.test.tsx#ui3 hiệu ứng Vàng/Đỏ không chặn kéo thả "
    },
    "AC-GAME-26": {
-    "status": "FAIL",
+    "status": "PASS",
     "test": "ui3.ui.test.tsx#ui3: âm thanh và nút loa "
-   },
-   "AC-GAME-28": {
-    "status": "FAIL",
-    "test": "table-style.ui.test.tsx#đổi kiểu mặt bàn ",
-    "ts": "2026-10-25T03:13:43+00:00",
-    "commit": "18d9fb2"
    },
    "AC-GAME-27": {
     "status": "FAIL",
-    "test": "ui27.browser.test.tsx#ui27 giao diện mới ",
-    "ts": "2026-10-25T03:27:35+00:00",
-    "commit": "d88c002 (CSS) + test 2026-10-25"
+    "test": "mobile-fit.browser.test.tsx#mobile-fit: nickname dài ở 360 px "
+   },
+   "AC-GAME-28": {
+    "status": "PASS",
+    "test": "table-style.ui.test.tsx#đổi kiểu mặt bàn "
    }
   }
  },
  "green": {
-  "ts": "2026-10-25T03:29:08+00:00",
-  "commit": "ff4d698",
+  "ts": "2026-10-25T06:26:06+00:00",
+  "commit": "b1d858a",
   "results": {
    "AC-GAME-01": {
     "status": "PASS",
@@ -207,7 +203,7 @@
    },
    "AC-GAME-21": {
     "status": "PASS",
-    "test": "ui2.browser.test.tsx#ui2 touch-action "
+    "test": "mobile-fit.browser.test.tsx#mobile-fit: vuốt cuộn trên món "
    },
    "AC-GAME-22": {
     "status": "PASS",
@@ -231,7 +227,7 @@
    },
    "AC-GAME-27": {
     "status": "PASS",
-    "test": "ui27.browser.test.tsx#ui27 giao diện mới "
+    "test": "mobile-fit.browser.test.tsx#mobile-fit: nickname dài ở 360 px "
    },
    "AC-GAME-28": {
     "status": "PASS",

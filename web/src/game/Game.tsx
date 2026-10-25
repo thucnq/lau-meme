@@ -44,13 +44,18 @@ const BOIL_MS = 1000 // AC-GAME-02: ≤ 1,2 s
 const STEAM_MS = 500 // AC-GAME-03: ≤ 0,6 s
 const TAP_MOVE_PX = 6 // AC-GAME-24: a press that moves less and is released sooner is a tap
 const TAP_MS = 500
+const HOLD_DRAG_MS = 250 // AC-GAME-21: on touch, a hold this long turns a vertical move into a drag, not a scroll
 const TABLE_GAP = 8 // AC-GAME-18: the table ends this far above the bottom of the first screen
 const TABLE_MIN = 240
 
 type Loaded = { manifest: Manifest; graph: Graph; blocklist: Blocklist }
 type Source = { item: Item; uid: string | null }
 type Drag = { source: Source; x: number; y: number }
-type Press = { source: Source; x: number; y: number; w: number; h: number; moved: boolean; held: boolean; timer: number }
+type Press = {
+  source: Source; x: number; y: number; w: number; h: number; moved: boolean; held: boolean; timer: number
+  /** touch only: armed after HOLD_DRAG_MS still; swiping once a vertical move without that hold went to the page */
+  touch: boolean; armed: boolean; swiping: boolean; armTimer: number
+}
 type Celebration = { kind: CelebrationKind; tier: 4 | 5; animated: boolean; seq: number }
 type Box = { left: number; top: number; right: number; bottom: number }
 type Miss = { line: string; hint: string | null }
@@ -223,6 +228,16 @@ export function Game({ onDiscover, onItems, heirlooms = {}, onReport, blocklistR
   }, [theme])
 
   useEffect(() => () => timers.current.forEach((t) => window.clearTimeout(t)), [])
+
+  // A touch drag, held or sideways, keeps the page still; a plain swipe is left to scroll it (AC-GAME-21).
+  useEffect(() => {
+    const onTouchMove = (e: Event) => {
+      const press = pressRef.current
+      if (press?.touch && !press.swiping && (press.armed || press.moved)) e.preventDefault()
+    }
+    document.addEventListener('touchmove', onTouchMove, { passive: false })
+    return () => document.removeEventListener('touchmove', onTouchMove)
+  }, [])
 
   // The viewport or the content above the table changed size: lay the table out again.
   useEffect(() => {
@@ -495,22 +510,44 @@ export function Game({ onDiscover, onItems, heirlooms = {}, onReport, blocklistR
   /**
    * Pointer handling for plate and table items: a press that moves at least 6 px is a drag; one released sooner than
    * 500 ms without moving is a tap and puts the item in the pot (AC-GAME-24); a longer hold does neither.
+   * On touch a vertical move scrolls the page (the chip allows pan-y) unless the finger held still for HOLD_DRAG_MS
+   * first; a sideways move drags at once (AC-GAME-21).
    */
+  const clearPress = () => {
+    const press = pressRef.current
+    if (press) {
+      window.clearTimeout(press.timer)
+      window.clearTimeout(press.armTimer)
+    }
+    pressRef.current = null
+  }
+
   const dragHandlers = (source: Source) => ({
     onPointerDown: (e: ReactPointerEvent<HTMLElement>) => {
       if (boilingRef.current || busyRef.current || e.button !== 0) return
       e.preventDefault()
       if (typeof e.currentTarget.setPointerCapture === 'function') e.currentTarget.setPointerCapture(e.pointerId)
-      if (pressRef.current) window.clearTimeout(pressRef.current.timer)
+      clearPress()
       const { width: w, height: h } = e.currentTarget.getBoundingClientRect()
-      const press: Press = { source, x: e.clientX, y: e.clientY, w, h, moved: false, held: false, timer: 0 }
+      const touch = e.pointerType === 'touch'
+      const press: Press = {
+        source, x: e.clientX, y: e.clientY, w, h, moved: false, held: false, timer: 0,
+        touch, armed: false, swiping: false, armTimer: 0,
+      }
       press.timer = window.setTimeout(() => (press.held = true), TAP_MS)
+      if (touch) press.armTimer = window.setTimeout(() => (press.armed = true), HOLD_DRAG_MS)
       pressRef.current = press
     },
     onPointerMove: (e: ReactPointerEvent<HTMLElement>) => {
       const press = pressRef.current
-      if (!press) return
-      if (!press.moved && Math.hypot(e.clientX - press.x, e.clientY - press.y) < TAP_MOVE_PX) return
+      if (!press || press.swiping) return
+      const dx = e.clientX - press.x
+      const dy = e.clientY - press.y
+      if (!press.moved && Math.hypot(dx, dy) < TAP_MOVE_PX) return
+      if (!press.moved && press.touch && !press.armed && Math.abs(dy) >= Math.abs(dx)) {
+        press.swiping = true // the page scrolls; the browser usually cancels the pointer soon after
+        return
+      }
       press.moved = true
       dragRef.current = press.source
       setDrag({ source: press.source, x: e.clientX, y: e.clientY })
@@ -522,12 +559,13 @@ export function Game({ onDiscover, onItems, heirlooms = {}, onReport, blocklistR
       setDrag(null)
       if (!press) return
       window.clearTimeout(press.timer)
+      window.clearTimeout(press.armTimer)
+      if (press.swiping) return
       if (press.moved) drop(press, document.elementFromPoint(e.clientX, e.clientY), e.clientX, e.clientY)
       else if (!press.held) toPot(press.source)
     },
     onPointerCancel: () => {
-      if (pressRef.current) window.clearTimeout(pressRef.current.timer)
-      pressRef.current = null
+      clearPress()
       dragRef.current = null
       setDrag(null)
     },

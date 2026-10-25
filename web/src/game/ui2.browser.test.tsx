@@ -235,8 +235,10 @@ describe('ui2 touch-action (AC-GAME-21)', () => {
 
     expect(allowsVerticalPan(getComputedStyle(table).touchAction), `mặt bàn: touch-action=${getComputedStyle(table).touchAction}`).toBe(true)
     expect(allowsVerticalPan(getComputedStyle(document.body).touchAction)).toBe(true)
-    for (const el of screen.getAllByTestId('table-item')) expect(getComputedStyle(el).touchAction).toBe('none')
-    for (const el of screen.getAllByTestId('plate-item')) expect(getComputedStyle(el).touchAction).toBe('none')
+    // cập nhật 2026-10-25 (góp ý "không trượt được màn hình khi đặt tay vào vùng có món"): món không còn touch-action: none,
+    // phải cho vuốt dọc (pan-y) để cuộn trang; kéo món do giữ >= 250 ms hoặc kéo ngang quyết định.
+    for (const el of screen.getAllByTestId('table-item')) expect(allowsVerticalPan(getComputedStyle(el).touchAction), `món trên bàn: touch-action=${getComputedStyle(el).touchAction}`).toBe(true)
+    for (const el of screen.getAllByTestId('plate-item')) expect(allowsVerticalPan(getComputedStyle(el).touchAction), `món trong Đĩa: touch-action=${getComputedStyle(el).touchAction}`).toBe(true)
 
     // Đĩa nằm dưới nồi, phải cuộn mới thấy
     expect(rect(screen.getByRole('list', { name: 'Đĩa nhúng' })).top).toBeGreaterThanOrEqual(rect(screen.getByTestId('pot')).bottom - 1)
