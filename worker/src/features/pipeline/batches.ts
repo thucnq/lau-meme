@@ -7,7 +7,7 @@ import { currentVersion } from '../content/content'
 const KEEP_VERSIONS = 14
 /** D1 caps a row at 2 MB; the phase 2 pipeline store (ADR 0009) must fit one row. */
 const MAX_STORE_BYTES = 1_900_000
-const STORE_KEYS = ['elements', 'recipes', 'queue', 'asked_pairs', 'llm_cache', 'art_pending', 'core_art'] as const
+const STORE_KEYS = ['elements', 'recipes', 'queue', 'asked_pairs', 'llm_cache', 'art_pending', 'core_art', 'contrib_art'] as const
 const MODES = ['core', 'full'] as const
 
 type Element = {
@@ -289,10 +289,14 @@ export async function publishBatch(req: Request, env: Env): Promise<Response> {
       .bind(JSON.stringify(recipes), version, now),
     db
       .prepare(
-        `INSERT INTO batch_content (version, batch_at, day, manifest_json, graph_json, server_json, created_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        // creators_json (ADR 0013, AC-CONTRIB-10): approved contributions in this version -> the account's
+        // nickname now (null without one or once unlinked); the pipeline never sees nicknames
+        `INSERT INTO batch_content (version, batch_at, day, manifest_json, graph_json, server_json, created_at, creators_json)
+         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, (
+           SELECT json_group_object(c.element_id, a.nickname) FROM contribution c LEFT JOIN account a ON a.id = c.account_id
+           WHERE c.status = 'approved' AND c.element_id IN (SELECT json_extract(value, '$.id') FROM json_each(?8))))`,
       )
-      .bind(version, batchAt, dayGmt7(batchAt), manifestJson, graphJson, serverJson, now),
+      .bind(version, batchAt, dayGmt7(batchAt), manifestJson, graphJson, serverJson, now, JSON.stringify(elements)),
     setCurrent(db, version, now),
     insertRun(db, { ...run, stats_json: statsJson }, daily),
     db
@@ -309,8 +313,8 @@ export async function publishBatch(req: Request, env: Env): Promise<Response> {
 /** ADR 0009: opaque to the Worker - only the top-level shape and the one-row size are checked. */
 function parseStore(value: unknown): string {
   const store = obj(value, 'store', STORE_KEYS, [])
-  // core_art: drawing state of the core elements (AC-ART-11)
-  for (const key of ['elements', 'recipes', 'queue', 'asked_pairs', 'core_art'] as const) {
+  // core_art / contrib_art: drawing state of the core and contributed elements (AC-ART-11, AC-CONTRIB-09)
+  for (const key of ['elements', 'recipes', 'queue', 'asked_pairs', 'core_art', 'contrib_art'] as const) {
     if (key in store && !Array.isArray(store[key])) fail(`store.${key}: phải là mảng`)
   }
   if ('art_pending' in store) {

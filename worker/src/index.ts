@@ -1,6 +1,17 @@
 import { hasBearer } from './auth'
 import { adminOnly, listAudit, listBatches, listElements, listRecipes, listReports, moderate, setElementTier } from './features/admin/admin'
 import { getGraph, getImage, getManifest } from './features/content/content'
+import {
+  adminApproveContribution,
+  adminEditContribution,
+  adminListContributions,
+  adminRejectContribution,
+  createContribution,
+  getContribution,
+  getContributorLeaderboard,
+  getCreators,
+  listMyContributions,
+} from './features/contrib/contrib'
 import { createDiscovery, listDiscoveries, putBannedTerms } from './features/disc/disc'
 import { getSession, signInWithGoogle, signOut } from './features/auth/auth'
 import { getDailyLeaderboard, getDailyPeriodLeaderboard, getMyStreak, getStreakLeaderboard, submitDailyResult } from './features/daily/daily'
@@ -43,6 +54,7 @@ const routes: Route[] = [
   { pattern: /^\/api\/daily\/([^/]+)\/leaderboard$/, methods: { GET: getDailyLeaderboard } },
   { pattern: /^\/api\/daily\/leaderboard$/, methods: { GET: getDailyPeriodLeaderboard } },
   { pattern: /^\/api\/streaks\/leaderboard$/, methods: { GET: getStreakLeaderboard } },
+  { pattern: /^\/api\/creators\/([^/]+)$/, methods: { GET: getCreators } },
   { pattern: /^\/api\/blocklist$/, methods: { GET: getBlocklist } },
   { pattern: /^\/api\/reports$/, methods: { POST: createReport } },
   { pattern: /^\/api\/discoveries$/, methods: { GET: listDiscoveries, POST: createDiscovery } },
@@ -54,6 +66,10 @@ const routes: Route[] = [
   { pattern: /^\/api\/me\/plate$/, methods: { GET: getMyPlate, POST: addToMyPlate } },
   { pattern: /^\/api\/me\/plate\/merge$/, methods: { POST: mergeMyPlate } },
   { pattern: /^\/api\/me\/streak$/, methods: { GET: getMyStreak } },
+  { pattern: /^\/api\/contributions$/, methods: { POST: createContribution } },
+  { pattern: /^\/api\/contributions\/([^/]+)$/, methods: { GET: getContribution } },
+  { pattern: /^\/api\/me\/contributions$/, methods: { GET: listMyContributions } },
+  { pattern: /^\/api\/contributors\/leaderboard$/, methods: { GET: getContributorLeaderboard } },
   { pattern: /^\/api\/events$/, methods: { POST: createEvents } },
   // PIPELINE_TOKEN or ADMIN_TOKEN, checked inside (AC-METRIC-06)
   { pattern: /^\/api\/metrics\/summary$/, methods: { GET: getMetricsSummary } },
@@ -75,6 +91,10 @@ const adminRoutes: Route[] = [
   { pattern: /^\/api\/admin\/moderation$/, methods: { POST: adminOnly(moderate) } },
   { pattern: /^\/api\/admin\/batches$/, methods: { GET: adminOnly(listBatches) } },
   { pattern: /^\/api\/admin\/audit$/, methods: { GET: adminOnly(listAudit) } },
+  { pattern: /^\/api\/admin\/contributions$/, methods: { GET: adminOnly(adminListContributions) } },
+  { pattern: /^\/api\/admin\/contributions\/([^/]+)$/, methods: { PATCH: adminOnly(adminEditContribution) } },
+  { pattern: /^\/api\/admin\/contributions\/([^/]+)\/approve$/, methods: { POST: adminOnly(adminApproveContribution) } },
+  { pattern: /^\/api\/admin\/contributions\/([^/]+)\/reject$/, methods: { POST: adminOnly(adminRejectContribution) } },
 ]
 
 /** `rest` is the path below BASE_PATH (game host) or the whole path (admin host). */

@@ -2468,6 +2468,10 @@ components:
           type: array
           description: Trạng thái vẽ của từng phần tử lõi (id, tên, `image_key`, `art_attempts`, `image_fallback`) để đợt sau vẽ bù tiếp; phần tử lõi lấy từ file lõi, không nằm trong `elements` (AC-ART-11)
           items: { type: object }
+        contrib_art:
+          type: array
+          description: Trạng thái vẽ của từng phần tử đóng góp đã duyệt (id, tên, `image_key`, `art_attempts`, `image_fallback`); phần tử đóng góp lấy từ `/pipeline/state.contributions` mỗi đợt, không nằm trong `elements`; ART vẽ từ gợi ý ảnh của admin (AC-CONTRIB-09)
+          items: { type: object }
         art_pending:
           type: array
           description: Id phần tử "chờ vẽ" (hết hạn mức hoặc vượt 20 ảnh/đợt), đợt sau vẽ trước phần tử mới (AC-ART-03)
