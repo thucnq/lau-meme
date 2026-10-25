@@ -40,44 +40,54 @@ def add_contributions(
     first_versions: Mapping[str, int],
     blocked: frozenset[str] = frozenset(),
 ) -> Joined:
-    """Each approved row becomes an element (tier 1 unless `tiers` says otherwise) and the recipe of its pair.
-    A row whose pair is already taken or whose name is already an element is skipped and counted as waiting."""
+    """Each approved row becomes an element and the recipe of its pair; a row already joined by an earlier batch is
+    joined again (it may be back from waiting). A row whose pair or name is taken by something else is skipped, and
+    one whose parent is not active stays in the store inactive; both count as waiting."""
     elements = dict(store.elements)
     recipes = dict(store.recipes)
-    added: list[str] = []
+    added: list[tuple[str, str]] = []
     waiting = 0
     for row in rows:
         eid = element_id(row["name"])
         a, b = elements.get(row["a"]), elements.get(row["b"])
-        if eid in elements or a is None or b is None:
+        if a is None or b is None:
             waiting += 1
             continue
         rid = recipe_id(a.name, b.name)
-        if rid in recipes:
+        own = rid in recipes and recipes[rid].result == eid
+        if (rid in recipes or eid in elements) and not own:
             waiting += 1
             continue
-        elements[eid] = StoredElement(
-            id=eid,
-            name=row["name"],
-            fold=fold(row["name"]),
-            emoji=row.get("emoji") or DEFAULT_EMOJI,
-            origin="vn",
-            depth=0,
-            image_hint=row.get("image_hint") or "",
-            batch=str(first_versions.get(eid, version)),
-            status=ACTIVE,
+        emoji = row.get("emoji") or DEFAULT_EMOJI
+        hint = row.get("image_hint") or ""
+        previous = elements.get(eid)
+        elements[eid] = (
+            replace(previous, name=row["name"], fold=fold(row["name"]), emoji=emoji, image_hint=hint, status=ACTIVE)
+            if previous
+            else StoredElement(
+                id=eid,
+                name=row["name"],
+                fold=fold(row["name"]),
+                emoji=emoji,
+                origin="vn",
+                depth=0,
+                image_hint=hint,
+                batch=str(first_versions.get(eid, version)),
+                status=ACTIVE,
+            )
         )
         x, y = sorted((a.id, b.id))
         recipes[rid] = StoredRecipe(id=rid, a=x, b=y, result=eid, batch=CONTRIB, status=ACTIVE)
-        added.append(eid)
+        added.append((eid, rid))
     joined = replace(store, elements=elements, recipes=recipes)
     if not added:
         return Joined(joined, waiting)
     depths = bfs_depths(_graph(joined, blocked))
-    for eid in added:
+    for eid, rid in added:
         if eid in depths:
             elements[eid] = replace(elements[eid], depth=depths[eid])
         else:
             elements[eid] = replace(elements[eid], status=INACTIVE)
+            recipes[rid] = replace(recipes[rid], status=INACTIVE)
             waiting += 1
-    return Joined(replace(joined, elements=elements), waiting)
+    return Joined(replace(joined, elements=elements, recipes=recipes), waiting)

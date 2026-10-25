@@ -294,6 +294,11 @@ def _render_report(
         "- Lỗi nguồn: " + (", ".join(source_error_text(e) for e in errors) or "không có"),
         *[f"- ⚠️ {name}: thiếu cấu hình, nguồn không thu gì (xem runbook)" for name in unconfigured],
         *[f"- {warning}" for warning in source_warnings],
+        *(
+            [f"- Đề xuất đã duyệt chưa vào được graph (cha bị ẩn/chặn): {stats['contributions_waiting']}"]
+            if stats.get("contributions_waiting")
+            else []
+        ),
         f"- quota: {stats.get('quota_used', 0)} lượt gọi Gemini",
         *(["- ⚠️ Gemini hết quota: phần chưa xử lý nằm trong hàng chờ, đợt sau làm tiếp"] if quota_hit else []),
         *(
@@ -551,6 +556,8 @@ def run_batch(
             stats["queue_size"] = stats["queued"]
             moderation = full.report.get("moderation") or {}
             stats["blocked"] = {k: v for k, v in sorted(moderation.items()) if k != QUOTA_LABEL}
+            if full.report.get("contributions_waiting"):
+                stats["contributions_waiting"] = int(full.report["contributions_waiting"])
             miss = tuple(full.report["miss_rate"]) if full.report.get("miss_rate") else None
             if full.report.get("daily_pool_exhausted"):
                 stats["daily_pool_exhausted"] = True
@@ -565,13 +572,16 @@ def run_batch(
         else:
             step = "seed"
             store = load_core(core, ContentStore.empty()).store
-            store = add_contributions(
+            joined = add_contributions(
                 store,
                 state.get("contributions", []),
                 version=version,
                 first_versions=_first_versions(state),
                 blocked=frozenset(state["blocklist"]["elements"]),
-            ).store
+            )
+            store = joined.store
+            if joined.waiting:
+                stats["contributions_waiting"] = joined.waiting
             store = apply_tiers(store, state.get("tiers", []), _blocked_images(state))
             step = "daily"
             daily, exhausted = _pick_daily(store, core, state, version)

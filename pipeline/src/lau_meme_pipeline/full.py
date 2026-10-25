@@ -351,6 +351,14 @@ def run_full(
     )
     content = joined.store
     report["contributions_waiting"] = joined.waiting
+    # Drawing state of the contributed elements (AC-CONTRIB-09): kept in the store like core_art, since the elements
+    # themselves come from D1 every batch.
+    stored_contrib = {c["id"]: c for c in store.get("contrib_art", [])}
+    contrib_ids = sorted({element_id(c["name"]) for c in contributions} & set(content.elements))
+    contrib_art: dict[str, dict] = {
+        eid: {**stored_contrib.get(eid, {}), "id": eid, "name": content.elements[eid].name} for eid in contrib_ids
+    }
+    content = apply_images(content, {eid: c["image_key"] for eid, c in contrib_art.items() if c.get("image_key")})
     depths = bfs_depths(_graph(content, frozenset(blocked)))
     elements = {}
     for eid, e in content.elements.items():
@@ -376,6 +384,7 @@ def run_full(
             content,
             out_store,
             core_art,
+            contrib_art,
             store.get("art_pending", []),
             blocked,
             version,
@@ -430,6 +439,8 @@ def run_full(
     out_store["asked_pairs"] = [list(p) for p in sorted(asked_in | supplemented.rejected)]
     out_store["llm_cache"] = {k: used[k] for k in sorted(used)}
     out_store["core_art"] = [core_art[k] for k in sorted(core_art)]
+    if contrib_art:  # only once a contribution was drawn, so stores without any keep their old shape
+        out_store["contrib_art"] = [contrib_art[k] for k in sorted(contrib_art)]
     report["quota"] = report["quota"] or quota["hit"]  # supplement steps may hit it too
     return FullOutcome(
         graph=graph_out,
@@ -447,6 +458,7 @@ def _illustrate(
     content: ContentStore,
     out_store: dict,
     core_art: Mapping[str, dict],
+    contrib_art: Mapping[str, dict],
     waiting: Sequence[str],
     blocked: frozenset[str],
     version: int,
@@ -460,8 +472,11 @@ def _illustrate(
     batch's, then older ones never drawn (AC-ART-03).
     An element whose draws were refused, whose hint failed moderation, or that kept failing for MAX_ART_ATTEMPTS
     batches keeps its emoji for good (AC-ART-02). One with no hint yet is only skipped: a later hint is drawn.
+    Approved contributions are drawn like this batch's new elements, from the admin's hint only (AC-CONTRIB-09).
     Core elements without an image come last, shallowest first, then by folded name (AC-ART-11)."""
-    trend = {e["id"]: e for e in out_store["elements"]} | dict(core_art)
+    trend = {e["id"]: e for e in out_store["elements"]} | dict(core_art) | dict(contrib_art)
+    # elements whose hint is in the content (core file, admin's hint) rather than in the store entry
+    fixed = {**core_art, **contrib_art}
 
     admin = {t.get("element_id"): t.get("tier") for t in tiers}
 
@@ -475,12 +490,12 @@ def _illustrate(
             and (not e.get("image_key") or (redraw_hidden and eid in blocked_images))
             and not e.get("image_fallback")
             # a core element with no hint is only skipped (and not counted) until the core file gives it one
-            and (eid not in core_art or bool(hint(eid).strip()))
+            and (eid not in fixed or bool(hint(eid).strip()))
         )
 
     def hint(eid: str) -> str:
         e = trend[eid]
-        if eid in core_art:
+        if eid in fixed:
             return content.elements[eid].image_hint
         return e.get("image_hint", "") if e.get("image_hint_ok", True) else ""
 
@@ -496,12 +511,17 @@ def _illustrate(
         (e for e in out_store["elements"] if drawable(e["id"]) and e["id"] not in first),
         key=lambda e: (e.get("added_version") != version, e["id"]),
     )
+    contributed = [eid for eid in contrib_art if drawable(eid) and eid not in first]
     backfill = [eid for eid in core_art if drawable(eid) and eid not in first]
-    art = draw(order_for_drawing([item(i) for i in first], [item(e["id"]) for e in rest] + [item(i) for i in backfill]))
+    art = draw(
+        order_for_drawing(
+            [item(i) for i in first], [item(e["id"]) for e in rest] + [item(i) for i in [*contributed, *backfill]]
+        )
+    )
     for eid, key in art.images.items():
         trend[eid]["image_key"] = key
-    # a core element merely not reached is found again from core_art; one that failed waits like any other
-    pending = [eid for eid in art.pending if eid not in core_art or eid in art.errored]
+    # a core or contributed element merely not reached is found again from its art list; one that failed waits
+    pending = [eid for eid in art.pending if eid not in fixed or eid in art.errored]
     gave_up = []
     # An error counts against an element only when drawing worked for something else in this batch; otherwise it
     # is an outage (network, Worker, credentials) and holding it against the elements would lose their images.
