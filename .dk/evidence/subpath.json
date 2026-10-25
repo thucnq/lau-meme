@@ -62,8 +62,8 @@
   }
  },
  "green": {
-  "ts": "2026-10-24T15:15:21+00:00",
-  "commit": "cb3635a",
+  "ts": "2026-10-25T15:01:39+00:00",
+  "commit": "a3d7b62",
   "results": {
    "AC-SUBPATH-01": {
     "status": "PASS",
@@ -116,6 +116,10 @@
    "AC-SUBPATH-13": {
     "status": "PASS",
     "test": "subpath.test.ts#subpath > AC-SUBPATH-13: GET trang chính sách "
+   },
+   "AC-SUBPATH-14": {
+    "status": "PASS",
+    "test": "staticPolicy.test.tsx#trang chính sách tĩnh > AC-SUBPATH-14: web/chinh-sach-tinh.html có cùng chữ với PolicyPage, không script, không canonical hay og:url"
    }
   }
  }
