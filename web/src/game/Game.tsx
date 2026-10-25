@@ -717,7 +717,7 @@ export function Game({ onDiscover, onItems, heirlooms = {}, onReport, blocklistR
                   <div key={n} className="pot-slot" data-testid={`pot-slot-${n}`} data-slot={n}>
                     {it && (
                       <span className={`slot-item tier-${tierOf(byId.get(it.id) ?? it)}`} data-tier={tierOf(byId.get(it.id) ?? it)}>
-                        <span aria-hidden="true">{it.emoji}</span> <span>{it.name}</span>
+                        <span className="emoji" aria-hidden="true">{it.emoji}</span> <span>{it.name}</span>
                         <TierBadge tier={tierOf(byId.get(it.id) ?? it)} />
                       </span>
                     )}
@@ -817,7 +817,7 @@ export function Game({ onDiscover, onItems, heirlooms = {}, onReport, blocklistR
 
       {drag && (
         <div className="chip ghost" style={{ left: drag.x, top: drag.y }} aria-hidden="true">
-          {drag.source.item.emoji} {drag.source.item.name}
+          <span className="emoji">{drag.source.item.emoji}</span> {drag.source.item.name}
         </div>
       )}
 

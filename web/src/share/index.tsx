@@ -83,7 +83,9 @@ export function drawCardPng(canvas: HTMLCanvasElement, card: ShareKind, data: Da
   canvas.height = SIZE
   const ctx = canvas.getContext('2d')
   if (!ctx) return
-  const font = (px: number, weight = 600) => `${weight} ${px}px system-ui, -apple-system, "Segoe UI", sans-serif`
+  // colour emoji fonts before the generic family, or the emoji in the text are drawn as outlines or boxes
+  const font = (px: number, weight = 600) =>
+    `${weight} ${px}px system-ui, -apple-system, "Segoe UI", "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif`
 
   ctx.fillStyle = '#f2f8f4'
   ctx.fillRect(0, 0, SIZE, SIZE)
@@ -114,7 +116,7 @@ export function drawCardPng(canvas: HTMLCanvasElement, card: ShareKind, data: Da
   ctx.font = font(44)
   ctx.fillText(daily ? head.replace(/^Lẩu Meme 🍲 /, '') : head, 540, 210)
 
-  ctx.font = font(200, 400)
+  ctx.font = `400 200px "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif`
   ctx.fillText(data.emoji, 540, 470)
 
   ctx.font = font(46)
