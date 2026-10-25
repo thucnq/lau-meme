@@ -16,6 +16,7 @@ import hashlib
 import io
 import itertools
 import re
+import unicodedata
 from datetime import timedelta
 
 import pytest
@@ -184,6 +185,25 @@ def pending_of(body):
     return list(body["store"].get("art_pending") or [])
 
 
+def fold_name(text: str) -> str:
+    """Independent accent-stripping lower-casing (test-side only)."""
+    text = text.replace("đ", "d").replace("Đ", "D")
+    return "".join(c for c in unicodedata.normalize("NFD", text) if unicodedata.category(c) != "Mn").lower()
+
+
+def meme_hint(name: str) -> str:
+    return HINTS.get(name, f"hình {name}")
+
+
+def priority_first(body, names) -> tuple[list[str], list[str]]:
+    """AC-ART-12 split of memes that still have no image: (priority, rest). Priority = depth >= 5 (auto tier 4/5 waiting
+    for an image), deepest first then folded name; `rest` keeps the given order (AC-ART-03/09: waiting before new).
+    Depth is read from the published content, never computed with production code."""
+    depth = {n: content_element(body, n)["depth"] for n in names}
+    priority = sorted((n for n in names if depth[n] >= 5), key=lambda n: (-depth[n], fold_name(n)))
+    return priority, [n for n in names if depth[n] < 5]
+
+
 def key_of(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()[:12] + ".webp"
 
@@ -300,9 +320,12 @@ def test_ac_art_03_dot_sau_ve_bu_phan_tu_cho_ve_truoc_phan_tu_moi():
 
     assert outcome.ok is True
     assert len(draw.prompts) == 2
-    assert HINT in draw.prompts[0], "phần tử chờ vẽ được vẽ trước phần tử mới"
-    assert HINT2 in draw.prompts[1]
     (body,) = second.success_posts
+    # AC-ART-12 comes first: a meme at depth >= 5 (auto tier 4/5, no image yet) is drawn before the others, deepest
+    # first. Without such a meme the AC-ART-03 order holds: waiting meme (HINT), then the new one (HINT2).
+    priority, rest = priority_first(body, [MEME, MEME2])
+    for i, name in enumerate([*priority, *rest]):
+        assert meme_hint(name) in draw.prompts[i], f"lần vẽ thứ {i} phải là {name}"
     assert meme_id not in pending_of(body)
     assert pending_of(body) == []
     assert content_element(body, MEME)["image_key"] is not None

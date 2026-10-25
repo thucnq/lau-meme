@@ -5,7 +5,8 @@ every other element takes the depth-based auto tier of this batch (AC-TIER-04/05
 from collections.abc import Iterable, Mapping
 from dataclasses import replace
 
-from lau_meme_pipeline.seed import ACTIVE, ContentStore
+from lau_meme_pipeline.seed import ACTIVE, ContentStore, StoredElement
+from lau_meme_pipeline.text import fold
 
 TIERS = range(1, 6)
 TIER_NAMES = ("Xám", "Xanh lá", "Xanh dương", "Vàng", "Đỏ")
@@ -29,11 +30,16 @@ def auto_tier(depth: int, has_image: bool) -> int:
 def auto_tiers(store: ContentStore, blocked_images: Iterable[str] = ()) -> dict[str, int]:
     """Auto tier of every element; a usable image has an `image_key` and is not blocked/hidden."""
     hidden = frozenset(blocked_images)
-    return {k: auto_tier(e.depth, bool(e.image_key) and k not in hidden) for k, e in store.elements.items()}
+    return {k: auto_tier(e.depth, _usable(e, hidden)) for k, e in store.elements.items()}
 
 
 def valid_tier(value: object) -> bool:
     return type(value) is int and value in TIERS
+
+
+def needs_rare_image(depth: int, admin_tier: object = None) -> bool:
+    """AC-ART-12: Vàng/Đỏ once it has a usable image - admin-assigned 4/5, otherwise auto tier 4/5 by depth."""
+    return (admin_tier if valid_tier(admin_tier) else _by_depth(depth)) > NO_IMAGE_CAP
 
 
 def apply_tiers(store: ContentStore, tiers: Iterable[Mapping], blocked_images: Iterable[str] = ()) -> ContentStore:
@@ -47,16 +53,26 @@ def apply_tiers(store: ContentStore, tiers: Iterable[Mapping], blocked_images: I
 
 def tier_report(store: ContentStore, tiers: Iterable[Mapping], blocked_images: Iterable[str] = ()) -> list[str]:
     """Report lines (AC-TIER-04): effective tier counts of the active elements, and the auto-tiered ones held at
-    Xanh dương only for lack of an image."""
-    admin = {t.get("element_id") for t in tiers}
-    auto = auto_tiers(store, blocked_images)
+    Xanh dương only for lack of an image; admin Vàng/Đỏ elements left without a usable image (AC-ART-12)."""
+    admin = {t.get("element_id"): t.get("tier") for t in tiers}
+    hidden = frozenset(blocked_images)
+    auto = auto_tiers(store, hidden)
     active = [e for e in store.elements.values() if e.status == ACTIVE]
     counts = [sum(1 for e in active if e.tier == t) for t in TIERS]
     waiting = sum(1 for e in active if e.id not in admin and auto[e.id] < _by_depth(e.depth))
+    missing = sorted(
+        (e.name for e in active if e.id in admin and needs_rare_image(e.depth, admin[e.id]) and not _usable(e, hidden)),
+        key=fold,
+    )
     return [
         "Tier: " + " · ".join(f"{name} {n}" for name, n in zip(TIER_NAMES, counts, strict=True)),
         f"Chờ ảnh để lên Vàng/Đỏ: {waiting}",
+        *([f"Vàng/Đỏ thiếu ảnh: {', '.join(missing)}"] if missing else []),
     ]
+
+
+def _usable(element: StoredElement, hidden: frozenset[str]) -> bool:
+    return bool(element.image_key) and element.id not in hidden
 
 
 def invalid_tiers(entries: Iterable[Mapping]) -> list[str]:
