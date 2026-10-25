@@ -37,7 +37,7 @@ export function ElementIcon({ emoji, imageKey }: Props) {
 
   return (
     <>
-      {status !== 'loaded' || !showImage ? <span aria-hidden="true">{emoji}</span> : null}
+      {status !== 'loaded' || !showImage ? <span className="emoji" aria-hidden="true">{emoji}</span> : null}
       {showImage && (
         <img ref={ref} className={status === 'loaded' ? 'art' : 'art loading'} alt="" aria-hidden="true" draggable={false} />
       )}

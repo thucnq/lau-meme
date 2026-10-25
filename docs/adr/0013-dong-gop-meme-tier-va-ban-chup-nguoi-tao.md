@@ -16,7 +16,7 @@
 - **Đề xuất ở D1:** bảng `contribution` (migration `0007_contrib_tier.sql`).
   - Duyệt chỉ đổi trạng thái và ghi `element_id` = ElementId của `fold(tên)`. Không ghi `element`/`recipe`: danh mục vẫn chỉ do mẻ đăng cập nhật.
   - Index unique một phần chặn trùng: một đề xuất chờ duyệt mỗi tài khoản mỗi cặp; một đề xuất đã duyệt mỗi cặp; một đề xuất đã duyệt mỗi tên.
-- **Tier ở D1:** bảng `element_tier`. Không có dòng nghĩa là tier 1.
+- **Tier ở D1:** bảng `element_tier`. Không có dòng nghĩa là tier 1. (Cập nhật 2026-10-24, ADR 0016: không có dòng nghĩa là tier tự động theo độ sâu.)
 - **Pipeline đọc qua `GET /api/pipeline/state`**, thêm 3 trường:
   - `catalog`: mỗi phần tử có `first_version` và `trend_peak`.
   - `tiers`: tier admin đã gán.

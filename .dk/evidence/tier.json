@@ -1,37 +1,52 @@
 {
  "red": {
-  "ts": "2026-10-23T05:28:01+00:00",
-  "commit": "9b3d573",
+  "ts": "2026-10-24T20:33:15+00:00",
+  "commit": "d88c002",
   "results": {
    "AC-TIER-01": {
     "status": "FAIL",
-    "test": "tier.test.ts#tier "
+    "test": "test_tier#test_ac_tier_01_meme_dong_gop_duyet_khong_chon_tier_nhan_tier_tu_dong"
    },
    "AC-TIER-02": {
     "status": "FAIL",
-    "test": "tier.ui.test.tsx#tier trên phần tử > AC-TIER-02: ghép ra phần tử tier 4 từ graph thì thẻ kết quả "
+    "test": "tier.browser.test.tsx#tier hiển thị "
    },
    "AC-TIER-03": {
+    "status": "PASS",
+    "test": "tier.ui.test.tsx#graph cũ chưa có tier > AC-TIER-03: tiến độ cũ "
+   },
+   "AC-TIER-04": {
     "status": "FAIL",
-    "test": "tier.ui.test.tsx#graph cũ chưa có tier > AC-TIER-03: manifest lên version mới có tier thì phần tử hiện đúng tier mà không mất tiến độ "
+    "test": "tier.test.ts#tier "
+   },
+   "AC-TIER-05": {
+    "status": "FAIL",
+    "test": "tier.test.ts#tier "
    },
    "AC-TIER-VALIDATION": {
-    "status": "FAIL",
+    "status": "PASS",
     "test": "tier.test.ts#tier "
    },
    "AC-TIER-ABUSE": {
-    "status": "FAIL",
+    "status": "PASS",
     "test": "tier.test.ts#tier "
+   },
+   "AC-TIER-02-ring": {
+    "status": "FAIL",
+    "test": "tier.browser.test.tsx#tier hiển thị ",
+    "ts": "2026-10-25T03:19:25+00:00",
+    "commit": "18d9fb2",
+    "note": "viền hình nhỏ, 2026-10-25"
    }
   }
  },
  "green": {
-  "ts": "2026-10-23T06:07:43+00:00",
-  "commit": "501ba86",
+  "ts": "2026-10-25T03:23:47+00:00",
+  "commit": "18d9fb2",
   "results": {
    "AC-TIER-01": {
     "status": "PASS",
-    "test": "test_tier#test_ac_tier_01_phan_tu_loi_va_moi_batch_mac_dinh_tier_1_cung_cho_voi_ten"
+    "test": "test_tier#test_ac_tier_01_phan_tu_loi_va_moi_batch_tier_tu_dong_theo_do_sau_cung_cho_voi_ten"
    },
    "AC-TIER-02": {
     "status": "PASS",
@@ -40,6 +55,14 @@
    "AC-TIER-03": {
     "status": "PASS",
     "test": "tier.ui.test.tsx#graph cũ chưa có tier > AC-TIER-03: tiến độ cũ "
+   },
+   "AC-TIER-04": {
+    "status": "PASS",
+    "test": "test_tier#test_ac_tier_04_ham_auto_tier_theo_bang_do_sau_khi_co_anh[0-1]"
+   },
+   "AC-TIER-05": {
+    "status": "PASS",
+    "test": "test_tier#test_ac_tier_05_tier_admin_gan_thang_tier_tu_dong_du_do_sau_doi"
    },
    "AC-TIER-VALIDATION": {
     "status": "PASS",

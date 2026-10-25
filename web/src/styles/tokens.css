@@ -1,0 +1,127 @@
+/*
+ * The one set of design tokens (ADR 0017, AC-GAME-27): colour, type, space, radius, shadow and motion, light and
+ * dark. Components use these variables only; no colour value is written anywhere else.
+ * Direction "quán lẩu đêm": a warm stone ground, an oak tabletop one tone step off it, herb green for actions
+ * (owner's pick 2026-10-25), amber and chili for the broth. Surfaces are flat; only what floats (a dragged chip, a dialog, the discovery card) casts a shadow.
+ */
+
+:root {
+  color-scheme: light;
+  /* colour */
+  --color-bg: #f5f1ec;
+  --color-surface: #fffdfa;
+  --color-table: #ecdfcd; /* mặt bàn: oak, one step off the ground */
+  /* tabletop styles, drawn with gradients only: light wood planks, or the blue plastic table of a sidewalk stall */
+  --wood-1: #e8c79a; --wood-2: #dcb582; --wood-grain: rgb(140 90 40 / 0.1); --wood-seam: rgb(110 70 30 / 0.28);
+  --plastic-1: #3b86d6; --plastic-2: #2f74c0; --plastic-rim: #5c9de2; --plastic-dot: rgb(255 255 255 / 0.12);
+  --color-soft: #e2f1e4; /* herb tint: the Món đặc biệt card, selected rows */
+  --color-line: #e2d6c7;
+  --color-control: #c9bcac;
+  --color-text: #1d1714;
+  --color-text-muted: #5f544a;
+  --color-accent: #13703a; /* xanh lá rau thơm */
+  --color-on-accent: #ffffff;
+  --color-broth: #e1a032; /* nước lẩu hổ phách */
+  --color-broth-chili: #d4462f;
+  --color-metal: #cbc5be;
+  --color-metal-dark: #7d746b;
+  --color-flame: #2f6fe0;
+  --color-focus: #1f5fd1;
+  --color-slot: rgb(255 253 250 / 0.85);
+  --color-slot-empty: rgb(255 253 250 / 0.2);
+  --color-veil: rgb(29 23 20 / 0.25); /* inner shade of the pot rim */
+  --color-steam: #8c8178;
+  /* tiers (AC-TIER-02): background, and a deeper shade for the small mark; text keeps --color-text */
+  --color-badge-ring: #ffffff; /* ring round the small tier shape */
+  --tier-1: #e5e7eb; --tier-1-strong: #6b7280;
+  --tier-2: #bbf7d0; --tier-2-strong: #16a34a;
+  --tier-3: #bfdbfe; --tier-3-strong: #2563eb;
+  --tier-4: #fde68a; --tier-4-strong: #ca8a04;
+  --tier-5: #fecaca; --tier-5-strong: #dc2626;
+
+  /* type */
+  /* colour emoji of the OS, never downloaded; without it Windows/Linux pick black outline glyphs or boxes */
+  --font-emoji: 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', 'Twemoji Mozilla', 'Android Emoji', sans-serif;
+  /* Helvetica is licensed, so it is the system's own (owner's pick 2026-10-25); Arial stands in where it is missing */
+  --font-body: 'Helvetica Neue', Helvetica, Arial, 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', sans-serif;
+  --font-display: var(--font-body);
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-md: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.5rem;
+  --text-2xl: 2rem;
+
+  /* space (4 px scale) */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-7: 2rem;
+  --space-8: 2.5rem;
+
+  /* radius: soft panels, pill controls */
+  --radius-sm: 0.5rem;
+  --radius-md: 0.875rem;
+  --radius-lg: 1.25rem;
+  --radius-pill: 999px;
+
+  /* shadow: only for what floats */
+  --shadow-1: 0 0.25rem 0.75rem rgb(29 23 20 / 0.14); /* a dragged chip */
+  --shadow-2: 0 0.5rem 1.5rem rgb(29 23 20 / 0.18); /* dialogs, banners */
+  --shadow-3: 0 0.75rem 2.5rem rgb(29 23 20 / 0.24); /* the discovery card */
+
+  /* motion */
+  --motion-fast: 150ms;
+  --motion-base: 250ms;
+}
+
+/* System dark until the player picks a theme; the stored choice wins (AC-GAME-13). */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    color-scheme: dark;
+    --color-bg: #14110f; --color-surface: #1e1a17; --color-table: #2a221d; --color-soft: #17301f;
+    --wood-1: #5b4330; --wood-2: #4e3827; --wood-grain: rgb(0 0 0 / 0.14); --wood-seam: rgb(0 0 0 / 0.35);
+    --plastic-1: #1f5a99; --plastic-2: #1a4c84; --plastic-rim: #2c6db3; --plastic-dot: rgb(255 255 255 / 0.07);
+    --color-line: #362d27; --color-control: #5a4d43; --color-text: #f4eee8; --color-text-muted: #b9ada2;
+    --color-accent: #4ade80; --color-on-accent: #052e16; --color-broth: #c98b2a; --color-broth-chili: #b23e2a;
+    --color-metal: #645b54; --color-metal-dark: #37312c; --color-flame: #6aa2ff; --color-focus: #8ab4ff;
+    --color-slot: rgb(30 26 23 / 0.85); --color-slot-empty: rgb(30 26 23 / 0.25); --color-veil: rgb(0 0 0 / 0.35);
+    --color-steam: #8c8178;
+    --color-badge-ring: #f4eee8;
+    --color-badge-ring: #f4eee8;
+  --tier-1: #4b5563; --tier-1-strong: #9ca3af;
+    --tier-2: #166534; --tier-2-strong: #4ade80;
+    --tier-3: #1e40af; --tier-3-strong: #60a5fa;
+    --tier-4: #7a5c00; --tier-4-strong: #facc15;
+    --tier-5: #991b1b; --tier-5-strong: #f87171;
+    --shadow-1: 0 0.25rem 0.75rem rgb(0 0 0 / 0.45);
+    --shadow-2: 0 0.5rem 1.5rem rgb(0 0 0 / 0.5);
+    --shadow-3: 0 0.75rem 2.5rem rgb(0 0 0 / 0.6);
+  }
+}
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --color-bg: #14110f; --color-surface: #1e1a17; --color-table: #2a221d; --color-soft: #17301f;
+    --wood-1: #5b4330; --wood-2: #4e3827; --wood-grain: rgb(0 0 0 / 0.14); --wood-seam: rgb(0 0 0 / 0.35);
+    --plastic-1: #1f5a99; --plastic-2: #1a4c84; --plastic-rim: #2c6db3; --plastic-dot: rgb(255 255 255 / 0.07);
+  --color-line: #362d27; --color-control: #5a4d43; --color-text: #f4eee8; --color-text-muted: #b9ada2;
+  --color-accent: #4ade80; --color-on-accent: #052e16; --color-broth: #c98b2a; --color-broth-chili: #b23e2a;
+  --color-metal: #645b54; --color-metal-dark: #37312c; --color-flame: #6aa2ff; --color-focus: #8ab4ff;
+  --color-slot: rgb(30 26 23 / 0.85); --color-slot-empty: rgb(30 26 23 / 0.25); --color-veil: rgb(0 0 0 / 0.35);
+  --color-steam: #8c8178;
+  --tier-1: #4b5563; --tier-1-strong: #9ca3af;
+  --tier-2: #166534; --tier-2-strong: #4ade80;
+  --tier-3: #1e40af; --tier-3-strong: #60a5fa;
+  --tier-4: #7a5c00; --tier-4-strong: #facc15;
+  --tier-5: #991b1b; --tier-5-strong: #f87171;
+  --shadow-1: 0 0.25rem 0.75rem rgb(0 0 0 / 0.45);
+  --shadow-2: 0 0.5rem 1.5rem rgb(0 0 0 / 0.5);
+  --shadow-3: 0 0.75rem 2.5rem rgb(0 0 0 / 0.6);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root { --motion-fast: 0ms; --motion-base: 0ms; }
+}

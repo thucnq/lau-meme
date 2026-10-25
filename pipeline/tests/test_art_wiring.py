@@ -23,7 +23,6 @@ import pytest
 from test_art_adapters import PROMPT, Server, ai_ok, install, make_ai, seed_of
 from test_art_full_batch import (
     HINT,
-    HINT2,
     MANY_NAMES,
     MEME2,
     ArtClient,
@@ -33,7 +32,9 @@ from test_art_full_batch import (
     art_adapters,
     content_element,
     key_of,
+    meme_hint,
     pending_of,
+    priority_first,
     run,
     store_element,
 )
@@ -87,11 +88,20 @@ def test_ac_art_09_dot_sau_ve_2_phan_tu_cho_ve_truoc_phan_tu_moi():
 
     assert outcome.ok is True
     assert len(draw.prompts) == 3
-    first_two = draw.prompts[:2]
-    for name in left:
-        assert any(name in p or f"hình {name}" in p for p in first_two), f"{name} phải được vẽ trước phần tử mới"
-    assert HINT2 in draw.prompts[2]
     (body,) = second.success_posts
+    # AC-ART-12 comes first: elements at depth >= 5 (auto tier 4/5, no image yet) are drawn before the rest, deepest
+    # first. Among the rest, AC-ART-09 holds: the two waiting elements before the new one.
+    priority, rest = priority_first(body, [*left, MEME2])
+    for i, name in enumerate(priority):
+        assert meme_hint(name) in draw.prompts[i], f"ưu tiên thứ {i}: {name}"
+    rest_waiting = [n for n in rest if n in left]
+    rest_new = [n for n in rest if n == MEME2]
+    start = len(priority)
+    window = draw.prompts[start : start + len(rest_waiting)]
+    for name in rest_waiting:
+        assert any(name in p or f"hình {name}" in p for p in window), f"{name} phải được vẽ trước phần tử mới"
+    for i, name in enumerate(rest_new):
+        assert meme_hint(name) in draw.prompts[start + len(rest_waiting) + i]
     assert pending_of(body) == []
     for name in [*left, MEME2]:
         assert content_element(body, name).get("image_key")

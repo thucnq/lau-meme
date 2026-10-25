@@ -31,7 +31,7 @@ from lau_meme_pipeline.llm import CachedLlm, QuotaExhausted
 from lau_meme_pipeline.moderation import Concept, ModLists, is_held, moderate
 from lau_meme_pipeline.seed import ACTIVE, CLASSIC, INACTIVE, ContentStore, StoredElement, StoredRecipe, load_core
 from lau_meme_pipeline.text import fold
-from lau_meme_pipeline.tier import apply_tiers
+from lau_meme_pipeline.tier import apply_tiers, needs_rare_image
 
 GMT7 = timezone(timedelta(hours=7))
 MAX_ART_ATTEMPTS = 3  # batches an element may fail with transient errors before it keeps its emoji (ADR 0012)
@@ -142,6 +142,7 @@ def run_full(
     daily_history: Sequence[Mapping] = (),
     draw: Callable[[list[ArtItem]], ArtResult] | None = None,
     tiers: Sequence[Mapping] = (),
+    blocked_images: frozenset[str] = frozenset(),
     contributions: Sequence[Mapping] = (),
     first_versions: Mapping[str, int] | None = None,
     trend_peaks: Mapping[str, int] | None = None,
@@ -372,7 +373,16 @@ def run_full(
     # 6b. Illustrations (ADR 0012, AC-ART-01..04): `draw` holds the network side; without it nothing is tracked.
     if draw is not None:
         content = _illustrate(
-            content, out_store, core_art, store.get("art_pending", []), blocked, version, draw, report
+            content,
+            out_store,
+            core_art,
+            store.get("art_pending", []),
+            blocked,
+            version,
+            draw,
+            report,
+            tiers,
+            blocked_images,
         )
 
     # 7. Daily (AC-DAILY-01): core elements with a hand-written hint, plus trend elements with an approved hint that
@@ -400,7 +410,7 @@ def run_full(
     counts = trend_counts(crawl_result.concepts, deduped)
     levels = {eid: counts[dedupe_key(e.name)] for eid, e in content.elements.items() if counts.get(dedupe_key(e.name))}
 
-    content = apply_tiers(content, tiers)
+    content = apply_tiers(content, tiers, blocked_images)
     graph_out = export_graph(content, version)
     manifest = build_manifest(
         content,
@@ -442,21 +452,27 @@ def _illustrate(
     version: int,
     draw: Callable[[list[ArtItem]], ArtResult],
     report: dict,
+    tiers: Sequence[Mapping] = (),
+    blocked_images: frozenset[str] = frozenset(),
 ) -> ContentStore:
-    """Elements waiting from earlier batches first, then this batch's, then older ones never drawn (AC-ART-03).
+    """Vàng/Đỏ elements without a usable image first - auto-tiered by depth or admin-assigned, a hidden image counts
+    as none - deepest first, then by folded name (AC-ART-12). Then elements waiting from earlier batches, then this
+    batch's, then older ones never drawn (AC-ART-03).
     An element whose draws were refused, whose hint failed moderation, or that kept failing for MAX_ART_ATTEMPTS
     batches keeps its emoji for good (AC-ART-02). One with no hint yet is only skipped: a later hint is drawn.
     Core elements without an image come last, shallowest first, then by folded name (AC-ART-11)."""
     trend = {e["id"]: e for e in out_store["elements"]} | dict(core_art)
 
-    def drawable(eid: str) -> bool:
+    admin = {t.get("element_id"): t.get("tier") for t in tiers}
+
+    def drawable(eid: str, redraw_hidden: bool = False) -> bool:
         e, el = trend.get(eid), content.elements.get(eid)
         return (
             e is not None
             and el is not None
             and el.status == ACTIVE
             and eid not in blocked
-            and not e.get("image_key")
+            and (not e.get("image_key") or (redraw_hidden and eid in blocked_images))
             and not e.get("image_fallback")
             # a core element with no hint is only skipped (and not counted) until the core file gives it one
             and (eid not in core_art or bool(hint(eid).strip()))
@@ -471,7 +487,11 @@ def _illustrate(
     def item(eid: str) -> ArtItem:
         return ArtItem(eid, trend[eid]["name"], hint(eid))
 
-    first = [eid for eid in dict.fromkeys(waiting) if drawable(eid)]
+    rare = sorted(
+        (eid for eid in trend if drawable(eid, True) and needs_rare_image(content.elements[eid].depth, admin.get(eid))),
+        key=lambda eid: (-content.elements[eid].depth, content.elements[eid].fold),
+    )
+    first = [*rare, *(eid for eid in dict.fromkeys(waiting) if drawable(eid))]
     rest = sorted(
         (e for e in out_store["elements"] if drawable(e["id"]) and e["id"] not in first),
         key=lambda e: (e.get("added_version") != version, e["id"]),

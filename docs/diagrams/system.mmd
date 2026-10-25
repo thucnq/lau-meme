@@ -7,7 +7,7 @@ flowchart LR
     redirect["Redirect Rule (người cấu hình)<br/>dinoduct.fun/ → 302 /lau-meme/"]
     worker["Worker lau-meme<br/>route dinoduct.fun/lau-meme*<br/>(staging: staging.dinoduct.fun/lau-meme*)<br/>web tĩnh + /lau-meme/api/* + Cron dọn dữ liệu<br/>route laumeme-admin.dinoduct.fun/* (ADMIN_HOST, ADR 0008)<br/>trang quản trị + /api/admin/*"]
     web["Web React + Vite<br/>static assets web/dist/lau-meme<br/>tra + giải mã graph trong bộ nhớ"]
-    d1[("D1 (SQLite)<br/>nội dung 14 version, chặn, tier,<br/>người chơi, tài khoản, phiên,<br/>đề xuất meme, sự kiện, audit")]
+    d1[("D1 (SQLite)<br/>nội dung 14 version, chặn, tier,<br/>người chơi, tài khoản, phiên,<br/>Đĩa của tài khoản (ADR 0015),<br/>đề xuất meme, sự kiện, audit")]
     cache[("Cache API<br/>graph, ảnh bất biến")]
     wa["Web Analytics<br/>(không cookie)"]
     r2[("R2 ảnh<br/>(giai đoạn 2)")]
@@ -43,4 +43,4 @@ flowchart LR
   tokenjob -. "ghi THREADS_ACCESS_TOKEN (GH_SECRETS_TOKEN); lỗi thì mở Issue" .-> secrets
   actions -. "vẽ ảnh qua REST (ADR 0012)" .-> wai
   actions -. "PUT /pipeline/images/{key} (ADR 0012)" .-> worker
-  worker -. "ghi ảnh đã kiểm, đọc /img/* (binding IMG)" .-> r2
+  worker -. "ghi ảnh đã kiểm + tranh vẽ tay của admin (ADR 0016), đọc /img/* (binding IMG)" .-> r2

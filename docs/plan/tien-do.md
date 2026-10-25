@@ -1,7 +1,7 @@
 # Tiến độ - ƯỚC LƯỢNG - LẨU MEME
 
 > Sinh bởi `/dk:plan` (gen-plan.py) từ `docs/estimate/items.json`. **Người sửa trực tiếp file này**: dấu `[x]` (hạng mục hoặc AC), `tiến độ: N%`, `người`, `bắt đầu`, `xong` (YYYY-MM-DD), `ghi chú` - giữ nguyên dấu ` · ` giữa các trường. Chạy lại `/dk:plan` để tính dự báo và vẽ lại `gantt.html`. `KH` là kế hoạch gốc, chỉ đổi bằng `/dk:plan rebaseline`.
-> Bắt đầu dự án: 2026-10-20 · Kỹ sư: 1 (Thuc) · Giờ/tuần: 20 · Nghiệm thu KH: 2028-06-06 · Dự báo: 2027-07-26 · Cập nhật: 2026-10-24
+> Bắt đầu dự án: 2026-10-20 · Kỹ sư: 1 (Thuc) · Giờ/tuần: 20 · Nghiệm thu KH: 2028-06-06 · Dự báo: 2027-09-28 · Cập nhật: 2026-10-24
 
 
 ## Nền tảng
@@ -42,7 +42,7 @@
   - [x] AC-GAME-08 Sắp xếp Đĩa nhúng
   - [x] AC-GAME-09 Nhãn "MỚI"
   - [x] AC-GAME-10 Lưu và khôi phục tiến độ cục bộ
-  - [x] AC-GAME-11 Dọn bàn và Chơi lại từ đầu
+  - [x] AC-GAME-11 Dọn bàn (cập nhật 2026-10-24: bỏ "Chơi lại từ đầu" - câu hỏi mở 71)
   - [x] AC-GAME-12 Hướng dẫn lần đầu
   - [x] AC-GAME-13 Chế độ tối
   - [x] AC-GAME-14 Ghép tra trong bộ nhớ dưới 50 ms
@@ -217,11 +217,13 @@
   - [ ] AC-PIPE-02 Lịch chạy và chạy tay (cập nhật 2026-10-23)
 
 ## Nội dung
-- [ ] **TIER** Tier của meme · 4đ · rủi ro: LOW · KH: 2027-10-12 → 2027-10-22 · tiến độ: 0% (theo AC) · người: Thuc · bắt đầu:  · xong:  · ghi chú: 
+- [ ] **TIER** Tier của meme · 8.5đ · rủi ro: LOW · KH: 2027-10-12 → 2027-10-22 · tiến độ: 0% (theo AC) · người: Thuc · bắt đầu:  · xong:  · ghi chú: 
   - [ ] AC-ADMIN-12 Gán tier cho phần tử (thêm 2026-10-23)
   - [ ] AC-TIER-01 Tier mặc định và giữ qua các mẻ
   - [ ] AC-TIER-02 Hiển thị tier trên phần tử
   - [ ] AC-TIER-03 Graph cũ chưa có tier
+  - [ ] AC-TIER-04 Tier tự động theo độ sâu (thêm 2026-10-24)
+  - [ ] AC-TIER-05 Admin sửa tier và trả về tự động (thêm 2026-10-24)
 
 ## Cộng đồng
 - [ ] **CONTRIB** Đóng góp meme · 13đ · rủi ro: HIGH · KH: 2027-10-25 → 2027-12-02 · tiến độ: 0% (theo AC) · người: Thuc · bắt đầu:  · xong:  · ghi chú: 
@@ -238,7 +240,30 @@
   - [ ] AC-CONTRIB-11 Bảng xếp hạng "Top cống hiến"
   - [ ] AC-CONTRIB-12 Xóa tài khoản và xuất dữ liệu
 
+## Trò chơi
+- [ ] **SYNC** Đĩa nhúng theo tài khoản · 10.5đ · rủi ro: HIGH · KH: 2027-12-20 → 2028-01-20 · tiến độ: 0% (theo AC) · người: Thuc · bắt đầu:  · xong:  · ghi chú: 
+  - [ ] AC-SYNC-01 Ghép ra món mới thì ghi vào Đĩa của tài khoản
+  - [ ] AC-SYNC-02 Tải lại trang kéo Đĩa tổng hợp của mọi phiên
+  - [ ] AC-SYNC-03 Tiến độ trước khi đăng nhập được gộp vào tài khoản
+  - [ ] AC-SYNC-04 Từ chối phần tử không ghép ra được
+  - [ ] AC-SYNC-05 Chưa đăng nhập, phiên hết hạn và cách ly tài khoản
+  - [ ] AC-SYNC-06 Mất mạng thì chơi tiếp, gửi bù sau
+  - [ ] AC-SYNC-07 Không có cách xóa Đĩa của tài khoản từ giao diện (cập nhật 2026-10-24 - câu hỏi mở 71)
+  - [ ] AC-SYNC-08 Phần tử bị chặn và graph đổi version
+  - [ ] AC-SYNC-09 Giới hạn tần suất và kích thước
+  - [ ] AC-SYNC-10 Xóa và xuất dữ liệu
+- [ ] **UI3** Giao diện mới và cảm giác chơi - góp ý 2026-10-24 · 10đ · rủi ro: MEDIUM · KH: 2028-01-21 → 2028-02-21 · tiến độ: 0% (theo AC) · người: Thuc · bắt đầu:  · xong:  · ghi chú: 
+  - [ ] AC-GAME-11 Dọn bàn (cập nhật 2026-10-24: bỏ "Chơi lại từ đầu" - câu hỏi mở 71)
+  - [ ] AC-GAME-18 Nồi lẩu nằm trong màn hình đầu tiên (thêm 2026-10-21)
+  - [ ] AC-GAME-19 Nút điều khiển nằm ở khu bàn lẩu, đăng nhập ở đầu trang (thêm 2026-10-22)
+  - [ ] AC-GAME-22 Vùng cấm đặt món (thêm 2026-10-24)
+  - [ ] AC-GAME-23 Đĩa nhúng cao bằng bàn lẩu, thanh cuộn mỏng (thêm 2026-10-24)
+  - [ ] AC-GAME-24 Bấm món là cho vào nồi (thêm 2026-10-24)
+  - [ ] AC-GAME-25 Hiệu ứng khi ghép ra món Vàng và Đỏ (thêm 2026-10-24)
+  - [ ] AC-GAME-27 Giao diện mới - phông chữ, bảng màu và hệ thống thiết kế (thêm 2026-10-24)
+
 ## Kiểm thử
+- [ ] **UAT3** Kiểm thử nghiệm thu & sửa lỗi (góp ý 2026-10-24) · 4đ · rủi ro: MEDIUM · KH: 2028-02-22 → 2028-03-03 · tiến độ: 0% · người: Thuc · bắt đầu:  · xong:  · ghi chú: 
 - [x] **UAT** Kiểm thử nghiệm thu & sửa lỗi (giai đoạn 1) · 18đ · rủi ro: MEDIUM · KH: 2027-07-01 → 2027-08-04 · tiến độ: 100% · người: Thuc · bắt đầu:  · xong:  · ghi chú: 
   - [x] AC-GAME-01 Bàn chơi lần đầu
   - [x] AC-GAME-02 Nhúng lẩu qua nồi - ghép thành công
@@ -250,7 +275,7 @@
   - [x] AC-GAME-08 Sắp xếp Đĩa nhúng
   - [x] AC-GAME-09 Nhãn "MỚI"
   - [x] AC-GAME-10 Lưu và khôi phục tiến độ cục bộ
-  - [x] AC-GAME-11 Dọn bàn và Chơi lại từ đầu
+  - [x] AC-GAME-11 Dọn bàn (cập nhật 2026-10-24: bỏ "Chơi lại từ đầu" - câu hỏi mở 71)
   - [x] AC-GAME-12 Hướng dẫn lần đầu
   - [x] AC-GAME-13 Chế độ tối
   - [x] AC-GAME-14 Ghép tra trong bộ nhớ dưới 50 ms
@@ -261,6 +286,12 @@
   - [x] AC-GAME-19 Nút điều khiển nằm ở khu bàn lẩu, đăng nhập ở đầu trang (thêm 2026-10-22)
   - [x] AC-GAME-20 Nồi lẩu vẽ trọn, quai ngang thân nồi (thêm 2026-10-22)
   - [x] AC-GAME-21 Vuốt cuộn trang trên màn hình cảm ứng (thêm 2026-10-22)
+  - [ ] AC-GAME-22 Vùng cấm đặt món (thêm 2026-10-24)
+  - [ ] AC-GAME-23 Đĩa nhúng cao bằng bàn lẩu, thanh cuộn mỏng (thêm 2026-10-24)
+  - [ ] AC-GAME-24 Bấm món là cho vào nồi (thêm 2026-10-24)
+  - [ ] AC-GAME-25 Hiệu ứng khi ghép ra món Vàng và Đỏ (thêm 2026-10-24)
+  - [ ] AC-GAME-26 Âm thanh khi ghép ra món Vàng và Đỏ (thêm 2026-10-24) _(tùy chọn)_
+  - [ ] AC-GAME-27 Giao diện mới - phông chữ, bảng màu và hệ thống thiết kế (thêm 2026-10-24)
   - [ ] AC-METRIC-01 Cloudflare Web Analytics không cookie
   - [ ] AC-METRIC-02 Nhận sự kiện theo danh sách cho phép
   - [ ] AC-METRIC-03 Sự kiện không hợp lệ
@@ -314,8 +345,24 @@
   - [x] AC-ART-09 Mẻ full vẽ ảnh cho phần tử mới (thêm 2026-10-21, ADR 0012)
   - [x] AC-ART-10 Thiếu cấu hình hoặc lỗi vẽ kéo dài không làm hỏng mẻ (thêm 2026-10-21, ADR 0012)
   - [ ] AC-ART-11 Vẽ bù ảnh cho phần tử lõi (thêm 2026-10-23)
-- [ ] **ART2** Vẽ bù ảnh phần tử lõi (giai đoạn 2) · 1đ · rủi ro: LOW · KH: 2028-06-01 → 2028-06-05 · tiến độ: 0% (theo AC) · người: Thuc · bắt đầu:  · xong:  · ghi chú: 
+  - [ ] AC-ART-12 Ưu tiên vẽ ảnh cho món sắp lên Vàng/Đỏ (thêm 2026-10-24)
+  - [ ] AC-ART-13 Admin tải tranh vẽ tay cho phần tử (thêm 2026-10-24) _(tùy chọn)_
+- [ ] **ART2** Vẽ bù ảnh phần tử lõi, ưu tiên món Vàng/Đỏ (giai đoạn 2) · 2.5đ · rủi ro: LOW · KH: 2028-06-01 → 2028-06-05 · tiến độ: 0% (theo AC) · người: Thuc · bắt đầu:  · xong:  · ghi chú: 
   - [ ] AC-ART-11 Vẽ bù ảnh cho phần tử lõi (thêm 2026-10-23)
+  - [ ] AC-ART-12 Ưu tiên vẽ ảnh cho món sắp lên Vàng/Đỏ (thêm 2026-10-24)
 
 ## Kiểm thử
-- [ ] **UAT2** Kiểm thử nghiệm thu & sửa lỗi (giai đoạn 2) · 7đ · rủi ro: MEDIUM · KH: 2027-11-09 → 2027-11-22 · tiến độ: 0% · người: Thuc · bắt đầu:  · xong:  · ghi chú: 
+- [ ] **UAT2** Kiểm thử nghiệm thu & sửa lỗi (giai đoạn 2) · 7.5đ · rủi ro: MEDIUM · KH: 2027-11-09 → 2027-11-22 · tiến độ: 0% · người: Thuc · bắt đầu:  · xong:  · ghi chú: 
+  - [ ] AC-ART-01 Prompt vẽ khái niệm, không người thật
+  - [ ] AC-ART-02 Kiểm duyệt ảnh, vẽ lại một lần rồi về emoji
+  - [ ] AC-ART-03 Hết hạn mức thì vẽ bù đợt sau
+  - [ ] AC-ART-04 Lưu ảnh theo băm nội dung
+  - [ ] AC-ART-05 Phục vụ ảnh qua Worker với cache bất biến
+  - [ ] AC-ART-06 Client hiện emoji trước, ảnh sau
+  - [ ] AC-ART-07 Ảnh bị chặn không được tải
+  - [ ] AC-ART-08 Phóng lớn bất ngờ khi ghép ra món lần đầu (thêm 2026-10-20)
+  - [ ] AC-ART-09 Mẻ full vẽ ảnh cho phần tử mới (thêm 2026-10-21, ADR 0012)
+  - [ ] AC-ART-10 Thiếu cấu hình hoặc lỗi vẽ kéo dài không làm hỏng mẻ (thêm 2026-10-21, ADR 0012)
+  - [ ] AC-ART-11 Vẽ bù ảnh cho phần tử lõi (thêm 2026-10-23)
+  - [ ] AC-ART-12 Ưu tiên vẽ ảnh cho món sắp lên Vàng/Đỏ (thêm 2026-10-24)
+  - [ ] AC-ART-13 Admin tải tranh vẽ tay cho phần tử (thêm 2026-10-24) _(tùy chọn)_

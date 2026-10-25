@@ -8,7 +8,10 @@
  *     first descendant [data-tier].
  *   - Inside that box, one badge with role="img" and accessible name "Tier <tên>" (Xám, Xanh lá, Xanh dương, Vàng, Đỏ)
  *     holding an <svg>: tier 1 a <circle>, tier 2..5 a <polygon> with 3, 4, 5, 6 points. The shape fill is in the same
- *     hue family as the background, centred horizontally at the bottom edge of the box, not over the emoji.
+ *     hue family as the background. Cập nhật 2026-10-24: the svg sits ON the bottom border, centred horizontally; its
+ *     centre is on the box's bottom border line (within 2 px on both axes), the upper half inside the box, the lower
+ *     half outside it, and no ancestor with overflow other than visible (plate frame, table, drop slot) clips it.
+ *     It does not cover the emoji and does not make the box taller.
  *   - Item (progress) carries `tier` (1-5); GraphResult carries `tier`; manifest.starters carry none (tier 1).
  *   - The daily card (region "Món đặc biệt hôm nay") never shows a tier badge while the dish is unsolved.
  * Theme is read from document.documentElement.dataset.theme ('light' | 'dark').
@@ -236,15 +239,35 @@ function assertTier(holder: HTMLElement, name: string, tier: number, theme: 'lig
   expect(fill.join(), `${label}: hình phải khác màu nền`).not.toBe(bg.join())
   expect(hueClass(fill), `${label}: hình cùng họ màu với nền`).toBe(hueClass(bg))
   if (theme === 'light') expect(lum(fill), `${label}: hình đậm hơn nền`).toBeLessThan(lum(bg))
+  // cập nhật 2026-10-25: a light ring round the shape keeps it apart from the tabletop (AC-GAME-28)
+  const ring = getComputedStyle(shape)
+  expect(ring.stroke, `${label}: hình thiếu viền`).not.toMatch(/^(none|rgba\(0, 0, 0, 0\))$/)
+  expect(Number.parseFloat(ring.strokeWidth), `${label}: viền quá mảnh`).toBeGreaterThanOrEqual(1)
+  expect(lum(toRgb(ring.stroke, bg)), `${label}: viền phải sáng`).toBeGreaterThan(0.7)
 
-  // place: bottom centre, inside the box, not over the emoji, box not bloated
+  // place (cập nhật 2026-10-24): hình nhỏ đè lên đường viền dưới, căn giữa ngang; tâm hình nằm trên đường viền dưới
+  // (sai lệch <= 2 px cả hai chiều), nửa trên trong phần tử, nửa dưới lòi ra ngoài và không bị khung nào cắt.
   const bx = rect(box)
-  const bb = rect(badge)
+  const bb = rect(svg!)
   expect(bb.width, label).toBeGreaterThan(0)
-  expect(Math.abs(bb.left + bb.width / 2 - (bx.left + bx.width / 2)), `${label}: chính giữa`).toBeLessThanOrEqual(2)
-  expect(bb.bottom, `${label}: mép dưới`).toBeLessThanOrEqual(bx.bottom + 1)
-  expect(bb.top, `${label}: nửa dưới`).toBeGreaterThanOrEqual(bx.top + bx.height / 2)
+  const borderBottom = Number.parseFloat(getComputedStyle(box).borderBottomWidth) || 0
+  const lineY = bx.bottom - borderBottom / 2 // đường giữa của viền dưới
+  expect(Math.abs(bb.left + bb.width / 2 - (bx.left + bx.width / 2)), `${label}: tâm hình lệch ngang`).toBeLessThanOrEqual(2)
+  expect(Math.abs(bb.top + bb.height / 2 - lineY), `${label}: tâm hình lệch khỏi đường viền dưới`).toBeLessThanOrEqual(2)
+  expect(bb.top, `${label}: nửa trên phải nằm trong phần tử`).toBeGreaterThanOrEqual(bx.top)
+  expect(bb.top, `${label}: nửa trên phải nằm trên mép dưới`).toBeLessThan(bx.bottom)
+  expect(bb.bottom, `${label}: nửa dưới phải lòi ra ngoài phần tử`).toBeGreaterThan(bx.bottom + 1)
   expect(bb.width, `${label}: hình nhỏ`).toBeLessThan(bx.width / 2)
+  // không bị khung Đĩa, mặt bàn hay chỗ thả cắt: mọi tổ tiên có overflow khác visible phải chứa trọn hình
+  for (let anc = box.parentElement; anc && anc !== document.documentElement && anc !== document.body; anc = anc.parentElement) {
+    const cs = getComputedStyle(anc)
+    if (cs.overflowX === 'visible' && cs.overflowY === 'visible') continue
+    const ar = rect(anc)
+    const tag = `${anc.tagName.toLowerCase()}${anc.dataset.testid ? `[${anc.dataset.testid}]` : ''}`
+    expect(bb.bottom, `${label}: hình bị cắt đáy bởi ${tag}`).toBeLessThanOrEqual(ar.bottom + 0.5)
+    expect(bb.left, `${label}: hình bị cắt trái bởi ${tag}`).toBeGreaterThanOrEqual(ar.left - 0.5)
+    expect(bb.right, `${label}: hình bị cắt phải bởi ${tag}`).toBeLessThanOrEqual(ar.right + 0.5)
+  }
   const emoji = leafWithText(box, emojiText).getBoundingClientRect()
   const over = emoji.left < bb.right && bb.left < emoji.right && emoji.top < bb.bottom && bb.top < emoji.bottom
   expect(over, `${label}: hình che emoji`).toBe(false)

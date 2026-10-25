@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState, type FormEvent, type ReactNode } from
 import {
   ApiError,
   AuthError,
+  setTier,
   LockedError,
   call,
   moderate,
@@ -280,16 +281,22 @@ function ReportsTab(ctx: Ctx) {
   )
 }
 
+const TIER_NAMES = ['Xám', 'Xanh lá', 'Xanh dương', 'Vàng', 'Đỏ'] as const
+const tierName = (tier: number) => TIER_NAMES[tier - 1] ?? String(tier)
+
 function ContentTab(ctx: Ctx) {
   const [q, setQ] = useState('')
   const [query, setQuery] = useState('')
   const [state, setState] = useState('')
+  const [tier, setTierFilter] = useState('')
   const [page, setPage] = useState(1)
   const [reload, setReload] = useState(0)
   const [open, setOpen] = useState<ElementItem | null>(null)
+  const [tierError, setTierError] = useState<string | null>(null)
   const params = new URLSearchParams({ page: String(page) })
   if (query) params.set('q', query)
   if (state) params.set('state', state)
+  if (tier) params.set('tier', tier)
   const { data, error } = useList<ElementItem>(ctx, `elements?${params}`, reload)
   const recipes = useList<RecipeItem>(ctx, open ? `recipes?element_id=${open.id}` : null, reload)
   const mod = useModerate(ctx, () => setReload((n) => n + 1))
@@ -298,6 +305,13 @@ function ContentTab(ctx: Ctx) {
     e.preventDefault()
     setQuery(q.trim().slice(0, 100))
     setPage(1)
+  }
+  const changeTier = (id: string, value: string) => {
+    setTierError(null)
+    setTier(ctx.token, id, value === 'auto' ? 'auto' : Number(value)).then(
+      () => setReload((n) => n + 1),
+      (err: unknown) => (err instanceof AuthError ? ctx.onAuthError() : setTierError(errorText(err))),
+    )
   }
   const button = (label: string, kind: Kind, id: string, action: Action) => (
     <button type="button" onClick={() => mod.run(kind, id, action)}>
@@ -327,10 +341,27 @@ function ContentTab(ctx: Ctx) {
             <option value="blocked">Đã chặn</option>
           </select>
         </label>
+        <label>
+          Tier
+          <select
+            value={tier}
+            onChange={(e) => {
+              setTierFilter(e.target.value)
+              setPage(1)
+            }}
+          >
+            <option value="">Tất cả</option>
+            {TIER_NAMES.map((name, i) => (
+              <option key={name} value={i + 1}>
+                {i + 1} {name}
+              </option>
+            ))}
+          </select>
+        </label>
         <button type="submit">Tìm</button>
         {mod.reasonBox}
       </form>
-      <Alert>{error ?? mod.error ?? recipes.error}</Alert>
+      <Alert>{error ?? mod.error ?? tierError ?? recipes.error}</Alert>
       <table className="admin-table">
         <thead>
           <tr>
@@ -338,6 +369,7 @@ function ContentTab(ctx: Ctx) {
             <th>Độ sâu</th>
             <th>Trạng thái</th>
             <th>Ảnh</th>
+            <th>Tier</th>
             <th>Thao tác</th>
           </tr>
         </thead>
@@ -353,6 +385,24 @@ function ContentTab(ctx: Ctx) {
                 {STATE_LABEL[e.image_state]}
                 {e.image_state === 'active' && button('Ẩn ảnh', 'image', e.id, 'hide')}
                 {e.image_state === 'hidden' && button('Hiện ảnh', 'image', e.id, 'show')}
+              </td>
+              <td>
+                {tierName(e.tier)} · {e.tier_source === 'admin' ? 'Admin gán' : 'Tự động'}
+                <br />
+                Tự động: {e.auto_tier === null ? 'chưa có' : tierName(e.auto_tier)}
+                <br />
+                <select
+                  aria-label={`Tier của ${e.name}`}
+                  value={e.tier_source === 'admin' ? String(e.tier) : 'auto'}
+                  onChange={(ev) => changeTier(e.id, ev.target.value)}
+                >
+                  <option value="auto">Tự động (theo độ sâu)</option>
+                  {TIER_NAMES.map((name, i) => (
+                    <option key={name} value={i + 1}>
+                      {i + 1} {name}
+                    </option>
+                  ))}
+                </select>
               </td>
               <td>
                 {e.state === 'active' && button('Ẩn', 'element', e.id, 'hide')}

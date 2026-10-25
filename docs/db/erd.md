@@ -1,6 +1,6 @@
 # ERD - D1 (SQLite)
 
-> Nguồn: `worker/migrations/0001..0007`. Id phần tử/công thức là băm (ADR 0002). Thời gian `INTEGER` epoch ms UTC.
+> Nguồn: `worker/migrations/0001..0008`. Id phần tử/công thức là băm (ADR 0002). Thời gian `INTEGER` epoch ms UTC.
 > Không có khóa ngoại từ dữ liệu người chơi sang `element`/`recipe`: nội dung đổi theo version, bảng người chơi chỉ giữ id.
 
 ```mermaid
@@ -23,6 +23,8 @@ erDiagram
     INTEGER last_version
     INTEGER updated_at
     INTEGER trend_peak "AC-PIPE-16"
+    INTEGER auto_tier "AC-TIER-04, theo độ sâu"
+    TEXT image_source "ai | admin"
   }
   element_tier {
     TEXT element_id PK
@@ -238,6 +240,19 @@ erDiagram
     TEXT token_fp
     INTEGER created_at
   }
+  admin_image_change {
+    TEXT id PK "UUIDv7"
+    TEXT element_id
+    TEXT before_key
+    TEXT after_key
+    TEXT token_fp
+    INTEGER created_at
+  }
+  account_element {
+    TEXT account_id PK,FK
+    TEXT element_id PK
+    INTEGER found_at "lần ghi đầu tiên được nhận"
+  }
 
   element ||--o{ recipe : "a / b / result"
   element ||--o| element_tier : "element_id"
@@ -252,6 +267,7 @@ erDiagram
   account ||--o{ account_player : "account_id"
   player ||--o| account_player : "player_id"
   account ||--o{ session : "account_id"
+  account ||--o{ account_element : "account_id"
   account ||--o{ daily_entry : "account_id"
   account ||--o| account_streak : "account_id"
   player ||--o{ report : "player_id"
@@ -264,6 +280,6 @@ erDiagram
 
 ## Ghi chú
 - Dữ liệu cá nhân: `player`, `consent`, `discovery.player_id`, `daily_result`, `streak`, `report.player_id`, `vote`, `event` (BRD 5.2). Xóa theo UUID: AC-PRIV-05.
-- Tài khoản Google (ADR 0010): `account`, `account_player`, `session`, `daily_entry`, `account_streak`; xóa `account` thì `ON DELETE CASCADE` xóa phần còn lại (AC-AUTH-06). Kết quả Daily, streak và nickname trên bảng xếp hạng thuộc tài khoản; `daily_result`/`streak` theo UUID cũ không còn được ghi.
-- Đóng góp meme (ADR 0013): `contribution` gắn tài khoản là dữ liệu cá nhân; xóa tài khoản xóa đề xuất chờ duyệt, phần còn lại `SET NULL`, và nickname trong `batch_content.creators_json` thành `null`. Tier (`element_tier`) và mức mặn (`element.trend_peak`) là dữ liệu nội dung, pipeline đọc qua `/pipeline/state`.
-- Giữ dữ liệu (Cron Trigger hằng ngày, ADR 0004): `event` 90 ngày; `consent.ip_hash` 7 ngày; `admin_audit` và `admin_change` 12 tháng; `consent` 1 năm sau dòng `erase`; `session` hết hạn (90 ngày không dùng); `batch_content` và `pipeline_store` 14 version mới nhất.
+- Tài khoản Google (ADR 0010): `account`, `account_player`, `session`, `daily_entry`, `account_streak`, `account_element` (Đĩa của tài khoản - ADR 0015); xóa `account` thì `ON DELETE CASCADE` xóa phần còn lại (AC-AUTH-06). Kết quả Daily, streak và nickname trên bảng xếp hạng thuộc tài khoản; `daily_result`/`streak` theo UUID cũ không còn được ghi.
+- Đóng góp meme (ADR 0013): `contribution` gắn tài khoản là dữ liệu cá nhân; xóa tài khoản xóa đề xuất chờ duyệt, phần còn lại `SET NULL`, và nickname trong `batch_content.creators_json` thành `null`. Tier admin gán (`element_tier`), tier tự động (`element.auto_tier`, pipeline tính - ADR 0016) và mức mặn (`element.trend_peak`) là dữ liệu nội dung, pipeline đọc qua `/pipeline/state`.
+- Giữ dữ liệu (Cron Trigger hằng ngày, ADR 0004): `event` 90 ngày; `consent.ip_hash` 7 ngày; `admin_audit`, `admin_change` và `admin_image_change` 12 tháng; `consent` 1 năm sau dòng `erase`; `session` hết hạn (90 ngày không dùng); `batch_content` và `pipeline_store` 14 version mới nhất.

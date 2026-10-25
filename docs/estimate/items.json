@@ -1,6 +1,6 @@
 {
   "title": "ƯỚC LƯỢNG - LẨU MEME",
-  "subtitle": "Dự án cá nhân · 1 người · 20 giờ/tuần · theo AC đã duyệt (spec fc39c07) · giai đoạn 1 = lõi classic + pipeline chế độ lõi, giai đoạn 2 = crawl, kiểm duyệt, ảnh",
+  "subtitle": "Dự án cá nhân · 1 người · 20 giờ/tuần · theo AC đã duyệt (spec 135803d) · giai đoạn 1 = lõi classic + pipeline chế độ lõi, giai đoạn 2 = crawl, kiểm duyệt, ảnh",
   "params": {
     "no_quote": true,
     "hours_per_day": 8,
@@ -348,8 +348,8 @@
       "id": "TIER",
       "module": "Nội dung",
       "name": "Tier của meme",
-      "desc": "TIER · AC-TIER-01..03, AC-ADMIN-12 (thêm 2026-10-23) · tier 1-5 trong kho, giữ qua mẻ và rollback, vào graph (1); màu nền + hình nhỏ mép dưới, tương phản 4,5:1 sáng/tối (1.5); graph cũ hiện Xám (0.5); admin gán tier + audit (1)",
-      "points": 4,
+      "desc": "TIER · AC-TIER-01..03, AC-ADMIN-12 (thêm 2026-10-23) · tier 1-5 trong kho, giữ qua mẻ và rollback, vào graph (1); màu nền + hình nhỏ mép dưới, tương phản 4,5:1 sáng/tối (1.5); graph cũ hiện Xám (0.5); admin gán tier + audit (1); cập nhật 2026-10-24: tier tự động theo độ sâu 0-2/3/4/5-6/≥7, Vàng/Đỏ chưa có ảnh giữ Xanh dương, tính lại mỗi mẻ (AC-TIER-04, 2); admin gán thắng tự động, chọn lại 'Tự động', hiện nguồn tier (AC-TIER-05, 1.5); hình nhỏ đè viền dưới (AC-TIER-02, 0.5); gán Vàng/Đỏ cho món chưa có ảnh trả 409 (AC-ADMIN-12, 0.5)",
+      "points": 8.5,
       "deps": [
         "ADMIN",
         "GRAPH"
@@ -376,6 +376,60 @@
         "AC-CONTRIB"
       ],
       "risk": "HIGH",
+      "owner": "Thuc"
+    },
+    {
+      "id": "SYNC",
+      "module": "Trò chơi",
+      "name": "Đĩa nhúng theo tài khoản",
+      "desc": "SYNC · AC-SYNC-01..10, AC-AUTH-04/06 cập nhật (thêm 2026-10-24) · bảng D1 Đĩa theo tài khoản + migration expand-only, ghi kèm cặp và server kiểm công thức trên 14 bản graph, idempotent (1.5); tải trang gộp Đĩa mọi phiên, thời điểm sớm nhất (1.5); gộp tiến độ trước khi đăng nhập (1.5); 400/404/422 không lộ graph (0.5); 401 và cách ly tài khoản (1); mất mạng gửi bù, thử lại có giới hạn (1.5); không có nút/endpoint xóa Đĩa (0.5); phần tử bị chặn/đổi version (0.5); 120 ghi/phút, lô ≤ 500 (1); xuất/xóa dữ liệu + chính sách (1)",
+      "points": 10.5,
+      "deps": [
+        "AUTH",
+        "GAME",
+        "PRIV"
+      ],
+      "ac": [
+        "AC-SYNC"
+      ],
+      "risk": "HIGH",
+      "owner": "Thuc"
+    },
+    {
+      "id": "UI3",
+      "module": "Trò chơi",
+      "name": "Giao diện mới và cảm giác chơi - góp ý 2026-10-24",
+      "desc": "GAME · AC-GAME-18 cập nhật, AC-GAME-11/19 bỏ 'Chơi lại từ đầu', AC-GAME-22..25, 27 (thêm 2026-10-24) · bàn lấp khung nhìn, cách đáy ≤ 24 px, 5 khung nhìn (1); bỏ nút Chơi lại từ đầu + sửa test (0.5); vùng cấm đặt món, đặt chỗ trống gần nhất (1.5); Đĩa cao bằng bàn, thanh cuộn mỏng (1); bấm món là vào nồi, bàn phím (1.5); hiệu ứng Vàng/Đỏ, reduced-motion, viền sáng khi ghép lại (1.5); giao diện mới: phông tự phục vụ ≤ 150 KB, token sáng/tối, tương phản, duyệt bằng ảnh chụp (3)",
+      "points": 10,
+      "deps": [
+        "UI2",
+        "TIER"
+      ],
+      "ac": [
+        "AC-GAME-11",
+        "AC-GAME-18",
+        "AC-GAME-19",
+        "AC-GAME-22",
+        "AC-GAME-23",
+        "AC-GAME-24",
+        "AC-GAME-25",
+        "AC-GAME-27"
+      ],
+      "risk": "MEDIUM",
+      "owner": "Thuc"
+    },
+    {
+      "id": "UAT3",
+      "module": "Kiểm thử",
+      "name": "Kiểm thử nghiệm thu & sửa lỗi (góp ý 2026-10-24)",
+      "desc": "15% điểm SYNC, UI3 và phần TIER cập nhật 2026-10-24; kiểm Đĩa trên 2 máy cùng tài khoản, 5 khung nhìn sáng/tối trên staging",
+      "points": 4,
+      "deps": [
+        "SYNC",
+        "UI3",
+        "TIER"
+      ],
+      "risk": "MEDIUM",
       "owner": "Thuc"
     },
     {
@@ -507,14 +561,16 @@
     {
       "id": "ART2",
       "module": "Nội dung",
-      "name": "Vẽ bù ảnh phần tử lõi (giai đoạn 2)",
-      "desc": "ART · AC-ART-11 (thêm 2026-10-23) · vẽ bù ảnh 174 phần tử lõi trong hạn mức 20 ảnh/đợt, sau phần tử chờ vẽ và phần tử mới; tách khỏi ART vì ART đã xong",
-      "points": 1,
+      "name": "Vẽ bù ảnh phần tử lõi, ưu tiên món Vàng/Đỏ (giai đoạn 2)",
+      "desc": "ART · AC-ART-11 (thêm 2026-10-23) · vẽ bù ảnh 174 phần tử lõi trong hạn mức 20 ảnh/đợt, sau phần tử chờ vẽ và phần tử mới; tách khỏi ART vì ART đã xong; AC-ART-12 (thêm 2026-10-24): vẽ trước món tier tự động Vàng/Đỏ đang chờ ảnh và món admin gán Vàng/Đỏ mất ảnh, có ảnh thì lên tier ngay trong mẻ, báo cáo đợt (1.5)",
+      "points": 2.5,
       "deps": [
-        "ART"
+        "ART",
+        "TIER"
       ],
       "ac": [
-        "AC-ART-11"
+        "AC-ART-11",
+        "AC-ART-12"
       ],
       "risk": "LOW",
       "owner": "Thuc"
@@ -523,10 +579,43 @@
       "id": "UAT2",
       "module": "Kiểm thử",
       "name": "Kiểm thử nghiệm thu & sửa lỗi (giai đoạn 2)",
-      "desc": "15% điểm tính năng giai đoạn 2; chạy pipeline crawl thật vài đợt trên staging trước khi bật tự động đăng; thêm PIPE3, ART-11 2026-10-23; thêm PIPE4 2026-10-24",
-      "points": 7,
+      "desc": "15% điểm tính năng giai đoạn 2; chạy pipeline crawl thật vài đợt trên staging trước khi bật tự động đăng; thêm PIPE3, ART-11 2026-10-23; thêm PIPE4 2026-10-24; thêm AC-ART-12 2026-10-24",
+      "points": 7.5,
       "deps": [
         "*"
+      ],
+      "risk": "MEDIUM",
+      "owner": "Thuc"
+    },
+    {
+      "id": "SND",
+      "module": "Trò chơi",
+      "name": "Âm thanh khi ra món Vàng/Đỏ",
+      "desc": "GAME · AC-GAME-26 (thêm 2026-10-24, Tùy chọn) · 2 tiếng ngắn Web Audio/CC0 ≤ 50 KB dưới /lau-meme/, chỉ phát sau thao tác, nút loa nhớ lựa chọn, mặc định bật",
+      "points": 1,
+      "optional": true,
+      "deps": [
+        "UI3"
+      ],
+      "ac": [
+        "AC-GAME-26"
+      ],
+      "risk": "LOW",
+      "owner": "Thuc"
+    },
+    {
+      "id": "ART3",
+      "module": "Nội dung",
+      "name": "Admin tải tranh vẽ tay",
+      "desc": "ART · AC-ART-13 (thêm 2026-10-24, Tùy chọn) · tải PNG/WebP ≤ 1 MB, chuẩn hóa WebP 256×256, lưu theo băm, gắn vào phần tử + audit, không qua kiểm duyệt LLM, mẻ sau không vẽ đè; 400/404",
+      "points": 2.5,
+      "optional": true,
+      "deps": [
+        "ART",
+        "ADMIN"
+      ],
+      "ac": [
+        "AC-ART-13"
       ],
       "risk": "MEDIUM",
       "owner": "Thuc"

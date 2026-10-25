@@ -7,9 +7,9 @@
  * PUBLIC SURFACE THIS FILE REQUIRES (everything is reached through <Game /> with no props, as in game.ui.test.tsx)
  *   - header (role "banner"): game title, theme toggle ("Chuyển chế độ") and the account area. Account area is the
  *     AuthBar: button "Đăng nhập bằng Google" when signed out, text "Đã đăng nhập: <nickname>" when signed in.
- *     No "Dọn bàn" / "Chơi lại từ đầu" / "?" in the header; no sign-in button anywhere outside the header.
- *   - "Dọn bàn", "Chơi lại từ đầu", "?" are buttons inside the nearest section that also holds the pot, and that
- *     section holds neither the header nor the footer.
+ *     No "Dọn bàn" / "?" in the header; no sign-in button anywhere outside the header.
+ *   - "Dọn bàn" and "?" are buttons inside the nearest section that also holds the pot, and that
+ *     section holds neither the header nor the footer. There is no "Chơi lại từ đầu" anywhere (AC-GAME-11, 2026-10-24).
  *   - two top-level tabs (role "tab") "Bàn lẩu" (default selected) and "Bảng xếp hạng"; the card
  *     (region "Món đặc biệt hôm nay") has a button "Xem bảng xếp hạng" that selects the second tab, and no longer holds
  *     the leaderboard (no "Mẻ này"/"Tuần"/"Tháng" tabs inside the card).
@@ -284,9 +284,10 @@ afterEach(() => {
 
 // ================================================================ AC-GAME-19
 describe('ui2: đầu trang, khu bàn lẩu (AC-GAME-19)', () => {
-  const CONTROL_NAMES = ['Dọn bàn', 'Chơi lại từ đầu', '?']
+  // Cập nhật 2026-10-24 (AC-GAME-11, câu hỏi mở 71): "Chơi lại từ đầu" bị bỏ, khu bàn chỉ còn "Dọn bàn" và "?".
+  const CONTROL_NAMES = ['Dọn bàn', '?']
 
-  it('AC-GAME-19: chưa đăng nhập, đầu trang chỉ có tên game, nút đổi giao diện và nút "Đăng nhập bằng Google"; không có Dọn bàn, Chơi lại, "?"', async () => {
+  it('AC-GAME-19: chưa đăng nhập, đầu trang chỉ có tên game, nút đổi giao diện và nút "Đăng nhập bằng Google"; không có Dọn bàn, "?"', async () => {
     saveConsent(localStorage, 1, 'granted')
     installGis()
     seed()
@@ -327,7 +328,7 @@ describe('ui2: đầu trang, khu bàn lẩu (AC-GAME-19)', () => {
     for (const name of CONTROL_NAMES) expect(within(header).queryByRole('button', { name })).toBeNull()
   })
 
-  it('AC-GAME-19: "Dọn bàn", "Chơi lại từ đầu", "?" nằm trong khu bàn lẩu (cùng khu với nồi), ngoài đầu trang và chân trang', async () => {
+  it('AC-GAME-19: "Dọn bàn" và "?" nằm trong khu bàn lẩu (cùng khu với nồi), ngoài đầu trang và chân trang; không có "Chơi lại từ đầu"', async () => {
     seed()
     await mountReady()
     const header = screen.getByRole('banner')
@@ -343,9 +344,10 @@ describe('ui2: đầu trang, khu bàn lẩu (AC-GAME-19)', () => {
       expect(section!.contains(btn)).toBe(true)
       expect(section === document.body).toBe(false)
     }
+    expect(screen.queryAllByRole('button', { name: /chơi lại từ đầu/i })).toHaveLength(0)
   })
 
-  it('AC-GAME-19: hành vi giữ nguyên: "Dọn bàn" xóa bàn giữ Đĩa; "Chơi lại từ đầu" có hộp xác nhận, "Hủy" không đổi gì; "?" mở hướng dẫn', async () => {
+  it('AC-GAME-19: hành vi giữ nguyên: "Dọn bàn" xóa bàn giữ Đĩa, không hộp xác nhận; "?" mở hướng dẫn; không còn "Chơi lại từ đầu"', async () => {
     seed()
     await mountReady()
     drag(plateItem('Cay'), tableEl(), { x: 80, y: 90 })
@@ -353,13 +355,8 @@ describe('ui2: đầu trang, khu bàn lẩu (AC-GAME-19)', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Dọn bàn' }))
     await waitFor(() => expect(tableNames()).toEqual([]))
     expect(plateItems().map((e) => e.dataset.name)).toContain('Cay')
-
-    drag(plateItem('Cười'), tableEl(), { x: 80, y: 90 })
-    fireEvent.click(screen.getByRole('button', { name: 'Chơi lại từ đầu' }))
-    const dlg = await screen.findByRole('alertdialog')
-    fireEvent.click(within(dlg).getByRole('button', { name: 'Hủy' }))
-    await waitFor(() => expect(screen.queryByRole('alertdialog')).toBeNull())
-    expect(tableNames()).toEqual(['Cười'])
+    expect(screen.queryByRole('alertdialog')).toBeNull()
+    expect(screen.queryAllByRole('button', { name: /chơi lại từ đầu/i })).toHaveLength(0)
 
     fireEvent.click(screen.getByRole('button', { name: '?' }))
     expect(await screen.findByRole('dialog', { name: /Hướng dẫn/ })).toBeTruthy()

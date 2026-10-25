@@ -29,8 +29,8 @@
  *   Chỗ thả        data-testid="pot-slot-1" và "pot-slot-2"; khi có phần tử thì chứa tên của nó
  *   Hơi lẩu        data-testid="stack-steam" tồn tại tối đa 0,6 s sau khi thả chồng trên bàn
  *   Nồi trào       data-testid="miss-line" (câu), data-testid="miss-hint" (chỉ khi có gợi ý)
- *   Nút            "Dọn bàn", "Chơi lại từ đầu", "?", "Thử lại", "Chuyển chế độ" (aria-label/ tên chứa cụm này)
- *   Xác nhận       role="alertdialog" (hoặc "dialog") có nút "Hủy" và "Xóa"
+ *   Nút            "Dọn bàn", "?", "Thử lại", "Chuyển chế độ" (aria-label/ tên chứa cụm này).
+ *                  KHÔNG có nút/menu "Chơi lại từ đầu" ở đâu cả (AC-GAME-11, cập nhật 2026-10-24).
  *   Hướng dẫn      role="dialog" có tên chứa "Hướng dẫn", nút "Đóng"; chứa chữ "kéo"
  *   Chế độ tối     document.documentElement.dataset.theme = 'dark' | 'light'; lựa chọn lưu ở THEME_KEY
  *
@@ -39,6 +39,7 @@
 import { createHash, webcrypto } from 'node:crypto'
 import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
+import { setCurrentSession } from '../auth/session'
 import { fold } from '../graph/crypto'
 import type { Graph, GraphResult } from '../graph/crypto'
 import { PROGRESS_KEY, THEME_KEY, initialProgress, loadProgress, saveProgress } from './engine'
@@ -487,8 +488,18 @@ describe('Game', () => {
   })
 
   // ============================================================== AC-GAME-11
-  it('AC-GAME-11: Dọn bàn chỉ xóa bàn; Hủy không đổi gì; Xóa đưa Đĩa về 4 phần tử và giữ UUID/nickname/Daily', async () => {
+  it('AC-GAME-11: không còn nút/menu "Chơi lại từ đầu" (chưa và đã đăng nhập); Dọn bàn chỉ xóa bàn, giữ Đĩa, UUID, nickname, Daily', async () => {
     await installNet()
+    type SessionArg = Parameters<typeof setCurrentSession>[0]
+    const session = { nickname: 'Lẩu Thủ', created_at: '2026-10-20T02:00:00.000Z' } as unknown as SessionArg
+    const NO_RESET = /chơi lại từ đầu/i
+    const expectNoReset = (when: string): void => {
+      for (const role of ['button', 'menuitem', 'link'] as const) {
+        expect(screen.queryAllByRole(role, { name: NO_RESET }), `${when}: còn ${role} "Chơi lại từ đầu"`).toHaveLength(0)
+      }
+      expect(document.body.textContent ?? '', `${when}: còn chữ "Chơi lại từ đầu"`).not.toMatch(NO_RESET)
+      expect(alertDialog(), `${when}: không được có hộp xác nhận xóa Đĩa`).toBeNull()
+    }
     const keep: Record<string, string> = {
       'lm.player_id': '3f0a7f0e-2f52-4c7a-9f5f-0c2b1a1d9e11',
       'lm.nickname': 'Thực khách',
@@ -507,25 +518,51 @@ describe('Game', () => {
     expect(plateItems()).toHaveLength(7)
     expect(tableItems()).toHaveLength(2)
 
+    const plateBefore = plateNames()
+    expectNoReset('chưa đăng nhập, trước khi dọn')
+
     fireEvent.click(screen.getByRole('button', { name: 'Dọn bàn' }))
     await waitFor(() => expect(tableItems()).toHaveLength(0))
-    expect(plateItems()).toHaveLength(7)
-
-    fireEvent.click(screen.getByRole('button', { name: 'Chơi lại từ đầu' }))
-    const dlg = alertDialog()
-    expect(dlg).not.toBeNull()
-    fireEvent.click(within(dlg!).getByRole('button', { name: 'Hủy' }))
-    await waitFor(() => expect(alertDialog()).toBeNull())
-    expect(plateItems()).toHaveLength(7)
-
-    fireEvent.click(screen.getByRole('button', { name: 'Chơi lại từ đầu' }))
-    fireEvent.click(within(alertDialog()!).getByRole('button', { name: 'Xóa' }))
-    await waitFor(() => expect(plateItems()).toHaveLength(4))
-    expect(plateNames()).toEqual(expect.arrayContaining(STARTER_NAMES))
-    expect(tableItems()).toHaveLength(0)
+    expect(plateNames()).toEqual(plateBefore)
+    expectNoReset('chưa đăng nhập, sau khi dọn')
     const stored = loadProgress(localStorage)
-    expect(stored === null || (stored.items.length === 4 && stored.table.length === 0)).toBe(true)
+    expect(stored).not.toBeNull()
+    expect(stored!.items).toHaveLength(7)
+    expect(stored!.table).toHaveLength(0)
     for (const [k, v] of Object.entries(keep)) expect(localStorage.getItem(k)).toBe(v)
+
+    // đã đăng nhập: vẫn không có cách nào xóa Đĩa
+    // (cơ chế như ui2.ui.test.tsx: điểm cuối phiên trả về phiên, rồi tải lại để AuthBar đọc)
+    const plainFetch = fetchMock as unknown as typeof fetch
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+        const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url
+        const method = (init?.method ?? (input instanceof Request ? input.method : 'GET')).toUpperCase()
+        if (url.endsWith('/api/auth/session') && method === 'GET') return json(session)
+        return plainFetch(input, init)
+      }),
+    )
+    try {
+      cleanup()
+      await mountReady()
+      await waitFor(() => expect(document.body.textContent).toContain('Lẩu Thủ'))
+      expectNoReset('đã đăng nhập')
+      drag(plateItem('Cay'), tableEl(), { x: 80, y: 90 })
+      expect(tableNames()).toEqual(['Cay'])
+      fireEvent.click(screen.getByRole('button', { name: 'Dọn bàn' }))
+      await waitFor(() => expect(tableItems()).toHaveLength(0))
+      expect(plateNames()).toEqual(plateBefore)
+      expectNoReset('đã đăng nhập, sau khi dọn')
+      for (const [k, v] of Object.entries(keep)) expect(localStorage.getItem(k)).toBe(v)
+    } finally {
+      act(() => setCurrentSession(null))
+      vi.stubGlobal('fetch', plainFetch)
+    }
+
+    await reload()
+    expect(plateNames()).toEqual(plateBefore)
+    expectNoReset('sau khi tải lại')
   })
 
   // ============================================================== AC-GAME-12

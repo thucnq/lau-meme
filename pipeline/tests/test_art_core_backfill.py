@@ -33,7 +33,9 @@ from test_art_full_batch import (
     art_adapters,
     content_element,
     llm_with_hints,
+    meme_hint,
     pending_of,
+    priority_first,
     run,
 )
 from test_art_full_batch import ArtClient as _ArtClient
@@ -61,6 +63,53 @@ def core_order() -> list[dict]:
 
 def core_hint(element: dict) -> str:
     return element["image_hint"]
+
+
+DEEP = 5  # AC-ART-12: from this depth up an element without an image is drawn before everything else
+
+
+def shallow_total() -> int:
+    """Core elements still without an image in these worlds: only those with depth < 5 (the deep ones, drawn first by
+    AC-ART-12, are given an image up front so the AC-ART-11 order and counts below are what is under test)."""
+    return sum(1 for e in real_core()["elements"] if e["depth"] < DEEP)
+
+
+def deep_done_core_art() -> list[dict]:
+    """store.core_art, one entry per core element: depth >= 5 already has an image_key, the rest has none."""
+    from lau_meme_pipeline.ids import element_id
+
+    entries = [
+        {"id": element_id(e["name"]), "name": e["name"], **({"image_key": PRESET_KEY} if e["depth"] >= DEEP else {})}
+        for e in real_core()["elements"]
+    ]
+    return sorted(entries, key=lambda e: e["id"])
+
+
+def assert_meme_prompts(body, prompts, pending, new) -> int:
+    """Check the draw order of the waiting and new memes and return how many prompts they take (core comes after).
+    AC-ART-12 first: memes with published depth >= 5 (no image yet) lead, deepest first then folded name; then
+    AC-ART-11: the remaining waiting memes in art_pending order, then the remaining new memes (any order among
+    themselves)."""
+    priority, rest = priority_first(body, [*pending, *new])
+    for i, name in enumerate(priority):
+        assert meme_hint(name) in prompts[i], f"ưu tiên thứ {i}: {name}"
+    rest_pending = [n for n in rest if n in pending]
+    rest_new = [n for n in rest if n in new]
+    start = len(priority)
+    for i, name in enumerate(rest_pending):
+        assert meme_hint(name) in prompts[start + i], f"phần tử chờ vẽ thứ {i}: {name}"
+    start += len(rest_pending)
+    window = prompts[start : start + len(rest_new)]
+    for name in rest_new:
+        assert sum(meme_hint(name) in p for p in window) == 1, f"{name} vẽ sau phần tử chờ vẽ, trước lõi"
+    return len(priority) + len(rest_pending) + len(rest_new)
+
+
+def give_deep_images(store: dict) -> None:
+    """Give every core element at depth >= 5 an image_key in an existing store (AC-ART-12 group left empty)."""
+    for element in real_core()["elements"]:
+        if element["depth"] >= DEEP:
+            core_entry(store, element["name"]).update(image_key=PRESET_KEY)
 
 
 class ArtClient(_ArtClient):
@@ -123,13 +172,11 @@ def test_ac_art_11_thu_tu_ve_cho_ve_roi_moi_roi_loi_dung_3_5_12():
     tăng dần rồi tên đã fold; 20 ảnh được tải lên trước khi đăng mẻ."""
     pending_names, new_names = MANY_NAMES[0:3], MANY_NAMES[3:8]
     _first, store = base_store(pending_names)
-    _body, client, _reporter, draw = draw_second_batch(store, new_names)
+    give_deep_images(store)  # AC-ART-12 group empty: the AC-ART-11 order is what is checked
+    body, client, _reporter, draw = draw_second_batch(store, new_names)
 
     assert len(draw.prompts) == CAP
-    for i, name in enumerate(pending_names):
-        assert f"hình {name}" in draw.prompts[i], f"phần tử chờ vẽ thứ {i} phải được vẽ trước"
-    for name in new_names:
-        assert sum(f"hình {name}" in p for p in draw.prompts[3:8]) == 1, f"{name} vẽ sau phần tử chờ vẽ, trước lõi"
+    assert assert_meme_prompts(body, draw.prompts, pending_names, new_names) == 8
     expected_core = core_order()[:12]
     for i, element in enumerate(expected_core):
         assert core_hint(element) in draw.prompts[8 + i], f"lõi thứ {i}: {element['name']} (depth {element['depth']})"
@@ -142,6 +189,7 @@ def test_ac_art_11_anh_loi_duoc_dang_voi_image_key_va_loi_con_lai_khong_co_anh()
     """AC-ART-11: 12 phần tử lõi được vẽ mang image_key đúng khóa đã tải lên trong graph/content; phần tử lõi thứ 13
     (hết chỗ trong 20 ảnh) chưa có ảnh; art_pending không chứa phần tử lõi nào (phần chưa vẽ không phải "chờ vẽ")."""
     _first, store = base_store(MANY_NAMES[0:3])
+    give_deep_images(store)
     body, client, _reporter, _draw = draw_second_batch(store, MANY_NAMES[3:8])
 
     ordered = core_order()
@@ -156,17 +204,19 @@ def test_ac_art_11_anh_loi_duoc_dang_voi_image_key_va_loi_con_lai_khong_co_anh()
 
 
 def test_ac_art_11_bao_cao_dot_ghi_loi_con_chua_co_anh():
-    """AC-ART-11: sau đợt 3 + 5 + 12, báo cáo đợt có dòng "Lõi còn chưa có ảnh: 162" (174 - 12)."""
+    """AC-ART-11: sau đợt 3 + 5 + 12, báo cáo đợt có dòng "Lõi còn chưa có ảnh: N" với N = lõi chưa có ảnh - 12 (lõi sâu
+    >= 5 đã có ảnh sẵn nên chỉ còn lõi nông: 174 - số lõi sâu - 12)."""
     _first, store = base_store(MANY_NAMES[0:3])
+    give_deep_images(store)
     _body, _client, reporter, _draw = draw_second_batch(store, MANY_NAMES[3:8])
 
-    assert report_count(reporter) == 162
+    assert report_count(reporter) == shallow_total() - 12
 
 
 def test_ac_art_11_kho_moi_chua_co_anh_nao_thi_dot_dau_ve_meme_roi_19_loi():
     """AC-ART-11: kho trống (174 lõi chưa có ảnh), 1 meme mới: meme vẽ trước, 19 phần tử lõi đầu tiên theo thứ tự
     depth/tên fold vẽ sau, báo cáo còn 155."""
-    client, reporter, draw = ArtClient(), FakeReporter(), Draw()
+    client, reporter, draw = ArtClient(store={"core_art": deep_done_core_art()}), FakeReporter(), Draw()
     outcome = run(client, reporter, [MEME], art_adapters(draw, Check()))
 
     assert outcome.ok is True
@@ -174,7 +224,7 @@ def test_ac_art_11_kho_moi_chua_co_anh_nao_thi_dot_dau_ve_meme_roi_19_loi():
     assert HINT in draw.prompts[0]
     for i, element in enumerate(core_order()[:19]):
         assert core_hint(element) in draw.prompts[1 + i]
-    assert report_count(reporter) == 155
+    assert report_count(reporter) == shallow_total() - 19
 
 
 def test_ac_art_11_loi_da_co_anh_het_luot_an_hoac_chan_thi_khong_ve_lai():
@@ -184,7 +234,8 @@ def test_ac_art_11_loi_da_co_anh_het_luot_an_hoac_chan_thi_khong_ve_lai():
     khác mất kết nối: không phần tử nào bị vẽ; phần tử chờ vẽ, meme
     mới rồi 18 phần tử lõi kế tiếp (bỏ qua bốn phần tử trên) được vẽ; ảnh sẵn có giữ nguyên khóa; N = 174 - 4 - 18."""
     _first, store = base_store([MEME])
-    ordered = core_order()
+    give_deep_images(store)  # AC-ART-12 group empty; the four skipped elements below are all shallow (depth < 5)
+    ordered = [e for e in core_order() if e["depth"] < DEEP]
     core = real_core()
     starters = {s if isinstance(s, str) else s["name"] for s in core["starters"]}
     ingredients = {r["a"] for r in core["recipes"]} | {r["b"] for r in core["recipes"]}
@@ -202,8 +253,7 @@ def test_ac_art_11_loi_da_co_anh_het_luot_an_hoac_chan_thi_khong_ve_lai():
     body, client, reporter, draw = draw_second_batch(store, [MEME2], client=client)
 
     assert len(draw.prompts) == CAP
-    assert HINT in draw.prompts[0], "phần tử chờ vẽ trước"
-    assert HINT2 in draw.prompts[1], "rồi phần tử mới"
+    assert assert_meme_prompts(body, draw.prompts, [MEME], [MEME2]) == 2
     for skipped in (has_image, exhausted, blocked, blocked2):
         assert not any(core_hint(skipped) in p for p in draw.prompts), f"{skipped['name']} không được vẽ lại"
     expected_core = [e for e in ordered if e["name"] not in skipped_names][:18]
@@ -211,7 +261,7 @@ def test_ac_art_11_loi_da_co_anh_het_luot_an_hoac_chan_thi_khong_ve_lai():
         assert core_hint(element) in draw.prompts[2 + i]
     assert content_element(body, has_image["name"])["image_key"] == PRESET_KEY
     assert content_element(body, exhausted["name"]).get("image_key") is None
-    assert report_count(reporter) == 174 - 4 - 18, "trừ 4 phần tử không vẽ và 18 phần tử vừa vẽ"
+    assert report_count(reporter) == shallow_total() - 4 - 18, "trừ 4 phần tử không vẽ và 18 phần tử vừa vẽ"
 
 
 def test_ac_art_11_moi_loi_deu_da_co_anh_thi_chi_ve_meme_va_bao_cao_con_0():
@@ -221,10 +271,10 @@ def test_ac_art_11_moi_loi_deu_da_co_anh_thi_chi_ve_meme_va_bao_cao_con_0():
     for element in real_core()["elements"]:
         mutate(store, element["name"], image_key=PRESET_KEY)
 
-    _body, client, reporter, draw = draw_second_batch(store, [MEME2])
+    body, client, reporter, draw = draw_second_batch(store, [MEME2])
 
     assert len(draw.prompts) == 2
-    assert HINT in draw.prompts[0] and HINT2 in draw.prompts[1]
+    assert assert_meme_prompts(body, draw.prompts, [MEME], [MEME2]) == 2
     assert len(client.puts) == 2
     assert report_count(reporter) == 0
 
@@ -233,7 +283,7 @@ def test_ac_art_11_anh_loi_bi_gemini_loai_hai_lan_thi_ve_emoji_dut_diem_khong_ch
     """AC-ART-11: Gemini loại ảnh của phần tử lõi đầu tiên hai lần ("real_face" rồi "text"): 2 lần vẽ cho đúng phần tử
     đó, không image_key, không nằm trong art_pending, báo cáo đếm cả hai lý do; đợt sau không vẽ lại phần tử đó."""
     first_core = core_order()[0]
-    client, reporter, draw = ArtClient(), FakeReporter(), Draw()
+    client, reporter, draw = ArtClient(store={"core_art": deep_done_core_art()}), FakeReporter(), Draw()
     check = Check([None, "real_face", "text"])  # meme passes, then the first core image fails twice
     outcome = run(client, reporter, [MEME], art_adapters(draw, check))
 
@@ -254,7 +304,7 @@ def test_ac_art_11_anh_loi_bi_gemini_loai_hai_lan_thi_ve_emoji_dut_diem_khong_ch
 def test_ac_art_11_anh_loi_dat_o_lan_hai_thi_dung_anh_lan_hai():
     """AC-ART-11: ảnh lõi đầu tiên bị loại một lần ("logo") rồi đạt: có image_key, tải lên đủ, báo cáo đếm logo 1."""
     first_core = core_order()[0]
-    client, reporter, draw = ArtClient(), FakeReporter(), Draw()
+    client, reporter, draw = ArtClient(store={"core_art": deep_done_core_art()}), FakeReporter(), Draw()
     run(client, reporter, [MEME], art_adapters(draw, Check([None, "logo"])))
 
     (body,) = client.success_posts
@@ -277,7 +327,7 @@ def test_ac_art_11_loi_tam_thoi_cho_ve_roi_ba_dot_het_luot_thi_giu_emoji_khong_v
         ([MANY_NAMES[0]], T + timedelta(hours=24)),
         ([MANY_NAMES[1]], T + timedelta(hours=36)),
     ]
-    store, bodies, draws = {}, [], []
+    store, bodies, draws = {"core_art": deep_done_core_art()}, [], []
     for names, batch_at in plan:
         client = ArtClient(store=store)
         draw = DrawFailingOn(core_hint(target), LlmError("HTTP 503"))
@@ -294,8 +344,14 @@ def test_ac_art_11_loi_tam_thoi_cho_ve_roi_ba_dot_het_luot_thi_giu_emoji_khong_v
     assert target_id in pending_of(bodies[1])
     assert target_id not in pending_of(bodies[2])
     assert content_element(bodies[2], target["name"]).get("image_key") is None
-    assert core_hint(target) in draws[1].prompts[0], "phần tử lõi chờ vẽ được vẽ trước phần tử mới"
-    assert HINT2 in draws[1].prompts[1]
+    # AC-ART-12 first: a new meme at published depth >= 5 leads; otherwise the waiting core element comes before it.
+    priority, _rest = priority_first(bodies[1], [MEME2])
+    if priority:
+        assert HINT2 in draws[1].prompts[0], "meme mới depth >= 5 thuộc nhóm ưu tiên, vẽ trước"
+        assert core_hint(target) in draws[1].prompts[1]
+    else:
+        assert core_hint(target) in draws[1].prompts[0], "phần tử lõi chờ vẽ được vẽ trước phần tử mới"
+        assert HINT2 in draws[1].prompts[1]
     assert not any(core_hint(target) in p for p in draws[3].prompts), "hết lượt thử thì không vẽ lại"
     assert target_id not in pending_of(bodies[3])
     assert content_element(bodies[3], target["name"]).get("image_key") is None
@@ -339,7 +395,7 @@ def test_ac_art_11_tai_len_loi_thi_phan_tu_loi_khong_co_khoa_va_vao_cho_ve():
     """AC-ART-11: put_image lỗi: phần tử lõi vừa vẽ không có image_key (không tham chiếu ảnh chưa lên R2) và nằm trong
     art_pending để đợt sau vẽ lại; mẻ vẫn success."""
     first_core = core_order()[0]
-    client = ArtClient(fail_put=True)
+    client = ArtClient(store={"core_art": deep_done_core_art()}, fail_put=True)
     outcome = run(client, FakeReporter(), [MEME], art_adapters(Draw(), Check()))
 
     assert outcome.ok is True and outcome.status == "success"
@@ -363,7 +419,7 @@ def test_ac_art_11_loi_khong_co_goi_y_anh_thi_khong_ve_khong_dem_va_khong_danh_d
     (target,) = [e for e in core["elements"] if e["name"] == blanked["name"]]
     target["image_hint"] = blank
 
-    client, reporter, draw = ArtClient(), FakeReporter(), Draw()
+    client, reporter, draw = ArtClient(store={"core_art": deep_done_core_art()}), FakeReporter(), Draw()
     outcome = run_batch(
         mode="full",
         batch_at=T,
@@ -390,7 +446,7 @@ def test_ac_art_11_loi_khong_co_goi_y_anh_thi_khong_ve_khong_dem_va_khong_danh_d
     assert not entry.get("image_key")
     assert entry.get("art_attempts", 0) == 0
     assert content_element(body, blanked["name"]).get("image_key") is None
-    assert report_count(reporter) == 173 - 19
+    assert report_count(reporter) == (shallow_total() - 1) - 19
 
 
 def test_ac_art_11_me_core_khong_ve_gi():

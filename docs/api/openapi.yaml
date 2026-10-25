@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: lau-meme API
-  version: 0.4.0
+  version: 0.5.0
   description: |
     API của Worker Lẩu Meme. Bốn chủ thể (BRD mục 2): thực khách ẩn danh (header `X-Player-Id` = UUID v4
     sinh trên trình duyệt), thực khách đã đăng nhập Google (cookie phiên `laumeme_sid`, ADR 0010 - kết quả Daily,
@@ -238,10 +238,10 @@ paths:
       description: |
         UUID chưa có dữ liệu trả cấu trúc rỗng, không bao giờ dữ liệu của người khác. Không cần đồng ý. Có phiên hợp
         lệ thì thêm `account` (thời điểm tạo, số phiên đang mở, nickname, kết quả Daily, streak và mọi đề xuất meme
-        của tài khoản với đủ trường đã gửi - AC-CONTRIB-12);
+        của tài khoản với đủ trường đã gửi - AC-CONTRIB-12; Đĩa của tài khoản kèm thời điểm khám phá - AC-SYNC-10);
         không bao giờ có băm `sub` (AC-AUTH-06).
       security: [{ PlayerId: [] }, { PlayerId: [], Session: [] }]
-      x-ac: [AC-PRIV-08, AC-AUTH-06, AC-CONTRIB-12]
+      x-ac: [AC-PRIV-08, AC-AUTH-06, AC-CONTRIB-12, AC-SYNC-10]
       responses:
         '200':
           description: Dữ liệu của UUID gửi lên
@@ -258,13 +258,14 @@ paths:
       description: |
         Xóa nickname, kết quả Daily, streak, phiếu, sự kiện; khám phá và báo cáo giữ nhưng bỏ UUID; đồng ý giữ
         và thêm dòng `erase` (xóa hẳn sau 1 năm). Không cần đồng ý. UUID được bỏ gắn khỏi tài khoản.
-        Có phiên hợp lệ thì xóa luôn tài khoản: băm `sub`, mọi phiên, nickname, kết quả Daily, streak; mọi UUID
+        Có phiên hợp lệ thì xóa luôn tài khoản: băm `sub`, mọi phiên, nickname, kết quả Daily, streak, Đĩa của tài
+        khoản (`account_element`, AC-SYNC-10 - đăng nhập lại bắt đầu từ 4 phần tử khởi đầu); mọi UUID
         đã gắn tài khoản được xóa như trên; cookie bị xóa. Đăng nhập lại bằng cùng Google tạo tài khoản mới trống.
         Đề xuất meme: `pending` bị xóa; đã duyệt/bị từ chối bỏ gắn tài khoản (meme đã duyệt ở lại game, hiện
         "Thực khách ẩn danh", rời Top cống hiến ngay; nickname trong bản chụp người tạo của mọi version còn lưu thành
         `null` - AC-CONTRIB-12, ADR 0013).
       security: [{ PlayerId: [] }, { PlayerId: [], Session: [] }]
-      x-ac: [AC-PRIV-05, AC-AUTH-06, AC-CONTRIB-12]
+      x-ac: [AC-PRIV-05, AC-AUTH-06, AC-CONTRIB-12, AC-SYNC-10]
       responses:
         '204':
           description: Đã xóa (hoặc không có gì để xóa)
@@ -305,6 +306,108 @@ paths:
         '403': { $ref: '#/components/responses/Forbidden' }
         '409': { $ref: '#/components/responses/Conflict' }
         '422': { $ref: '#/components/responses/Unprocessable' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        default: { $ref: '#/components/responses/Problem' }
+  /me/plate:
+    get:
+      operationId: getMyPlate
+      tags: [player]
+      summary: Đĩa nhúng của tài khoản (gộp mọi máy)
+      description: |
+        Cần phiên hợp lệ; chỉ có `X-Player-Id`, cookie hết hạn hoặc đã đăng xuất → 401 và client chơi tiếp bằng Đĩa
+        cục bộ (AC-SYNC-05). Tài khoản lấy **chỉ** từ phiên: UUID trong header không bao giờ chọn tài khoản. Trả mọi
+        phần tử đã ghi, không gồm 4 phần tử khởi đầu, kể cả phần tử đang bị ẩn/chặn hoặc đã rời graph (client ẩn theo
+        danh sách chặn - AC-SYNC-08). Không phân trang: Đĩa bị chặn trên bởi số phần tử của danh mục (≤ 20 000,
+        ADR 0015); client gộp với Đĩa cục bộ, thời điểm khám phá lấy giá trị sớm nhất. `Cache-Control: no-store`.
+      security: [{ PlayerId: [], Session: [] }]
+      x-ac: [AC-SYNC-02, AC-SYNC-05, AC-SYNC-08, AC-AUTH-04]
+      responses:
+        '200':
+          description: Đĩa của tài khoản
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Plate' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        default: { $ref: '#/components/responses/Problem' }
+    post:
+      operationId: addToMyPlate
+      tags: [player]
+      summary: Ghi một món vừa ghép ra vào Đĩa của tài khoản
+      description: |
+        Gửi sau mỗi lần ghép ra món mới, không chặn người chơi (AC-SYNC-01). Server đổi tên sang ElementId (ADR 0002)
+        và kiểm `a + b = result` có trong danh mục `recipe` với `last_version` thuộc 14 version còn giữ, và cả ba phần
+        tử cùng công thức không bị chặn (AC-REPORT-09). `result` không có trong danh mục → 404; có nhưng cặp không ra nó
+        → 422; title lỗi không nói cặp đó có ra món khác hay không (AC-SYNC-04). Hợp lệ thì `INSERT ... ON CONFLICT DO
+        NOTHING`: gửi lại cùng món vẫn 200, giữ `found_at` lần đầu. Cần đồng ý mục đích `play` (403). Giới hạn 120 lần
+        ghi/phút/tài khoản, đếm chung với `mergeMyPlate` (câu hỏi mở 68) - vượt thì 429 + `Retry-After`, client gửi bù.
+      security: [{ PlayerId: [], Session: [] }]
+      x-ac: [AC-SYNC-01, AC-SYNC-04, AC-SYNC-05, AC-SYNC-06, AC-SYNC-09, AC-PRIV-02]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Combination' }
+      responses:
+        '200':
+          description: Đã có trong Đĩa (mới ghi hoặc đã có từ trước)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PlateWriteResult' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '422': { $ref: '#/components/responses/Unprocessable' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        default: { $ref: '#/components/responses/Problem' }
+  /me/plate/merge:
+    post:
+      operationId: mergeMyPlate
+      tags: [player]
+      summary: Gộp nhiều món vào Đĩa của tài khoản (sau đăng nhập, gửi bù)
+      description: |
+        Dùng khi đăng nhập trên máy đã có tiến độ cục bộ (AC-SYNC-03) và khi gửi bù sau lỗi mạng/429 (AC-SYNC-06).
+        Mỗi mục kiểm như `addToMyPlate`; mục không hợp lệ bị bỏ qua và chỉ báo bằng chỉ số trong `skipped` (không
+        phân biệt 404/422, không lộ cặp ra món nào), mục hợp lệ vẫn ghi - cả lần gộp trong một `DB.batch`. Phần tử
+        cục bộ không có cặp thì client không gửi, giữ ở Đĩa cục bộ. Hơn 500 mục hoặc thân quá 64 KB → 400 (client chia
+        lô ≤ 500, AC-SYNC-09). Một lần gộp tính là 1 lần ghi trong giới hạn 120/phút. Cần đồng ý `play` (403).
+      security: [{ PlayerId: [], Session: [] }]
+      x-ac: [AC-SYNC-03, AC-SYNC-04, AC-SYNC-05, AC-SYNC-06, AC-SYNC-09, AC-PRIV-02]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [items]
+              properties:
+                items:
+                  type: array
+                  minItems: 1
+                  maxItems: 500
+                  items: { $ref: '#/components/schemas/Combination' }
+      responses:
+        '200':
+          description: Đã gộp các mục hợp lệ
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/PlateWriteResult'
+                  - type: object
+                    required: [skipped]
+                    properties:
+                      skipped:
+                        type: array
+                        maxItems: 500
+                        description: Chỉ số (từ 0) của các mục không hợp lệ trong `items`
+                        items: { type: integer, minimum: 0, maximum: 499 }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
         '429': { $ref: '#/components/responses/TooManyRequests' }
         default: { $ref: '#/components/responses/Problem' }
   /me/streak:
@@ -804,10 +907,12 @@ paths:
       summary: Gán tier 1-5 cho phần tử
       description: |
         Phần tử phải có trong danh mục `element` (không có → 404). Tier ngoài 1-5 hoặc không phải số nguyên → 400,
-        không ghi audit. Thành công ghi đúng 1 dòng audit (`set_tier`, trước/sau) trong cùng `DB.batch`. Có hiệu lực
+        không ghi audit. `"auto"` xóa giá trị admin gán (dòng `element_tier`), phần tử quay về tier tự động theo độ sâu
+        (AC-TIER-05). Gán 4 hoặc 5 cho phần tử không có ảnh dùng được (`image_key` rỗng hoặc ảnh đang bị ẩn/chặn) → 409
+        "Món Vàng/Đỏ cần có ảnh trước", không ghi audit (AC-TIER-04, câu hỏi mở 69). Thành công ghi đúng 1 dòng audit (`set_tier`, trước/sau) trong cùng `DB.batch`. Có hiệu lực
         trong graph từ mẻ kế tiếp (câu hỏi mở 53). Đặt bằng tier hiện tại vẫn 200 và ghi audit.
       security: [{ AdminToken: [] }]
-      x-ac: [AC-ADMIN-12, AC-ADMIN-09, AC-TIER-01]
+      x-ac: [AC-ADMIN-12, AC-ADMIN-09, AC-TIER-01, AC-TIER-04, AC-TIER-05]
       parameters:
         - name: id
           in: path
@@ -822,7 +927,10 @@ paths:
               additionalProperties: false
               required: [tier]
               properties:
-                tier: { $ref: '#/components/schemas/Tier' }
+                tier:
+                  oneOf:
+                    - $ref: '#/components/schemas/Tier'
+                    - { type: string, const: auto, description: 'Tự động (theo độ sâu)' }
       responses:
         '200':
           description: Đã gán
@@ -831,11 +939,60 @@ paths:
               schema:
                 type: object
                 additionalProperties: false
-                required: [element_id, before, after]
+                required: [element_id, before, after, before_source, after_source]
                 properties:
                   element_id: { $ref: '#/components/schemas/ElementId' }
                   before: { $ref: '#/components/schemas/Tier' }
-                  after: { $ref: '#/components/schemas/Tier' }
+                  after: { $ref: '#/components/schemas/Tier', description: 'Tier hiện tại sau khi đổi; với `auto` là `auto_tier` của mẻ gần nhất (chưa có → 1)' }
+                  before_source: { $ref: '#/components/schemas/TierSource' }
+                  after_source: { $ref: '#/components/schemas/TierSource' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        default: { $ref: '#/components/responses/Problem' }
+  /admin/elements/{id}/image:
+    servers:
+      - url: /api
+        description: Chỉ trên host quản trị riêng (ADR 0008) - production https://laumeme-admin.dinoduct.fun/api, staging https://laumeme-admin-staging.dinoduct.fun/api; trên host game `/lau-meme/api/admin/*` trả 404
+    put:
+      operationId: adminPutElementImage
+      tags: [admin]
+      summary: Tải tranh vẽ tay cho phần tử (Tùy chọn)
+      description: |
+        Trang quản trị nhận PNG hoặc WebP ≤ 1 MB, chuẩn hóa trong trình duyệt về WebP 256×256 rồi gửi lên (ADR 0016).
+        Worker kiểm: thân ≤ 1 MB, chữ ký WebP (`RIFF....WEBP`) và kích thước 256×256 đọc từ header VP8/VP8L/VP8X; sai
+        định dạng, sai kích thước hoặc quá cỡ → 400 (AC-ART-13), phần tử không có trong danh mục → 404, không đổi gì.
+        Hợp lệ: ghi R2 `img/<12 hex SHA-256>.webp` (idempotent như ADR 0012), rồi trong một `DB.batch` đặt
+        `element.image_key`, `image_source = 'admin'` và ghi 1 dòng `admin_image_change` (trước/sau khóa ảnh). Không qua
+        kiểm duyệt LLM. Vào graph từ mẻ kế tiếp; mẻ sau không vẽ đè (pipeline đọc `admin_images` từ `/pipeline/state`,
+        Worker giữ khóa ảnh `admin` khi đăng mẻ). Ảnh đang bị chặn (`block` kind `image`) vẫn chặn tới khi admin bỏ chặn.
+      security: [{ AdminToken: [] }]
+      x-ac: [AC-ART-13, AC-ADMIN-09]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { $ref: '#/components/schemas/ElementId' }
+      requestBody:
+        required: true
+        content:
+          image/webp:
+            schema: { type: string, format: binary, maxLength: 1048576 }
+      responses:
+        '200':
+          description: Đã gắn ảnh
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required: [element_id, before_key, after_key]
+                properties:
+                  element_id: { $ref: '#/components/schemas/ElementId' }
+                  before_key: { type: [string, 'null'], pattern: '^[0-9a-f]{12}\.webp$' }
+                  after_key: { type: string, pattern: '^[0-9a-f]{12}\.webp$' }
         '400': { $ref: '#/components/responses/BadRequest' }
         '401': { $ref: '#/components/responses/Unauthorized' }
         '404': { $ref: '#/components/responses/NotFound' }
@@ -1015,9 +1172,9 @@ paths:
       operationId: adminListAudit
       tags: [admin]
       summary: Nhật ký audit (mới nhất trước)
-      description: Gộp `admin_audit` (kiểm duyệt) và `admin_change` (tier, đề xuất meme - ADR 0013) theo thời điểm.
+      description: Gộp `admin_audit` (kiểm duyệt), `admin_change` (tier, đề xuất meme - ADR 0013) và `admin_image_change` (tranh vẽ tay - ADR 0016) theo thời điểm.
       security: [{ AdminToken: [] }]
-      x-ac: [AC-ADMIN-01, AC-ADMIN-09, AC-ADMIN-12, AC-CONTRIB-07, AC-CONTRIB-08]
+      x-ac: [AC-ADMIN-01, AC-ADMIN-09, AC-ADMIN-12, AC-CONTRIB-07, AC-CONTRIB-08, AC-TIER-05, AC-ART-13]
       parameters:
         - $ref: '#/components/parameters/Page'
         - $ref: '#/components/parameters/Size'
@@ -1438,6 +1595,31 @@ components:
       minimum: 1
       maximum: 5
       description: 1 Xám-tròn, 2 Xanh lá-tam giác, 3 Xanh dương-thoi, 4 Vàng-ngũ giác, 5 Đỏ-lục giác (TIER)
+    TierSource:
+      type: string
+      enum: [auto, admin]
+      description: '`admin` = có dòng `element_tier` (giữ qua mọi mẻ); `auto` = theo độ sâu (AC-TIER-04/05)'
+    Plate:
+      type: object
+      additionalProperties: false
+      required: [items]
+      properties:
+        items:
+          type: array
+          maxItems: 20000
+          items: { $ref: '#/components/schemas/PlateItem' }
+    PlateItem:
+      type: object
+      additionalProperties: false
+      required: [element_id, found_at]
+      properties:
+        element_id: { $ref: '#/components/schemas/ElementId' }
+        found_at: { $ref: '#/components/schemas/Instant', description: Thời điểm server nhận lần ghi đầu tiên }
+    PlateWriteResult:
+      type: object
+      required: [count]
+      properties:
+        count: { type: integer, minimum: 0, description: Số phần tử trong Đĩa của tài khoản sau lần ghi (không gồm 4 phần tử khởi đầu) }
     Creators:
       type: object
       propertyNames: { pattern: '^[A-Za-z0-9_-]{43}$' }
@@ -1631,7 +1813,7 @@ components:
         image_key: { type: [string, 'null'], pattern: '^[0-9a-f]{12}\.webp$' }
         tier:
           $ref: '#/components/schemas/Tier'
-          description: Bắt buộc từ graph có TIER (pipeline kiểm, thiếu/ngoài 1-5 thì mẻ không đăng); graph cũ không có → client hiện 1 (AC-TIER-03)
+          description: Tier hiệu lực = admin gán nếu có, không thì tự động theo độ sâu (AC-TIER-04/05). Bắt buộc từ graph có TIER (pipeline kiểm, thiếu/ngoài 1-5 thì mẻ không đăng); graph cũ không có → client hiện 1 (AC-TIER-03)
     Blocklist:
       type: object
       additionalProperties: false
@@ -1702,7 +1884,7 @@ components:
             - type: 'null'
             - type: object
               additionalProperties: false
-              required: [created_at, open_sessions, nickname, daily_results, streak, contributions]
+              required: [created_at, open_sessions, nickname, daily_results, streak, contributions, plate]
               properties:
                 created_at: { $ref: '#/components/schemas/Instant' }
                 open_sessions: { type: integer, minimum: 1 }
@@ -1714,6 +1896,10 @@ components:
                 contributions:
                   type: array
                   items: { $ref: '#/components/schemas/Contribution' }
+                plate:
+                  type: array
+                  description: Đĩa của tài khoản (AC-SYNC-10)
+                  items: { $ref: '#/components/schemas/PlateItem' }
         discoveries:
           type: array
           items:
@@ -1984,7 +2170,7 @@ components:
               items:
                 type: object
                 additionalProperties: false
-                required: [id, name, emoji, depth, state, image_state, last_version, tier]
+                required: [id, name, emoji, depth, state, image_state, last_version, tier, tier_source, auto_tier]
                 properties:
                   id: { $ref: '#/components/schemas/ElementId' }
                   name: { type: string }
@@ -1994,7 +2180,10 @@ components:
                   image_key: { type: [string, 'null'] }
                   image_state: { type: string, enum: [none, active, hidden] }
                   last_version: { type: integer }
-                  tier: { $ref: '#/components/schemas/Tier', description: Tier hiện tại (chưa gán → 1); graph có tier mới từ mẻ kế tiếp }
+                  tier: { $ref: '#/components/schemas/Tier', description: 'Tier hiện tại: admin gán nếu có, không thì `auto_tier` (chưa có → 1); graph có tier mới từ mẻ kế tiếp' }
+                  tier_source: { $ref: '#/components/schemas/TierSource' }
+                  auto_tier: { type: [integer, 'null'], minimum: 1, maximum: 5, description: 'Tier tự động pipeline tính ở mẻ gần nhất (AC-TIER-04); null = mẻ trước TIER-04' }
+                  image_source: { type: [string, 'null'], enum: [ai, admin, null] }
     AdminRecipePage:
       allOf:
         - $ref: '#/components/schemas/Page'
@@ -2123,11 +2312,11 @@ components:
                 additionalProperties: false
                 required: [action, target_kind, target_id, before, after, token_fp, created_at]
                 properties:
-                  action: { type: string, enum: [hide, show, block, unblock, dismiss_reports, set_tier, edit_contribution, approve_contribution, reject_contribution] }
+                  action: { type: string, enum: [hide, show, block, unblock, dismiss_reports, set_tier, edit_contribution, approve_contribution, reject_contribution, set_image] }
                   target_kind: { type: string, enum: [element, recipe, image, contribution] }
                   target_id: { type: string }
                   before:
-                    description: Trạng thái kiểm duyệt; với `set_tier` và đề xuất là object các trường đã đổi
+                    description: 'Trạng thái kiểm duyệt; với `set_tier` là `{tier, source}` (source `auto` | `admin`), với đề xuất là object các trường đã đổi, với `set_image` là `{image_key}`'
                     oneOf:
                       - $ref: '#/components/schemas/TargetState'
                       - type: object
@@ -2162,7 +2351,7 @@ components:
     PipelineState:
       type: object
       additionalProperties: false
-      required: [current_version, blocklist, banned_aliases, admin_blocked, daily_history, feedback, catalog, tiers, contributions]
+      required: [current_version, blocklist, banned_aliases, admin_blocked, daily_history, feedback, catalog, tiers, contributions, admin_images]
       properties:
         current_version: { type: [integer, 'null'] }
         blocklist: { $ref: '#/components/schemas/Blocklist' }
@@ -2210,7 +2399,7 @@ components:
               trend_peak: { type: integer, minimum: 0 }
         tiers:
           type: array
-          description: Tier admin đã gán (phần tử không có mặt → 1) - pipeline đưa vào graph mẻ này (AC-TIER-01)
+          description: Tier admin đã gán - thắng tier tự động (AC-TIER-05); phần tử không có mặt → tier tự động theo độ sâu (AC-TIER-04)
           items:
             type: object
             additionalProperties: false
@@ -2233,6 +2422,16 @@ components:
               b: { $ref: '#/components/schemas/ElementId' }
               image_hint: { type: string, maxLength: 300 }
               approved_at: { $ref: '#/components/schemas/Instant' }
+        admin_images:
+          type: array
+          description: Ảnh admin tải tay (AC-ART-13) - pipeline dùng nguyên khóa này, không vẽ đè, coi là ảnh hợp lệ khi tính tier (ADR 0016)
+          items:
+            type: object
+            additionalProperties: false
+            required: [element_id, image_key]
+            properties:
+              element_id: { $ref: '#/components/schemas/ElementId' }
+              image_key: { type: string, pattern: '^[0-9a-f]{12}\.webp$' }
 
     PipelineStore:
       type: object
@@ -2321,6 +2520,7 @@ components:
               origin: { type: string, enum: [vn, intl] }
               image_key: { type: [string, 'null'], pattern: '^[0-9a-f]{12}\.webp$' }
               trend_peak: { type: integer, minimum: 0, description: 'Mức mặn cao nhất (AC-PIPE-16); vắng → giữ giá trị đã lưu' }
+              auto_tier: { $ref: '#/components/schemas/Tier', description: 'Tier tự động theo độ sâu, đã hạ về 3 nếu chưa có ảnh dùng được (AC-TIER-04); Worker ghi vào `element.auto_tier`. Phần tử có ảnh `admin` thì Worker giữ `image_key` đã lưu, bỏ qua giá trị gửi lên' }
         recipes:
           type: array
           maxItems: 50000

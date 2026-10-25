@@ -3,10 +3,10 @@
  * Drag and drop uses Pointer Events; the drop target is found with document.elementFromPoint.
  * Progress lives only in localStorage - this screen never sends a write request.
  */
-import { useCallback, useEffect, useRef, useState } from 'react'
-import type { PointerEvent as ReactPointerEvent } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
+import type { KeyboardEvent as ReactKeyboardEvent, PointerEvent as ReactPointerEvent } from 'react'
 import { getGraph, getManifest } from '../api'
-import { DiscoveryZoom } from '../art/DiscoveryZoom'
+import { DiscoveryZoom, prefersReducedMotion } from '../art/DiscoveryZoom'
 import { AuthBar } from '../auth/AuthBar'
 import { ElementIcon } from '../art/ElementIcon'
 import { startManifestWatch } from '../daily/countdown'
@@ -18,6 +18,7 @@ import type { Graph } from '../graph/crypto'
 import { localStore as storage, migrateLegacyKeys } from '../storage'
 import {
   EMPTY_BLOCKLIST,
+  TABLE_KEY,
   THEME_KEY,
   combine,
   filterItems,
@@ -25,7 +26,7 @@ import {
   isNew,
   loadProgress,
   migrateProgress,
-  resetProgress,
+  resolveTableStyle,
   resolveTheme,
   saveProgress,
   sortItems,
@@ -33,15 +34,25 @@ import {
   visibleItems,
   visibleTable,
 } from './engine'
-import type { Blocklist, Item, Manifest, Progress, SortMode, TableItem } from './engine'
+import type { Blocklist, Item, Manifest, Progress, SortMode, TableItem, TableStyle } from './engine'
+import { CELEBRATE_MS, Celebrate } from './Celebrate'
+import type { CelebrationKind } from './Celebrate'
+import { createTierSound } from './sound'
 import { TierBadge } from './TierBadge'
 
 const BOIL_MS = 1000 // AC-GAME-02: ≤ 1,2 s
 const STEAM_MS = 500 // AC-GAME-03: ≤ 0,6 s
+const TAP_MOVE_PX = 6 // AC-GAME-24: a press that moves less and is released sooner is a tap
+const TAP_MS = 500
+const TABLE_GAP = 8 // AC-GAME-18: the table ends this far above the bottom of the first screen
+const TABLE_MIN = 240
 
 type Loaded = { manifest: Manifest; graph: Graph; blocklist: Blocklist }
 type Source = { item: Item; uid: string | null }
 type Drag = { source: Source; x: number; y: number }
+type Press = { source: Source; x: number; y: number; w: number; h: number; moved: boolean; held: boolean; timer: number }
+type Celebration = { kind: CelebrationKind; tier: 4 | 5; animated: boolean; seq: number }
+type Box = { left: number; top: number; right: number; bottom: number }
 type Miss = { line: string; hint: string | null }
 
 function systemDark(): boolean {
@@ -55,7 +66,16 @@ function readTheme(): 'light' | 'dark' {
   } catch {
     // storage blocked: follow the system
   }
-  return resolveTheme(stored, systemDark())
+  // no stored choice: keep a theme the page already applied, else follow the system
+  return resolveTheme(stored ?? document.documentElement.dataset.theme ?? null, systemDark())
+}
+
+function readTableStyle(): TableStyle {
+  try {
+    return resolveTableStyle(storage()?.getItem(TABLE_KEY) ?? null)
+  } catch {
+    return 'plastic' // storage blocked
+  }
 }
 
 const newUid = (): string => crypto.randomUUID()
@@ -80,6 +100,44 @@ function slotGrid(table: HTMLElement | null, pot: HTMLElement | null): SlotGrid 
 /** Where the n-th item lands when it comes out of the pot. */
 function slotPosition(n: number, grid: SlotGrid): { x: number; y: number } {
   return { x: SLOT.x + (n % grid.cols) * SLOT.dx, y: SLOT.y + (Math.floor(n / grid.cols) % grid.rows) * SLOT.dy }
+}
+
+const ZONE_MARGIN = 2
+const SPOT_STEP = 8
+
+/**
+ * Nearest top-left corner for a w × h chip at (x, y) that keeps it inside a W × H table and off every forbidden zone
+ * (AC-GAME-22); boxes are in table coordinates. Unchanged when it already fits.
+ */
+function freeSpot(x: number, y: number, w: number, h: number, W: number, H: number, zones: Box[]): { x: number; y: number } {
+  const [maxX, maxY] = [Math.max(0, Math.floor(W - w)), Math.max(0, Math.floor(H - h))]
+  const fits = (px: number, py: number) =>
+    zones.every(
+      (z) =>
+        px >= z.right + ZONE_MARGIN || px + w <= z.left - ZONE_MARGIN || py >= z.bottom + ZONE_MARGIN || py + h <= z.top - ZONE_MARGIN,
+    )
+  const [cx, cy] = [Math.min(Math.max(0, x), maxX), Math.min(Math.max(0, y), maxY)]
+  if (fits(cx, cy)) return { x: cx, y: cy }
+  let best: { x: number; y: number; d: number } | null = null
+  for (let py = 0; py <= maxY; py += SPOT_STEP) {
+    for (let px = 0; px <= maxX; px += SPOT_STEP) {
+      const d = (px - cx) ** 2 + (py - cy) ** 2
+      if ((!best || d < best.d) && fits(px, py)) best = { x: px, y: py, d }
+    }
+  }
+  return best ? { x: best.x, y: best.y } : { x: cx, y: cy }
+}
+
+/** Forbidden zones (AC-GAME-22) in the coordinates of the table's padding box. */
+function zonesOver(table: HTMLElement): Box[] {
+  const box = table.getBoundingClientRect()
+  const [ox, oy] = [box.left + table.clientLeft, box.top + table.clientTop]
+  const zones: Box[] = []
+  document.querySelectorAll('[data-zone]').forEach((z) => {
+    const r = z.getBoundingClientRect()
+    if (r.width * r.height > 0) zones.push({ left: r.left - ox, top: r.top - oy, right: r.right - ox, bottom: r.bottom - oy })
+  })
+  return zones
 }
 
 function onTable(item: Item, x: number, y: number): TableItem {
@@ -136,15 +194,22 @@ export function Game({ onDiscover, onItems, heirlooms = {}, onReport, blocklistR
   const [zoom, setZoom] = useState<{ item: Item; seq: number } | null>(null)
   const showZoom = useCallback((item: Item) => setZoom((z) => ({ item, seq: (z?.seq ?? 0) + 1 })), [])
   const closeZoom = useCallback(() => setZoom(null), [])
+  const [celebration, setCelebration] = useState<Celebration | null>(null)
+  const celebrateSeq = useRef(0)
+  const [playSound] = useState(createTierSound)
   const [steam, setSteam] = useState<{ x: number; y: number } | null>(null)
   const [query, setQuery] = useState('')
-  const [confirmReset, setConfirmReset] = useState(false)
   const [theme, setTheme] = useState(readTheme)
+  const [tableStyle, setTableStyle] = useState(readTableStyle)
   const [drag, setDrag] = useState<Drag | null>(null)
   const dragRef = useRef<Source | null>(null)
+  const pressRef = useRef<Press | null>(null)
   const busyRef = useRef(false) // a table stack is being looked up
-  const generation = useRef(0) // bumped by "Chơi lại từ đầu": results of older combines are dropped
   const timers = useRef<number[]>([])
+  // Height of the table (and of the plate beside or below it), filling the first screen (AC-GAME-18, AC-GAME-23).
+  const [tableHeight, setTableHeight] = useState<number | null>(null)
+  const [layoutTick, setLayoutTick] = useState(0)
+  const gameRef = useRef<HTMLDivElement>(null)
 
   const commit = (next: Progress) => {
     progressRef.current = next
@@ -153,16 +218,63 @@ export function Game({ onDiscover, onItems, heirlooms = {}, onReport, blocklistR
     if (s) saveProgress(s, next)
   }
 
-  const clearTimers = () => {
-    timers.current.forEach((t) => window.clearTimeout(t))
-    timers.current = []
-  }
-
   useEffect(() => {
     document.documentElement.dataset.theme = theme
   }, [theme])
 
   useEffect(() => () => timers.current.forEach((t) => window.clearTimeout(t)), [])
+
+  // The viewport or the content above the table changed size: lay the table out again.
+  useEffect(() => {
+    const onResize = () => setLayoutTick((n) => n + 1)
+    window.addEventListener('resize', onResize)
+    const observer = typeof ResizeObserver === 'function' ? new ResizeObserver(onResize) : null
+    if (gameRef.current) observer?.observe(gameRef.current)
+    return () => {
+      window.removeEventListener('resize', onResize)
+      observer?.disconnect()
+    }
+  }, [])
+
+  // After a layout change: size the table to the rest of the first screen, then move any chip that ended up outside the
+  // table or on a forbidden zone (tool row, miss line, touch hint) to the nearest free spot (AC-GAME-18, AC-GAME-22).
+  // jsdom has no layout (zero width): nothing to do there.
+  useLayoutEffect(() => {
+    const el = tableRef.current
+    if (!el || !el.clientWidth) return
+    const box = el.getBoundingClientRect()
+    const height = Math.max(TABLE_MIN, Math.floor(window.innerHeight - (box.top + window.scrollY) - TABLE_GAP))
+    if (height !== tableHeight) {
+      setTableHeight(height)
+      return // placed again once the new height is laid out
+    }
+    const p = progressRef.current
+    if (!p || p.table.length === 0) return
+    const zones = zonesOver(el)
+    const sizes = new Map<string, DOMRect>()
+    el.querySelectorAll<HTMLElement>('[data-uid]').forEach((c) => sizes.set(c.dataset.uid!, c.getBoundingClientRect()))
+    let moved = false
+    const table = p.table.map((t) => {
+      const r = sizes.get(t.uid)
+      if (!r) return t // blocked: not drawn
+      const at = freeSpot(t.x, t.y, Math.ceil(r.width), Math.ceil(r.height), el.clientWidth, el.clientHeight, zones)
+      if (at.x === t.x && at.y === t.y) return t
+      moved = true
+      return { ...t, ...at }
+    })
+    if (moved) commit({ ...p, table })
+  }, [tableHeight, layoutTick, progress, miss, loaded, view])
+
+  // Esc skips the Vàng/Đỏ effect, like the zoom it goes with (AC-GAME-25).
+  const celebrating = celebration !== null
+  useLayoutEffect(() => {
+    if (!celebrating) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setCelebration(null)
+    }
+    document.addEventListener('keydown', onKey)
+    return () => document.removeEventListener('keydown', onKey)
+  }, [celebrating])
 
   // Manifest + graph (+ blocklist, best effort). Progress is never touched when loading fails (AC-GAME-16).
   useEffect(() => {
@@ -253,10 +365,20 @@ export function Game({ onDiscover, onItems, heirlooms = {}, onReport, blocklistR
   }
 
   // ---------------------------------------------------------------- combining
+  /** Vàng/Đỏ effect and sound for the element a combine gave (AC-GAME-25/26); lower tiers get none. */
+  const celebrate = (item: Item, isNew: boolean) => {
+    const tier = tierOf(item)
+    if (tier !== 4 && tier !== 5) return
+    const kind: CelebrationKind = !isNew ? 'glow' : tier === 5 ? 'red' : 'gold'
+    const seq = ++celebrateSeq.current
+    setCelebration({ kind, tier, animated: !prefersReducedMotion(), seq })
+    later(() => setCelebration((c) => (c?.seq === seq ? null : c)), CELEBRATE_MS[kind])
+    if (isNew && !progressRef.current?.muted) playSound(tier)
+  }
+
   const boil = (a: Item, b: Item) => {
     const p = progressRef.current
     if (!ctx || !p) return
-    const gen = generation.current
     boilingRef.current = true
     setBoiling(true)
     setMiss(null)
@@ -266,7 +388,6 @@ export function Game({ onDiscover, onItems, heirlooms = {}, onReport, blocklistR
     later(() => {
       outcome
         .then((out) => {
-          if (gen !== generation.current) return
           const table = progressRef.current?.table ?? p.table
           recordCombine(out.kind === 'hit')
           if (out.kind === 'hit') {
@@ -277,16 +398,14 @@ export function Game({ onDiscover, onItems, heirlooms = {}, onReport, blocklistR
               onDiscoverRef.current?.({ a: a.name, b: b.name, result: item.name, id: item.id, emoji: item.emoji })
               showZoom(item)
             }
+            celebrate(item, out.isNew)
           } else {
             commit({ ...out.progress, table: [...table, onTable(a, pa.x, pa.y), onTable(b, pb.x, pb.y)] })
             setMiss({ line: out.line, hint: out.hint })
           }
         })
-        .catch(() => {
-          if (gen === generation.current) setMiss({ line: 'Nồi trục trặc, nhúng lại nhé.', hint: null })
-        })
+        .catch(() => setMiss({ line: 'Nồi trục trặc, nhúng lại nhé.', hint: null }))
         .finally(() => {
-          if (gen !== generation.current) return
           setSlots([null, null])
           boilingRef.current = false
           setBoiling(false)
@@ -297,12 +416,10 @@ export function Game({ onDiscover, onItems, heirlooms = {}, onReport, blocklistR
   const stack = async (source: Source, target: TableItem, x: number, y: number) => {
     const p = progressRef.current
     if (!ctx || !p) return
-    const gen = generation.current
     busyRef.current = true
     setMiss(null)
     try {
       const out = await combine(ctx, p, source.item.name, target.name)
-      if (gen !== generation.current) return
       const table = (progressRef.current ?? p).table.filter((t) => t.uid !== source.uid)
       recordCombine(out.kind === 'hit')
       if (out.kind === 'hit') {
@@ -314,6 +431,7 @@ export function Game({ onDiscover, onItems, heirlooms = {}, onReport, blocklistR
           onDiscoverRef.current?.({ a: source.item.name, b: target.name, result: item.name, id: item.id, emoji: item.emoji })
           showZoom(item)
         }
+        celebrate(item, out.isNew)
         setSteam({ x: target.x, y: target.y })
         later(() => setSteam(null), STEAM_MS)
       } else {
@@ -321,9 +439,9 @@ export function Game({ onDiscover, onItems, heirlooms = {}, onReport, blocklistR
         setMiss({ line: out.line, hint: out.hint })
       }
     } catch {
-      if (gen === generation.current) setMiss({ line: 'Nồi trục trặc, nhúng lại nhé.', hint: null })
+      setMiss({ line: 'Nồi trục trặc, nhúng lại nhé.', hint: null })
     } finally {
-      if (gen === generation.current) busyRef.current = false
+      busyRef.current = false
     }
   }
 
@@ -333,7 +451,7 @@ export function Game({ onDiscover, onItems, heirlooms = {}, onReport, blocklistR
     if (p && !p.touch_hint_seen) commit({ ...p, touch_hint_seen: true })
   }
 
-  const drop = (source: Source, el: Element | null, clientX: number, clientY: number) => {
+  const drop = ({ source, w, h }: Press, el: Element | null, clientX: number, clientY: number) => {
     const p = progressRef.current
     if (!el || !p || boilingRef.current || busyRef.current) return
     const slotEl = el.closest('[data-slot]')
@@ -348,7 +466,9 @@ export function Game({ onDiscover, onItems, heirlooms = {}, onReport, blocklistR
       if (next[0] && next[1]) boil(next[0], next[1])
       return
     }
-    const tableEl = el.closest('[data-testid="table"]')
+    // A drop on a forbidden zone (even one outside the table, like the tool row on a phone) lands on the table, at the
+    // nearest free spot (AC-GAME-22).
+    const tableEl = el.closest('[data-testid="table"]') ?? (el.closest('[data-zone]') ? tableRef.current : null)
     if (!tableEl) {
       // Dragged off the table: take it off.
       if (source.uid) commit({ ...p, table: p.table.filter((t) => t.uid !== source.uid) })
@@ -356,47 +476,77 @@ export function Game({ onDiscover, onItems, heirlooms = {}, onReport, blocklistR
     }
     const rect = tableEl.getBoundingClientRect()
     const [x, y] = [Math.max(0, clientX - rect.left - CHIP_HALF.x), Math.max(0, clientY - rect.top - CHIP_HALF.y)]
+    // Placed off the forbidden zones as they are now: the touch hint goes away with this drop (AC-GAME-21/22).
+    const spot = tableEl.clientWidth
+      ? freeSpot(x, y, Math.ceil(w), Math.ceil(h), tableEl.clientWidth, tableEl.clientHeight, zonesOver(tableEl as HTMLElement))
+      : { x, y }
     const targetUid = el.closest('[data-uid]')?.getAttribute('data-uid')
     const target = p.table.find((t) => t.uid === targetUid && t.uid !== source.uid)
     dismissTouchHint() // before `stack`, which builds on the current progress
     if (target && ready) {
-      void stack(source, target, x, y)
+      void stack(source, target, spot.x, spot.y)
       return
     }
     const cur = progressRef.current ?? p
     const rest = cur.table.filter((t) => t.uid !== source.uid)
-    commit({ ...cur, table: [...rest, onTable(source.item, x, y)] })
+    commit({ ...cur, table: [...rest, onTable(source.item, spot.x, spot.y)] })
   }
 
+  /**
+   * Pointer handling for plate and table items: a press that moves at least 6 px is a drag; one released sooner than
+   * 500 ms without moving is a tap and puts the item in the pot (AC-GAME-24); a longer hold does neither.
+   */
   const dragHandlers = (source: Source) => ({
     onPointerDown: (e: ReactPointerEvent<HTMLElement>) => {
       if (boilingRef.current || busyRef.current || e.button !== 0) return
       e.preventDefault()
       if (typeof e.currentTarget.setPointerCapture === 'function') e.currentTarget.setPointerCapture(e.pointerId)
-      dragRef.current = source
-      setDrag({ source, x: e.clientX, y: e.clientY })
+      if (pressRef.current) window.clearTimeout(pressRef.current.timer)
+      const { width: w, height: h } = e.currentTarget.getBoundingClientRect()
+      const press: Press = { source, x: e.clientX, y: e.clientY, w, h, moved: false, held: false, timer: 0 }
+      press.timer = window.setTimeout(() => (press.held = true), TAP_MS)
+      pressRef.current = press
     },
     onPointerMove: (e: ReactPointerEvent<HTMLElement>) => {
-      if (dragRef.current) setDrag({ source: dragRef.current, x: e.clientX, y: e.clientY })
+      const press = pressRef.current
+      if (!press) return
+      if (!press.moved && Math.hypot(e.clientX - press.x, e.clientY - press.y) < TAP_MOVE_PX) return
+      press.moved = true
+      dragRef.current = press.source
+      setDrag({ source: press.source, x: e.clientX, y: e.clientY })
     },
     onPointerUp: (e: ReactPointerEvent<HTMLElement>) => {
-      const src = dragRef.current
+      const press = pressRef.current
+      pressRef.current = null
       dragRef.current = null
       setDrag(null)
-      if (src) drop(src, document.elementFromPoint(e.clientX, e.clientY), e.clientX, e.clientY)
+      if (!press) return
+      window.clearTimeout(press.timer)
+      if (press.moved) drop(press, document.elementFromPoint(e.clientX, e.clientY), e.clientX, e.clientY)
+      else if (!press.held) toPot(press.source)
     },
     onPointerCancel: () => {
+      if (pressRef.current) window.clearTimeout(pressRef.current.timer)
+      pressRef.current = null
       dragRef.current = null
       setDrag(null)
     },
   })
 
-  /** Keyboard path (Enter/Space on a plate item): put it in the next free pot slot. */
-  const toPot = (item: Item) => {
-    if (!ready || boilingRef.current || busyRef.current) return
-    const next: [Item | null, Item | null] = slots[0] ? [slots[0], item] : [item, slots[1]]
+  /** Tap, Enter or Space on an item: it goes to the first free pot slot and boils once both are full (AC-GAME-24). */
+  const toPot = (source: Source) => {
+    const p = progressRef.current
+    if (!ready || !p || boilingRef.current || busyRef.current) return
+    const next: [Item | null, Item | null] = slots[0] ? [slots[0], source.item] : [source.item, slots[1]]
+    if (source.uid) commit({ ...p, table: p.table.filter((t) => t.uid !== source.uid) })
     setSlots(next)
     if (next[0] && next[1]) boil(next[0], next[1])
+  }
+
+  const keyToPot = (source: Source) => (e: ReactKeyboardEvent<HTMLElement>) => {
+    if (e.target !== e.currentTarget || (e.key !== 'Enter' && e.key !== ' ')) return
+    e.preventDefault()
+    toPot(source)
   }
 
   // ---------------------------------------------------------------- toolbar
@@ -412,28 +562,9 @@ export function Game({ onDiscover, onItems, heirlooms = {}, onReport, blocklistR
     if (p) commit({ ...p, table: [] })
   }
 
-  const restart = () => {
-    setConfirmReset(false)
-    generation.current += 1
-    clearTimers()
-    try {
-      const s = storage()
-      if (s) resetProgress(s)
-    } catch {
-      // storage blocked: in-memory progress is reset below
-    }
-    setSlots([null, null])
-    boilingRef.current = false
-    busyRef.current = false
-    setBoiling(false)
-    setSteam(null)
-    setMiss(null)
-    setZoom(null)
-    if (loaded) commit({ ...initialProgress(loaded.manifest, new Date()), tutorial_seen: true })
-    else {
-      progressRef.current = null
-      setProgress(null)
-    }
+  const toggleMute = () => {
+    const p = progressRef.current
+    if (p) commit({ ...p, muted: !p.muted })
   }
 
   const toggleTheme = () => {
@@ -444,6 +575,16 @@ export function Game({ onDiscover, onItems, heirlooms = {}, onReport, blocklistR
       // storage blocked: the choice lasts for this session only
     }
     setTheme(next)
+  }
+
+  const toggleTable = () => {
+    const next: TableStyle = tableStyle === 'wood' ? 'plastic' : 'wood'
+    try {
+      storage()?.setItem(TABLE_KEY, next)
+    } catch {
+      // storage blocked: the choice lasts for this session only
+    }
+    setTableStyle(next)
   }
 
   const setSort = (sort: SortMode) => {
@@ -470,10 +611,14 @@ export function Game({ onDiscover, onItems, heirlooms = {}, onReport, blocklistR
   // No image request before the block list is known, nor for a blocked image (AC-ART-07).
   const imageOf = (item: Item | undefined): string | null =>
     loaded && item?.image_key && !blocklist.images.includes(item.id) ? item.image_key : null
+  const tableSource = (t: TableItem): Source => ({
+    item: byId.get(t.id) ?? { ...t, depth: 0, added_version: 0, image_key: null, discovered_at: '' },
+    uid: t.uid,
+  })
   const badge = (item: Item | undefined) => (item && isNew(item, version, blocklist) ? <span className="badge">MỚI</span> : null)
 
   return (
-    <div className="game">
+    <div className="game" ref={gameRef}>
       {/* Title, account and theme only (AC-GAME-19); the table controls live with the table. */}
       <header className="game-bar">
         <h1>Lẩu Meme</h1>
@@ -520,18 +665,50 @@ export function Game({ onDiscover, onItems, heirlooms = {}, onReport, blocklistR
 
       <div className="game-board" hidden={loaded !== null && view !== 'table'}>
         <div className="table-area">
-          <div className="table-tools">
+          {/* Dọn bàn / loa / ? (AC-GAME-19, AC-GAME-26); a forbidden zone for chips (AC-GAME-22). */}
+          <div className="table-tools" data-testid="table-tools" data-zone>
             <button type="button" onClick={clearTable}>
               Dọn bàn
             </button>
-            <button type="button" onClick={() => setConfirmReset(true)} aria-label="Chơi lại từ đầu">
-              Chơi lại <span className="wide-only">từ đầu</span>
+            <button
+              type="button"
+              className="icon-button"
+              onClick={toggleMute}
+              aria-label={progress?.muted ? 'Bật tiếng' : 'Tắt tiếng'}
+              title={progress?.muted ? 'Bật tiếng' : 'Tắt tiếng'}
+            >
+              <SpeakerIcon muted={progress?.muted === true} />
+            </button>
+            <button
+              type="button"
+              className="icon-button"
+              onClick={toggleTable}
+              aria-label={tableStyle === 'wood' ? 'Đổi sang bàn nhựa' : 'Đổi sang bàn gỗ'}
+              title={tableStyle === 'wood' ? 'Đổi sang bàn nhựa' : 'Đổi sang bàn gỗ'}
+            >
+              <TableIcon />
             </button>
             <button type="button" onClick={() => setTutorialOpen(true)} title="Hướng dẫn">
               ?
             </button>
           </div>
-          <section ref={tableRef} className="game-table" data-testid="table" aria-label="Mặt bàn">
+          <section
+            ref={tableRef}
+            className="game-table"
+            data-testid="table"
+            data-table={tableStyle}
+            data-shake={celebration?.kind === 'red' && celebration.animated ? 'true' : undefined}
+            aria-label="Mặt bàn"
+            style={tableHeight ? { height: tableHeight } : undefined}
+          >
+          {coarse && progress && !progress.touch_hint_seen && (
+            <p className="touch-hint" data-testid="touch-hint" data-zone>
+              <span>Giữ món để kéo, vuốt chỗ trống để cuộn</span>
+              <button type="button" className="icon-button" onClick={dismissTouchHint} aria-label="Đóng gợi ý">
+                ×
+              </button>
+            </p>
+          )}
           {table.map((t) => (
             <div
               key={t.uid}
@@ -543,10 +720,9 @@ export function Game({ onDiscover, onItems, heirlooms = {}, onReport, blocklistR
               data-x={t.x}
               data-y={t.y}
               style={{ left: t.x, top: t.y }}
-              {...dragHandlers({
-                item: byId.get(t.id) ?? { ...t, depth: 0, added_version: 0, image_key: null, discovered_at: '' },
-                uid: t.uid,
-              })}
+              tabIndex={0}
+              onKeyDown={keyToPot(tableSource(t))}
+              {...dragHandlers(tableSource(t))}
             >
               <ElementIcon emoji={t.emoji} imageKey={imageOf(byId.get(t.id))} /> <span>{t.name}</span>
               {badge(byId.get(t.id))}
@@ -572,7 +748,7 @@ export function Game({ onDiscover, onItems, heirlooms = {}, onReport, blocklistR
                   <div key={n} className="pot-slot" data-testid={`pot-slot-${n}`} data-slot={n}>
                     {it && (
                       <span className={`slot-item tier-${tierOf(byId.get(it.id) ?? it)}`} data-tier={tierOf(byId.get(it.id) ?? it)}>
-                        <span aria-hidden="true">{it.emoji}</span> <span>{it.name}</span>
+                        <span className="emoji" aria-hidden="true">{it.emoji}</span> <span>{it.name}</span>
                         <TierBadge tier={tierOf(byId.get(it.id) ?? it)} />
                       </span>
                     )}
@@ -586,35 +762,38 @@ export function Game({ onDiscover, onItems, heirlooms = {}, onReport, blocklistR
             </span>
             <span className="pot-burner" data-testid="pot-flames" aria-hidden="true" />
           </div>
+          {celebration && (
+            <Celebrate key={celebration.seq} kind={celebration.kind} tier={celebration.tier} animated={celebration.animated} />
+          )}
           {zoom && (
-            <DiscoveryZoom
-              key={zoom.seq}
-              name={zoom.item.name}
-              emoji={zoom.item.emoji}
-              imageKey={imageOf(zoom.item)}
-              tier={tierOf(zoom.item)}
-              onClose={closeZoom}
-            />
+            // a click on the zoom skips the Vàng/Đỏ effect with it (AC-GAME-25)
+            <div className="contents" onClick={() => setCelebration(null)}>
+              <DiscoveryZoom
+                key={zoom.seq}
+                name={zoom.item.name}
+                emoji={zoom.item.emoji}
+                imageKey={imageOf(zoom.item)}
+                tier={tierOf(zoom.item)}
+                onClose={closeZoom}
+              />
+            </div>
           )}
           <div className="sr-only" aria-live="polite">
             {zoom ? `Món mới: ${zoom.item.name}` : ''}
           </div>
           <div className="miss" aria-live="polite">
-            {miss && <p data-testid="miss-line">{miss.line}</p>}
-            {miss?.hint && <p data-testid="miss-hint">{miss.hint}</p>}
+            {miss && (
+              <div className="miss-area" data-testid="miss-area" data-zone>
+                <p data-testid="miss-line">{miss.line}</p>
+                {miss.hint && <p data-testid="miss-hint">{miss.hint}</p>}
+              </div>
+            )}
           </div>
-        </section>
-          {coarse && progress && !progress.touch_hint_seen && (
-            <p className="touch-hint">
-              <span>Giữ món để kéo, vuốt chỗ trống để cuộn</span>
-              <button type="button" className="icon-button" onClick={dismissTouchHint} aria-label="Đóng gợi ý">
-                ×
-              </button>
-            </p>
-          )}
+          </section>
         </div>
 
-        <aside className="plate">
+        {/* As tall as the table; the list scrolls inside it (AC-GAME-23). */}
+        <aside className="plate" data-testid="plate-panel" style={tableHeight ? { height: tableHeight } : undefined}>
           <input
             type="search"
             aria-label="Tìm trong Đĩa nhúng"
@@ -641,12 +820,7 @@ export function Game({ onDiscover, onItems, heirlooms = {}, onReport, blocklistR
                 data-name={it.name}
                 title={heirlooms[it.id]}
                 tabIndex={0}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault()
-                    toPot(it)
-                  }
-                }}
+                onKeyDown={keyToPot({ item: it, uid: null })}
                 {...dragHandlers({ item: it, uid: null })}
               >
                 <ElementIcon emoji={it.emoji} imageKey={imageOf(it)} /> <span>{it.name}</span>
@@ -674,7 +848,7 @@ export function Game({ onDiscover, onItems, heirlooms = {}, onReport, blocklistR
 
       {drag && (
         <div className="chip ghost" style={{ left: drag.x, top: drag.y }} aria-hidden="true">
-          {drag.source.item.emoji} {drag.source.item.name}
+          <span className="emoji">{drag.source.item.emoji}</span> {drag.source.item.name}
         </div>
       )}
 
@@ -695,24 +869,6 @@ export function Game({ onDiscover, onItems, heirlooms = {}, onReport, blocklistR
         </div>
       )}
 
-      {confirmReset && (
-        <div
-          role="alertdialog"
-          aria-modal="true"
-          aria-labelledby="reset-title"
-          className="modal"
-          onKeyDown={(e) => e.key === 'Escape' && setConfirmReset(false)}
-        >
-          <h2 id="reset-title">Chơi lại từ đầu?</h2>
-          <p>Đĩa nhúng sẽ về 4 món khởi đầu. Nickname và chuỗi Daily vẫn được giữ.</p>
-          <button type="button" onClick={() => setConfirmReset(false)} autoFocus>
-            Hủy
-          </button>
-          <button type="button" onClick={restart}>
-            Xóa
-          </button>
-        </div>
-      )}
     </div>
   )
 }
@@ -738,6 +894,45 @@ function ThemeIcon({ dark }: { dark: boolean }) {
       ) : (
         <path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z" />
       )}
+    </svg>
+  )
+}
+
+/** Outline speaker, crossed out while muted. */
+function SpeakerIcon({ muted }: { muted: boolean }) {
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M4 9h4l5-4v14l-5-4H4z" />
+      {muted ? <path d="M17 9l5 6M22 9l-5 6" /> : <path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12" />}
+    </svg>
+  )
+}
+
+/** Outline table: a top and two legs (AC-GAME-28). */
+function TableIcon() {
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M3 8h18M5 8l-1 11M19 8l1 11M7 13h10" />
     </svg>
   )
 }

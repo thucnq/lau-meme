@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useLayoutEffect } from 'react'
 import { TierBadge } from '../game/TierBadge'
 import { ElementIcon } from './ElementIcon'
 
@@ -24,7 +24,8 @@ export function prefersReducedMotion(): boolean {
  * Remount it (key) for each new discovery so the timer starts again.
  */
 export function DiscoveryZoom({ name, emoji, imageKey, tier = 1, onClose }: Props) {
-  useEffect(() => {
+  // Layout effect: Esc works from the moment the zoom is on screen.
+  useLayoutEffect(() => {
     const timer = window.setTimeout(onClose, ZOOM_MS)
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose()

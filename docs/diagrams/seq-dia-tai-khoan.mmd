@@ -1,0 +1,31 @@
+%% Đĩa nhúng theo tài khoản (SYNC, ADR 0015)
+sequenceDiagram
+  autonumber
+  participant B as Trình duyệt (máy 1)
+  participant L as localStorage laumeme:
+  participant W as Worker /lau-meme/api
+  participant D as D1
+
+  Note over B,D: Tải trang khi có cookie phiên
+  B->>W: GET /me/plate (cookie laumeme_sid)
+  W->>D: session → account_id; SELECT account_element
+  W-->>B: 200 items[] (401 → chơi bằng Đĩa cục bộ)
+  B->>L: Đĩa = cục bộ ∪ server, found_at sớm nhất
+  opt Phần tử cục bộ có cặp mà server chưa có (vừa đăng nhập)
+    B->>W: POST /me/plate/merge items ≤ 500
+    W->>D: kiểm recipe trong 14 version, không bị chặn; INSERT ON CONFLICT DO NOTHING (DB.batch)
+    W-->>B: 200 count, skipped[]
+  end
+
+  Note over B,D: Ghép ra món mới
+  B->>L: thêm C vào Đĩa cục bộ ngay (không chờ mạng)
+  B-)W: POST /me/plate {a, b, result}
+  W->>D: rate_counter plate ≤ 120/phút; kiểm recipe; INSERT ON CONFLICT DO NOTHING
+  alt 200
+    W-->>B: count
+  else 404 / 422
+    W-->>B: problem+json, C chỉ ở Đĩa cục bộ
+  else lỗi mạng, 5xx, 429
+    B->>L: đưa C vào hàng chờ gửi bù
+    B-)W: lần ghép sau / tải lại: POST /me/plate/merge (thử lại có giới hạn)
+  end
