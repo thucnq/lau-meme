@@ -30,12 +30,19 @@
    "AC-TIER-ABUSE": {
     "status": "PASS",
     "test": "tier.test.ts#tier "
+   },
+   "AC-TIER-02-ring": {
+    "status": "FAIL",
+    "test": "tier.browser.test.tsx#tier hiển thị ",
+    "ts": "2026-10-25T03:19:25+00:00",
+    "commit": "18d9fb2",
+    "note": "viền hình nhỏ, 2026-10-25"
    }
   }
  },
  "green": {
-  "ts": "2026-10-25T02:52:11+00:00",
-  "commit": "d88c002",
+  "ts": "2026-10-25T03:23:47+00:00",
+  "commit": "18d9fb2",
   "results": {
    "AC-TIER-01": {
     "status": "PASS",

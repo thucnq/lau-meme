@@ -106,12 +106,18 @@
    "AC-GAME-26": {
     "status": "FAIL",
     "test": "ui3.ui.test.tsx#ui3: âm thanh và nút loa "
+   },
+   "AC-GAME-28": {
+    "status": "FAIL",
+    "test": "table-style.ui.test.tsx#đổi kiểu mặt bàn ",
+    "ts": "2026-10-25T03:13:43+00:00",
+    "commit": "18d9fb2"
    }
   }
  },
  "green": {
-  "ts": "2026-10-25T02:53:21+00:00",
-  "commit": "d88c002",
+  "ts": "2026-10-25T03:22:06+00:00",
+  "commit": "18d9fb2",
   "results": {
    "AC-GAME-01": {
     "status": "PASS",
@@ -216,6 +222,10 @@
    "AC-GAME-26": {
     "status": "PASS",
     "test": "ui3.ui.test.tsx#ui3: âm thanh và nút loa "
+   },
+   "AC-GAME-28": {
+    "status": "PASS",
+    "test": "table-style.ui.test.tsx#đổi kiểu mặt bàn "
    }
   }
  }
