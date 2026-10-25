@@ -84,3 +84,9 @@
 - **Khi** gọi `GET` và `HEAD` tới `/lau-meme/chinh-sach` và `/lau-meme/chinh-sach/`: không có `Accept`, với `Accept: */*`, và với `User-Agent: facebookexternalhit/1.1`
 - **Thì** tất cả trả 200 `text/html` là nội dung `index.html` của game (có `<div id="root">`; `HEAD` không có thân); `POST /lau-meme/chinh-sach` không trả HTML; các đường dẫn khác giữ nguyên AC-SUBPATH-04/05 (vd `GET /lau-meme/assets/khong-co.js` với `Accept: */*` vẫn 404, `GET /lau-meme/chinh-sach-abc` không có `Accept` vẫn 404); không đụng D1
 - Ưu tiên: Bắt buộc
+
+### AC-SUBPATH-14: Trang chính sách tĩnh cho bot (thêm 2026-10-25)
+- **Cho** web đã build; trình quét của Meta không chạy JavaScript và đi theo `og:url`/canonical của `index.html` (luôn trỏ về production). App Review của app Threads báo "Data deletion instructions URL should represent a valid URL" với `https://staging.dinoduct.fun/lau-meme/chinh-sach` khi production chưa chạy (câu hỏi mở 66)
+- **Khi** gọi `GET` và `HEAD` tới `/lau-meme/chinh-sach-tinh`: không có `Accept`, với `Accept: */*`, và với `User-Agent: facebookexternalhit/1.1`
+- **Thì** tất cả trả 200 `text/html` (`HEAD` không có thân); thân là HTML tĩnh có sẵn chữ chính sách, cùng nội dung chữ với trang `/chinh-sach` của game (AC-PRIV-01), không cần JavaScript; không có `<link rel="canonical">`, `og:url`, `<div id="root">` hay `<script>`; không đụng D1. `/lau-meme/chinh-sach` giữ nguyên AC-SUBPATH-13
+- Ưu tiên: Bắt buộc
