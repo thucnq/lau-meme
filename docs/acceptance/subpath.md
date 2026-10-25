@@ -10,7 +10,7 @@
 ### AC-SUBPATH-01: Một nguồn tiền tố, route đúng
 - **Cho** `base-path.json`, `worker/wrangler.jsonc`, `.dk/stack.toml`
 - **Khi** đọc cấu hình
-- **Thì** biến `BASE_PATH` của Worker (production và `env.staging`) bằng `basePath` trong `base-path.json`; top-level có `routes` đúng một mục `{ pattern: "dinoduct.fun/lau-meme*", zone_name: "dinoduct.fun" }`, `env.staging` có đúng một mục `{ pattern: "staging.dinoduct.fun/lau-meme*", zone_name: "dinoduct.fun" }`; ngoài ra mỗi môi trường chỉ được thêm đúng một route cho host quản trị (ADR 0008): top-level `{ pattern: "laumeme-admin.dinoduct.fun/*", zone_name: "dinoduct.fun" }`, `env.staging` `{ pattern: "laumeme-admin-staging.dinoduct.fun/*", zone_name: "dinoduct.fun" }`; không có route nào khác (không `dinoduct.fun/*`, không gốc của `dinoduct.fun` hay `staging.dinoduct.fun`); `workers_dev` là `true`; `deploy.health` trong `.dk/stack.toml` là `/lau-meme/api/health`
+- **Thì** biến `BASE_PATH` của Worker (production và `env.staging`) bằng `basePath` trong `base-path.json`; top-level có `routes` đúng một mục `{ pattern: "dinoduct.fun/lau-meme*", zone_name: "dinoduct.fun" }`, `env.staging` có đúng một mục `{ pattern: "staging.dinoduct.fun/lau-meme*", zone_name: "dinoduct.fun" }`; ngoài ra mỗi môi trường chỉ được thêm đúng một route cho host quản trị (ADR 0008): top-level `{ pattern: "laumeme-admin.dinoduct.fun/*", zone_name: "dinoduct.fun" }`, `env.staging` `{ pattern: "laumeme-admin-staging.dinoduct.fun/*", zone_name: "dinoduct.fun" }`; và đúng một route robots.txt cho host game (AC-SUBPATH-15, thêm 2026-10-25): top-level `{ pattern: "dinoduct.fun/robots.txt", zone_name: "dinoduct.fun" }`, `env.staging` `{ pattern: "staging.dinoduct.fun/robots.txt", zone_name: "dinoduct.fun" }`; không có route nào khác (không `dinoduct.fun/*`, không gốc của `dinoduct.fun` hay `staging.dinoduct.fun`); `workers_dev` là `true`; `deploy.health` trong `.dk/stack.toml` là `/lau-meme/api/health`
 - Ưu tiên: Bắt buộc
 
 ### AC-SUBPATH-02: API dưới tiền tố
@@ -89,4 +89,10 @@
 - **Cho** web đã build; trình quét của Meta không chạy JavaScript và đi theo `og:url`/canonical của `index.html` (luôn trỏ về production). App Review của app Threads báo "Data deletion instructions URL should represent a valid URL" với `https://staging.dinoduct.fun/lau-meme/chinh-sach` khi production chưa chạy (câu hỏi mở 66)
 - **Khi** gọi `GET` và `HEAD` tới `/lau-meme/chinh-sach-tinh`: không có `Accept`, với `Accept: */*`, và với `User-Agent: facebookexternalhit/1.1`
 - **Thì** tất cả trả 200 `text/html` (`HEAD` không có thân); thân là HTML tĩnh có sẵn chữ chính sách, cùng nội dung chữ với trang `/chinh-sach` của game (AC-PRIV-01), không cần JavaScript; không có `<link rel="canonical">`, `og:url`, `<div id="root">` hay `<script>`; không đụng D1. `/lau-meme/chinh-sach` giữ nguyên AC-SUBPATH-13
+- Ưu tiên: Bắt buộc
+
+### AC-SUBPATH-15: robots.txt của host game (thêm 2026-10-25)
+- **Cho** bot của Meta đọc `/robots.txt` của host trước khi đọc trang; gốc `dinoduct.fun` và `staging.dinoduct.fun` không có máy chủ nên `/robots.txt` trả 522, và Meta coi đó là bị chặn: Sharing Debugger báo 403 "could be due to a robots.txt block" cho `/lau-meme/chinh-sach-tinh` (AC-SUBPATH-14)
+- **Khi** gọi `GET` hoặc `HEAD` `/robots.txt` trên host game
+- **Thì** 200 `text/plain` (`HEAD` không có thân); `APP_ENV` là `production`: cho mọi bot (`User-agent: *` / `Allow: /`); môi trường khác (staging, preview): chỉ `facebookexternalhit` được đọc (`User-agent: facebookexternalhit` / `Allow: /`), mọi bot khác bị cấm (`User-agent: *` / `Disallow: /`) để staging không lên kết quả tìm kiếm; phương thức khác trả 405 problem+json; `/robots.txt` trên host quản trị giữ 404; không đụng D1
 - Ưu tiên: Bắt buộc

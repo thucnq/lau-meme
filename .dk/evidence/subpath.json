@@ -1,11 +1,11 @@
 {
  "red": {
-  "ts": "2026-10-25T14:58:17+00:00",
-  "commit": "0f0f3a5",
+  "ts": "2026-10-25T15:23:36+00:00",
+  "commit": "79a1a05",
   "results": {
    "AC-SUBPATH-01": {
-    "status": "PASS",
-    "test": "subpath.test.ts#subpath > AC-SUBPATH-01: BASE_PATH của Worker "
+    "status": "FAIL",
+    "test": "subpath.test.ts#subpath > AC-SUBPATH-01: mỗi môi trường đúng một route game, một route host quản trị "
    },
    "AC-SUBPATH-02": {
     "status": "PASS",
@@ -56,14 +56,18 @@
     "test": "subpath.test.ts#subpath > AC-SUBPATH-13: GET trang chính sách "
    },
    "AC-SUBPATH-14": {
+    "status": "PASS",
+    "test": "staticPolicy.test.tsx#trang chính sách tĩnh > AC-SUBPATH-14: web/chinh-sach-tinh.html có cùng chữ với PolicyPage, không script, không canonical hay og:url"
+   },
+   "AC-SUBPATH-15": {
     "status": "FAIL",
-    "test": "subpath.test.ts#subpath > AC-SUBPATH-14: HEAD /lau-meme/chinh-sach-tinh trả 200 text/html và body rỗng"
+    "test": "subpath.test.ts#subpath > AC-SUBPATH-15: POST /robots.txt trả 405 problem+json"
    }
   }
  },
  "green": {
-  "ts": "2026-10-25T15:01:39+00:00",
-  "commit": "a3d7b62",
+  "ts": "2026-10-25T15:25:12+00:00",
+  "commit": "d362508",
   "results": {
    "AC-SUBPATH-01": {
     "status": "PASS",
@@ -120,6 +124,10 @@
    "AC-SUBPATH-14": {
     "status": "PASS",
     "test": "staticPolicy.test.tsx#trang chính sách tĩnh > AC-SUBPATH-14: web/chinh-sach-tinh.html có cùng chữ với PolicyPage, không script, không canonical hay og:url"
+   },
+   "AC-SUBPATH-15": {
+    "status": "PASS",
+    "test": "subpath.test.ts#subpath > AC-SUBPATH-15: production - GET /robots.txt trả 200 text/plain cho mọi bot, HEAD không thân, không đụng D1"
    }
   }
  }
