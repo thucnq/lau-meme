@@ -1,10 +1,11 @@
 // Acceptance tests for docs/acceptance/subpath.md: AC-SUBPATH-01..06 (Worker side).
 /// <reference types="vite/client" />
 // Worker tests run on the real static assets (web/dist), so the web must be built before this file runs.
-import { SELF, env } from 'cloudflare:test'
+import { SELF, createExecutionContext, env, waitOnExecutionContext } from 'cloudflare:test'
 import { describe, expect, it, vi } from 'vitest'
 import stackToml from '../../.dk/stack.toml?raw'
 import wranglerRaw from '../wrangler.jsonc?raw'
+import worker from '../src/index'
 
 const BASE = '/lau-meme'
 
@@ -65,26 +66,28 @@ describe('subpath', () => {
     expect((env as unknown as { BASE_PATH?: string }).BASE_PATH).toBe(basePathJson.basePath)
   })
 
-  it('AC-SUBPATH-01: mỗi môi trường đúng một route game và đúng một route host quản trị (ADR 0008), không route nào khác, workers_dev bật', () => {
+  it('AC-SUBPATH-01: mỗi môi trường đúng một route game, một route host quản trị (ADR 0008) và một route robots.txt (AC-SUBPATH-15), không route nào khác, workers_dev bật', () => {
     const wrangler = parseJsonc(wranglerRaw)
     const base = basePathJson.basePath
     const byPattern = (a: RouteCfg, b: RouteCfg) => a.pattern.localeCompare(b.pattern)
     const prodExpected: RouteCfg[] = [
       { pattern: `dinoduct.fun${base}*`, zone_name: 'dinoduct.fun' },
       { pattern: 'laumeme-admin.dinoduct.fun/*', zone_name: 'dinoduct.fun' },
+      { pattern: 'dinoduct.fun/robots.txt', zone_name: 'dinoduct.fun' },
     ]
     const stagingExpected: RouteCfg[] = [
       { pattern: `staging.dinoduct.fun${base}*`, zone_name: 'dinoduct.fun' },
       { pattern: 'laumeme-admin-staging.dinoduct.fun/*', zone_name: 'dinoduct.fun' },
+      { pattern: 'staging.dinoduct.fun/robots.txt', zone_name: 'dinoduct.fun' },
     ]
-    expect(wrangler.routes).toHaveLength(2)
-    expect(wrangler.env.staging.routes).toHaveLength(2)
+    expect(wrangler.routes).toHaveLength(3)
+    expect(wrangler.env.staging.routes).toHaveLength(3)
     expect([...wrangler.routes].sort(byPattern)).toEqual([...prodExpected].sort(byPattern))
     expect([...wrangler.env.staging.routes].sort(byPattern)).toEqual([...stagingExpected].sort(byPattern))
     const forbidden = ['dinoduct.fun/*', 'staging.dinoduct.fun/*', 'dinoduct.fun/', 'staging.dinoduct.fun/', 'dinoduct.fun', 'staging.dinoduct.fun']
     for (const r of [...wrangler.routes, ...wrangler.env.staging.routes]) {
       expect(forbidden).not.toContain(r.pattern)
-      expect(r.pattern.includes(base ?? '/lau-meme') || r.pattern.startsWith('laumeme-admin')).toBe(true)
+      expect(r.pattern.includes(base ?? '/lau-meme') || r.pattern.startsWith('laumeme-admin') || r.pattern.endsWith('.fun/robots.txt')).toBe(true)
     }
     expect(wrangler.vars.ADMIN_HOST).toBe('laumeme-admin.dinoduct.fun')
     expect(wrangler.env.staging.vars.ADMIN_HOST).toBe('laumeme-admin-staging.dinoduct.fun')
@@ -280,5 +283,59 @@ describe('subpath', () => {
       expect(isHtml(res), label).toBe(true)
       expect(await res.text(), label).toBe('')
     }
+  })
+
+  // ============================================================== AC-SUBPATH-15
+  // Bot của Meta đọc /robots.txt trước; gốc miền không có máy chủ (522) thì Meta coi như bị chặn.
+  const ROBOTS_PROD = 'User-agent: *\nAllow: /\n'
+  const ROBOTS_NONPROD = 'User-agent: facebookexternalhit\nAllow: /\n\nUser-agent: *\nDisallow: /\n'
+
+  /** The Worker with another APP_ENV (tests run on the top-level, production vars). */
+  async function fetchAs(appEnv: string, path: string, init: RequestInit = {}): Promise<Response> {
+    const ctx = createExecutionContext()
+    const res = await (worker as unknown as { fetch: (r: Request, e: unknown, c: ExecutionContext) => Promise<Response> }).fetch(
+      new Request(`${ORIGIN}${path}`, init),
+      { ...env, APP_ENV: appEnv },
+      ctx,
+    )
+    await waitOnExecutionContext(ctx)
+    return res
+  }
+
+  it('AC-SUBPATH-15: production - GET /robots.txt trả 200 text/plain cho mọi bot, HEAD không thân, không đụng D1', async () => {
+    const dbSpy = vi.spyOn(env.DB, 'prepare')
+    for (const [name, headers] of POLICY_HEADER_SETS) {
+      const res = await get('/robots.txt', headers)
+      expect(res.status, name).toBe(200)
+      expect(res.headers.get('content-type') ?? '', name).toContain('text/plain')
+      expect(await res.text(), name).toBe(ROBOTS_PROD)
+    }
+    const head = await get('/robots.txt', {}, { method: 'HEAD' })
+    expect(head.status).toBe(200)
+    expect(head.headers.get('content-type') ?? '').toContain('text/plain')
+    expect(await head.text()).toBe('')
+    expect(dbSpy).not.toHaveBeenCalled()
+    dbSpy.mockRestore()
+  })
+
+  it('AC-SUBPATH-15: staging và preview - /robots.txt chỉ cho facebookexternalhit, cấm mọi bot khác', async () => {
+    for (const appEnv of ['staging', 'preview']) {
+      const res = await fetchAs(appEnv, '/robots.txt')
+      expect(res.status, appEnv).toBe(200)
+      expect(res.headers.get('content-type') ?? '', appEnv).toContain('text/plain')
+      expect(await res.text(), appEnv).toBe(ROBOTS_NONPROD)
+    }
+  })
+
+  it('AC-SUBPATH-15: POST /robots.txt trả 405 problem+json', async () => {
+    const res = await get('/robots.txt', {}, { method: 'POST', body: '{}' })
+    expect(res.status).toBe(405)
+    expect(res.headers.get('content-type') ?? '').toContain('application/problem+json')
+  })
+
+  it('AC-SUBPATH-15: /robots.txt trên host quản trị vẫn 404', async () => {
+    const res = await SELF.fetch('https://laumeme-admin.dinoduct.fun/robots.txt')
+    expect(res.status).toBe(404)
+    expect(await res.text()).not.toContain('User-agent')
   })
 })
