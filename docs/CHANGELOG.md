@@ -42,3 +42,14 @@
 - Gia hạn token Threads (AC-PIPE-19, ADR 0014): lệnh `python -m lau_meme_pipeline.threads_token` và workflow đề xuất `threads-token` gia hạn token dài hạn mỗi tuần, ghi secret cho `staging` và `production-no-approval`, mở Issue khi lỗi. Token không in ra log. Workflow chờ người chép vào `.github/workflows/` và tạo secret `GH_SECRETS_TOKEN`.
 - Báo cáo đợt (AC-PIPE-20): khi Threads trả 0 bài cho mọi từ khóa, báo cáo có dòng cảnh báo "Threads: 0 bài cho mọi từ khóa" (app chưa được Meta duyệt `threads_keyword_search`). Đây không phải lỗi nguồn, đợt vẫn đăng.
 - Triển khai staging: Worker version `e34921cb-dc66-4043-adb8-893ea0e91179`, git sha `2cec259`.
+- Tier tự động theo độ sâu (AC-TIER-04): độ sâu 0-2 là Xám, 3 Xanh lá, 4 Xanh dương, 5-6 Vàng, từ 7 Đỏ; tính lại mỗi mẻ. Món Vàng/Đỏ chưa có ảnh dùng được tạm ở Xanh dương tới khi có ảnh.
+- Tier do admin gán (AC-TIER-05, AC-ADMIN-12): chọn "Tự động (theo độ sâu)" để bỏ giá trị đã gán; trang quản trị hiện nguồn tier ("Tự động" hoặc "Admin gán") và tier tự động. Gán Vàng/Đỏ cho món chưa có ảnh bị từ chối (409 "Món Vàng/Đỏ cần có ảnh trước"); mỗi lần đổi ghi audit.
+- Báo cáo đợt (AC-TIER-04): đếm số phần tử theo tier và dòng "Chờ ảnh để lên Vàng/Đỏ: N".
+- Ưu tiên vẽ ảnh cho món Vàng/Đỏ (AC-ART-12): mẻ `full` vẽ trước các món Vàng/Đỏ đang chờ ảnh (độ sâu sâu nhất trước, rồi theo tên), trong hạn 20 ảnh/đợt. Báo cáo đợt ghi "Vàng/Đỏ thiếu ảnh: <tên>" khi còn món admin gán Vàng/Đỏ không có ảnh hợp lệ; vẽ lại không tự gỡ chặn ảnh (câu hỏi mở 77).
+- Giao diện game (AC-GAME-27, ADR 0017): một bộ token màu sáng/tối cho toàn bộ giao diện, dùng phông hệ điều hành (Helvetica), không tải phông hay tài nguyên từ ngoài; emoji hiển thị màu.
+- Bàn lẩu (AC-GAME-22..24): vùng nút và gợi ý không đặt món được; Đĩa cao bằng bàn với thanh cuộn bên trong; bấm món là cho vào nồi.
+- Bỏ nút "Chơi lại từ đầu" (AC-GAME-11, câu hỏi mở 71).
+- Hiệu ứng và âm thanh khi ghép ra món Vàng và Đỏ lần đầu (AC-GAME-25, 26): hiệu ứng ánh vàng và lửa đỏ kèm pháo giấy; âm thanh riêng cho từng màu, bật mặc định, nút loa ở khu bàn lẩu để tắt, lựa chọn được giữ sau khi tải lại. Thiết bị giảm chuyển động không có rung và hạt.
+- Mặt bàn (AC-GAME-28): mặc định bàn nhựa vỉa hè; nút trên bàn đổi sang bàn vân gỗ và ngược lại, lựa chọn được giữ sau khi tải lại.
+- Hình nhỏ tier (AC-TIER-02): đè lên đường viền dưới của phần tử, có viền sáng tách khỏi mặt bàn.
+- Triển khai staging: Worker version `86e7ddc0-60b9-48b6-a9ba-10923586eef6`, git sha `0a7d18c`, D1 migration `0008_account_plate_auto_tier.sql` đã áp dụng.
