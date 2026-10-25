@@ -118,8 +118,8 @@
   }
  },
  "green": {
-  "ts": "2026-10-25T03:29:08+00:00",
-  "commit": "ff4d698",
+  "ts": "2026-10-25T06:26:06+00:00",
+  "commit": "b1d858a",
   "results": {
    "AC-GAME-01": {
     "status": "PASS",
@@ -203,7 +203,7 @@
    },
    "AC-GAME-21": {
     "status": "PASS",
-    "test": "ui2.browser.test.tsx#ui2 touch-action "
+    "test": "mobile-fit.browser.test.tsx#mobile-fit: vuốt cuộn trên món "
    },
    "AC-GAME-22": {
     "status": "PASS",
@@ -227,7 +227,7 @@
    },
    "AC-GAME-27": {
     "status": "PASS",
-    "test": "ui27.browser.test.tsx#ui27 giao diện mới "
+    "test": "mobile-fit.browser.test.tsx#mobile-fit: nickname dài ở 360 px "
    },
    "AC-GAME-28": {
     "status": "PASS",
