@@ -1361,4 +1361,105 @@ describe('contrib (worker)', () => {
     },
     180_000,
   )
+
+  // ========================================================================== Hồi quy sau review PR #99
+  it('AC-CONTRIB-05: chưa đăng nhập (không cookie) gửi thân sai (thiếu tên, Content-Type text/plain, không phải JSON) -> 401, không phải 400/415; không tạo đề xuất', async () => {
+    const A = await acct()
+    await env.DB.batch(A.stmts)
+    await expectProblem(await postC(null, { a: 'Deadline', b: 'Cà Phê' }), 401)
+    tick()
+    const plain = await G(
+      '/contributions',
+      { method: 'POST', body: str({ a: 'Deadline', b: 'Cà Phê', name: 'Cà Phê Chạy Deadline' }), headers: { 'Content-Type': 'text/plain' } },
+      null,
+    )
+    await expectProblem(plain, 401)
+    tick()
+    await expectProblem(await postC(null, 'đây không phải JSON {'), 401)
+    expect(await countAllC()).toBe(0)
+  })
+
+  it(
+    'AC-CONTRIB-05: tài khoản đã có 3 đề xuất hôm nay gửi song song 5 đề xuất hợp lệ cho 5 cặp trống -> tổng đúng 5 trong ngày; phần vượt hạn là 429 có Retry-After',
+    async () => {
+      const A = await acct()
+      const now = Date.now()
+      const used = await stmtsOf([
+        { account: A.id, a: 'Cay', b: 'Stonks', name: 'Một', at: now - 3000 },
+        { account: A.id, a: 'Cười', b: 'Stonks', name: 'Hai', at: now - 2000 },
+        { account: A.id, a: 'Toang', b: 'Stonks', name: 'Ba', at: now - 1000 },
+      ])
+      await env.DB.batch([...A.stmts, ...used])
+      const pairs: Array<[string, string]> = [
+        ['Deadline', 'Cà Phê'],
+        ['Cay', 'Cà Phê'],
+        ['Toang', 'Cà Phê'],
+        ['Cười', 'Cà Phê'],
+        ['Hết Cứu', 'Toang'],
+      ]
+      const results = await Promise.all(pairs.map(([a, b], i) => postC(A, { a, b, name: `Song Song ${i}` })))
+      expect(results.map((r) => r.status).sort()).toEqual([201, 201, 429, 429, 429])
+      for (const r of results.filter((x) => x.status === 429)) {
+        isProblem(r)
+        expect(Number(r.headers.get('Retry-After'))).toBeGreaterThanOrEqual(1)
+      }
+      expect(await countC(A.id)).toBe(5)
+    },
+    120_000,
+  )
+
+  it(
+    'AC-CONTRIB-02: biểu tượng là một hình kèm nhiều dấu kết hợp ("☕" + U+0301 x3) -> 400 nêu emoji; VS16, chuỗi ZWJ, sắc da, keycap vẫn được nhận',
+    async () => {
+      const A = await acct()
+      await env.DB.batch(A.stmts)
+      const bad = await postC(A, { a: 'Deadline', b: 'Cà Phê', name: 'Biểu Tượng Rác', emoji: '☕́́́' })
+      expect(bad.status).toBe(400)
+      isProblem(bad)
+      expect(JSON.stringify(await bad.json())).toContain('emoji')
+      expect(await countAllC()).toBe(0)
+
+      const good: Array<[string, string, string, string]> = [
+        ['VS16', 'Deadline', 'Cà Phê', '☕️'],
+        ['ZWJ', 'Cay', 'Cà Phê', '\u{1F468}‍\u{1F373}'],
+        ['sắc da', 'Toang', 'Cà Phê', '\u{1F44D}\u{1F3FD}'],
+        ['keycap', 'Cười', 'Cà Phê', '1️⃣'],
+      ]
+      for (const [label, a, b, emoji] of good) {
+        tick()
+        const res = await postC(A, { a, b, name: `Biểu Tượng ${label}`, emoji })
+        expect(res.status, label).toBe(201)
+        expect((await json<Contribution>(res)).emoji, label).toBe(emoji)
+      }
+      expect(await countAllC()).toBe(4)
+    },
+    120_000,
+  )
+
+  it('AC-CONTRIB-02: tên chứa ký tự điều khiển hoặc định dạng (xuống dòng, U+200B giữa "Cà" và "Phê") -> 400 nêu name, không tạo đề xuất', async () => {
+    const A = await acct()
+    await env.DB.batch(A.stmts)
+    for (const name of ['Cà\nPhê', 'Cà​Phê']) {
+      tick()
+      const res = await postC(A, { a: 'Deadline', b: 'Cà Phê', name })
+      expect(res.status, JSON.stringify(name)).toBe(400)
+      isProblem(res)
+      expect(JSON.stringify(await res.json())).toContain('name')
+    }
+    expect(await countAllC()).toBe(0)
+  })
+
+  it('AC-CONTRIB-08: duyệt và từ chối cùng một đề xuất chờ duyệt song song -> đúng một 200 và một 409; admin_change có đúng 1 dòng cho đề xuất đó', async () => {
+    const A = await acct()
+    const p = await crow({ account: A.id, a: 'Deadline', b: 'Cà Phê', name: 'Đua Duyệt Và Loại' })
+    await env.DB.batch([...A.stmts, p.stmt])
+    const [approve, reject] = await Promise.all([adminApprove(p.id, { image_hint: HINT }), adminReject(p.id, { reason: 'Không hợp' })])
+    expect([approve.status, reject.status].sort()).toEqual([200, 409])
+    isProblem(approve.status === 409 ? approve : reject)
+    const changes = (await changeRows()).filter((c) => c.target_id === p.id)
+    expect(changes).toHaveLength(1)
+    const status = (await q<{ status: string }>('SELECT status FROM contribution WHERE id = ?', p.id))[0]!.status
+    expect(changes[0]!.action).toBe(status === 'approved' ? 'approve_contribution' : 'reject_contribution')
+    expect(await changeRows()).toHaveLength(1)
+  })
 })

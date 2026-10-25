@@ -388,3 +388,44 @@ def test_ac_contrib_09_anh_ve_tu_goi_y_cua_admin_khong_dung_ten_hay_link():
     ((key, _data),) = client.puts
     (body,) = client.success_posts
     assert content_by_id(body)[eid(NAME)]["image_key"] == key
+
+
+def test_ac_contrib_09_de_xuat_da_duyet_co_ten_trong_danh_sach_cam_khong_vao_kho_va_tinh_vao_waiting():
+    """AC-CONTRIB-09: đề xuất đã duyệt có tên khớp từ cấm (lists=ModLists) không vào kho, được đếm ở `waiting`.
+
+    Đề xuất sạch khác vẫn vào; công thức của cặp bị cấm không được tạo."""
+    from lau_meme_pipeline.contrib import add_contributions
+    from lau_meme_pipeline.ids import recipe_id
+    from lau_meme_pipeline.moderation import ModLists
+
+    p1, p2 = free_pairs(2)
+    lists = ModLists(banned_words=frozenset({"ca phe chay deadline"}))
+    joined = add_contributions(
+        store_of(),
+        [row(NAME, *p1), row(NAME2, *p2)],
+        version=VERSION,
+        first_versions={},
+        blocked=frozenset(),
+        lists=lists,
+    )
+    banned_el = joined.store.elements.get(eid(NAME))
+    banned_rec = joined.store.recipes.get(recipe_id(*p1))
+    assert banned_el is None or banned_el.status != "active"
+    assert banned_rec is None or banned_rec.status != "active"
+    assert waiting_count(joined.waiting) == 1
+    assert joined.store.elements[eid(NAME2)].status == "active"
+    assert joined.store.recipes[recipe_id(*p2)].result == eid(NAME2)
+
+
+def test_ac_contrib_09_me_full_co_de_xuat_ten_bi_cam_khong_that_bai_va_bao_cho_ghi_so_cho():
+    """AC-CONTRIB-09: mẻ full có đề xuất đã duyệt mà tên bị chặn (banned_aliases của state): mẻ vẫn thành công.
+
+    Không InvariantError, phần tử không vào content, stats.contributions_waiting >= 1."""
+    (p1,) = free_pairs(1)
+    state = make_state(contributions=[row(NAME, *p1)])
+    state["banned_aliases"] = ["ca phe chay deadline"]
+    outcome, client = run_full(state, names=())
+    assert outcome.ok is True
+    (body,) = client.success_posts
+    assert eid(NAME) not in content_by_id(body)
+    assert body["stats"]["contributions_waiting"] >= 1
