@@ -136,6 +136,19 @@ async function asset(req: Request, env: Env, url: URL): Promise<Response> {
   return env.ASSETS.fetch(new Request(new URL(`${env.BASE_PATH}/`, url), { method: req.method, headers: req.headers }))
 }
 
+/**
+ * `/robots.txt` of the game host (AC-SUBPATH-15, ADR 0007): the domain root has no origin, and Meta's bot reads a 522
+ * robots.txt as "blocked". Only production lets every bot in; staging and previews let in Meta's bot alone.
+ */
+function robots(req: Request, env: Env): Response {
+  if (!isRead(req)) return problem(405, 'Phương thức không hỗ trợ')
+  const body =
+    env.APP_ENV === 'production'
+      ? 'User-agent: *\nAllow: /\n'
+      : 'User-agent: facebookexternalhit\nAllow: /\n\nUser-agent: *\nDisallow: /\n'
+  return new Response(req.method === 'HEAD' ? null : body, { headers: { 'Content-Type': 'text/plain; charset=utf-8' } })
+}
+
 /** Headers of every admin-host response; the page itself also gets a strict CSP (ADR 0008). */
 const ADMIN_HEADERS = { 'X-Robots-Tag': 'noindex, nofollow', 'Referrer-Policy': 'no-referrer' }
 const ADMIN_PAGE_HEADERS = {
@@ -172,6 +185,7 @@ export default {
   async fetch(req, env, ctx): Promise<Response> {
     const url = new URL(req.url)
     if (env.ADMIN_HOST && url.hostname === env.ADMIN_HOST) return adminHost(req, env, ctx, url)
+    if (url.pathname === '/robots.txt') return robots(req, env)
     const base = env.BASE_PATH
     if (url.pathname === base) {
       // a 301 would turn a POST into a GET in most clients
