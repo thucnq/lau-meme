@@ -1,6 +1,9 @@
 import { withBase } from '../base'
 
-/** Policy text (AC-PRIV-01). A change of content needs a new POLICY_VERSION (wrangler.jsonc) so players re-consent. */
+/**
+ * Policy text (AC-PRIV-01). A change of content needs a new POLICY_VERSION (wrangler.jsonc) so players re-consent, and the
+ * same change in web/chinh-sach-tinh.html, the static copy for bots (AC-SUBPATH-14).
+ */
 export const POLICY = { version: 1, effective: '21/10/2026' } // AUTH added while only on staging: still version 1 (open question 37)
 const CONTACT = 'thucnguyenquy@gmail.com' // open question #20 (chốt 2026-10-20)
 

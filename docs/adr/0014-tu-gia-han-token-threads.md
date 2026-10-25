@@ -24,12 +24,13 @@
 - **`GH_SECRETS_TOKEN`:** fine-grained PAT chỉ cho repo lau-meme, quyền `Secrets: Read and write`, hạn 1 năm. Issue lỗi mở bằng `GITHUB_TOKEN` của workflow (`permissions: issues: write`), không dùng PAT, chủ dự án tạo và giữ. Chỉ workflow `threads-token.yml` đọc secret này.
 - **Cảnh báo 0 bài (AC-PIPE-20):** adapter Threads trả thêm cờ "mọi từ khóa 200 nhưng 0 bài". `batch.py` hiện thành một dòng cảnh báo cạnh dòng "thiếu cấu hình". Đây không phải lỗi nguồn.
 - **Trang chính sách (AC-SUBPATH-13):** trong `asset()` của Worker, `GET`/`HEAD` có đường dẫn `<base>/chinh-sach` hoặc `<base>/chinh-sach/` luôn nhận `index.html`, không cần `isNavigation`. Mọi đường dẫn khác giữ nguyên.
+- **Trang chính sách tĩnh (AC-SUBPATH-14, thêm 2026-10-25):** `web/chinh-sach-tinh.html` là đầu vào build thứ ba của Vite: chữ chính sách viết sẵn trong HTML, CSS nội tuyến, không script, không canonical hay `og:url`. Worker không đổi: tầng assets phục vụ file này ở `<base>/chinh-sach-tinh`. Test web so chữ của trang tĩnh với `PolicyPage` để hai bản không lệch nhau.
 - Không thêm bảng, endpoint hay dịch vụ trả phí.
 
 ## Hệ quả
 - Một PAT có quyền ghi secret của repo là bí mật mạnh: ai lấy được nó thì thay được mọi secret. Phạm vi chỉ một repo và hạn 1 năm. Hết hạn thì workflow lỗi và mở Issue, chủ dự án tạo PAT mới (runbook).
 - Hai environment dùng chung một token Threads, nên hạn mức 2.200 lượt tìm/24 giờ của tài khoản đó cũng dùng chung.
-- Bot của Meta vẫn chỉ thấy HTML có `<div id="root">`, nội dung chính sách do JS vẽ (câu hỏi mở 66). Nếu App Review báo không đọc được thì thêm AC dựng HTML tĩnh.
+- Bot của Meta không chạy JS và đi theo canonical của `index.html` về production: `/chinh-sach` không qua được App Review khi production chưa chạy (câu hỏi mở 66). URL khai báo với Meta là `<base>/chinh-sach-tinh`. Sửa chữ chính sách thì sửa cả hai nơi; test sẽ báo nếu quên.
 - Agent không sửa `.github/workflows/`: người chép `threads-token.yml` từ `docs/dev/workflows/` và tạo `GH_SECRETS_TOKEN`.
 
 ## Phương án đã loại

@@ -62,10 +62,15 @@ export default defineConfig({
   define: { 'import.meta.env.VITE_SITE_URL': JSON.stringify(siteUrl) },
   // Files outside the bundle would be copied to the root of outDir, outside the base path; reference assets from index.html instead.
   publicDir: false,
-  // Two pages: the game, and the admin page served only on its own origin (ADR 0008; the Worker never serves it here).
+  // Three pages: the game, the admin page served only on its own origin (ADR 0008; the Worker never serves it here),
+  // and the static policy page for bots that run no JS (AC-SUBPATH-14).
   build: {
     rollupOptions: {
-      input: { main: fileURLToPath(new URL('index.html', import.meta.url)), admin: fileURLToPath(new URL('admin.html', import.meta.url)) },
+      input: {
+        main: fileURLToPath(new URL('index.html', import.meta.url)),
+        admin: fileURLToPath(new URL('admin.html', import.meta.url)),
+        policy: fileURLToPath(new URL('chinh-sach-tinh.html', import.meta.url)),
+      },
     },
   },
   // `npm run dev` here + `npm --prefix ../worker run dev` (port 8787): same origin for the API in dev.

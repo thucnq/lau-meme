@@ -248,4 +248,37 @@ describe('subpath', () => {
     expect(isHtml(res)).toBe(false)
     expect(await res.text()).not.toContain('<div id="root">')
   })
+
+  // ============================================================== AC-SUBPATH-14
+  // Trang chính sách tĩnh cho bot của Meta: không chạy JS, không đi theo canonical về production.
+  const STATIC_POLICY = '/lau-meme/chinh-sach-tinh'
+
+  it('AC-SUBPATH-14: GET /lau-meme/chinh-sach-tinh trả 200 HTML tĩnh có sẵn chữ chính sách, không canonical, og:url, root hay script', async () => {
+    const dbSpy = vi.spyOn(env.DB, 'prepare')
+    for (const [name, headers] of POLICY_HEADER_SETS) {
+      const label = `GET ${STATIC_POLICY} (${name})`
+      const res = await get(STATIC_POLICY, headers)
+      expect(res.status, label).toBe(200)
+      expect(isHtml(res), label).toBe(true)
+      const body = await res.text()
+      expect(body, label).toContain('Chính sách quyền riêng tư')
+      expect(body, label).toContain('mailto:')
+      expect(body, label).not.toMatch(/rel=["']?canonical/)
+      expect(body, label).not.toContain('og:url')
+      expect(body, label).not.toContain('<div id="root">')
+      expect(body, label).not.toMatch(/<script/i)
+    }
+    expect(dbSpy).not.toHaveBeenCalled()
+    dbSpy.mockRestore()
+  })
+
+  it('AC-SUBPATH-14: HEAD /lau-meme/chinh-sach-tinh trả 200 text/html và body rỗng', async () => {
+    for (const [name, headers] of POLICY_HEADER_SETS) {
+      const label = `HEAD ${STATIC_POLICY} (${name})`
+      const res = await get(STATIC_POLICY, headers, { method: 'HEAD' })
+      expect(res.status, label).toBe(200)
+      expect(isHtml(res), label).toBe(true)
+      expect(await res.text(), label).toBe('')
+    }
+  })
 })
