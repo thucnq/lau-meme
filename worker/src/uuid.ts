@@ -4,6 +4,7 @@ let seq = 0
 /**
  * UUIDv7 (RFC 9562): 48-bit Unix ms timestamp + random - sortable ids for log-like rows. Within one isolate, ids of
  * the same ms keep their creation order: rand_a holds a 12-bit counter (RFC 9562 6.2 method 1) seeded randomly.
+ * The counter is per isolate and per `now`, also for an explicit past `now`; past 0xfff ids of one ms are only unique.
  */
 export function uuidv7(now = Date.now()): string {
   const bytes = crypto.getRandomValues(new Uint8Array(16))
