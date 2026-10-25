@@ -10,6 +10,7 @@ from dataclasses import dataclass, replace
 
 from lau_meme_pipeline.ids import element_id, recipe_id
 from lau_meme_pipeline.linking import Graph, bfs_depths
+from lau_meme_pipeline.moderation import Concept, ModLists, layer1
 from lau_meme_pipeline.seed import ACTIVE, INACTIVE, ContentStore, StoredElement, StoredRecipe
 from lau_meme_pipeline.text import fold
 
@@ -39,16 +40,23 @@ def add_contributions(
     version: int,
     first_versions: Mapping[str, int],
     blocked: frozenset[str] = frozenset(),
+    lists: ModLists | None = None,
 ) -> Joined:
     """Each approved row becomes an element and the recipe of its pair; a row already joined by an earlier batch is
     joined again (it may be back from waiting). A row whose pair or name is taken by something else is skipped, and
-    one whose parent is not active stays in the store inactive; both count as waiting."""
+    one whose parent is not active stays in the store inactive; both count as waiting. So does a row matching the
+    moderation lists (a list updated after approval): joining it would fail INV-07 and with it every later batch."""
     elements = dict(store.elements)
     recipes = dict(store.recipes)
     added: list[tuple[str, str]] = []
     waiting = 0
     for row in rows:
         eid = element_id(row["name"])
+        emoji = row.get("emoji") or DEFAULT_EMOJI
+        hint = row.get("image_hint") or ""
+        if lists is not None and layer1(Concept(key=eid, name=row["name"], emoji=emoji, image_hint=hint), lists):
+            waiting += 1
+            continue
         a, b = elements.get(row["a"]), elements.get(row["b"])
         if a is None or b is None:
             waiting += 1
@@ -58,8 +66,6 @@ def add_contributions(
         if (rid in recipes or eid in elements) and not own:
             waiting += 1
             continue
-        emoji = row.get("emoji") or DEFAULT_EMOJI
-        hint = row.get("image_hint") or ""
         previous = elements.get(eid)
         elements[eid] = (
             replace(previous, name=row["name"], fold=fold(row["name"]), emoji=emoji, image_hint=hint, status=ACTIVE)

@@ -58,7 +58,6 @@ type AdminRow = ContributionRow & {
   decided_at: number | null
 }
 
-
 const starter = (id: string, name: string | null, emoji: string | null) => ({ id, name: name ?? '', emoji: emoji ?? '' })
 
 /** A proposal as its author sees it (the admin-edited version when edited): no hint, tier or nickname. */
@@ -102,12 +101,17 @@ type Fields = { name?: string; emoji?: string | null; description?: string | nul
 
 const graphemes = (text: string) => [...new Intl.Segmenter('vi', { granularity: 'grapheme' }).segment(text)].map((s) => s.segment)
 const EMOJI = /\p{Extended_Pictographic}|\p{Regional_Indicator}|⃣/u
+// Marks an emoji sequence may carry: the text/emoji presentation selectors and the keycap; any other one would stack
+// on the pictograph and still count as one grapheme (ZWJ, skin tones and tags are not marks).
+const STRAY_MARK = /(?![\u{FE0E}\u{FE0F}\u{20E3}])\p{M}/u
+const CONTROL = /[\p{Cc}\p{Cf}]/u
 
 function name(value: unknown): string {
   if (typeof value !== 'string' || value.length > 100) bad(`name: chuỗi 1-${MAX_NAME} ký tự`)
   const trimmed = (value as string).trim()
   const length = [...trimmed].length
   if (length < 1 || length > MAX_NAME) bad(`name: chuỗi 1-${MAX_NAME} ký tự sau khi cắt khoảng trắng`)
+  if (CONTROL.test(trimmed)) bad('name: không được chứa ký tự điều khiển')
   return trimmed
 }
 
@@ -115,7 +119,7 @@ function emoji(value: unknown): string | null {
   if (value === null) return null
   if (typeof value !== 'string' || value.length > 16) bad('emoji: đúng 1 emoji')
   const parts = graphemes(value as string)
-  if (parts.length !== 1 || !EMOJI.test(parts[0]!)) bad('emoji: đúng 1 emoji')
+  if (parts.length !== 1 || !EMOJI.test(parts[0]!) || STRAY_MARK.test(parts[0]!)) bad('emoji: đúng 1 emoji')
   return value as string
 }
 
@@ -186,6 +190,17 @@ const pairTakenStatement = (db: D1Database, a: string, b: string) =>
          OR EXISTS (SELECT 1 FROM contribution WHERE a_id = ?1 AND b_id = ?2 AND status = 'approved') AS taken`,
   ).bind(a, b)
 
+const bannedStatement = (db: D1Database) => db.prepare('SELECT DISTINCT term_fold FROM banned_term')
+
+/** The banned-term filter on fold of each text; a match says nothing about which term matched (AC-CONTRIB-04). */
+function assertClean(banned: D1Result | undefined, texts: Array<string | null | undefined>): void {
+  const keys = texts.map((t) => bannedKey(t ?? ''))
+  for (const { term_fold } of rows<{ term_fold: string }>(banned)) {
+    const term = bannedKey(term_fold)
+    if (term !== '' && keys.some((k) => k.includes(term))) throw new HttpError(422, NOT_OK)
+  }
+}
+
 const isUnique = (err: unknown) => err instanceof Error && /UNIQUE constraint failed/i.test(err.message)
 
 // ------------------------------------------------------------------------------------------------ player API
@@ -196,12 +211,29 @@ function secondsToNextMidnightGmt7(now: number): number {
 }
 const startOfDayGmt7 = (now: number) => Math.floor((now + GMT7_MS) / DAY_MS) * DAY_MS - GMT7_MS
 
+function dayFull(now: number): never {
+  const retryAfter = String(secondsToNextMidnightGmt7(now))
+  throw new ResponseError(problem(429, 'Đã đủ đề xuất hôm nay', `Mỗi ngày gửi tối đa ${PER_DAY} đề xuất.`, {}, { 'Retry-After': retryAfter }))
+}
+
 /**
  * POST /api/contributions - three D1 round trips: the IP counter + session renewal, then every read, then the insert
  * (the unique index makes a double submit a 409). The filter runs on fold of name and description; a match says
  * nothing about which term matched (AC-CONTRIB-04).
  */
 export async function createContribution(req: Request, env: Env): Promise<Response> {
+  const player = playerId(req)
+  const db = env.DB
+
+  // The IP counter runs before the session lookup, so forged or replayed cookies are throttled too; both run before
+  // the body is read, so a signed-out client gets 401 whatever it sent (AC-CONTRIB-05).
+  const byIp = await rateCounters(req, env, SUBMIT_LIMIT, '', 'ip')
+  const lookup = await sessionStatement(req, env)
+  const checked = await db.batch([...byIp.statements, ...(lookup ? [lookup.statement] : [])])
+  const limited = byIp.verdict(checked)
+  if (limited) return limited
+  const account = mustHave(lookup && sessionFrom(lookup.token, checked[byIp.statements.length])).accountId
+
   if (!(req.headers.get('Content-Type') ?? '').toLowerCase().startsWith('application/json'))
     throw new HttpError(415, 'Cần Content-Type application/json')
   const body = await readJson(req)
@@ -209,16 +241,6 @@ export async function createContribution(req: Request, env: Env): Promise<Respon
   const [a, b] = [elementName(body.a, 'a'), elementName(body.b, 'b')]
   if (!('name' in body)) bad('name: bắt buộc')
   const f = fields(body) as Required<Fields>
-  const player = playerId(req)
-  const db = env.DB
-
-  // The IP counter runs before the session lookup, so forged or replayed cookies are throttled too.
-  const byIp = await rateCounters(req, env, SUBMIT_LIMIT, '', 'ip')
-  const lookup = await sessionStatement(req, env)
-  const checked = await db.batch([...byIp.statements, ...(lookup ? [lookup.statement] : [])])
-  const limited = byIp.verdict(checked)
-  if (limited) return limited
-  const account = mustHave(lookup && sessionFrom(lookup.token, checked[byIp.statements.length])).accountId
 
   const now = Date.now()
   const [aId, bId] = [await elementId(a), await elementId(b)]
@@ -235,22 +257,13 @@ export async function createContribution(req: Request, env: Env): Promise<Respon
            AND NOT EXISTS (SELECT 1 FROM block bl WHERE bl.kind = 'element' AND bl.target_id = json_extract(e.value, '$[0]'))`,
       )
       .bind(aId, bId),
-    db.prepare('SELECT DISTINCT term_fold FROM banned_term'),
+    bannedStatement(db),
     ...nameFoldsStatements(db),
     pairTakenStatement(db, lo, hi),
   ])
   requirePlayConsent(env, consent?.results[0] as ConsentRow | undefined)
-  if ((rows<{ n: number }>(today)[0]?.n ?? 0) >= PER_DAY) {
-    const retryAfter = secondsToNextMidnightGmt7(now)
-    throw new ResponseError(
-      problem(429, 'Đã đủ đề xuất hôm nay', `Mỗi ngày gửi tối đa ${PER_DAY} đề xuất.`, {}, { 'Retry-After': String(retryAfter) }),
-    )
-  }
-  const keys = [f.name, f.description ?? ''].map(bannedKey)
-  for (const { term_fold } of rows<{ term_fold: string }>(banned)) {
-    const term = bannedKey(term_fold)
-    if (term !== '' && keys.some((k) => k.includes(term))) throw new HttpError(422, NOT_OK)
-  }
+  if ((rows<{ n: number }>(today)[0]?.n ?? 0) >= PER_DAY) dayFull(now)
+  assertClean(banned, [f.name, f.description])
   const found = new Set(rows<{ id: string }>(active).map((r) => r.id))
   if (!found.has(aId)) bad('a: không có phần tử đang hoạt động với tên này')
   if (!found.has(bId)) bad('b: không có phần tử đang hoạt động với tên này')
@@ -261,12 +274,15 @@ export async function createContribution(req: Request, env: Env): Promise<Respon
   let written: D1Result[]
   try {
     written = await db.batch([
+      // The daily count is checked again inside the insert, so parallel submits cannot pass it together.
       db
         .prepare(
           `INSERT INTO contribution (id, account_id, a_id, b_id, name, name_fold, emoji, description, image_url, status,
-             created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?)`,
+             created_at, updated_at)
+           SELECT ?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, 'pending', ?10, ?10
+           WHERE (SELECT COUNT(*) FROM contribution WHERE account_id = ?2 AND created_at >= ?11) < ?12`,
         )
-        .bind(id, account, lo, hi, f.name, fold(f.name), f.emoji ?? null, f.description ?? null, f.image_url ?? null, now, now),
+        .bind(id, account, lo, hi, f.name, fold(f.name), f.emoji ?? null, f.description ?? null, f.image_url ?? null, now, startOfDayGmt7(now), PER_DAY),
       db.prepare(`SELECT c.id, c.a_id, c.b_id, ea.name AS a_name, ea.emoji AS a_emoji, eb.name AS b_name, eb.emoji AS b_emoji,
          c.name, c.emoji, c.description, c.image_url, c.status, c.reject_reason, c.created_at
        FROM contribution c LEFT JOIN element ea ON ea.id = c.a_id LEFT JOIN element eb ON eb.id = c.b_id WHERE c.id = ?`).bind(id),
@@ -275,7 +291,9 @@ export async function createContribution(req: Request, env: Env): Promise<Respon
     if (isUnique(err)) throw conflict('Bạn đã có đề xuất chờ duyệt cho cặp này')
     throw err
   }
-  return json(contribution(rows<ContributionRow>(written[1])[0]!), { status: 201 })
+  const created = rows<ContributionRow>(written[1])[0]
+  if (!created) dayFull(now)
+  return json(contribution(created!), { status: 201 })
 }
 
 /** GET /api/contributions/{id} - another account's proposal is a 404 like a missing one (AC-CONTRIB-06, TENANT). */
@@ -349,11 +367,15 @@ async function loadAdminRow(db: D1Database, id: string): Promise<AdminRow> {
   const row = await db.prepare(`SELECT c.id, c.a_id, c.b_id, ea.name AS a_name, ea.emoji AS a_emoji, eb.name AS b_name, eb.emoji AS b_emoji,
          c.name, c.emoji, c.description, c.image_url, c.status, c.reject_reason, c.created_at, c.image_hint, c.element_id, c.decided_at, acc.nickname, t.tier
        FROM contribution c LEFT JOIN element ea ON ea.id = c.a_id LEFT JOIN element eb ON eb.id = c.b_id
-       LEFT JOIN account acc ON acc.id = c.account_id LEFT JOIN element_tier t ON t.element_id = c.element_id WHERE c.id = ?`).bind(id).first<AdminRow & { a_id: string }>()
+       LEFT JOIN account acc ON acc.id = c.account_id LEFT JOIN element_tier t ON t.element_id = c.element_id WHERE c.id = ?`).bind(id).first<AdminRow>()
   if (!row) throw notFound()
   return row
 }
 
+/**
+ * One audit row, written only while the proposal is still pending - it goes right before its guarded UPDATE in the same
+ * batch, so a decision that lost a race leaves no audit row (AC-ADMIN-09).
+ */
 const changeStatement = (
   db: D1Database,
   action: 'edit_contribution' | 'approve_contribution' | 'reject_contribution',
@@ -367,9 +389,15 @@ const changeStatement = (
   db
     .prepare(
       `INSERT INTO admin_change (id, action, target_kind, target_id, before_json, after_json, reason, token_fp, created_at)
-       VALUES (?, ?, 'contribution', ?, ?, ?, ?, ?, ?)`,
+       SELECT ?1, ?2, 'contribution', ?3, ?4, ?5, ?6, ?7, ?8
+       WHERE EXISTS (SELECT 1 FROM contribution WHERE id = ?3 AND status = 'pending')`,
     )
     .bind(uuidv7(now), action, id, JSON.stringify(before), JSON.stringify(after), reason, fp, now)
+
+/** The guarded UPDATE of a batch changed nothing: another decision got there first. */
+function assertChanged(result: D1Result | undefined): void {
+  if (!result?.meta.changes) throw conflict('Đề xuất không còn chờ duyệt')
+}
 
 const tokenFp = async (env: Env) => (await sha256hex(env.ADMIN_TOKEN ?? '')).slice(0, 8)
 
@@ -393,7 +421,8 @@ export async function adminListContributions(req: Request, env: Env): Promise<Re
 
 /**
  * PATCH /api/admin/contributions/{id} - pending only; same checks as a submission except the banned-term filter
- * (the admin answers for it); `null` clears an optional field; one audit row with the changed fields.
+ * (the admin answers for it; the pipeline keeps a matching name out of the graph); `null` clears an optional field; one
+ * audit row with the changed fields.
  */
 export async function adminEditContribution(req: Request, env: Env, _ctx: ExecutionContext, params: string[]): Promise<Response> {
   const id = contributionId(params[0])
@@ -402,10 +431,13 @@ export async function adminEditContribution(req: Request, env: Env, _ctx: Execut
   if (Object.keys(body).length === 0) bad('body: cần ít nhất một trường')
   const f = fields(body)
   const db = env.DB
-  const [found, elementFolds, approvedFolds] = await db.batch([db.prepare(`SELECT c.id, c.a_id, c.b_id, ea.name AS a_name, ea.emoji AS a_emoji, eb.name AS b_name, eb.emoji AS b_emoji,
+  const [found, elementFolds, approvedFolds] = await db.batch([
+    db.prepare(`SELECT c.id, c.a_id, c.b_id, ea.name AS a_name, ea.emoji AS a_emoji, eb.name AS b_name, eb.emoji AS b_emoji,
          c.name, c.emoji, c.description, c.image_url, c.status, c.reject_reason, c.created_at, c.image_hint, c.element_id, c.decided_at, acc.nickname, t.tier
        FROM contribution c LEFT JOIN element ea ON ea.id = c.a_id LEFT JOIN element eb ON eb.id = c.b_id
-       LEFT JOIN account acc ON acc.id = c.account_id LEFT JOIN element_tier t ON t.element_id = c.element_id WHERE c.id = ?`).bind(id), ...nameFoldsStatements(db)])
+       LEFT JOIN account acc ON acc.id = c.account_id LEFT JOIN element_tier t ON t.element_id = c.element_id WHERE c.id = ?`).bind(id),
+    ...nameFoldsStatements(db),
+  ])
   const row = rows<AdminRow>(found)[0]
   if (!row) throw notFound()
   if (row.status !== 'pending') throw conflict('Chỉ sửa được đề xuất chờ duyệt')
@@ -421,15 +453,16 @@ export async function adminEditContribution(req: Request, env: Env, _ctx: Execut
   if (Object.keys(after).length === 0) return json(adminContribution(row))
   const next = { ...row, ...f }
   const now = Date.now()
-  await db.batch([
+  const written = await db.batch([
+    changeStatement(db, 'edit_contribution', id, before, after, null, await tokenFp(env), now),
     db
       .prepare(
         `UPDATE contribution SET name = ?, name_fold = ?, emoji = ?, description = ?, image_url = ?, updated_at = ?
          WHERE id = ? AND status = 'pending'`,
       )
       .bind(next.name, fold(next.name), next.emoji, next.description, next.image_url, now, id),
-    changeStatement(db, 'edit_contribution', id, before, after, null, await tokenFp(env), now),
   ])
+  assertChanged(written[1])
   return json(adminContribution(await loadAdminRow(db, id)))
 }
 
@@ -458,19 +491,19 @@ export async function adminApproveContribution(req: Request, env: Env, _ctx: Exe
   ])
   if (rows<{ taken: number }>(pair)[0]?.taken) throw conflict(PAIR_TAKEN)
   if (nameTaken(row.name, foldsOf(elementFolds, approvedFolds))) throw conflict('Tên trùng với phần tử đã có')
+  const imageHint = (hint as string).trim()
 
   const now = Date.now()
   const fp = await tokenFp(env)
   const element = await elementId(row.name)
-  const imageHint = (hint as string).trim()
   const writes = [
+    changeStatement(db, 'approve_contribution', id, { status: 'pending' }, { status: 'approved', element_id: element, tier, image_hint: imageHint }, null, fp, now),
     db
       .prepare(
         `UPDATE contribution SET status = 'approved', element_id = ?, image_hint = ?, decided_at = ?, updated_at = ?
          WHERE id = ? AND status = 'pending'`,
       )
       .bind(element, imageHint, now, now, id),
-    changeStatement(db, 'approve_contribution', id, { status: 'pending' }, { status: 'approved', element_id: element, tier, image_hint: imageHint }, null, fp, now),
   ]
   if (tier !== 1)
     writes.push(
@@ -483,20 +516,22 @@ export async function adminApproveContribution(req: Request, env: Env, _ctx: Exe
     )
   for (const { id: other } of rows<{ id: string }>(others))
     writes.push(
+      changeStatement(db, 'reject_contribution', other, { status: 'pending' }, { status: 'rejected', reject_reason: PAIR_TAKEN }, PAIR_TAKEN, fp, now),
       db
         .prepare(
           `UPDATE contribution SET status = 'rejected', reject_reason = ?, decided_at = ?, updated_at = ?
            WHERE id = ? AND status = 'pending'`,
         )
         .bind(PAIR_TAKEN, now, now, other),
-      changeStatement(db, 'reject_contribution', other, { status: 'pending' }, { status: 'rejected', reject_reason: PAIR_TAKEN }, PAIR_TAKEN, fp, now),
     )
+  let written: D1Result[]
   try {
-    await db.batch(writes)
+    written = await db.batch(writes)
   } catch (err) {
     if (isUnique(err)) throw conflict('Cặp hoặc tên đã có đề xuất được duyệt')
     throw err
   }
+  assertChanged(written[1])
   return json(adminContribution(await loadAdminRow(db, id)))
 }
 
@@ -512,15 +547,16 @@ export async function adminRejectContribution(req: Request, env: Env, _ctx: Exec
   const row = await loadAdminRow(db, id)
   if (row.status !== 'pending') throw conflict('Đề xuất không còn chờ duyệt')
   const now = Date.now()
-  await db.batch([
+  const written = await db.batch([
+    changeStatement(db, 'reject_contribution', id, { status: 'pending' }, { status: 'rejected', reject_reason: reason }, reason, await tokenFp(env), now),
     db
       .prepare(
         `UPDATE contribution SET status = 'rejected', reject_reason = ?, decided_at = ?, updated_at = ?
          WHERE id = ? AND status = 'pending'`,
       )
       .bind(reason, now, now, id),
-    changeStatement(db, 'reject_contribution', id, { status: 'pending' }, { status: 'rejected', reject_reason: reason }, reason, await tokenFp(env), now),
   ])
+  assertChanged(written[1])
   return json(adminContribution(await loadAdminRow(db, id)))
 }
 

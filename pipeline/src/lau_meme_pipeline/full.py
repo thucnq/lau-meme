@@ -347,7 +347,12 @@ def run_full(
     content = _combined(core, {**out_store, "core_art": list(core_art.values())})
     # Approved contributions live in D1, not in the store (ADR 0013); the BFS below sets their depth.
     joined = add_contributions(
-        content, contributions, version=version, first_versions=first_versions or {}, blocked=frozenset(blocked)
+        content,
+        contributions,
+        version=version,
+        first_versions=first_versions or {},
+        blocked=frozenset(blocked),
+        lists=lists,
     )
     content = joined.store
     report["contributions_waiting"] = joined.waiting
