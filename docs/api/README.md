@@ -65,8 +65,6 @@ Mọi lỗi là RFC 9457 `application/problem+json` (`type`, `title`, `status`, 
 | GET | `/me/contributions` | Đề xuất của tôi (mới nhất trước) | Session | AC-CONTRIB-06 |
 | GET | `/contributors/leaderboard` | Top cống hiến (top 20 cố định) | - hoặc Session | AC-CONTRIB-11, AC-CONTRIB-12 |
 
-> TODO(doc): Worker (`worker/src/index.ts`) chưa định tuyến các endpoint CONTRIB ở bảng này và ở nhóm quản trị đề xuất; bảng theo `openapi.yaml`. Xác nhận trạng thái triển khai trước khi dùng cho client.
-
 ### Pipeline
 | Method | Path | Mô tả | Xác thực | AC chính |
 |---|---|---|---|---|
@@ -95,7 +93,7 @@ Mọi lỗi là RFC 9457 `application/problem+json` (`type`, `title`, `status`, 
 | GET | `/admin/batches` | Nhật ký các đợt, kèm `summary` (tổng crawl và thêm của các đợt `full` thành công, hàng chờ và thiếu ảnh của đợt gần nhất) | AdminToken | AC-ADMIN-08, AC-ADMIN-11 |
 | GET | `/admin/audit` | Nhật ký audit | AdminToken | AC-ADMIN-09 |
 
-> Chưa triển khai (staging 2026-10-25): `/me/plate`, `/me/plate/merge` (SYNC chưa build) và `/admin/elements/{id}/image` (AC-ART-13, Tùy chọn, chưa build) đã có trong contract 0.5.0 nhưng Worker chưa định tuyến; migration 0008 tạo sẵn bảng `account_element`, `image_source`, `admin_image_change` cho hai phần này (chỉ mở rộng).
+> Chưa triển khai (staging 2026-10-25): `/admin/elements/{id}/image` (AC-ART-13, Tùy chọn, chưa build) đã có trong contract 0.5.0 nhưng Worker chưa định tuyến; migration 0008 đã tạo sẵn bảng `image_source` và `admin_image_change` cho phần này (chỉ mở rộng). `/me/plate` và `/me/plate/merge` (SYNC) đã định tuyến trong `worker/src/index.ts`.
 
 ## Thử nhanh
 ```bash
