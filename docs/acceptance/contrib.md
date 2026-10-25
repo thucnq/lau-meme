@@ -42,7 +42,7 @@
 ### AC-CONTRIB-07: Admin xem và sửa đề xuất
 - **Cho** token quản trị đúng (AC-ADMIN-01); có 25 đề xuất chờ duyệt
 - **Khi** mở mục "Đề xuất meme"; sửa biểu tượng, tên, mô tả, link ảnh của một đề xuất; sửa tên thành chuỗi rỗng hoặc trùng phần tử đã có
-- **Thì** danh sách phân trang (`page`, `size` tối đa 100), cũ nhất trước, lọc theo trạng thái; mỗi dòng: cặp, tên, biểu tượng, mô tả, link ảnh dạng chữ (không tự tải hay nhúng ảnh từ link - link chỉ để admin tham khảo), nickname người gửi, thời điểm; sửa hợp lệ trả 200 và ghi audit (trước/sau) theo AC-ADMIN-09; sửa không hợp lệ trả 400/409 như AC-CONTRIB-02/03, không ghi audit; admin không thấy mã tài khoản hay UUID của người gửi
+- **Thì** danh sách phân trang (`page`, `size` tối đa 100), cũ nhất trước, lọc theo trạng thái; mỗi dòng: cặp, tên, biểu tượng, mô tả, link ảnh dạng chữ (trang quản trị không tự tải hay nhúng ảnh từ link; khi duyệt admin có thể chọn dùng link làm ảnh món - AC-ART-14), nickname người gửi, thời điểm; sửa hợp lệ trả 200 và ghi audit (trước/sau) theo AC-ADMIN-09; sửa không hợp lệ trả 400/409 như AC-CONTRIB-02/03, không ghi audit; admin không thấy mã tài khoản hay UUID của người gửi
 - Ưu tiên: Bắt buộc
 
 ### AC-CONTRIB-08: Admin duyệt hoặc từ chối
@@ -54,7 +54,7 @@
 ### AC-CONTRIB-09: Ảnh và biểu tượng của meme đóng góp
 - **Cho** phần tử đóng góp đã duyệt, có biểu tượng "☕" và gợi ý ảnh do admin viết; một phần tử đóng góp khác không có biểu tượng
 - **Khi** mẻ `full` kế tiếp chạy; và khi client hiện phần tử
-- **Thì** phần tử hiện biểu tượng người gửi (hoặc admin đã sửa) làm emoji; không có biểu tượng thì dùng emoji mặc định "🍲"; trùng emoji với phần tử đã có vẫn được (ngoại lệ của luật emoji duy nhất của lõi - mặc định - câu hỏi mở 52); ảnh vẽ tay chỉ vẽ từ gợi ý ảnh do admin viết theo AC-ART (ART vẽ như phần tử mới), không dùng link ảnh của người gửi; pipeline không gửi tên, mô tả, link ảnh gốc hay nickname người gửi cho Gemini; sau khi duyệt, tên và gợi ý ảnh là nội dung game và được dùng như phần tử khác (câu hỏi mở 55, đã chốt)
+- **Thì** phần tử hiện biểu tượng người gửi (hoặc admin đã sửa) làm emoji; không có biểu tượng thì dùng emoji mặc định "🍲"; trùng emoji với phần tử đã có vẫn được (ngoại lệ của luật emoji duy nhất của lõi - mặc định - câu hỏi mở 52); ảnh vẽ tay chỉ vẽ từ gợi ý ảnh do admin viết theo AC-ART (ART vẽ như phần tử mới), không dùng link ảnh của người gửi, trừ khi admin chọn dùng link làm ảnh lúc duyệt (AC-ART-14, khi đó không vẽ); pipeline không gửi tên, mô tả, link ảnh gốc hay nickname người gửi cho Gemini; sau khi duyệt, tên và gợi ý ảnh là nội dung game và được dùng như phần tử khác (câu hỏi mở 55, đã chốt)
 - Ưu tiên: Bắt buộc
 
 ### AC-CONTRIB-10: Hiện người tạo trên phần tử

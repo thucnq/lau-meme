@@ -1,6 +1,6 @@
 # API - Lẩu Meme
 
-> Nguồn sự thật: [`openapi.yaml`](openapi.yaml) (OpenAPI 3, `lau-meme API 0.5.0`). File này chỉ là mục lục; khi hai nơi khác nhau thì `openapi.yaml` đúng. Mỗi endpoint mang `x-ac` trỏ về AC trong `docs/acceptance/`.
+> Nguồn sự thật: [`openapi.yaml`](openapi.yaml) (OpenAPI 3, `lau-meme API 0.6.0`). File này chỉ là mục lục; khi hai nơi khác nhau thì `openapi.yaml` đúng. Mỗi endpoint mang `x-ac` trỏ về AC trong `docs/acceptance/`.
 
 ## Địa chỉ
 | Nhóm | Production | Staging |
@@ -93,7 +93,7 @@ Mọi lỗi là RFC 9457 `application/problem+json` (`type`, `title`, `status`, 
 | GET | `/admin/batches` | Nhật ký các đợt, kèm `summary` (tổng crawl và thêm của các đợt `full` thành công, hàng chờ và thiếu ảnh của đợt gần nhất) | AdminToken | AC-ADMIN-08, AC-ADMIN-11 |
 | GET | `/admin/audit` | Nhật ký audit | AdminToken | AC-ADMIN-09 |
 
-> `/admin/elements/{id}/image` (AC-ART-13) đã định tuyến từ 2026-10-25 (nhánh `feat/art-upload`); host quản trị phục vụ thêm `/lau-meme/img/*` (chỉ đọc) để trang quản trị hiện ảnh dưới CSP `default-src 'self'` (ADR 0016). `/me/plate` và `/me/plate/merge` (SYNC) đã định tuyến trong `worker/src/index.ts`.
+> `/admin/elements/{id}/image` (AC-ART-13) đã định tuyến từ 2026-10-25 (nhánh `feat/art-upload`); host quản trị phục vụ thêm `/lau-meme/img/*` (chỉ đọc) để trang quản trị hiện ảnh dưới CSP `default-src 'self'` (ADR 0016). `/me/plate` và `/me/plate/merge` (SYNC) đã định tuyến trong `worker/src/index.ts`. Contract 0.6.0 thêm `use_image_url` khi duyệt đề xuất và `PipelineState.image_links` (AC-ART-14, ADR 0018) - chưa triển khai.
 
 ## Thử nhanh
 ```bash
