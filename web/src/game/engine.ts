@@ -7,7 +7,13 @@ import type { Graph, GraphResult } from '../graph/crypto'
 import { storageKey } from '../storage'
 
 export type SortMode = 'newest' | 'name' | 'depth'
-export type Item = GraphResult & { discovered_at: string }
+export type Item = GraphResult & {
+  discovered_at: string
+  /** The two input names this browser first made it from: the proof sent to the account plate (AC-SYNC-01/03). */
+  pair?: [string, string]
+}
+/** One element of the account plate (GET /me/plate, ADR 0015). */
+export type PlateItem = { element_id: string; found_at: string }
 export type TableItem = { uid: string; id: string; name: string; emoji: string; x: number; y: number }
 export type Progress = {
   graph_version: number
@@ -83,6 +89,19 @@ function isItem(v: unknown): v is Item {
   )
 }
 
+const isPair = (v: unknown): v is [string, string] =>
+  Array.isArray(v) && v.length === 2 && v.every((n) => typeof n === 'string')
+
+/** A malformed pair is dropped, never sent: the item just stays on this browser's plate (AC-SYNC-03). */
+const withValidPair = (i: Item): Item => (i.pair === undefined || isPair(i.pair) ? i : withoutPair(i))
+
+function withoutPair(i: Item): Item {
+  if (i.pair === undefined) return i
+  const rest: Item = { ...i }
+  delete rest.pair
+  return rest
+}
+
 function isTableItem(v: unknown): v is TableItem {
   return (
     isObject(v) &&
@@ -107,7 +126,7 @@ export function loadProgress(storage: Storage): Progress | null {
   }
   if (!isObject(data) || typeof data.graph_version !== 'number' || !Array.isArray(data.items)) return null
   // One damaged entry must not cost the whole plate: keep every valid one.
-  const items = data.items.filter(isItem)
+  const items = data.items.filter(isItem).map(withValidPair)
   if (items.length === 0) return null
   return {
     graph_version: data.graph_version,
@@ -192,7 +211,7 @@ export async function combine(ctx: Ctx, p: Progress, a: string, b: string): Prom
     // a newer graph may carry a new tier for an element already on the plate (AC-TIER-03): take it on re-combine
     const items = known
       ? p.items.map((i) => (i.id === result.id && i.tier !== result.tier ? { ...i, tier: result.tier } : i))
-      : [...p.items, { ...result, discovered_at: now.toISOString() }]
+      : [...p.items, { ...result, discovered_at: now.toISOString(), pair: [a, b] as [string, string] }]
     return { kind: 'hit', result, isNew: !known, progress: { ...p, items, miss_streak: 0 } }
   }
   const line = missLine(ctx.manifest.miss_lines, a, b)
@@ -240,4 +259,57 @@ export function resolveTableStyle(stored: string | null): TableStyle {
 export function resolveTheme(stored: string | null, systemDark: boolean): 'light' | 'dark' {
   if (stored === 'light' || stored === 'dark') return stored
   return systemDark ? 'dark' : 'light'
+}
+
+// ---------------------------------------------------------------- account plate (SYNC, ADR 0015)
+/**
+ * Items for the server ids this plate lacks. The graph is encrypted (ADR 0002), so each one is found by combining
+ * what the plate already has, round after round, until nothing new opens. Blocked items still count as inputs: they
+ * are kept, only hidden (AC-SYNC-08). An id the current graph cannot make is left out.
+ */
+export async function resolvePlate(graph: Graph, items: Item[], wanted: Set<string>, now: Date): Promise<Item[]> {
+  const known = new Map(items.map((i) => [i.id, i]))
+  const missing = new Set([...wanted].filter((id) => !known.has(id)))
+  const found: Item[] = []
+  let fresh = [...known.values()]
+  while (missing.size > 0 && fresh.length > 0) {
+    const all = [...known.values()]
+    const tries = fresh.flatMap((x) => all.map((y) => [x.name, y.name] as [string, string]))
+    const results = await Promise.all(tries.map(([a, b]) => decryptEntry(graph, a, b)))
+    fresh = []
+    results.forEach((r, i) => {
+      if (!r || !missing.has(r.id)) return
+      missing.delete(r.id)
+      const item: Item = { ...r, discovered_at: now.toISOString(), pair: tries[i]! }
+      known.set(r.id, item)
+      found.push(item)
+      fresh.push(item)
+    })
+  }
+  return found
+}
+
+const earlier = (a: string, b: string): string => (Date.parse(b) < Date.parse(a) ? b : a)
+
+/** Local plate ∪ account plate; each discovery time is the earliest of every browser (AC-SYNC-02). */
+export function mergePlate(p: Progress, server: PlateItem[], resolved: Item[]): Progress {
+  const at = new Map(server.map((s) => [s.element_id, s.found_at]))
+  const items = p.items.map((i) => {
+    const t = at.get(i.id)
+    const first = t === undefined ? i.discovered_at : earlier(i.discovered_at, t)
+    return first === i.discovered_at ? i : { ...i, discovered_at: first }
+  })
+  const have = new Set(items.map((i) => i.id))
+  for (const r of resolved) {
+    if (have.has(r.id)) continue
+    have.add(r.id)
+    items.push({ ...r, discovered_at: at.get(r.id) ?? r.discovered_at })
+  }
+  const changed = items.length !== p.items.length || items.some((i, n) => i !== p.items[n])
+  return changed ? { ...p, items } : p
+}
+
+/** Items the account plate refused (404/422/skipped) lose their pair, so they stay on this browser only (AC-SYNC-04). */
+export function dropPairs(p: Progress, ids: Set<string>): Progress {
+  return { ...p, items: p.items.map((i) => (ids.has(i.id) ? withoutPair(i) : i)) }
 }

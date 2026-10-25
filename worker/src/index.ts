@@ -9,6 +9,7 @@ import { putPipelineImage } from './features/pipeline/images'
 import { createEvents, getMetricsSummary } from './features/metric/metric'
 import { cleanup } from './features/player/cleanup'
 import { createConsent, deleteMyData, getMyData, putNickname } from './features/player/me'
+import { addToMyPlate, getMyPlate, mergeMyPlate } from './features/plate/plate'
 import { createReport, getBlocklist } from './features/report/report'
 import { HttpError, ResponseError, json, problem } from './http'
 import { maskId } from './log'
@@ -50,6 +51,8 @@ const routes: Route[] = [
   { pattern: /^\/api\/consents$/, methods: { POST: createConsent } },
   { pattern: /^\/api\/me$/, methods: { GET: getMyData, DELETE: deleteMyData } },
   { pattern: /^\/api\/me\/nickname$/, methods: { PUT: putNickname } },
+  { pattern: /^\/api\/me\/plate$/, methods: { GET: getMyPlate, POST: addToMyPlate } },
+  { pattern: /^\/api\/me\/plate\/merge$/, methods: { POST: mergeMyPlate } },
   { pattern: /^\/api\/me\/streak$/, methods: { GET: getMyStreak } },
   { pattern: /^\/api\/events$/, methods: { POST: createEvents } },
   // PIPELINE_TOKEN or ADMIN_TOKEN, checked inside (AC-METRIC-06)

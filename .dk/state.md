@@ -4,7 +4,7 @@ project: lau-meme
 stack: py-ts-cloudflare
 spec: approved 2026-10-24 by nguyenquythuc at 135803d
 contract: approved 2026-10-24 by nguyenquythuc at 3fc3c28
-feature: tier
+feature: sync
 review-feat-seed: approved
 review-feat-graph: approved
 review-feat-daily: approved
@@ -33,4 +33,5 @@ review-feat-daily3: approved
 review-feat-pipe4: approved
 review-feat-pipe3: approved
 review-feat-subpath2: approved
+review-feat-sync: approved
 review-feat-tier: approved
