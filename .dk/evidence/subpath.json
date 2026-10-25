@@ -1,7 +1,7 @@
 {
  "red": {
-  "ts": "2026-10-24T15:10:16+00:00",
-  "commit": "cb3635a",
+  "ts": "2026-10-25T14:58:17+00:00",
+  "commit": "0f0f3a5",
   "results": {
    "AC-SUBPATH-01": {
     "status": "PASS",
@@ -52,8 +52,12 @@
     "test": "test_subpath#test_ac_subpath_12_state_di_qua_tien_to"
    },
    "AC-SUBPATH-13": {
+    "status": "PASS",
+    "test": "subpath.test.ts#subpath > AC-SUBPATH-13: GET trang chính sách "
+   },
+   "AC-SUBPATH-14": {
     "status": "FAIL",
-    "test": "subpath.test.ts#subpath > AC-SUBPATH-13: HEAD trang chính sách trả 200 text/html và body rỗng"
+    "test": "subpath.test.ts#subpath > AC-SUBPATH-14: HEAD /lau-meme/chinh-sach-tinh trả 200 text/html và body rỗng"
    }
   }
  },
