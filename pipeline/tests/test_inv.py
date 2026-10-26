@@ -750,9 +750,9 @@ def test_ac_inv_06_check_all_duoc_goi_truoc_khi_dang(monkeypatch, fast_sim):
     client = FakeClient()
     real_post = client.post_batch
 
-    def spy(graph, manifest, store, lists):
+    def spy(graph, manifest, store, lists, **kw):
         events.append(("check", graph, manifest))
-        return original(graph, manifest, store, lists)
+        return original(graph, manifest, store, lists, **kw)
 
     def post(body):
         events.append(("post", body["status"]))
@@ -779,9 +779,9 @@ def test_ac_inv_06_run_full_goi_check_all(monkeypatch, fast_sim):
     original = inv.check_all
     seen: list = []
 
-    def spy(graph, manifest, store, lists):
+    def spy(graph, manifest, store, lists, **kw):
         seen.append((graph, manifest))
-        return original(graph, manifest, store, lists)
+        return original(graph, manifest, store, lists, **kw)
 
     patch_everywhere(monkeypatch, "check_all", spy)
     outcome = run_full(core_of("classic"), {}, synthetic_crawl(1), fake_llm(), T, mod_lists())
