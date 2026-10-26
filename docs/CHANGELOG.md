@@ -70,3 +70,5 @@
 - Đĩa theo tài khoản (AC-SYNC-03 cập nhật): món ghép trước khi có SYNC (không lưu cặp) được client tự tìm cặp từ Đĩa của máy rồi gửi lên Đĩa tài khoản qua `/me/plate/merge` mỗi lần tải trang khi đã đăng nhập; món không tìm được cặp ở lại máy và thử lại lần tải sau. Không đổi API.
 - Đĩa theo tài khoản (AC-SYNC-11): tab hiện lại sau ít nhất 30 s từ lần kéo trước thì kéo và gộp Đĩa tài khoản, không cần tải lại trang.
 - Triển khai staging: Worker version `592a5f9a`, git sha `f7ebb10`.
+- Đề xuất meme đã duyệt (AC-CONTRIB-14, contract 0.8.0): trang quản trị hiện thông báo sau khi duyệt; dòng đã duyệt mà phần tử chưa có trong danh mục ghi nhãn "Chờ mẻ kế tiếp" tới khi mẻ đăng xong. `AdminContribution` thêm trường `in_catalog`. Duyệt không đổi graph đang phục vụ.
+- Triển khai staging: Worker version `31fa60ab-2166-4ab0-b33b-2b125dbd161f`, git sha `6857064`, 2026-10-26 17:46 UTC; không có migration D1 mới.
