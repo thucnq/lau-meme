@@ -66,7 +66,7 @@
 ### AC-CONTRIB-13: Chọn hai phần tử cho đề xuất
 - **Cho** thực khách đã đăng nhập, Đĩa có "Deadline", "Cà Phê" và "Cười"; trên bàn có "Deadline"; form "Đóng góp meme" đang mở (thêm 2026-10-25, góp ý "phần tử 1 và 2 không chọn được hay kéo thả từ bàn hay đĩa vào được")
 - **Khi** ở ô "Phần tử 1" gõ "dead" rồi chọn "Deadline" trong danh sách (chuột, chạm, hoặc phím mũi tên + Enter); kéo "Cà Phê" từ Đĩa thả vào ô "Phần tử 2"; lần khác kéo "Deadline" từ bàn thả vào ô "Phần tử 2"; gõ một tên không có trong Đĩa
-- **Thì** mỗi ô hiện danh sách phần tử trong Đĩa (emoji và tên), lọc theo chữ đã gõ so theo `fold`; chọn hoặc thả xong ô hiện emoji và tên phần tử đã chọn và có nút bỏ chọn; thả món từ bàn vào ô không đưa món khỏi bàn, thả món vào ô không đưa món vào nồi; chỉ chọn được phần tử có trong Đĩa (mặc định - câu hỏi mở 82): tên gõ không khớp phần tử nào thì ô vẫn trống và nút "Gửi đề xuất" báo cần chọn phần tử; thân gửi lên vẫn là tên hai phần tử như AC-CONTRIB-01 (không đổi contract); ô có nhãn cho trình đọc màn hình (`role="combobox"`)
+- **Thì** mỗi ô hiện danh sách phần tử trong Đĩa (emoji và tên), lọc theo chữ đã gõ so theo `fold`; chọn hoặc thả xong ô hiện emoji và tên phần tử đã chọn và có nút bỏ chọn; thả món từ bàn vào ô không đưa món khỏi bàn, thả món vào ô không đưa món vào nồi; chỉ chọn được phần tử có trong Đĩa (câu hỏi mở 82, đã chốt): tên gõ không khớp phần tử nào thì ô vẫn trống và nút "Gửi đề xuất" báo cần chọn phần tử; thân gửi lên vẫn là tên hai phần tử như AC-CONTRIB-01 (không đổi contract); ô có nhãn cho trình đọc màn hình (`role="combobox"`)
 - Ưu tiên: Bắt buộc
 
 ### AC-CONTRIB-11: Bảng xếp hạng "Top cống hiến"
