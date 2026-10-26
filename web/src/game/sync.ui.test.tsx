@@ -609,6 +609,73 @@ describe('sync (web)', () => {
     expect(plateNames()).toContain(NAME_C)
   })
 
+  it('AC-SYNC-03: tìm cặp cho món cũ bị lỗi (tra graph ném lỗi) thì vẫn GET me/plate và vẫn gửi món đã có cặp, không hiện lỗi, game vẫn chơi được', async () => {
+    await setup({
+      signedIn: false,
+      specs: [SPEC_C, SPEC_J],
+      progress: (p) => {
+        p.items.push(item(NAME_C, '🔥', 1, 6, '2026-10-05T00:00:00.000Z')) // thiếu cặp, cần tra graph để tìm
+        p.items.push(withPair(item(NAME_J, '🫠', 1, 6, '2026-10-19T00:00:00.000Z'), ['Toang', 'Deadline'])) // đã có cặp
+      },
+    })
+    await mountReady()
+    await settleAuth()
+    expect(plateCalls()).toHaveLength(0)
+
+    // graph đã tải xong; từ đây mọi lần giải mã (tra công thức) đều lỗi
+    vi.spyOn(webcrypto.subtle, 'decrypt').mockImplementation(() => Promise.reject(new Error('graph lookup failed')))
+    signIn()
+
+    await waitFor(() => expect(plateGets().length).toBeGreaterThanOrEqual(1))
+    await waitFor(() => expect(sentResults()).toContain(NAME_J))
+    await advance(500)
+    const sent = server.writes.flatMap(combosOf)
+    const j = sent.find((c) => c.result === NAME_J)!
+    expect(sorted([j.a, j.b])).toEqual(sorted(['Toang', 'Deadline']))
+    expect(sentResults()).not.toContain(NAME_C) // chưa tìm được cặp thì không gửi
+    expect(screen.queryByRole('alert')).toBeNull()
+    expect(screen.queryByRole('alertdialog')).toBeNull()
+
+    // game vẫn chơi được
+    expect(plateNames()).toEqual(expect.arrayContaining([NAME_C, NAME_J]))
+    expect(pot().dataset.state).toBe('idle')
+    drag(plateItem('Cay'), tableEl(), { x: 80, y: 90 })
+    expect(tableNames()).toEqual(['Cay'])
+    expect(loadProgress(localStorage)!.items.map((i) => i.name)).toEqual(expect.arrayContaining([NAME_C, NAME_J]))
+  })
+
+  it('AC-SYNC-03: món cũ chỉ ghép ra được bằng chính nó (K + A = K) thì không bao giờ được gửi và không lưu cặp; món cũ khác có cặp thật vẫn được gửi', async () => {
+    const NAME_K = 'Tự Sinh'
+    const SPEC_K: Spec = { a: NAME_K, b: 'Cay', name: NAME_K, emoji: '♻️', depth: 1, added_version: 6 }
+    await setup({
+      specs: [SPEC_K, SPEC_C],
+      progress: (p) => {
+        p.items.push(item(NAME_K, '♻️', 1, 6, '2026-10-04T00:00:00.000Z')) // cặp duy nhất trong graph có chính K làm đầu vào
+        p.items.push(item(NAME_C, '🔥', 1, 6, '2026-10-05T00:00:00.000Z')) // Cay + Cười, cặp thật từ Đĩa cục bộ
+      },
+    })
+    await mountReady()
+    await waitFor(() => expect(server.acked).toContain(NAME_C))
+    await advance(1000)
+
+    const sent = server.writes.flatMap(combosOf)
+    expect(sent.map((c) => c.result)).not.toContain(NAME_K)
+    expect(sent.every((c) => c.a !== c.result && c.b !== c.result)).toBe(true) // không món nào gửi kèm chính nó làm đầu vào
+    const c = sent.find((x) => x.result === NAME_C)!
+    expect(sorted([c.a, c.b])).toEqual(sorted(['Cay', 'Cười']))
+    expect(posts()).toHaveLength(0)
+    expect(screen.queryByRole('alert')).toBeNull()
+
+    // K ở lại cục bộ, không lưu cặp, thời điểm khám phá giữ nguyên
+    expect(plateNames()).toContain(NAME_K)
+    const saved = loadProgress(localStorage)!.items
+    const k = saved.find((i) => i.name === NAME_K)!
+    expect(k.pair).toBeUndefined()
+    expect(k.discovered_at).toBe('2026-10-04T00:00:00.000Z')
+    expect(sorted(saved.find((i) => i.name === NAME_C)!.pair as string[])).toEqual(sorted(['Cay', 'Cười']))
+    expect(server.acked).not.toContain(NAME_K)
+  })
+
   // ============================================================== AC-SYNC-04
   it('AC-SYNC-04: server từ chối món (422) thì món chỉ ở lại cục bộ, không hiện lỗi chặn, không bị gửi lại ở lần ghép sau', async () => {
     await setup({ specs: [SPEC_C, SPEC_D] })
