@@ -9,7 +9,7 @@
 // Black-box: docs/api/openapi.yaml (/admin/daily-pin, DailyPin, PipelineState.daily_pin, PublishBatchRequest.daily_pin_id),
 // ADR 0002 ids, ADR 0019, migrations 0002_content, 0004_ops, 0010_daily_pin.
 // Performance: D1 in Miniflare costs ~66 ms/query, so tests seed with ONE env.DB.batch and combine assertions per case.
-import { createExecutionContext, env, waitOnExecutionContext } from 'cloudflare:test'
+import { createExecutionContext, createScheduledController, env, waitOnExecutionContext } from 'cloudflare:test'
 import { beforeEach, describe, expect, it } from 'vitest'
 import worker from '../src/index'
 
@@ -24,6 +24,7 @@ const GAME_API = `${GAME_ORIGIN}/lau-meme/api`
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
 
 type Handler = { fetch: (req: Request, env: unknown, ctx: ExecutionContext) => Promise<Response> }
+type Scheduled = { scheduled: (controller: ScheduledController, env: unknown, ctx: ExecutionContext) => Promise<void> }
 type Page<T> = { page: number; size: number; total: number; items: T[] }
 type AuditItem = { action: string; target_kind: string; target_id: string; before: unknown; after: unknown; token_fp: string; created_at: string }
 type Pin = { element_id: string; name: string; emoji: string; hint: string; created_at: string }
@@ -408,16 +409,22 @@ describe('daily pin (worker)', () => {
   )
 
   it(
-    'AC-DAILY-19: stats.daily_pin = used mà content.daily_element_id khác phần tử của chỉ định còn đó (kể cả id gửi lên lạ) thì 422 problem+json, version hiện hành không đổi, chỉ định giữ nguyên; mẻ lỗi không động tới chỉ định',
+    'AC-DAILY-19: stats.daily_pin và daily_pin_id phải đi cùng nhau (thiếu một trong hai thì 422); used + id của chỉ định đang lưu mà content.daily_element_id khác phần tử của chỉ định cũng 422; version hiện hành không đổi, chỉ định giữ nguyên; mẻ lỗi không động tới chỉ định',
     async () => {
       const [a] = [await elementId(A)]
       expect((await putPin({ element_id: a, hint: 'Gợi ý phải được dùng' })).status).toBe(200)
       const pin = (await getState()).daily_pin!
       const before = (await getState()).current_version
 
-      for (const pinId of [pin.id, '0190b1c2-0000-7000-8000-00000000ffff']) {
-        const res = await publish(4, { target: B, stats: { daily_pin: 'used' }, pinId })
-        expect(res.status, pinId).toBe(422)
+      const bad: Array<[string, Parameters<typeof publish>[1]]> = [
+        ['used without id', { target: A, stats: { daily_pin: 'used' } }],
+        ['dropped without id', { target: A, stats: { daily_pin: 'dropped' } }],
+        ['id without stats.daily_pin', { target: A, pinId: pin.id }],
+        ['used, stored id, other element', { target: B, stats: { daily_pin: 'used' }, pinId: pin.id }],
+      ]
+      for (const [i, [label, opts]] of bad.entries()) {
+        const res = await publish(4 + i, opts)
+        expect(res.status, label).toBe(422)
         isProblem(res)
       }
       const after = await getState()
@@ -433,4 +440,54 @@ describe('daily pin (worker)', () => {
     },
     120_000,
   )
+
+  it(
+    'AC-DAILY-19: admin ghim phần tử KHÁC trong lúc mẻ chạy: đăng bằng id cũ với used + content.daily_element_id = phần tử cũ thì 201 và chỉ định mới còn nguyên; dropped + id không khớp dòng nào cũng 201, chỉ định lưu không đổi',
+    async () => {
+      const [a, b] = [await elementId(A), await elementId(B)]
+      expect((await putPin({ element_id: a, hint: 'Gợi ý bị mẻ đọc' })).status).toBe(200)
+      const stale = (await getState()).daily_pin!
+      expect((await putPin({ element_id: b, hint: 'Gợi ý đặt lại giữa chừng' })).status).toBe(200)
+      const fresh = (await getState()).daily_pin!
+      expect(fresh.id).not.toBe(stale.id)
+
+      const published = await publish(5, { target: A, stats: { daily_pin: 'used' }, pinId: stale.id })
+      expect(published.status).toBe(201)
+      expect((await getState()).current_version).toBe(5)
+      expect((await getState()).daily_pin).toEqual(fresh)
+      expect(await currentPin()).toMatchObject({ element_id: b, hint: 'Gợi ý đặt lại giữa chừng' })
+
+      const orphan = await publish(6, { target: SIGMA, stats: { daily_pin: 'dropped' }, pinId: '0190b1c2-0000-7000-8000-00000000ffff' })
+      expect(orphan.status).toBe(201)
+      expect((await getState()).daily_pin).toEqual(fresh)
+      expect((await currentPin())?.element_id).toBe(b)
+    },
+    120_000,
+  )
+
+  it('AC-DAILY-19: tác vụ dọn hằng ngày xóa daily_pin_change cũ hơn 365 ngày và giữ dòng mới hơn (AC-ADMIN-09, giữ 12 tháng)', async () => {
+    const now = Date.now()
+    const day = 86_400_000
+    const row = (id: string, at: number) =>
+      env.DB.prepare('INSERT INTO daily_pin_change (id, action, before_json, after_json, token_fp, created_at) VALUES (?, ?, ?, ?, ?, ?)').bind(
+        id,
+        'set_daily_pin',
+        'null',
+        '{"element_id":"x","hint":"y"}',
+        '0123abcd',
+        at,
+      )
+    await env.DB.batch([
+      row('0190b1c2-0000-7000-8000-0000000000a1', now - 366 * day),
+      row('0190b1c2-0000-7000-8000-0000000000a2', now - 364 * day),
+      row('0190b1c2-0000-7000-8000-0000000000a3', now - 1 * day),
+    ])
+
+    const ctx = createExecutionContext()
+    await (worker as unknown as Scheduled).scheduled(createScheduledController({ scheduledTime: new Date(now), cron: '0 20 * * *' }), { ...env, IP_HASH_KEY: IP_KEY }, ctx)
+    await waitOnExecutionContext(ctx)
+
+    const left = await env.DB.prepare('SELECT id FROM daily_pin_change ORDER BY id').all<{ id: string }>()
+    expect(left.results.map((r) => r.id)).toEqual(['0190b1c2-0000-7000-8000-0000000000a2', '0190b1c2-0000-7000-8000-0000000000a3'])
+  })
 })

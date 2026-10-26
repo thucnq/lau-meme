@@ -1,6 +1,6 @@
 /**
  * Daily retention job (Cron Trigger 03:00 GMT+7, ADR 0004, BRD 5.2): IP hashes > 7 days are nulled (AC-PRIV-06),
- * events > 90 days, expired rate counters, admin audit > 12 months and the consent evidence of players erased
+ * events > 90 days, expired rate counters and sessions, admin audit (every audit table) > 12 months and the consent evidence of players erased
  * more than a year ago are deleted. Logs only row counts.
  */
 const DAY_MS = 86_400_000
@@ -12,6 +12,10 @@ export async function cleanup(db: D1Database, now: number): Promise<Record<strin
     db.prepare('DELETE FROM rate_counter WHERE expires_at <= ?').bind(now),
     db.prepare('DELETE FROM session WHERE expires_at <= ?').bind(now), // 90 days unused (ADR 0010)
     db.prepare('DELETE FROM admin_audit WHERE created_at < ?').bind(now - 365 * DAY_MS),
+    // the other admin audit tables, kept 12 months like admin_audit (AC-ADMIN-09; ADR 0013, 0016, 0019)
+    db.prepare('DELETE FROM admin_change WHERE created_at < ?').bind(now - 365 * DAY_MS),
+    db.prepare('DELETE FROM admin_image_change WHERE created_at < ?').bind(now - 365 * DAY_MS),
+    db.prepare('DELETE FROM daily_pin_change WHERE created_at < ?').bind(now - 365 * DAY_MS),
     // only when the erase is the player's newest row (a re-used UUID that consented again keeps its evidence)
     db
       .prepare(
@@ -21,7 +25,18 @@ export async function cleanup(db: D1Database, now: number): Promise<Record<strin
       )
       .bind(now - 365 * DAY_MS),
   ])
-  const names = ['ip_hash_nulled', 'events', 'rate_counters', 'admin_audit', 'consents']
+  // one name per statement above, in order
+  const names = [
+    'ip_hash_nulled',
+    'events',
+    'rate_counters',
+    'sessions',
+    'admin_audit',
+    'admin_changes',
+    'admin_image_changes',
+    'daily_pin_changes',
+    'consents',
+  ]
   const counts = Object.fromEntries(names.map((name, i) => [name, results[i]?.meta.changes ?? 0]))
   // warn: the only non-error level the lint allows; one line a day, counts only
   console.warn('cleanup', JSON.stringify(counts))

@@ -241,9 +241,12 @@ export async function publishBatch(req: Request, env: Env): Promise<Response> {
   const storeJson = b.store === undefined ? null : parseStore(b.store)
   const pinId = b.daily_pin_id === undefined ? null : (b.daily_pin_id as string)
   if (pinId !== null && (typeof pinId !== 'string' || !UUID.test(pinId))) fail('daily_pin_id: phải là UUID')
-  if ((b.stats as { daily_pin?: string }).daily_pin === 'used') {
-    // ADR 0019: a pipeline token cannot clear the admin's pin without publishing it
-    const pin = await env.DB.prepare('SELECT element_id FROM daily_pin').first<{ element_id: string }>()
+  const pinUse = (b.stats as { daily_pin?: string }).daily_pin
+  // ADR 0019: the pin a batch read comes back with what was done with it, both or neither
+  if ((pinUse === undefined) !== (pinId === null)) fail('daily_pin_id và stats.daily_pin phải gửi cùng nhau')
+  if (pinUse === 'used') {
+    // the pin with this id must be the published dish; a pin the admin set meanwhile has another id and stays
+    const pin = await env.DB.prepare('SELECT element_id FROM daily_pin WHERE id = ?').bind(pinId).first<{ element_id: string }>()
     if (pin && pin.element_id !== daily) fail('content.daily_element_id: không phải món admin đã chỉ định')
   }
 

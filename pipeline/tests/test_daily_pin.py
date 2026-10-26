@@ -177,6 +177,28 @@ def test_ac_daily_19_me_that_bai_sau_do_dang_me_loi_khong_mang_daily_pin_id():
     assert "daily_pin" not in error["stats"]
 
 
+def test_ac_daily_19_daily_pin_sai_dinh_dang_thi_me_that_bai_o_buoc_state():
+    """AC-DAILY-19: state.daily_pin sai dạng (thiếu hint, element_id không phải chuỗi, thiếu id, không phải object)
+    ⇒ mẻ lỗi ở bước 'state': đăng đúng một đợt error, không có bản success nào."""
+    malformed = [
+        {"id": PIN_ID, "element_id": eid("Cay")},
+        {"id": PIN_ID, "element_id": 123, "hint": HINT},
+        {"element_id": eid("Cay"), "hint": HINT},
+        "Cay",
+    ]
+    for pin in malformed:
+        state = make_state()
+        state["daily_pin"] = pin
+        client, reporter = FakeClient(state), FakeReporter()
+        outcome = run(client, reporter)
+        assert outcome.ok is False, pin
+        assert outcome.failed_step == "state", pin
+        assert client.success_posts == [], pin
+        (error,) = client.error_posts
+        assert error["failed_step"] == "state"
+        assert "daily_pin_id" not in error
+
+
 def test_ac_daily_19_che_do_full_cung_dung_chi_dinh_va_gui_daily_pin_id():
     """AC-DAILY-19: mode=full (kho đọc từ Worker, không có adapter) cũng dùng phần tử chỉ định kể cả khi nó không đủ
     điều kiện chọn tự động: manifest.daily, content.daily_element_id, daily_pin_id, stats.daily_pin 'used'."""

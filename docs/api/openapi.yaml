@@ -2637,10 +2637,11 @@ components:
               type: string
               format: uuid
               description: |
-                `daily_pin.id` mẻ đã đọc từ `/pipeline/state` (đã dùng hoặc đã bỏ - AC-DAILY-19). Worker xóa đúng dòng có
-                id này trong cùng `DB.batch` đăng mẻ; chỉ định admin đặt lại trong lúc mẻ chạy (id khác) được giữ. Khi
-                `stats.daily_pin = used` mà dòng còn đó, `content.daily_element_id` phải bằng `element_id` của chỉ định,
-                không thì 422.
+                `daily_pin.id` mẻ đã đọc từ `/pipeline/state` (đã dùng hoặc đã bỏ - AC-DAILY-19). Phải gửi cùng
+                `stats.daily_pin` (thiếu một trong hai → 422). Worker xóa đúng dòng có id này trong cùng `DB.batch` đăng
+                mẻ; chỉ định admin đặt lại trong lúc mẻ chạy (id khác) được giữ và không làm mẻ lỗi. Khi
+                `stats.daily_pin = used` mà còn dòng có id này, `content.daily_element_id` phải bằng `element_id` của
+                dòng đó, không thì 422.
         - type: object
           additionalProperties: false
           required: [status, batch_at, mode, failed_step, stats]

@@ -216,6 +216,17 @@ describe('admin daily pin ui', () => {
     expect(screen.queryByRole('alert')).toBeNull()
   })
 
+  it('AC-DAILY-19: kết quả tìm có phần tử hidden hoặc blocked thì nút "Chọn <tên>" của nó bị vô hiệu; phần tử active vẫn bấm được', async () => {
+    items.push({ ...item('C'.repeat(43), 'Dp Món C'), state: 'hidden' }, { ...item('D'.repeat(43), 'Dp Món D'), state: 'blocked' })
+    await openTab()
+    await search('Dp')
+    const btn = async (name: string) => (await screen.findByRole('button', { name: `Chọn ${name}` })) as HTMLButtonElement
+    expect((await btn('Dp Món A')).disabled).toBe(false)
+    expect((await btn('Dp Món B')).disabled).toBe(false)
+    expect((await btn('Dp Món C')).disabled).toBe(true)
+    expect((await btn('Dp Món D')).disabled).toBe(true)
+  })
+
   it('AC-DAILY-19: máy chủ trả 400 problem+json thì tiêu đề lỗi hiện trong role="alert" và chưa có chỉ định nào hiện ra', async () => {
     await openTab()
     expect(await screen.findByText(NONE)).toBeTruthy()

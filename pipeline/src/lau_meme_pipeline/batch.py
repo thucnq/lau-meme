@@ -123,6 +123,14 @@ def _core_stats() -> dict:
     return {"crawled": 0, "added": 0, "blocked": {}, "queued": 0, "source_errors": [], "quota_used": 0}
 
 
+def _check_pin(pin: object) -> None:
+    """`state.daily_pin` is {id, element_id, hint} strings or null (AC-DAILY-19); anything else fails at step state."""
+    if pin is None:
+        return
+    if not isinstance(pin, Mapping) or not all(isinstance(pin.get(k), str) for k in ("id", "element_id", "hint")):
+        raise ValueError("state.daily_pin sai định dạng (cần id, element_id, hint)")
+
+
 def _pin_element(store: ContentStore, element_id: str) -> dict | None:
     """The stored element a pin names, in the shape `pinned_daily` reads (AC-DAILY-19)."""
     e = store.elements.get(element_id)
@@ -559,6 +567,7 @@ def run_batch(
                 raise ValueError("mode full cần GEMINI_API_KEY (ADR 0011)")
         step = "state"
         state = client.get_state()
+        _check_pin(state.get("daily_pin"))
         if mode == "full":
             step = "store"
             previous = client.get_store()
