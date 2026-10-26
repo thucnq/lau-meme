@@ -1,69 +1,73 @@
 {
  "red": {
-  "ts": "2026-10-25T10:16:34+00:00",
-  "commit": "82de172",
+  "ts": "2026-10-26T00:19:10+00:00",
+  "commit": "c172178",
   "results": {
    "AC-CONTRIB-01": {
     "status": "FAIL",
-    "test": "contrib.test.ts#contrib "
+    "test": "contrib.ui.test.tsx#contrib ui: đóng góp meme > AC-CONTRIB-01: gửi kèm biểu tượng, mô tả, link ảnh thì thân POST có đủ emoji, description, image_url"
    },
    "AC-CONTRIB-02": {
-    "status": "FAIL",
+    "status": "PASS",
     "test": "contrib.test.ts#contrib "
    },
    "AC-CONTRIB-03": {
     "status": "FAIL",
-    "test": "contrib.test.ts#contrib "
+    "test": "contrib.ui.test.tsx#contrib ui: đóng góp meme > AC-CONTRIB-03: máy chủ trả 409 problem+json thì chi tiết lỗi hiện trong role=\"alert\", không hiện \"Đã gửi\""
    },
    "AC-CONTRIB-04": {
     "status": "FAIL",
-    "test": "contrib.test.ts#contrib "
+    "test": "contrib.ui.test.tsx#contrib ui: đóng góp meme > AC-CONTRIB-04: máy chủ trả 422 thì hiện \"Nội dung không phù hợp\" và không nêu từ nào"
    },
    "AC-CONTRIB-05": {
-    "status": "FAIL",
-    "test": "contrib.test.ts#contrib "
+    "status": "PASS",
+    "test": "contrib.ui.test.tsx#contrib ui: đóng góp meme > AC-CONTRIB-05: chưa đăng nhập vẫn có nút \"Đóng góp meme\"; bấm hiện lời mời đăng nhập, không có form, không gửi gì"
    },
    "AC-CONTRIB-06": {
-    "status": "FAIL",
-    "test": "contrib.test.ts#contrib "
+    "status": "PASS",
+    "test": "contrib.ui.test.tsx#contrib ui: đóng góp meme > AC-CONTRIB-06: mục \"Đề xuất của tôi\" liệt kê tên, biểu tượng, cặp \"A + B\", nhãn trạng thái và lý do từ chối của từng đề xuất"
    },
    "AC-CONTRIB-07": {
-    "status": "FAIL",
-    "test": "contrib.test.ts#contrib "
+    "status": "PASS",
+    "test": "contrib.ui.test.tsx#admin ui: đề xuất meme > AC-CONTRIB-07: có thẻ \"Đề xuất meme\"; mở thì GET /api/admin/contributions?status=pending&page=1&size=20 kèm Bearer và liệt kê đề xuất chờ duyệt"
    },
    "AC-CONTRIB-08": {
-    "status": "FAIL",
-    "test": "contrib.test.ts#contrib "
+    "status": "PASS",
+    "test": "test_contrib#test_ac_contrib_08_add_contributions_tao_phan_tu_va_cong_thuc_cua_cap_depth_theo_bfs"
    },
    "AC-CONTRIB-09": {
-    "status": "FAIL",
-    "test": "contrib.test.ts#contrib "
+    "status": "PASS",
+    "test": "test_contrib#test_ac_contrib_09_emoji_cua_de_xuat_hoac_mac_dinh_o_content_va_graph"
    },
    "AC-CONTRIB-10": {
+    "status": "PASS",
+    "test": "contrib.ui.test.tsx#contrib ui: người tạo trên phần tử > AC-CONTRIB-10: sau khi tải manifest game gọi GET api/creators/<version>; phần tử đóng góp có dòng \"Meme của Bún Chả\" / \"Meme của Thực khách ẩn danh\" nối bằng aria-describedby, ẩn sẵn; phần tử lõi và khởi đầu không có"
+   },
+   "AC-CONTRIB-13": {
     "status": "FAIL",
-    "test": "contrib.test.ts#contrib "
+    "test": "contrib.ui.test.tsx#contrib ui: đóng góp meme > AC-CONTRIB-13: thân POST vẫn là tên hai phần tử {a, b, name} khi chọn ô 1 bằng chuột và ô 2 bằng kéo thả"
    },
    "AC-CONTRIB-11": {
-    "status": "FAIL",
-    "test": "contrib.test.ts#contrib "
+    "status": "PASS",
+    "test": "contrib.ui.test.tsx#contrib ui: thẻ Cống hiến của bảng xếp hạng > AC-CONTRIB-11: có 4 thẻ theo thứ tự \"Mẻ này\", \"Tuần\", \"Tháng\", \"Cống hiến\"; bấm \"Cống hiến\" gọi GET api/contributors/leaderboard và chọn thẻ đó"
    },
    "AC-CONTRIB-12": {
-    "status": "FAIL",
+    "status": "PASS",
     "test": "contrib.test.ts#contrib "
    },
    "AC-CONTRIB-TENANT": {
-    "status": "FAIL",
+    "status": "PASS",
     "test": "contrib.test.ts#contrib "
    },
    "AC-CONTRIB-VALIDATION": {
-    "status": "FAIL",
+    "status": "PASS",
     "test": "contrib.test.ts#contrib "
    }
   }
  },
  "green": {
-  "ts": "2026-10-25T11:52:21+00:00",
-  "commit": "9527ce9",
+  "ts": "2026-10-26T00:26:29+00:00",
+  "commit": "b15da77",
   "results": {
    "AC-CONTRIB-01": {
     "status": "PASS",
@@ -104,6 +108,10 @@
    "AC-CONTRIB-10": {
     "status": "PASS",
     "test": "contrib.ui.test.tsx#contrib ui: người tạo trên phần tử > AC-CONTRIB-10: sau khi tải manifest game gọi GET api/creators/<version>; phần tử đóng góp có dòng \"Meme của Bún Chả\" / \"Meme của Thực khách ẩn danh\" nối bằng aria-describedby, ẩn sẵn; phần tử lõi và khởi đầu không có"
+   },
+   "AC-CONTRIB-13": {
+    "status": "PASS",
+    "test": "contrib.ui.test.tsx#contrib ui: đóng góp meme > AC-CONTRIB-13: \"Phần tử 1\" và \"Phần tử 2\" là combobox có nhãn; focus hiện danh sách phần tử trong Đĩa "
    },
    "AC-CONTRIB-11": {
     "status": "PASS",

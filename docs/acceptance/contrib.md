@@ -63,6 +63,12 @@
 - **Thì** hiện "Meme của Bún Chả" (không nickname: "Meme của Thực khách ẩn danh"); phần tử lõi và crawl không hiện dòng này; chạm giữ không kích hoạt kéo thả hay ghép; dòng chữ có cho trình đọc màn hình (`aria-describedby`); nickname lấy theo nickname hiện tại của tài khoản, đổi nickname thì hiện tên mới từ mẻ kế tiếp; graph không chứa mã tài khoản
 - Ưu tiên: Bắt buộc
 
+### AC-CONTRIB-13: Chọn hai phần tử cho đề xuất
+- **Cho** thực khách đã đăng nhập, Đĩa có "Deadline", "Cà Phê" và "Cười"; trên bàn có "Deadline"; form "Đóng góp meme" đang mở (thêm 2026-10-25, góp ý "phần tử 1 và 2 không chọn được hay kéo thả từ bàn hay đĩa vào được")
+- **Khi** ở ô "Phần tử 1" gõ "dead" rồi chọn "Deadline" trong danh sách (chuột, chạm, hoặc phím mũi tên + Enter); kéo "Cà Phê" từ Đĩa thả vào ô "Phần tử 2"; lần khác kéo "Deadline" từ bàn thả vào ô "Phần tử 2"; gõ một tên không có trong Đĩa
+- **Thì** mỗi ô hiện danh sách phần tử trong Đĩa (emoji và tên), lọc theo chữ đã gõ so theo `fold`; chọn hoặc thả xong ô hiện emoji và tên phần tử đã chọn và có nút bỏ chọn; thả món từ bàn vào ô không đưa món khỏi bàn, thả món vào ô không đưa món vào nồi; chỉ chọn được phần tử có trong Đĩa (câu hỏi mở 82, đã chốt): tên gõ không khớp phần tử nào thì ô vẫn trống và nút "Gửi đề xuất" báo cần chọn phần tử; thân gửi lên vẫn là tên hai phần tử như AC-CONTRIB-01 (không đổi contract); ô có nhãn cho trình đọc màn hình (`role="combobox"`)
+- Ưu tiên: Bắt buộc
+
 ### AC-CONTRIB-11: Bảng xếp hạng "Top cống hiến"
 - **Cho** tài khoản A có 5 đề xuất đã duyệt (cái thứ 5 duyệt ngày 20/10), B có 5 (cái thứ 5 duyệt ngày 21/10), C có 2 và 4 đề xuất bị từ chối, D chỉ có đề xuất chờ duyệt
 - **Khi** gọi `GET` bảng xếp hạng cống hiến (có phiên hoặc không); mở tab "Bảng xếp hạng" trên web

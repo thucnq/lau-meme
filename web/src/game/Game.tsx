@@ -10,7 +10,7 @@ import { DiscoveryZoom, prefersReducedMotion } from '../art/DiscoveryZoom'
 import { AuthBar } from '../auth/AuthBar'
 import { useSession } from '../auth/session'
 import { getCreators, type Creators } from '../contrib/api'
-import { ContribPanel } from '../contrib/ContribPanel'
+import { ContribPanel, type Picks } from '../contrib/ContribPanel'
 import { ElementIcon } from '../art/ElementIcon'
 import { startManifestWatch } from '../daily/countdown'
 import { DailyPanel, Leaderboards } from '../daily/DailyPanel'
@@ -225,6 +225,7 @@ export function Game({ onDiscover, onItems, heirlooms = {}, onReport, blocklistR
   const session = useSession()
   const syncRef = useRef<PlateSync | null>(null)
   const [contribOpen, setContribOpen] = useState(false)
+  const [contribPicks, setContribPicks] = useState<Picks>([null, null])
   // Creators of contributed elements in this version (AC-CONTRIB-10); a failed load just shows no line.
   const [creators, setCreators] = useState<Creators>({})
   const [tip, setTip] = useState<string | null>(null)
@@ -521,6 +522,13 @@ export function Game({ onDiscover, onItems, heirlooms = {}, onReport, blocklistR
   const drop = ({ source, w, h }: Press, el: Element | null, clientX: number, clientY: number) => {
     const p = progressRef.current
     if (!el || !p || boilingRef.current || busyRef.current) return
+    // Onto a field of the contribution form: pick it there, the chip stays where it was (AC-CONTRIB-13).
+    const fieldEl = el.closest('[data-contrib-field]')
+    if (fieldEl) {
+      const n = Number(fieldEl.getAttribute('data-contrib-field')) === 2 ? 1 : 0
+      setContribPicks((cur) => (n === 0 ? [source.item, cur[1]] : [cur[0], source.item]))
+      return
+    }
     const slotEl = el.closest('[data-slot]')
     if (slotEl) {
       if (!ready) return
@@ -730,6 +738,9 @@ export function Game({ onDiscover, onItems, heirlooms = {}, onReport, blocklistR
     if (itemIds) onItems?.(itemIds.split(','))
   }, [itemIds, onItems])
   const byId = new Map(items.map((i) => [i.id, i]))
+  // A picked element that left the plate (blocked, a new progress) is not offered any more (AC-CONTRIB-13).
+  const onPlate = (c: Picks[number]) => (c && byId.has(c.id) ? c : null)
+  const picks: Picks = [onPlate(contribPicks[0]), onPlate(contribPicks[1])]
   const plate = sortItems(filterItems(items, query), progress?.sort ?? 'newest')
   const table = progress ? visibleTable(progress, blocklist) : []
   const potState = !ready ? 'disabled' : boiling ? 'boiling' : 'idle'
@@ -981,13 +992,29 @@ export function Game({ onDiscover, onItems, heirlooms = {}, onReport, blocklistR
           <button type="button" aria-expanded={contribOpen} onClick={() => setContribOpen((o) => !o)}>
             Đóng góp meme
           </button>
-          {contribOpen && <ContribPanel policyVersion={loaded.manifest.policy_version} storage={storage()} />}
+          {contribOpen && (
+            <ContribPanel
+              policyVersion={loaded.manifest.policy_version}
+              storage={storage()}
+              plate={items}
+              picks={picks}
+              onPicks={setContribPicks}
+            />
+          )}
         </div>
       )}
 
       {drag && (
-        <div className="chip ghost" style={{ left: drag.x, top: drag.y }} aria-hidden="true">
-          <span className="emoji">{drag.source.item.emoji}</span> {drag.source.item.name}
+        <div
+          className={`chip ghost tier-${tierOf(drag.source.item)}`}
+          data-tier={tierOf(drag.source.item)}
+          data-testid="drag-ghost"
+          style={{ left: drag.x, top: drag.y }}
+        >
+          <span aria-hidden="true">
+            <span className="emoji">{drag.source.item.emoji}</span> {drag.source.item.name}
+          </span>
+          <TierBadge tier={tierOf(drag.source.item)} />
         </div>
       )}
 

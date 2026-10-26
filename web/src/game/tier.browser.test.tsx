@@ -243,7 +243,9 @@ function assertTier(holder: HTMLElement, name: string, tier: number, theme: 'lig
   const ring = getComputedStyle(shape)
   expect(ring.stroke, `${label}: hình thiếu viền`).not.toMatch(/^(none|rgba\(0, 0, 0, 0\))$/)
   expect(Number.parseFloat(ring.strokeWidth), `${label}: viền quá mảnh`).toBeGreaterThanOrEqual(1)
-  expect(lum(toRgb(ring.stroke, bg)), `${label}: viền phải sáng`).toBeGreaterThan(0.7)
+  // cập nhật 2026-10-26: lúc thường viền hình nhỏ dùng --color-chip-ring (tối), chỉ sáng lên khi rê chuột
+  const chipRing: Rgb = theme === 'light' ? [168, 153, 138] : [138, 125, 114] // #a8998a / #8a7d72
+  expect(toRgb(ring.stroke, bg).join(), `${label}: viền hình nhỏ lúc thường phải là --color-chip-ring`).toBe(chipRing.join())
 
   // place (cập nhật 2026-10-24): hình nhỏ đè lên đường viền dưới, căn giữa ngang; tâm hình nằm trên đường viền dưới
   // (sai lệch <= 2 px cả hai chiều), nửa trên trong phần tử, nửa dưới lòi ra ngoài và không bị khung nào cắt.

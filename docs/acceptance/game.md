@@ -12,7 +12,7 @@
 ### AC-GAME-02: Nhúng lẩu qua nồi - ghép thành công
 - **Cho** Đĩa có A và B, graph có công thức A + B = C
 - **Khi** thả A vào chỗ thả 1 và B vào chỗ thả 2 (chuột hoặc cảm ứng, qua Pointer Events)
-- **Thì** hiệu ứng nồi sôi chạy tối đa 1,2 s; chạm/nhấp trong lúc hiệu ứng thì bỏ qua ngay; C xuất hiện trên bàn và được thêm vào Đĩa với thời điểm khám phá; 2 chỗ thả trống lại
+- **Thì** hiệu ứng nồi sôi chạy tối đa 1,2 s; chạm/nhấp trong lúc hiệu ứng thì bỏ qua ngay; C xuất hiện trên bàn và được thêm vào Đĩa với thời điểm khám phá; 2 chỗ thả trống lại; (cập nhật 2026-10-25, góp ý "trên web khi kéo thì thẻ không theo chuột") trong suốt lúc kéo, món bóng đi theo con trỏ hoặc ngón tay: tâm món bóng cách điểm con trỏ ≤ 4 px ở mọi vị trí trên trang (kể cả khi trang đã cuộn), món bóng mang nền, viền và hình nhỏ tier của món đang kéo (AC-TIER-02)
 - Ưu tiên: Bắt buộc
 
 ### AC-GAME-03: Thả chồng trên mặt bàn
