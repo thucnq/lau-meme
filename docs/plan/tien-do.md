@@ -228,7 +228,7 @@
   - [x] AC-TIER-05 Admin sửa tier và trả về tự động (thêm 2026-10-24)
 
 ## Cộng đồng
-- [ ] **CONTRIB** Đóng góp meme · 13đ · rủi ro: HIGH · KH: 2027-10-25 → 2027-12-02 · tiến độ: 8% (theo AC) · người: Thuc · bắt đầu:  · xong:  · ghi chú: 
+- [ ] **CONTRIB** Đóng góp meme · 13đ · rủi ro: HIGH · KH: 2027-10-25 → 2027-12-02 · tiến độ: 7% (theo AC) · người: Thuc · bắt đầu:  · xong:  · ghi chú: 
   - [ ] AC-CONTRIB-01 Gửi đề xuất hợp lệ
   - [ ] AC-CONTRIB-02 Đầu vào không hợp lệ
   - [ ] AC-CONTRIB-03 Trùng cặp, trùng tên, gửi lặp
@@ -242,6 +242,7 @@
   - [x] AC-CONTRIB-13 Chọn hai phần tử cho đề xuất
   - [ ] AC-CONTRIB-11 Bảng xếp hạng "Top cống hiến"
   - [ ] AC-CONTRIB-12 Xóa tài khoản và xuất dữ liệu
+  - [ ] AC-CONTRIB-14 Admin biết meme đã duyệt khi nào lên danh mục
 
 ## Trò chơi
 - [x] **SYNC** Đĩa nhúng theo tài khoản · 10.5đ · rủi ro: HIGH · KH: 2027-12-20 → 2028-01-20 · tiến độ: 100% · người: Thuc · bắt đầu: 2026-10-24 · xong: 2026-10-25 · ghi chú: 2026-10-26 AC-SYNC-03 cập nhật và AC-SYNC-11 (PR #120, staging 592a5f9a)
@@ -255,7 +256,7 @@
   - [x] AC-SYNC-08 Phần tử bị chặn và graph đổi version
   - [x] AC-SYNC-09 Giới hạn tần suất và kích thước
   - [x] AC-SYNC-10 Xóa và xuất dữ liệu
-  - [x] AC-SYNC-11 Quay lại tab thì kéo Đĩa mới của tài khoản (thêm 2026-10-26, PR #120)
+  - [x] AC-SYNC-11 Quay lại tab thì kéo Đĩa mới của tài khoản (thêm 2026-10-26)
 - [x] **UI3** Giao diện mới và cảm giác chơi - góp ý 2026-10-24 · 10đ · rủi ro: MEDIUM · KH: 2028-01-21 → 2028-02-21 · tiến độ: 100% · người: Thuc · bắt đầu: 2026-10-24 · xong: 2026-10-25 · ghi chú: AC-GAME-27 cập nhật 2026-10-25 (không cuộn ngang khi đã đăng nhập)
   - [x] AC-GAME-11 Dọn bàn (cập nhật 2026-10-24: bỏ "Chơi lại từ đầu" - câu hỏi mở 71)
   - [x] AC-GAME-18 Nồi lẩu nằm trong màn hình đầu tiên (thêm 2026-10-21)

@@ -44,7 +44,7 @@ gantt
     section Nội dung
     TIER Tier của meme (100%) :done, TIER, 2026-10-23, 1d
     section Cộng đồng
-    CONTRIB Đóng góp meme (8%) :active, CONTRIB, 2026-10-26, 27d
+    CONTRIB Đóng góp meme (7%) :active, CONTRIB, 2026-10-26, 27d
     section Trò chơi
     SYNC Đĩa nhúng theo tài khoản (100%) :done, SYNC, 2026-10-24, 1d
     UI3 Giao diện mới và cảm giác chơi - góp ý 2026-10-24 (100%) :done, UI3, 2026-10-24, 1d

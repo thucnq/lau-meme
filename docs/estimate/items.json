@@ -636,6 +636,23 @@
       ],
       "risk": "MEDIUM",
       "owner": "Thuc"
+    },
+    {
+      "id": "CONTRIB3",
+      "module": "Cộng đồng",
+      "name": "Báo admin meme đã duyệt chờ lên danh mục",
+      "desc": "CONTRIB · AC-CONTRIB-14 (thêm 2026-10-26, Nên có, câu hỏi mở 84) · trường in_catalog trong AdminContribution (đề xuất đã duyệt có phần tử trong danh mục), contract thêm trường (0.5); trang quản trị: thông báo role=status sau khi duyệt, nhãn \"Chờ mẻ kế tiếp\" trên dòng đã duyệt chưa có trong danh mục (0.5); kiểm thử nghiệm thu 15% (0.5)",
+      "points": 1.5,
+      "optional": true,
+      "deps": [
+        "CONTRIB",
+        "ADMIN"
+      ],
+      "ac": [
+        "AC-CONTRIB-14"
+      ],
+      "risk": "LOW",
+      "owner": "Thuc"
     }
   ],
   "questions": [
