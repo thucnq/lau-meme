@@ -1,6 +1,6 @@
 # Gantt - ƯỚC LƯỢNG - LẨU MEME
 
-Tiến độ 89% · nghiệm thu KH 2028-06-06 · dự báo 2027-07-27. Bản tương tác: `gantt.html`.
+Tiến độ 90% · nghiệm thu KH 2028-06-06 · dự báo 2027-07-27. Bản tương tác: `gantt.html`.
 
 ```mermaid
 gantt
@@ -44,12 +44,12 @@ gantt
     section Nội dung
     TIER Tier của meme (100%) :done, TIER, 2026-10-23, 1d
     section Cộng đồng
-    CONTRIB Đóng góp meme (0%) :CONTRIB, 2026-10-26, 29d
+    CONTRIB Đóng góp meme (8%) :active, CONTRIB, 2026-10-26, 27d
     section Trò chơi
     SYNC Đĩa nhúng theo tài khoản (100%) :done, SYNC, 2026-10-24, 1d
     UI3 Giao diện mới và cảm giác chơi - góp ý 2026-10-24 (100%) :done, UI3, 2026-10-24, 1d
     section Kiểm thử
-    UAT3 Kiểm thử nghiệm thu & sửa lỗi (góp ý 2026-10-24) (0%) :UAT3, 2026-12-04, 9d
+    UAT3 Kiểm thử nghiệm thu & sửa lỗi (góp ý 2026-10-24) (0%) :UAT3, 2026-12-02, 9d
     UAT Kiểm thử nghiệm thu & sửa lỗi (giai đoạn 1) (100%) :done, UAT, 2027-07-01, 1d
     section Nội dung
     MOD Kiểm duyệt nội dung tự động (giai đoạn 2) (100%) :done, MOD, 2026-10-20, 1d

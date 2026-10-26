@@ -1,8 +1,11 @@
-import { useCallback, useEffect, useState, type FormEvent, type ReactNode } from 'react'
+import { useCallback, useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react'
 import {
   ApiError,
   AuthError,
   approveContribution,
+  clearDailyPin,
+  getDailyPin,
+  setDailyPin,
   editContribution,
   rejectContribution,
   setImage,
@@ -18,6 +21,7 @@ import {
   type ContributionEdit,
   type ContributionItem,
   type ContributionStatus,
+  type DailyPin,
   type ElementItem,
   type Kind,
   type Page,
@@ -108,7 +112,7 @@ function Login({ onSignIn, notice }: { onSignIn: (token: string) => void; notice
   )
 }
 
-const TABS = ['Báo cáo', 'Nội dung', 'Đề xuất meme', 'Đợt + Audit'] as const
+const TABS = ['Báo cáo', 'Nội dung', 'Đề xuất meme', 'Món đặc biệt', 'Đợt + Audit'] as const
 type Tab = (typeof TABS)[number]
 type Ctx = { token: string; onAuthError: () => void }
 
@@ -134,6 +138,7 @@ function Console({ token, onAuthError, onSignOut }: Ctx & { onSignOut: () => voi
         {tab === 'Báo cáo' && <ReportsTab {...ctx} />}
         {tab === 'Nội dung' && <ContentTab {...ctx} />}
         {tab === 'Đề xuất meme' && <ContributionsTab {...ctx} />}
+        {tab === 'Món đặc biệt' && <DailyPinTab {...ctx} />}
         {tab === 'Đợt + Audit' && <LogsTab {...ctx} />}
       </section>
     </main>
@@ -687,11 +692,131 @@ function sourcesText(stats: BatchStats): string {
   return (stats.source_errors ?? []).map((e) => `${e.source} ${e.error}`).join(' · ')
 }
 
+/**
+ * AC-DAILY-19, ADR 0019: Món đặc biệt của mẻ kế tiếp. Any element that is not hidden or blocked (the server checks
+ * that and the hint); the pin is used by one batch and then cleared.
+ */
+function DailyPinTab({ token, onAuthError }: Ctx) {
+  const [pin, setPin] = useState<DailyPin | null | undefined>(undefined)
+  const [query, setQuery] = useState('')
+  const [results, setResults] = useState<ElementItem[]>([])
+  const [chosen, setChosen] = useState<ElementItem | null>(null)
+  const [hint, setHint] = useState('')
+  const [error, setError] = useState<string | null>(null)
+  const [busy, setBusy] = useState(false)
+  const latest = useRef(0) // only the newest search may fill the list
+
+  const fail = useCallback(
+    (err: unknown) => {
+      if (err instanceof AuthError) onAuthError()
+      else setError(errorText(err))
+    },
+    [onAuthError],
+  )
+  useEffect(() => {
+    let live = true
+    getDailyPin(token).then(
+      (d) => live && setPin(d.pin),
+      (err: unknown) => live && fail(err),
+    )
+    return () => {
+      live = false
+    }
+  }, [token, fail])
+
+  const search = (e: FormEvent) => {
+    e.preventDefault()
+    const q = query.trim()
+    if (!q) return
+    const seq = ++latest.current
+    call<Page<ElementItem>>(token, `elements?q=${encodeURIComponent(q)}&size=20`).then(
+      (d) => seq === latest.current && setResults(d.items),
+      fail,
+    )
+  }
+  const submit = () => {
+    if (!chosen || !hint.trim()) return
+    setBusy(true)
+    setError(null)
+    setDailyPin(token, chosen.id, hint.trim())
+      .then((r) => {
+        setPin(r.after)
+        setChosen(null)
+        setHint('')
+      }, fail)
+      .finally(() => setBusy(false))
+  }
+  const clear = () => {
+    setBusy(true)
+    setError(null)
+    clearDailyPin(token)
+      .then(() => setPin(null), fail)
+      .finally(() => setBusy(false))
+  }
+
+  return (
+    <>
+      <h2>Món đặc biệt mẻ kế tiếp</h2>
+      <Alert>{error}</Alert>
+      {pin === null && <p>Chưa có chỉ định</p>}
+      {pin && (
+        <div className="admin-pin">
+          <p>
+            {pin.emoji} <strong>{pin.name}</strong> - chỉ định lúc {when(pin.created_at)}
+          </p>
+          <p>{pin.hint}</p>
+          <button type="button" disabled={busy} onClick={clear}>
+            Bỏ chỉ định
+          </button>
+        </div>
+      )}
+      <h2>Chỉ định món</h2>
+      <p>Món nào cũng được, miễn không bị ẩn hay chặn. Chỉ áp cho một mẻ kế tiếp, các mẻ sau tự chọn lại.</p>
+      <form onSubmit={search}>
+        <input aria-label="Tìm phần tử" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Tên phần tử" />
+        <button type="submit">Tìm</button>
+      </form>
+      <ul>
+        {results.map((r) => (
+          <li key={r.id}>
+            <button
+              type="button"
+              aria-label={`Chọn ${r.name}`}
+              aria-pressed={chosen?.id === r.id}
+              disabled={r.state !== 'active'}
+              onClick={() => setChosen(r)}
+            >
+              {r.emoji} {r.name}
+            </button>{' '}
+            depth {r.depth}
+            {r.state !== 'active' && ` (${r.state})`}
+          </li>
+        ))}
+      </ul>
+      {chosen && (
+        <p>
+          Đã chọn: {chosen.emoji} {chosen.name}
+        </p>
+      )}
+      <label>
+        Gợi ý
+        <textarea aria-label="Gợi ý" maxLength={200} value={hint} onChange={(e) => setHint(e.target.value)} />
+      </label>
+      <button type="button" disabled={busy || !chosen || !hint.trim()} onClick={submit}>
+        Chỉ định cho mẻ kế tiếp
+      </button>
+    </>
+  )
+}
+
 /** Thêm, vào hàng chờ, bị chặn theo danh mục (chỉ số đếm), quota Gemini. */
 function resultText(stats: BatchStats): string {
   const blocked = Object.entries(stats.blocked ?? {}).map(([k, n]) => `${k} ${n}`)
-  return [`thêm ${stats.added ?? 0}`, `hàng chờ ${stats.queued ?? 0}`, ...blocked, `quota ${stats.quota_used ?? 0}`].join(' · ')
+  const pin = stats.daily_pin ? [stats.daily_pin === 'used' ? 'dùng món chỉ định' : 'bỏ món chỉ định'] : []
+  return [`thêm ${stats.added ?? 0}`, `hàng chờ ${stats.queued ?? 0}`, ...blocked, `quota ${stats.quota_used ?? 0}`, ...pin].join(' · ')
 }
+
+const auditText = (v: AuditItem['before']) => (typeof v === 'string' ? v : JSON.stringify(v))
 
 function LogsTab(ctx: Ctx) {
   const [batchPage, setBatchPage] = useState(1)
@@ -776,7 +901,7 @@ function LogsTab(ctx: Ctx) {
                 {a.target_kind} <code>{a.target_id.slice(0, 10)}…</code>
               </td>
               <td>
-                {a.before} → {a.after}
+                {auditText(a.before)} → {auditText(a.after)}
               </td>
               <td>{a.reason ?? ''}</td>
               <td>

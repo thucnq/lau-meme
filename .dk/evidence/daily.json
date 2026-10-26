@@ -1,11 +1,11 @@
 {
  "red": {
-  "ts": "2026-10-24T03:47:14+00:00",
-  "commit": "7073884",
+  "ts": "2026-10-26T04:34:01+00:00",
+  "commit": "dd8b5b8",
   "results": {
    "AC-DAILY-01": {
-    "status": "FAIL",
-    "test": "test_daily#test_ac_daily_01_cua_so_30_me_gan_nhat_tinh_theo_me_khong_theo_ngay"
+    "status": "PASS",
+    "test": "test_batch#test_ac_daily_01_pool_can_thi_lay_mon_cu_nhat_va_bao_cao_canh_bao"
    },
    "AC-DAILY-02": {
     "status": "PASS",
@@ -20,8 +20,8 @@
     "test": "daily.ui.test.tsx#daily ui: thẻ Món đặc biệt và đồng hồ > AC-DAILY-04: khi đã giải thẻ lộ tên \"Stonks\" và hiện \"Đã giải\", không còn \"???\""
    },
    "AC-DAILY-05": {
-    "status": "PASS",
-    "test": "daily.ui.test.tsx#daily ui: gửi kết quả > AC-DAILY-05: thẻ vẫn \"Đã giải\" kèm tên khi chưa gửi được; dựng lại ở mẻ khác "
+    "status": "FAIL",
+    "test": "game.ui.test.tsx#game + daily: trạng thái đã giải > AC-DAILY-05: giải khi chưa đăng nhập, tải lại, rồi đăng nhập thì client gửi lại kết quả"
    },
    "AC-DAILY-06": {
     "status": "PASS",
@@ -48,8 +48,8 @@
     "test": "daily.test.ts#daily > AC-DAILY-11: bảng streak tối đa 20 dòng, giảm dần, hòa thì ai đạt trước đứng trước, ẩn danh khi không nickname, không lộ mã tài khoản"
    },
    "AC-DAILY-12": {
-    "status": "FAIL",
-    "test": "daily.ui.test.tsx#daily ui: thẻ Món đặc biệt và đồng hồ > AC-DAILY-12: manifest staging đã quá mốc 10:00 UTC mà chưa đổi thì hiện \"Mẻ mới sắp lên\", không có số âm"
+    "status": "PASS",
+    "test": "test_batch#test_ac_daily_12_pipeline_mac_dinh_lich_5_17_khi_khong_dat_batch_hours_utc"
    },
    "AC-DAILY-13": {
     "status": "PASS",
@@ -72,22 +72,26 @@
     "test": "ui2.browser.test.tsx#ui2 tab bảng xếp hạng "
    },
    "AC-DAILY-18": {
+    "status": "PASS",
+    "test": "test_batch#test_ac_daily_18_90_me_core_59_mon_dau_khac_nhau_khong_lap_trong_30_me"
+   },
+   "AC-DAILY-19": {
     "status": "FAIL",
-    "test": "test_batch#test_ac_daily_18_35_phan_tu_moi_cua_loi_dung_truoc_phan_loi_cu"
+    "test": "daily-pin.test.ts#daily pin "
    },
    "AC-DAILY-TENANT": {
     "status": "PASS",
     "test": "daily.test.ts#daily > AC-DAILY-TENANT: kết quả, streak và hạng của tài khoản A không hiện ở tài khoản B; header UUID của A kèm cookie của B không ghi vào A"
    },
    "AC-DAILY-VALIDATION": {
-    "status": "PASS",
-    "test": "daily.test.ts#daily > AC-DAILY-VALIDATION: tên quá dài, script, SQL, kiểu sai, trường thừa "
+    "status": "FAIL",
+    "test": "daily-pin.test.ts#daily pin "
    }
   }
  },
  "green": {
-  "ts": "2026-10-24T04:12:05+00:00",
-  "commit": "01df1a7",
+  "ts": "2026-10-26T04:52:00+00:00",
+  "commit": "3d1c0bd",
   "results": {
    "AC-DAILY-01": {
     "status": "PASS",
@@ -161,13 +165,17 @@
     "status": "PASS",
     "test": "test_batch#test_ac_daily_18_90_me_core_59_mon_dau_khac_nhau_khong_lap_trong_30_me"
    },
+   "AC-DAILY-19": {
+    "status": "PASS",
+    "test": "test_daily_pin#test_ac_daily_19_chi_dinh_phan_tu_khong_co_daily_hint_duoc_dung_lam_mon_dac_biet_o_core"
+   },
    "AC-DAILY-TENANT": {
     "status": "PASS",
     "test": "daily.test.ts#daily > AC-DAILY-TENANT: kết quả, streak và hạng của tài khoản A không hiện ở tài khoản B; header UUID của A kèm cookie của B không ghi vào A"
    },
    "AC-DAILY-VALIDATION": {
     "status": "PASS",
-    "test": "daily.test.ts#daily > AC-DAILY-VALIDATION: tên quá dài, script, SQL, kiểu sai, trường thừa "
+    "test": "daily-pin.test.ts#daily pin "
    }
   }
  }

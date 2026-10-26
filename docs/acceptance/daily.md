@@ -110,3 +110,9 @@
 - **Khi** chạy liên tiếp 90 mẻ `core` (version tăng dần)
 - **Thì** 59 mẻ đầu chọn 59 món khác nhau; trong mọi chuỗi 30 mẻ liên tiếp không có món nào lặp; không mẻ nào thất bại vì Món đặc biệt; 35 phần tử thêm vào lõi ngày 22/10 có mặt trong kho từ mẻ muộn hơn nên đứng trước phần lõi cũ khi cùng mức mặn; chạy lại cùng chuỗi version ra cùng chuỗi món (tất định)
 - Ưu tiên: Bắt buộc
+
+### AC-DAILY-19: Admin chỉ định Món đặc biệt cho mẻ kế tiếp (thêm 2026-10-26, câu hỏi mở 83)
+- **Cho** token admin đúng; phần tử P đang hoạt động, chưa bị chặn (P có thể ở bất kỳ depth nào, kể cả đã là Món đặc biệt trong 30 mẻ gần đây); phần tử Q bị chặn
+- **Khi** admin chọn P làm Món đặc biệt cho mẻ kế tiếp kèm gợi ý; chọn Q; gửi gợi ý rỗng, dài quá 200 ký tự hoặc chứa tên P; chọn phần tử không tồn tại; chọn lại món khác trước khi mẻ chạy; bỏ chỉ định; rồi mẻ kế tiếp (`core` hoặc `full`) chạy
+- **Thì** chọn P với gợi ý hợp lệ trả 200 và ghi 1 dòng audit (trước: chỉ định cũ hoặc trống, sau: P) theo AC-ADMIN-09; chọn Q, gợi ý sai trả 400 problem+json, phần tử không tồn tại trả 404, không đổi gì và không ghi audit; chọn lại thì chỉ định sau thay chỉ định trước; mẻ kế tiếp dùng P làm Món đặc biệt với gợi ý admin nhập, bỏ qua thứ tự độ mặn/mới (AC-DAILY-01) và luật không lặp 30 mẻ (AC-DAILY-18); mẻ đăng thành công thì chỉ định được xóa, các mẻ sau tự chọn lại; mẻ thất bại thì chỉ định giữ cho mẻ sau; lúc mẻ chạy mà P đã bị chặn thì mẻ bỏ chỉ định, tự chọn như thường và báo cáo đợt ghi "Chỉ định Món đặc biệt bị bỏ"; trang quản trị hiện chỉ định đang chờ (tên P, gợi ý) và nút bỏ chỉ định; áp dụng cho cả staging và production
+- Ưu tiên: Tùy chọn

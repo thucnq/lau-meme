@@ -619,6 +619,23 @@
       ],
       "risk": "MEDIUM",
       "owner": "Thuc"
+    },
+    {
+      "id": "DAILY4",
+      "module": "Trò chơi",
+      "name": "Admin chỉ định Món đặc biệt cho mẻ kế tiếp",
+      "desc": "DAILY · AC-DAILY-19 (thêm 2026-10-26, Tùy chọn, câu hỏi mở 83) · endpoint admin chọn/bỏ chỉ định + kiểm gợi ý 1-200 ký tự không chứa tên, 400/404, migration expand-only, audit (1.5); trang quản trị hiện chỉ định đang chờ + nút bỏ (1); pipeline đọc chỉ định qua state, dùng cho một mẻ core/full, bỏ qua luật mặn/mới và 30 mẻ, xóa khi đăng thành công, giữ khi mẻ lỗi, bỏ khi món bị chặn + dòng báo cáo đợt (1.5); kiểm thử nghiệm thu 15% (0.5)",
+      "points": 4.5,
+      "optional": true,
+      "deps": [
+        "DAILY3",
+        "ADMIN"
+      ],
+      "ac": [
+        "AC-DAILY-19"
+      ],
+      "risk": "MEDIUM",
+      "owner": "Thuc"
     }
   ],
   "questions": [

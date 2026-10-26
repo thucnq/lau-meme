@@ -1,7 +1,7 @@
 # Tiến độ - ƯỚC LƯỢNG - LẨU MEME
 
 > Sinh bởi `/dk:plan` (gen-plan.py) từ `docs/estimate/items.json`. **Người sửa trực tiếp file này**: dấu `[x]` (hạng mục hoặc AC), `tiến độ: N%`, `người`, `bắt đầu`, `xong` (YYYY-MM-DD), `ghi chú` - giữ nguyên dấu ` · ` giữa các trường. Chạy lại `/dk:plan` để tính dự báo và vẽ lại `gantt.html`. `KH` là kế hoạch gốc, chỉ đổi bằng `/dk:plan rebaseline`.
-> Bắt đầu dự án: 2026-10-20 · Kỹ sư: 1 (Thuc) · Giờ/tuần: 20 · Nghiệm thu KH: 2028-06-06 · Dự báo: 2027-07-27 · Cập nhật: 2026-10-25
+> Bắt đầu dự án: 2026-10-20 · Kỹ sư: 1 (Thuc) · Giờ/tuần: 20 · Nghiệm thu KH: 2028-06-06 · Dự báo: 2027-07-27 · Cập nhật: 2026-10-26
 
 
 ## Nền tảng
@@ -33,7 +33,7 @@
 ## Trò chơi
 - [x] **GAME** Chơi ghép (Nhúng lẩu) · 13.5đ · rủi ro: MEDIUM · KH: 2026-11-27 → 2027-01-05 · tiến độ: 100% · người: Thuc · bắt đầu: 2026-10-20 · xong: 2026-10-20 · ghi chú: 
   - [x] AC-GAME-01 Bàn chơi lần đầu
-  - [x] AC-GAME-02 Nhúng lẩu qua nồi - ghép thành công (cập nhật 2026-10-25: món bóng theo con trỏ, mang nền/viền/hình nhỏ tier)
+  - [x] AC-GAME-02 Nhúng lẩu qua nồi - ghép thành công
   - [x] AC-GAME-03 Thả chồng trên mặt bàn
   - [x] AC-GAME-04 Ghép ra phần tử đã có
   - [x] AC-GAME-05 Nồi trào - câu cố định theo cặp
@@ -208,6 +208,8 @@
   - [x] AC-SUBPATH-11 Thẻ xem trước link và favicon
   - [x] AC-SUBPATH-12 Pipeline gọi API dưới tiền tố
   - [ ] AC-SUBPATH-13 Trang chính sách trả về cho mọi GET (thêm 2026-10-24)
+  - [ ] AC-SUBPATH-14 Trang chính sách tĩnh cho bot (thêm 2026-10-25)
+  - [ ] AC-SUBPATH-15 robots.txt của host game (thêm 2026-10-25)
 
 ## Trò chơi
 - [x] **DAILY3** Món đặc biệt - pool mặn/mới, lịch mẻ theo manifest · 4đ · rủi ro: MEDIUM · KH: 2027-09-29 → 2027-10-11 · tiến độ: 100% · người: Thuc · bắt đầu: 2026-10-24 · xong: 2026-10-24 · ghi chú: 
@@ -220,13 +222,13 @@
 - [x] **TIER** Tier của meme · 8.5đ · rủi ro: LOW · KH: 2027-10-12 → 2027-10-22 · tiến độ: 100% · người: Thuc · bắt đầu: 2026-10-23 · xong: 2026-10-25 · ghi chú: AC-TIER-02 cập nhật 2026-10-25 (viền món cùng màu hình nhỏ) và 2026-10-26 (viền 1 px `--color-chip-ring` dùng chung, lúc thường không sáng)
   - [x] AC-ADMIN-12 Gán tier cho phần tử (thêm 2026-10-23)
   - [x] AC-TIER-01 Tier mặc định và giữ qua các mẻ
-  - [x] AC-TIER-02 Hiển thị tier trên phần tử (cập nhật 2026-10-26: viền 1 px `--color-chip-ring` lúc thường, sáng khi rê)
+  - [x] AC-TIER-02 Hiển thị tier trên phần tử
   - [x] AC-TIER-03 Graph cũ chưa có tier
   - [x] AC-TIER-04 Tier tự động theo độ sâu (thêm 2026-10-24)
   - [x] AC-TIER-05 Admin sửa tier và trả về tự động (thêm 2026-10-24)
 
 ## Cộng đồng
-- [ ] **CONTRIB** Đóng góp meme · 13đ · rủi ro: HIGH · KH: 2027-10-25 → 2027-12-02 · tiến độ: 0% (theo AC) · người: Thuc · bắt đầu:  · xong:  · ghi chú: 
+- [ ] **CONTRIB** Đóng góp meme · 13đ · rủi ro: HIGH · KH: 2027-10-25 → 2027-12-02 · tiến độ: 8% (theo AC) · người: Thuc · bắt đầu:  · xong:  · ghi chú: 
   - [ ] AC-CONTRIB-01 Gửi đề xuất hợp lệ
   - [ ] AC-CONTRIB-02 Đầu vào không hợp lệ
   - [ ] AC-CONTRIB-03 Trùng cặp, trùng tên, gửi lặp
@@ -237,9 +239,9 @@
   - [ ] AC-CONTRIB-08 Admin duyệt hoặc từ chối
   - [ ] AC-CONTRIB-09 Ảnh và biểu tượng của meme đóng góp
   - [ ] AC-CONTRIB-10 Hiện người tạo trên phần tử
+  - [x] AC-CONTRIB-13 Chọn hai phần tử cho đề xuất
   - [ ] AC-CONTRIB-11 Bảng xếp hạng "Top cống hiến"
   - [ ] AC-CONTRIB-12 Xóa tài khoản và xuất dữ liệu
-  - [x] AC-CONTRIB-13 Chọn hai phần tử cho đề xuất (thêm 2026-10-25)
 
 ## Trò chơi
 - [x] **SYNC** Đĩa nhúng theo tài khoản · 10.5đ · rủi ro: HIGH · KH: 2027-12-20 → 2028-01-20 · tiến độ: 100% · người: Thuc · bắt đầu: 2026-10-24 · xong: 2026-10-25 · ghi chú: 
@@ -267,7 +269,7 @@
 - [ ] **UAT3** Kiểm thử nghiệm thu & sửa lỗi (góp ý 2026-10-24) · 4đ · rủi ro: MEDIUM · KH: 2028-02-22 → 2028-03-03 · tiến độ: 0% · người: Thuc · bắt đầu:  · xong:  · ghi chú: 
 - [x] **UAT** Kiểm thử nghiệm thu & sửa lỗi (giai đoạn 1) · 18đ · rủi ro: MEDIUM · KH: 2027-07-01 → 2027-08-04 · tiến độ: 100% · người: Thuc · bắt đầu:  · xong:  · ghi chú: 
   - [x] AC-GAME-01 Bàn chơi lần đầu
-  - [x] AC-GAME-02 Nhúng lẩu qua nồi - ghép thành công (cập nhật 2026-10-25: món bóng theo con trỏ, mang nền/viền/hình nhỏ tier)
+  - [x] AC-GAME-02 Nhúng lẩu qua nồi - ghép thành công
   - [x] AC-GAME-03 Thả chồng trên mặt bàn
   - [x] AC-GAME-04 Ghép ra phần tử đã có
   - [x] AC-GAME-05 Nồi trào - câu cố định theo cặp
@@ -349,7 +351,7 @@
   - [ ] AC-ART-11 Vẽ bù ảnh cho phần tử lõi (thêm 2026-10-23)
   - [ ] AC-ART-12 Ưu tiên vẽ ảnh cho món sắp lên Vàng/Đỏ (thêm 2026-10-24)
   - [x] AC-ART-13 Admin tải tranh vẽ tay cho phần tử (thêm 2026-10-24) _(tùy chọn)_
-  - [x] AC-ART-14 Dùng link ảnh của đề xuất làm ảnh món (thêm 2026-10-25, ADR 0018)
+  - [x] AC-ART-14 Dùng link ảnh của đề xuất làm ảnh món (thêm 2026-10-25, câu hỏi mở 46) _(tùy chọn)_
 - [x] **ART2** Vẽ bù ảnh phần tử lõi, ưu tiên món Vàng/Đỏ (giai đoạn 2) · 2.5đ · rủi ro: LOW · KH: 2028-06-01 → 2028-06-05 · tiến độ: 100% · người: Thuc · bắt đầu: 2026-10-23 · xong: 2026-10-25 · ghi chú: AC-ART-12 GREEN chạy tay 2026-10-25, .dk/evidence/art.json chưa ghi lại GREEN
   - [x] AC-ART-11 Vẽ bù ảnh cho phần tử lõi (thêm 2026-10-23)
   - [x] AC-ART-12 Ưu tiên vẽ ảnh cho món sắp lên Vàng/Đỏ (thêm 2026-10-24)
@@ -369,4 +371,4 @@
   - [ ] AC-ART-11 Vẽ bù ảnh cho phần tử lõi (thêm 2026-10-23)
   - [ ] AC-ART-12 Ưu tiên vẽ ảnh cho món sắp lên Vàng/Đỏ (thêm 2026-10-24)
   - [ ] AC-ART-13 Admin tải tranh vẽ tay cho phần tử (thêm 2026-10-24) _(tùy chọn)_
-  - [ ] AC-ART-14 Dùng link ảnh của đề xuất làm ảnh món (thêm 2026-10-25, ADR 0018)
+  - [ ] AC-ART-14 Dùng link ảnh của đề xuất làm ảnh món (thêm 2026-10-25, câu hỏi mở 46) _(tùy chọn)_

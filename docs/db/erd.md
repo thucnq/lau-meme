@@ -1,6 +1,6 @@
 # ERD - D1 (SQLite)
 
-> Nguồn: `worker/migrations/0001..0008`. Id phần tử/công thức là băm (ADR 0002). Thời gian `INTEGER` epoch ms UTC.
+> Nguồn: `worker/migrations/0001..0010`. Id phần tử/công thức là băm (ADR 0002). Thời gian `INTEGER` epoch ms UTC.
 > Không có khóa ngoại từ dữ liệu người chơi sang `element`/`recipe`: nội dung đổi theo version, bảng người chơi chỉ giữ id.
 
 ```mermaid
@@ -249,6 +249,22 @@ erDiagram
     TEXT token_fp
     INTEGER created_at
   }
+  daily_pin {
+    TEXT id PK "UUIDv7, mới mỗi lần đặt"
+    INTEGER slot UK "luôn 1 - tối đa một chỉ định"
+    TEXT element_id
+    TEXT hint "1-200 ký tự"
+    TEXT token_fp
+    INTEGER created_at
+  }
+  daily_pin_change {
+    TEXT id PK "UUIDv7"
+    TEXT action "set_daily_pin | clear_daily_pin"
+    TEXT before_json
+    TEXT after_json
+    TEXT token_fp
+    INTEGER created_at
+  }
   account_element {
     TEXT account_id PK,FK
     TEXT element_id PK
@@ -283,4 +299,5 @@ erDiagram
 - Dữ liệu cá nhân: `player`, `consent`, `discovery.player_id`, `daily_result`, `streak`, `report.player_id`, `vote`, `event` (BRD 5.2). Xóa theo UUID: AC-PRIV-05.
 - Tài khoản Google (ADR 0010): `account`, `account_player`, `session`, `daily_entry`, `account_streak`, `account_element` (Đĩa của tài khoản - ADR 0015); xóa `account` thì `ON DELETE CASCADE` xóa phần còn lại (AC-AUTH-06). Kết quả Daily, streak và nickname trên bảng xếp hạng thuộc tài khoản; `daily_result`/`streak` theo UUID cũ không còn được ghi.
 - Đóng góp meme (ADR 0013): `contribution` gắn tài khoản là dữ liệu cá nhân; xóa tài khoản xóa đề xuất chờ duyệt, phần còn lại `SET NULL`, và nickname trong `batch_content.creators_json` thành `null`. Tier admin gán (`element_tier`), tier tự động (`element.auto_tier`, pipeline tính - ADR 0016) và mức mặn (`element.trend_peak`) là dữ liệu nội dung, pipeline đọc qua `/pipeline/state`.
-- Giữ dữ liệu (Cron Trigger hằng ngày, ADR 0004): `event` 90 ngày; `consent.ip_hash` 7 ngày; `admin_audit`, `admin_change` và `admin_image_change` 12 tháng; `consent` 1 năm sau dòng `erase`; `session` hết hạn (90 ngày không dùng); `batch_content` và `pipeline_store` 14 version mới nhất.
+- Giữ dữ liệu (Cron Trigger hằng ngày, ADR 0004): `event` 90 ngày; `consent.ip_hash` 7 ngày; `admin_audit`, `admin_change`, `admin_image_change` và `daily_pin_change` 12 tháng; `consent` 1 năm sau dòng `erase`; `session` hết hạn (90 ngày không dùng); `batch_content` và `pipeline_store` 14 version mới nhất.
+- Chỉ định Món đặc biệt (AC-DAILY-19, ADR 0019): `daily_pin` giữ tối đa một chỉ định cho mẻ kế tiếp; mẻ đăng thành công gửi lại `id` của chỉ định đã đọc và Worker xóa đúng dòng đó. `daily_pin_change` là audit đặt/bỏ.

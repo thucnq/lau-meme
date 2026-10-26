@@ -1,5 +1,6 @@
 import { hasBearer } from './auth'
 import { adminOnly, listAudit, listBatches, listElements, listRecipes, listReports, moderate, setElementTier } from './features/admin/admin'
+import { clearDailyPin, getDailyPin, setDailyPin } from './features/admin/daily-pin'
 import { setElementImage } from './features/admin/image'
 import { getGraph, getImage, getManifest } from './features/content/content'
 import {
@@ -90,6 +91,7 @@ const adminRoutes: Route[] = [
   { pattern: /^\/api\/admin\/elements\/([^/]+)\/tier$/, methods: { PUT: adminOnly(setElementTier) } },
   { pattern: /^\/api\/admin\/elements\/([^/]+)\/image$/, methods: { PUT: adminOnly(setElementImage) } },
   { pattern: /^\/api\/admin\/recipes$/, methods: { GET: adminOnly(listRecipes) } },
+  { pattern: /^\/api\/admin\/daily-pin$/, methods: { GET: adminOnly(getDailyPin), PUT: adminOnly(setDailyPin), DELETE: adminOnly(clearDailyPin) } },
   { pattern: /^\/api\/admin\/moderation$/, methods: { POST: adminOnly(moderate) } },
   { pattern: /^\/api\/admin\/batches$/, methods: { GET: adminOnly(listBatches) } },
   { pattern: /^\/api\/admin\/audit$/, methods: { GET: adminOnly(listAudit) } },

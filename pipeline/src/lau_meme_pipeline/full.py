@@ -12,7 +12,7 @@ from datetime import date, datetime, timedelta, timezone
 from lau_meme_pipeline.art import ArtItem, ArtResult, apply_images, order_for_drawing
 from lau_meme_pipeline.contrib import add_contributions
 from lau_meme_pipeline.crawl import CrawlResult, RawConcept, crawl_report_line
-from lau_meme_pipeline.daily import build_daily_block, core_hints, pick_daily
+from lau_meme_pipeline.daily import build_daily_block, core_hints, pick_daily, pinned_daily
 from lau_meme_pipeline.dedupe import DedupeResult, dedupe, dedupe_key
 from lau_meme_pipeline.graph import build_manifest, export_graph
 from lau_meme_pipeline.ids import element_id, recipe_id
@@ -147,6 +147,7 @@ def run_full(
     image_links: Mapping[str, str] | None = None,
     link_image: Callable[[str], str] | None = None,
     contributions: Sequence[Mapping] = (),
+    daily_pin: Mapping | None = None,
     first_versions: Mapping[str, int] | None = None,
     trend_peaks: Mapping[str, int] | None = None,
     schedule_hours_utc: Sequence[int] = (5, 17),
@@ -437,11 +438,23 @@ def run_full(
         if t.get("daily_hint") and t.get("hint_ok", True) and _hint_valid(e, t["daily_hint"]):
             peak = salt.get(e.id, 0)
             candidates_daily.append(_candidate(e, t["daily_hint"], TREND, t["added_version"], peak, held, blocked))
-    history = [{"element_id": h["element_id"], "version": h["version"]} for h in daily_history]
-    pick = pick_daily(candidates_daily, history, version)
-    chosen = pick.chosen
-    report["daily_pool_exhausted"] = pick.exhausted
-    daily = build_daily_block(chosen, chosen["hint"])
+    # 7a. The admin's pin wins over the automatic pick (AC-DAILY-19, ADR 0019); an unusable one is dropped.
+    pinned_element = content.elements.get(daily_pin["element_id"]) if daily_pin else None
+    daily = pinned_daily(
+        daily_pin,
+        pinned_element and _candidate(pinned_element, None, "classic", version, 0, False, blocked),
+        blocked,
+    )
+    if daily_pin is not None:
+        report["daily_pin"] = "used" if daily is not None else "dropped"
+    if daily is not None:
+        chosen = {"element_id": daily["element_id"]}
+    else:
+        history = [{"element_id": h["element_id"], "version": h["version"]} for h in daily_history]
+        pick = pick_daily(candidates_daily, history, version)
+        chosen = pick.chosen
+        report["daily_pool_exhausted"] = pick.exhausted
+        daily = build_daily_block(chosen, chosen["hint"])
 
     # 7b. Trending level of this batch (AC-PIPE-16): a new meme gathers the concepts of its own key.
     counts = trend_counts(crawl_result.concepts, deduped)
@@ -457,7 +470,9 @@ def run_full(
         previous_version=None,
         schedule_hours_utc=schedule_hours_utc,
     )
-    check_all(graph_out, manifest, content, lists)  # raises InvariantError: nothing of this batch is published
+    check_all(
+        graph_out, manifest, content, lists, pinned=report.get("daily_pin") == "used"
+    )  # raises InvariantError: nothing of this batch is published
     try:  # warns only (AC-INV-12): a failing simulation never fails the batch
         report["miss_rate"] = list(simulate_miss_rate(graph_out, manifest["starters"]))
         report["miss_rate_warning"] = miss_rate_warning(*report["miss_rate"])

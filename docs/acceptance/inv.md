@@ -60,7 +60,7 @@
 ### AC-INV-10: Món đặc biệt luôn hợp lệ
 - **Cho** mọi manifest đã xuất
 - **Khi** kiểm Món đặc biệt
-- **Thì** món có depth trong [4, 8], tới được, đang hoạt động
+- **Thì** món có depth trong [4, 8], tới được, đang hoạt động; món admin chỉ định (AC-DAILY-19) được miễn điều kiện depth nhưng vẫn phải tới được và đang hoạt động (chốt 2026-10-26)
 - Ưu tiên: Bắt buộc
 
 ### AC-INV-11: Bảng xếp hạng chỉ có kết quả hợp lệ (cập nhật 2026-10-21)
