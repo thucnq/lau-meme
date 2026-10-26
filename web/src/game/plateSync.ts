@@ -3,17 +3,21 @@
  * plays from: every write runs in the background and never blocks a combine. A failed write is not queued anywhere:
  * the item keeps its pair on the local plate, and the next new discovery or page load sends whatever the account
  * plate still lacks (AC-SYNC-06). A 401 stops syncing for this session, a 429 waits for Retry-After (AC-SYNC-05/09).
+ * Items kept before pairs were stored get one from this plate first (AC-SYNC-03); a tab shown again pulls the account
+ * plate anew, at most once per 30 s (AC-SYNC-11).
  */
 import type { Graph } from '../graph/crypto'
 import { playerFetch, type PlayerOpts } from '../privacy/client'
-import { dropPairs, mergePlate, resolvePlate } from './engine'
-import type { Item, PlateItem, Progress } from './engine'
+import { dropPairs, findPairs, mergePlate, resolvePlate } from './engine'
+import type { Blocklist, Item, PlateItem, Progress } from './engine'
 
 const MAX_MERGE = 500 // AC-SYNC-09
 const DEFAULT_RETRY_S = 60
+const PULL_GAP_MS = 30_000 // AC-SYNC-11
 
 type Deps = {
   graph: Graph
+  blocklist: () => Blocklist
   opts: PlayerOpts
   progress: () => Progress | null
   commit: (p: Progress) => void
@@ -28,6 +32,10 @@ export function startPlateSync(d: Deps): PlateSync {
   const inflight = new Set<string>()
   let stopped = false
   let retryAt = 0
+  let pulledAt = -Infinity
+  let stale = false // a tab shown again wants a fresh read; the last good read stays usable meanwhile
+  let pairing: Promise<void> | null = null
+  const recovered = new Set<string>() // pairs found by pair(): sent in a batch like the rest of old progress (AC-SYNC-03)
 
   const waiting = () => stopped || Date.now() < retryAt
 
@@ -47,6 +55,8 @@ export function startPlateSync(d: Deps): PlateSync {
   }
 
   async function pull(): Promise<boolean> {
+    pulledAt = Date.now()
+    stale = false
     const res = await playerFetch('api/me/plate', {}, d.opts)
     if (!usable(res)) return false
     const { items } = (await res.json()) as { items: PlateItem[] }
@@ -69,7 +79,7 @@ export function startPlateSync(d: Deps): PlateSync {
   async function push(todo: Item[]): Promise<void> {
     todo.forEach((i) => inflight.add(i.id))
     try {
-      if (todo.length === 1) {
+      if (todo.length === 1 && !recovered.has(todo[0]!.id)) {
         const res = await write('api/me/plate', combination(todo[0]!))
         if (res?.ok) server?.add(todo[0]!.id)
         else if (res) refuse([todo[0]!.id])
@@ -90,25 +100,47 @@ export function startPlateSync(d: Deps): PlateSync {
     }
   }
 
+  async function pair(): Promise<void> {
+    const p = d.progress()
+    if (!p) return
+    const next = await findPairs(d.graph, p, d.blocklist())
+    if (next === p || stopped) return
+    const now = d.progress() ?? p
+    const pairs = new Map(next.items.flatMap((i) => (i.pair ? [[i.id, i.pair] as const] : [])))
+    for (const i of p.items) if (!i.pair && pairs.has(i.id)) recovered.add(i.id)
+    d.commit({ ...now, items: now.items.map((i) => (i.pair || !pairs.has(i.id) ? i : { ...i, pair: pairs.get(i.id)! })) })
+  }
+
   async function run(): Promise<void> {
     if (waiting()) return
-    if (server === null) {
+    // once per load, beside the first read; a failure leaves those items local until the next load
+    pairing ??= pair().catch(() => undefined)
+    if (server === null || stale) {
       pulling ??= pull().finally(() => {
         pulling = null
       })
-      if (!(await pulling)) return
+      if (!(await pulling) && server === null) return
     }
+    await pairing
     if (waiting() || server === null) return
     const known = server
     const todo = (d.progress()?.items ?? []).filter((i) => i.pair && !known.has(i.id) && !inflight.has(i.id))
     if (todo.length > 0) await push(todo)
   }
 
+  const onVisible = () => {
+    if (document.visibilityState !== 'visible' || Date.now() - pulledAt < PULL_GAP_MS || pulling) return
+    stale = true
+    void run().catch(() => undefined)
+  }
+  document.addEventListener('visibilitychange', onVisible)
+
   return {
     // network errors, 5xx and missing consent: nothing to do now, the next discovery or load tries again
     kick: () => void run().catch(() => undefined),
     stop: () => {
       stopped = true
+      document.removeEventListener('visibilitychange', onVisible)
     },
   }
 }

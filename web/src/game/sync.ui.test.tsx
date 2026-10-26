@@ -157,7 +157,7 @@ interface Server {
   writes: Write[]
   acked: string[] // tên kết quả đã nhận 200 (mỗi lần gửi một dòng)
   mode: 'ok' | 'network' | '500' | '429' | '401'
-  getMode: 'ok' | 'network' | '500' | '401'
+  getMode: 'ok' | 'network' | '500' | '401' | '429'
   retryAfter: number
   hold: boolean // phản hồi ghi không bao giờ tới
   reject: Set<string> // tên kết quả mà server coi là không hợp lệ (POST -> 422, merge -> skipped)
@@ -190,6 +190,7 @@ function handleGet(): Response {
   if (server.getMode === 'network') throw new TypeError('Failed to fetch')
   if (server.getMode === '500') return problem(500)
   if (server.getMode === '401') return problem(401)
+  if (server.getMode === '429') return problem(429, { 'Retry-After': String(server.retryAfter) })
   return json({ items: server.plate }, 200, { 'Cache-Control': 'no-store' })
 }
 
@@ -329,6 +330,14 @@ async function settleAuth(): Promise<void> {
   )
   await advance(2000)
 }
+/** Giả lập tab ẩn/hiện: đặt document.visibilityState rồi bắn visibilitychange. */
+function setVisibility(state: 'visible' | 'hidden'): void {
+  Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => state })
+  Object.defineProperty(document, 'hidden', { configurable: true, get: () => state === 'hidden' })
+  act(() => {
+    document.dispatchEvent(new Event('visibilitychange'))
+  })
+}
 function signOut(): void {
   sessionNow = null
   act(() => setCurrentSession(null))
@@ -384,6 +393,8 @@ beforeEach(() => {
 
 afterEach(() => {
   cleanup()
+  Reflect.deleteProperty(document, 'visibilityState')
+  Reflect.deleteProperty(document, 'hidden')
   act(() => setCurrentSession(null))
   sessionNow = null
   vi.useRealTimers()
@@ -509,6 +520,160 @@ describe('sync (web)', () => {
     await waitFor(() => expect(plateNames()).toContain(NAME_C))
     expect(sorted(plateNames())).toEqual(sorted([...STARTER_NAMES, NAME_C, NAME_D, NAME_J, 'Món Cũ']))
     expect(loadProgress(localStorage)!.items.map((i) => i.name)).toContain('Món Cũ')
+  })
+
+  it('AC-SYNC-03: món cục bộ không lưu cặp (trước SYNC) mà tìm được cặp từ Đĩa cục bộ thì được lưu cặp, gửi qua merge mỗi lần tải khi đã đăng nhập, thời điểm khám phá giữ nguyên; món không tìm được cặp ở lại cục bộ', async () => {
+    await setup({
+      specs: [SPEC_C, SPEC_D],
+      progress: (p) => {
+        p.items.push(item(NAME_C, '🔥', 1, 6, '2026-10-05T00:00:00.000Z')) // Cay + Cười, cả hai là món khởi đầu
+        p.items.push(item(NAME_D, '🏃', 2, 7, '2026-10-06T00:00:00.000Z')) // C + Deadline, C chỉ có trên Đĩa cục bộ, cũng không lưu cặp
+        p.items.push(item('Món Cũ', '📜', 1, 3, '2026-09-01T00:00:00.000Z')) // không có công thức nào trong graph
+      },
+    })
+    server.mode = 'network' // lần tải đầu gửi không tới được
+    await mountReady()
+    await waitFor(() => expect(merges().length).toBeGreaterThanOrEqual(1))
+    const first = merges()[0]!.body as { items: Combo[] }
+    expect(sorted(first.items.map((c) => c.result))).toEqual(sorted([NAME_C, NAME_D]))
+    for (const c of first.items) {
+      const want = c.result === NAME_C ? ['Cay', 'Cười'] : [NAME_C, 'Deadline']
+      expect(sorted([c.a, c.b])).toEqual(sorted(want))
+      expect(Object.keys(c).sort()).toEqual(['a', 'b', 'result'])
+    }
+    expect(sentResults()).not.toContain('Món Cũ')
+    expect(posts()).toHaveLength(0)
+    expect(screen.queryByRole('alert')).toBeNull()
+
+    // cặp tìm được được lưu cục bộ, thời điểm khám phá không đổi, người chơi không phải ghép lại
+    const saved = loadProgress(localStorage)!.items
+    const c = saved.find((i) => i.name === NAME_C)!
+    const d = saved.find((i) => i.name === NAME_D)!
+    expect(sorted(c.pair as string[])).toEqual(sorted(['Cay', 'Cười']))
+    expect(sorted(d.pair as string[])).toEqual(sorted([NAME_C, 'Deadline']))
+    expect(c.discovered_at).toBe('2026-10-05T00:00:00.000Z')
+    expect(d.discovered_at).toBe('2026-10-06T00:00:00.000Z')
+    expect(saved.find((i) => i.name === 'Món Cũ')!.pair).toBeUndefined()
+    expect(server.acked).toEqual([])
+
+    // mỗi lần tải (không chỉ lần đăng nhập đầu): API sống lại, tải lại thì gửi được
+    server.mode = 'ok'
+    await reload()
+    await waitFor(() => expect(sorted(server.acked)).toEqual(sorted([NAME_C, NAME_D])))
+    expect(sentResults()).not.toContain('Món Cũ')
+    expect(plateNames()).toEqual(expect.arrayContaining([NAME_C, NAME_D, 'Món Cũ']))
+    const after = loadProgress(localStorage)!.items
+    expect(after.find((i) => i.name === NAME_C)!.discovered_at).toBe('2026-10-05T00:00:00.000Z')
+    expect(after.find((i) => i.name === NAME_D)!.discovered_at).toBe('2026-10-06T00:00:00.000Z')
+  })
+
+  it('AC-SYNC-03: món không lưu cặp mà chưa có đủ đầu vào trên Đĩa cục bộ thì không gửi; sau khi máy có thêm món, lần tải sau tự tìm cặp và gửi', async () => {
+    await setup({
+      specs: [SPEC_C, SPEC_D],
+      progress: (p) => {
+        p.items.push(item(NAME_D, '🏃', 2, 7, '2026-10-06T00:00:00.000Z')) // cần C, mà C chưa có trên Đĩa cục bộ
+      },
+    })
+    await mountReady()
+    await waitFor(() => expect(plateGets().length).toBeGreaterThanOrEqual(1))
+    await advance(1000)
+    expect(sentResults()).not.toContain(NAME_D)
+    expect(screen.queryByRole('alert')).toBeNull()
+    expect(plateNames()).toContain(NAME_D)
+
+    // máy 1 có thêm C (cục bộ), tải lại
+    cleanup()
+    const p = loadProgress(localStorage)!
+    p.items.push(withPair(item(NAME_C, '🔥', 1, 6, '2026-10-07T00:00:00.000Z'), ['Cay', 'Cười']))
+    saveProgress(localStorage, p)
+    await reload()
+    await waitFor(() => expect(server.acked).toContain(NAME_D))
+    const sentD = server.writes.flatMap(combosOf).find((c) => c.result === NAME_D)!
+    expect(sorted([sentD.a, sentD.b])).toEqual(sorted([NAME_C, 'Deadline']))
+    const savedD = loadProgress(localStorage)!.items.find((i) => i.name === NAME_D)!
+    expect(sorted(savedD.pair as string[])).toEqual(sorted([NAME_C, 'Deadline']))
+    expect(savedD.discovered_at).toBe('2026-10-06T00:00:00.000Z')
+  })
+
+  it('AC-SYNC-03: chưa đăng nhập thì món không lưu cặp không bị gửi và không gọi API Đĩa', async () => {
+    await setup({
+      signedIn: false,
+      specs: [SPEC_C],
+      progress: (p) => {
+        p.items.push(item(NAME_C, '🔥', 1, 6, '2026-10-05T00:00:00.000Z'))
+      },
+    })
+    await mountReady()
+    await advance(1000)
+    expect(plateCalls()).toHaveLength(0)
+    expect(plateNames()).toContain(NAME_C)
+  })
+
+  it('AC-SYNC-03: tìm cặp cho món cũ bị lỗi (tra graph ném lỗi) thì vẫn GET me/plate và vẫn gửi món đã có cặp, không hiện lỗi, game vẫn chơi được', async () => {
+    await setup({
+      signedIn: false,
+      specs: [SPEC_C, SPEC_J],
+      progress: (p) => {
+        p.items.push(item(NAME_C, '🔥', 1, 6, '2026-10-05T00:00:00.000Z')) // thiếu cặp, cần tra graph để tìm
+        p.items.push(withPair(item(NAME_J, '🫠', 1, 6, '2026-10-19T00:00:00.000Z'), ['Toang', 'Deadline'])) // đã có cặp
+      },
+    })
+    await mountReady()
+    await settleAuth()
+    expect(plateCalls()).toHaveLength(0)
+
+    // graph đã tải xong; từ đây mọi lần giải mã (tra công thức) đều lỗi
+    vi.spyOn(webcrypto.subtle, 'decrypt').mockImplementation(() => Promise.reject(new Error('graph lookup failed')))
+    signIn()
+
+    await waitFor(() => expect(plateGets().length).toBeGreaterThanOrEqual(1))
+    await waitFor(() => expect(sentResults()).toContain(NAME_J))
+    await advance(500)
+    const sent = server.writes.flatMap(combosOf)
+    const j = sent.find((c) => c.result === NAME_J)!
+    expect(sorted([j.a, j.b])).toEqual(sorted(['Toang', 'Deadline']))
+    expect(sentResults()).not.toContain(NAME_C) // chưa tìm được cặp thì không gửi
+    expect(screen.queryByRole('alert')).toBeNull()
+    expect(screen.queryByRole('alertdialog')).toBeNull()
+
+    // game vẫn chơi được
+    expect(plateNames()).toEqual(expect.arrayContaining([NAME_C, NAME_J]))
+    expect(pot().dataset.state).toBe('idle')
+    drag(plateItem('Cay'), tableEl(), { x: 80, y: 90 })
+    expect(tableNames()).toEqual(['Cay'])
+    expect(loadProgress(localStorage)!.items.map((i) => i.name)).toEqual(expect.arrayContaining([NAME_C, NAME_J]))
+  })
+
+  it('AC-SYNC-03: món cũ chỉ ghép ra được bằng chính nó (K + A = K) thì không bao giờ được gửi và không lưu cặp; món cũ khác có cặp thật vẫn được gửi', async () => {
+    const NAME_K = 'Tự Sinh'
+    const SPEC_K: Spec = { a: NAME_K, b: 'Cay', name: NAME_K, emoji: '♻️', depth: 1, added_version: 6 }
+    await setup({
+      specs: [SPEC_K, SPEC_C],
+      progress: (p) => {
+        p.items.push(item(NAME_K, '♻️', 1, 6, '2026-10-04T00:00:00.000Z')) // cặp duy nhất trong graph có chính K làm đầu vào
+        p.items.push(item(NAME_C, '🔥', 1, 6, '2026-10-05T00:00:00.000Z')) // Cay + Cười, cặp thật từ Đĩa cục bộ
+      },
+    })
+    await mountReady()
+    await waitFor(() => expect(server.acked).toContain(NAME_C))
+    await advance(1000)
+
+    const sent = server.writes.flatMap(combosOf)
+    expect(sent.map((c) => c.result)).not.toContain(NAME_K)
+    expect(sent.every((c) => c.a !== c.result && c.b !== c.result)).toBe(true) // không món nào gửi kèm chính nó làm đầu vào
+    const c = sent.find((x) => x.result === NAME_C)!
+    expect(sorted([c.a, c.b])).toEqual(sorted(['Cay', 'Cười']))
+    expect(posts()).toHaveLength(0)
+    expect(screen.queryByRole('alert')).toBeNull()
+
+    // K ở lại cục bộ, không lưu cặp, thời điểm khám phá giữ nguyên
+    expect(plateNames()).toContain(NAME_K)
+    const saved = loadProgress(localStorage)!.items
+    const k = saved.find((i) => i.name === NAME_K)!
+    expect(k.pair).toBeUndefined()
+    expect(k.discovered_at).toBe('2026-10-04T00:00:00.000Z')
+    expect(sorted(saved.find((i) => i.name === NAME_C)!.pair as string[])).toEqual(sorted(['Cay', 'Cười']))
+    expect(server.acked).not.toContain(NAME_K)
   })
 
   // ============================================================== AC-SYNC-04
@@ -821,4 +986,126 @@ describe('sync (web)', () => {
     expect(text).toContain('chơi tiếp trên nhiều máy')
     expect(text).toContain('đến khi xóa tài khoản')
   })
+
+  // ============================================================== AC-SYNC-11
+  /** Mở game ở máy 2 (đã kéo Đĩa lúc mở), chờ yên rồi xóa dấu vết cuộc gọi để đếm lần kéo sau đó. */
+  async function mountSettled(): Promise<void> {
+    await mountReady()
+    await waitFor(() => expect(plateGets().length).toBeGreaterThanOrEqual(1))
+    await advance(1000)
+    fetchMock.mockClear()
+  }
+
+  it('AC-SYNC-11: tab ẩn rồi hiện lại sau >= 30 s - GET me/plate, C mới của máy 1 hiện trong Đĩa với nhãn MỚI theo AC-GAME-09 không cần tải lại; bàn không đổi; món cục bộ còn thiếu trên server được gửi bù', async () => {
+    await setup({
+      // C thuộc lô hiện hành (added_version = version manifest = 7) nên có nhãn MỚI; J thuộc lô 6 nên không
+      specs: [{ ...SPEC_C, added_version: 7 }, SPEC_D, SPEC_J],
+      progress: (p) => {
+        p.items.push(withPair(item(NAME_J, '🫠', 1, 6, '2026-10-05T00:00:00.000Z'), ['Toang', 'Deadline']))
+        p.table = [{ uid: 't1', id: eid('Cay'), name: 'Cay', emoji: '🌶️', x: 40, y: 50 }]
+      },
+    })
+    server.mode = 'network' // lúc mở trang, gửi J lên không tới được: server còn thiếu J
+    await mountReady()
+    await waitFor(() => expect(plateGets().length).toBeGreaterThanOrEqual(1))
+    await advance(1000)
+    expect(plateNames()).not.toContain(NAME_C)
+    server.mode = 'ok'
+    fetchMock.mockClear()
+    server.writes.length = 0
+
+    // máy 1 ghép ra C
+    server.plate.push({ element_id: eid(NAME_C), found_at: new Date(Date.now() + 5_000).toISOString() })
+
+    setVisibility('hidden')
+    await advance(31_000)
+    setVisibility('visible')
+
+    await waitFor(() => expect(plateGets().length).toBeGreaterThanOrEqual(1))
+    await waitFor(() => expect(plateNames()).toContain(NAME_C))
+    expect(within(plateItem(NAME_C)).getByText('MỚI')).toBeTruthy()
+    expect(within(plateItem(NAME_J)).queryByText('MỚI')).toBeNull()
+    expect(tableItems().map((e) => [e.dataset.name, e.dataset.x, e.dataset.y])).toEqual([['Cay', '40', '50']])
+    expect(screen.queryByRole('alert')).toBeNull()
+    expect(plateGets().every((c) => headerOf(c[0] as RequestInfo, c[1] as RequestInit | undefined, 'X-Player-Id') === getPlayerId(localStorage))).toBe(true)
+
+    // J còn thiếu trên server được gửi bù
+    await waitFor(() => expect(server.acked).toContain(NAME_J))
+    expect(server.plate.map((p) => p.element_id)).toContain(eid(NAME_J))
+    expect(sentResults()).not.toContain(NAME_C)
+  })
+
+  it('AC-SYNC-11: hiện lại khi chưa đủ 30 s từ lần kéo trước thì không gọi API Đĩa; đủ 30 s thì kéo', async () => {
+    await setup({ specs: [SPEC_C] })
+    await mountSettled()
+    server.plate.push({ element_id: eid(NAME_C), found_at: new Date(Date.now() + 1_000).toISOString() })
+
+    await advance(10_000)
+    setVisibility('hidden')
+    await advance(5_000)
+    setVisibility('visible')
+    await advance(500)
+    expect(plateCalls()).toHaveLength(0)
+    expect(plateNames()).not.toContain(NAME_C)
+
+    // nay đã quá 30 s kể từ lần kéo trước
+    await advance(20_000)
+    setVisibility('hidden')
+    setVisibility('visible')
+    await waitFor(() => expect(plateGets().length).toBeGreaterThanOrEqual(1))
+    await waitFor(() => expect(plateNames()).toContain(NAME_C))
+  })
+
+  it('AC-SYNC-11: tab đang ẩn thì không gọi API Đĩa dù đã quá 30 s; chưa hiện lại thì Đĩa không đổi', async () => {
+    await setup({ specs: [SPEC_C] })
+    await mountSettled()
+    server.plate.push({ element_id: eid(NAME_C), found_at: new Date(Date.now() + 1_000).toISOString() })
+
+    setVisibility('hidden')
+    await advance(120_000)
+    expect(plateCalls()).toHaveLength(0)
+    expect(plateNames()).not.toContain(NAME_C)
+  })
+
+  it('AC-SYNC-11: chưa đăng nhập thì hiện lại tab (đã quá 30 s) không gọi API Đĩa', async () => {
+    await setup({ signedIn: false, specs: [SPEC_C] })
+    await mountReady()
+    await advance(1000)
+    fetchMock.mockClear()
+    setVisibility('hidden')
+    await advance(60_000)
+    setVisibility('visible')
+    await advance(1000)
+    expect(plateCalls()).toHaveLength(0)
+    expect(screen.queryByRole('alert')).toBeNull()
+  })
+
+  for (const mode of ['network', '500', '401', '429'] as const) {
+    it(`AC-SYNC-11: kéo Đĩa khi hiện lại bị lỗi (${mode}) thì không hiện lỗi chặn, Đĩa và bàn giữ nguyên, vẫn chơi được`, async () => {
+      await setup({
+        specs: [SPEC_C, SPEC_J],
+        progress: (p) => {
+          p.table = [{ uid: 't1', id: eid('Cay'), name: 'Cay', emoji: '🌶️', x: 40, y: 50 }]
+        },
+      })
+      await mountSettled()
+      server.getMode = mode
+      server.retryAfter = 30
+      const before = plateNames()
+
+      setVisibility('hidden')
+      await advance(31_000)
+      setVisibility('visible')
+      await waitFor(() => expect(plateGets().length).toBeGreaterThanOrEqual(1))
+      await advance(500)
+
+      expect(screen.queryByRole('alert')).toBeNull()
+      expect(screen.queryByRole('alertdialog')).toBeNull()
+      expect(plateNames()).toEqual(before)
+      expect(tableItems().map((e) => [e.dataset.name, e.dataset.x, e.dataset.y])).toEqual([['Cay', '40', '50']])
+      expect(pot().dataset.state).toBe('idle')
+      await potCombine('Toang', 'Deadline')
+      expect(plateNames()).toContain(NAME_J)
+    })
+  }
 })

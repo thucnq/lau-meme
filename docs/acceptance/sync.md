@@ -20,7 +20,8 @@
 ### AC-SYNC-03: Tiến độ trước khi đăng nhập được gộp vào tài khoản
 - **Cho** máy 1 chơi chưa đăng nhập, Đĩa cục bộ có thêm F và G (đã ghép ra bằng công thức có thật); Đĩa của T trên server có C
 - **Khi** đăng nhập T ở máy 1
-- **Thì** F và G được gửi lên kèm cặp đã dùng và thêm vào Đĩa của T theo AC-SYNC-01; Đĩa ở máy 1 sau đó = khởi đầu + C + F + G; phần tử cục bộ không gửi kèm được cặp hợp lệ (vd. tiến độ cũ thiếu cặp) thì vẫn giữ ở Đĩa cục bộ của máy 1 nhưng không vào Đĩa của T
+- **Thì** F và G được gửi lên kèm cặp đã dùng và thêm vào Đĩa của T theo AC-SYNC-01; Đĩa ở máy 1 sau đó = khởi đầu + C + F + G; phần tử cục bộ không gửi kèm được cặp hợp lệ thì vẫn giữ ở Đĩa cục bộ của máy 1 nhưng không vào Đĩa của T
+- (cập nhật 2026-10-26, góp ý "chưa thấy đĩa được đồng bộ giữa các phiên") Phần tử cục bộ không lưu cặp (tiến độ ghép trước khi có SYNC, trước 2026-10-24): **Cho** Đĩa cục bộ của máy 1 có K không kèm cặp, graph đang giữ có A + B = K với A và B cũng đang ở Đĩa cục bộ của máy 1 (khởi đầu, có cặp hay không có cặp đều được) và không bị chặn (AC-GAME-15); **Khi** T đã đăng nhập ở máy 1 và trang tải xong (mỗi lần tải, không chỉ lần đăng nhập đầu); **Thì** client tự tìm một cặp như vậy trong graph đang giữ, lưu cặp đó cho K ở Đĩa cục bộ và gửi K kèm cặp lên theo lô như trên (server kiểm công thức như AC-SYNC-01/04, không đổi contract); thời điểm khám phá cục bộ của K giữ nguyên; người chơi không phải ghép lại; K không tìm được cặp nào từ Đĩa cục bộ thì giữ ở máy 1 như trên và lần tải sau thử lại (sau khi máy 1 có thêm món)
 - Ưu tiên: Bắt buộc
 
 ### AC-SYNC-04: Từ chối phần tử không ghép ra được
@@ -63,4 +64,10 @@
 - **Cho** Đĩa của T có 30 phần tử
 - **Khi** T xem/xuất dữ liệu của mình (AC-PRIV-08); rồi xóa tài khoản (AC-AUTH-06)
 - **Thì** bản xuất có danh sách phần tử của Đĩa kèm thời điểm khám phá; xóa tài khoản xóa toàn bộ Đĩa của T; đăng nhập lại bằng cùng Google bắt đầu với Đĩa chỉ có 4 phần tử khởi đầu (Đĩa cục bộ của máy đang dùng vẫn gộp lên theo AC-SYNC-03); trang chính sách (AC-PRIV-01) nêu thêm dữ liệu "danh sách món đã ghép ra theo tài khoản", mục đích "chơi tiếp trên nhiều máy", thời hạn "đến khi xóa tài khoản"
+- Ưu tiên: Bắt buộc
+
+### AC-SYNC-11: Quay lại tab thì kéo Đĩa mới của tài khoản (thêm 2026-10-26)
+- **Cho** T đã đăng nhập và đang mở game ở cả máy 1 và máy 2; Đĩa ở máy 2 chưa có C (góp ý "chưa thấy đĩa được đồng bộ giữa các phiên")
+- **Khi** máy 1 ghép ra C (AC-SYNC-01); máy 2 bị ẩn (chuyển tab, thu nhỏ, khóa màn hình) rồi hiện lại khi đã qua ít nhất 30 s từ lần kéo Đĩa trước của máy 2 (chốt 2026-10-26)
+- **Thì** máy 2 kéo Đĩa của T (GET như AC-SYNC-02) và gộp vào Đĩa cục bộ mà không tải lại trang: C hiện trong Đĩa, nhãn "MỚI" đúng như AC-GAME-09 (chỉ khi C thuộc mẻ hiện hành, làm rõ 2026-10-26), thời điểm khám phá theo AC-SYNC-02; bàn, nồi và món đang kéo ở máy 2 không đổi; phần tử cục bộ máy 2 còn thiếu trên server được gửi bù như AC-SYNC-03/06; hiện lại khi chưa đủ 30 s từ lần kéo trước, hoặc lúc tab đang ẩn, thì không gọi API Đĩa; lỗi mạng, 5xx, 401, 429 xử lý như AC-SYNC-05/06/09 (không hiện lỗi chặn người chơi); chưa đăng nhập thì không gọi
 - Ưu tiên: Bắt buộc
