@@ -72,3 +72,5 @@
 - Triển khai staging: Worker version `592a5f9a`, git sha `f7ebb10`.
 - Đề xuất meme đã duyệt (AC-CONTRIB-14, contract 0.8.0): trang quản trị hiện thông báo sau khi duyệt; dòng đã duyệt mà phần tử chưa có trong danh mục ghi nhãn "Chờ mẻ kế tiếp" tới khi mẻ đăng xong. `AdminContribution` thêm trường `in_catalog`. Duyệt không đổi graph đang phục vụ.
 - Triển khai staging: Worker version `31fa60ab-2166-4ab0-b33b-2b125dbd161f`, git sha `6857064`, 2026-10-26 17:46 UTC; không có migration D1 mới.
+- Đề xuất meme (AC-CONTRIB-14, góp ý review PR #125): đổi bộ lọc trạng thái thì thông báo "Đã duyệt..." biến mất. Không đổi API.
+- Triển khai staging: Worker version `30b996e3-1d36-497f-b949-6f72e9efc840`, git sha `373a821`, 2026-10-26; không có migration D1 mới.
