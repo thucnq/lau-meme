@@ -32,6 +32,7 @@ from lau_meme_pipeline.art import (
 from lau_meme_pipeline.contrib import add_contributions
 from lau_meme_pipeline.crawl import Http, crawl, source_error_text
 from lau_meme_pipeline.daily import build_daily_block, core_hints, pick_daily, pinned_daily
+from lau_meme_pipeline.feedback import apply_feedback, feedback_report
 from lau_meme_pipeline.full import run_full
 from lau_meme_pipeline.graph import build_manifest, decrypt_entry, export_graph
 from lau_meme_pipeline.ids import element_id
@@ -602,6 +603,7 @@ def run_batch(
                 first_versions=_first_versions(state),
                 trend_peaks=_trend_peaks(state),
                 schedule_hours_utc=hours,
+                feedback=state.get("feedback", []),
             )
             store = full.content
             graph, manifest, store_out = full.graph, full.manifest, full.store
@@ -633,7 +635,9 @@ def run_batch(
                 stats["images"] = {k: int(art_report.get(k, 0)) for k in ("drawn", "fallback", "pending")}
             stats["without_image"] = sum(1 for e in content["elements"] if not e.get("image_key"))
             trending = _with_trend_peaks(content, full.trend_levels, _trend_peaks(state))
-            tier_lines = tier_report(store, state.get("tiers", []), _blocked_images(state))
+            tier_lines = full.report.get("feedback_lines", []) + tier_report(
+                store, state.get("tiers", []), _blocked_images(state)
+            )
             step = "check"
             _check(store, graph, content)  # run_full already checked the invariants (AC-INV)
         else:
@@ -651,7 +655,10 @@ def run_batch(
                 stats["contributions_waiting"] = joined.waiting
             drawings = _admin_images(state)
             store = apply_images(store, {eid: key for eid, key in drawings.items() if eid in store.elements})
-            store = apply_tiers(store, state.get("tiers", []), _blocked_images(state))
+            # before the tiers: hiding a recipe may change a depth, and the default tier follows the depth
+            voted = apply_feedback(store, state.get("feedback", []))
+            feedback_lines = feedback_report(voted, store, state.get("feedback", []))
+            store = apply_tiers(voted.store, state.get("tiers", []), _blocked_images(state))
             step = "daily"
             pin = state.get("daily_pin")
             daily = pinned_daily(
@@ -670,7 +677,7 @@ def run_batch(
                 store, version=version, batch_at=batch_at, daily=daily, previous_version=None, schedule_hours_utc=hours
             )
             content = _content(store, daily["element_id"], _blocked_images(state))
-            tier_lines = tier_report(store, state.get("tiers", []), _blocked_images(state))
+            tier_lines = feedback_lines + tier_report(store, state.get("tiers", []), _blocked_images(state))
             step = "check"
             _check(store, graph, content)
             step = "invariants"
