@@ -33,7 +33,7 @@
 ## Trò chơi
 - [x] **GAME** Chơi ghép (Nhúng lẩu) · 13.5đ · rủi ro: MEDIUM · KH: 2026-11-27 → 2027-01-05 · tiến độ: 100% · người: Thuc · bắt đầu: 2026-10-20 · xong: 2026-10-20 · ghi chú: 
   - [x] AC-GAME-01 Bàn chơi lần đầu
-  - [x] AC-GAME-02 Nhúng lẩu qua nồi - ghép thành công
+  - [x] AC-GAME-02 Nhúng lẩu qua nồi - ghép thành công (cập nhật 2026-10-25: món bóng theo con trỏ, mang nền/viền/hình nhỏ tier)
   - [x] AC-GAME-03 Thả chồng trên mặt bàn
   - [x] AC-GAME-04 Ghép ra phần tử đã có
   - [x] AC-GAME-05 Nồi trào - câu cố định theo cặp
@@ -217,10 +217,10 @@
   - [x] AC-PIPE-02 Lịch chạy và chạy tay (cập nhật 2026-10-23)
 
 ## Nội dung
-- [x] **TIER** Tier của meme · 8.5đ · rủi ro: LOW · KH: 2027-10-12 → 2027-10-22 · tiến độ: 100% · người: Thuc · bắt đầu: 2026-10-23 · xong: 2026-10-25 · ghi chú: AC-TIER-02 cập nhật 2026-10-25 (viền món cùng màu hình nhỏ)
+- [x] **TIER** Tier của meme · 8.5đ · rủi ro: LOW · KH: 2027-10-12 → 2027-10-22 · tiến độ: 100% · người: Thuc · bắt đầu: 2026-10-23 · xong: 2026-10-25 · ghi chú: AC-TIER-02 cập nhật 2026-10-25 (viền món cùng màu hình nhỏ) và 2026-10-26 (viền 1 px `--color-chip-ring` dùng chung, lúc thường không sáng)
   - [x] AC-ADMIN-12 Gán tier cho phần tử (thêm 2026-10-23)
   - [x] AC-TIER-01 Tier mặc định và giữ qua các mẻ
-  - [x] AC-TIER-02 Hiển thị tier trên phần tử
+  - [x] AC-TIER-02 Hiển thị tier trên phần tử (cập nhật 2026-10-26: viền 1 px `--color-chip-ring` lúc thường, sáng khi rê)
   - [x] AC-TIER-03 Graph cũ chưa có tier
   - [x] AC-TIER-04 Tier tự động theo độ sâu (thêm 2026-10-24)
   - [x] AC-TIER-05 Admin sửa tier và trả về tự động (thêm 2026-10-24)
@@ -239,6 +239,7 @@
   - [ ] AC-CONTRIB-10 Hiện người tạo trên phần tử
   - [ ] AC-CONTRIB-11 Bảng xếp hạng "Top cống hiến"
   - [ ] AC-CONTRIB-12 Xóa tài khoản và xuất dữ liệu
+  - [x] AC-CONTRIB-13 Chọn hai phần tử cho đề xuất (thêm 2026-10-25)
 
 ## Trò chơi
 - [x] **SYNC** Đĩa nhúng theo tài khoản · 10.5đ · rủi ro: HIGH · KH: 2027-12-20 → 2028-01-20 · tiến độ: 100% · người: Thuc · bắt đầu: 2026-10-24 · xong: 2026-10-25 · ghi chú: 
@@ -266,7 +267,7 @@
 - [ ] **UAT3** Kiểm thử nghiệm thu & sửa lỗi (góp ý 2026-10-24) · 4đ · rủi ro: MEDIUM · KH: 2028-02-22 → 2028-03-03 · tiến độ: 0% · người: Thuc · bắt đầu:  · xong:  · ghi chú: 
 - [x] **UAT** Kiểm thử nghiệm thu & sửa lỗi (giai đoạn 1) · 18đ · rủi ro: MEDIUM · KH: 2027-07-01 → 2027-08-04 · tiến độ: 100% · người: Thuc · bắt đầu:  · xong:  · ghi chú: 
   - [x] AC-GAME-01 Bàn chơi lần đầu
-  - [x] AC-GAME-02 Nhúng lẩu qua nồi - ghép thành công
+  - [x] AC-GAME-02 Nhúng lẩu qua nồi - ghép thành công (cập nhật 2026-10-25: món bóng theo con trỏ, mang nền/viền/hình nhỏ tier)
   - [x] AC-GAME-03 Thả chồng trên mặt bàn
   - [x] AC-GAME-04 Ghép ra phần tử đã có
   - [x] AC-GAME-05 Nồi trào - câu cố định theo cặp
