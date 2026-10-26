@@ -38,3 +38,4 @@ review-feat-tier: approved
 review-feat-contrib: approved
 review-feat-art-upload: approved
 review-fix-ui-feedback-1025: approved
+review-feat-contrib-catalog: approved
