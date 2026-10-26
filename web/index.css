@@ -169,7 +169,7 @@ a { color: var(--color-accent); }
 
 .chip {
   display: inline-flex; gap: var(--space-1); align-items: center; padding: var(--space-1) var(--space-3);
-  border-radius: var(--radius-pill); background: var(--color-surface); border: 2px solid var(--color-chip-ring); user-select: none;
+  border-radius: var(--radius-pill); background: var(--color-surface); border: 1px solid var(--color-chip-ring); user-select: none;
   cursor: grab; font-size: var(--text-sm); font-weight: 600; line-height: 1.5;
   transition: border-color var(--motion-fast), transform var(--motion-fast);
   /* AC-GAME-21: a vertical swipe on a chip scrolls; a sideways move, or a hold first, drags (Game.tsx) */
@@ -180,7 +180,7 @@ a { color: var(--color-accent); }
 .on-table { position: absolute; white-space: nowrap; }
 .ghost {
   position: fixed; pointer-events: none; z-index: 10; opacity: 0.9; transform: translate(-50%, -50%);
-  border-color: var(--color-badge-ring); box-shadow: var(--shadow-1);
+  box-shadow: var(--shadow-1);
 }
 .badge {
   font-size: var(--text-xs); font-weight: 600; line-height: 1.4; color: var(--color-on-accent); background: var(--color-accent);
@@ -309,7 +309,7 @@ a { color: var(--color-accent); }
    --color-text, so each light background stays light and each dark one dark for >= 4.5:1. */
 /* A positioning context for .tier-badge; .on-table keeps its own absolute position (the drop point). */
 [data-tier] { color: var(--color-text); }
-[data-tier]:not(.on-table) { position: relative; }
+[data-tier]:not(.on-table, .ghost) { position: relative; }
 .chip[data-tier], .slot-item[data-tier], .discovery-card[data-tier] { background: var(--tier-bg); }
 .tier-1 { --tier-bg: var(--tier-1); --tier-mark: var(--tier-1-strong); }
 .tier-2 { --tier-bg: var(--tier-2); --tier-mark: var(--tier-2-strong); }
@@ -323,11 +323,14 @@ a { color: var(--color-accent); }
 }
 /* a light ring keeps the half that sticks out apart from the tabletop, plastic or wood (AC-GAME-28) */
 .tier-badge circle, .tier-badge polygon { fill: var(--tier-mark); stroke: var(--color-badge-ring); stroke-width: 1.6px; paint-order: stroke; }
-.chip .tier-badge circle, .chip .tier-badge polygon { stroke: var(--color-chip-ring); transition: stroke var(--motion-fast); }
-.chip:hover .tier-badge circle, .chip:hover .tier-badge polygon, .ghost .tier-badge circle, .ghost .tier-badge polygon { stroke: var(--color-badge-ring); }
+.chip .tier-badge circle, .chip .tier-badge polygon, .slot-item .tier-badge circle, .slot-item .tier-badge polygon { stroke: var(--color-chip-ring); transition: stroke var(--motion-fast); }
+.chip:hover .tier-badge circle, .chip:hover .tier-badge polygon { stroke: var(--color-badge-ring); }
 .tier-badge { overflow: visible; width: 0.6rem; height: 0.6rem; }
 .discovery-card .tier-badge { width: 0.9rem; height: 0.9rem; }
-.slot-item { display: inline-flex; align-items: center; gap: var(--space-1); padding: 0.15rem var(--space-2); border-radius: var(--radius-pill); max-width: 100%; }
+.slot-item {
+  display: inline-flex; align-items: center; gap: var(--space-1); padding: 0.15rem var(--space-2); border-radius: var(--radius-pill); max-width: 100%;
+  border: 1px solid var(--color-chip-ring); /* the same border as a chip on the table and plate (AC-TIER-02) */
+}
 
 /* Illustrations (ART): emoji first, the drawing once it has loaded; the loading image takes no room (AC-ART-06) */
 .chip .art { width: 1.4rem; height: 1.4rem; border-radius: 0.3rem; object-fit: cover; }
@@ -399,7 +402,7 @@ a { color: var(--color-accent); }
 }
 
 /* AC-CONTRIB-10: "Meme của ..." above a contributed element, on hover, focus or a touch hold */
-.chip:not(.on-table) { position: relative; }
+.chip:not(.on-table, .ghost) { position: relative; } /* the ghost stays fixed under the pointer (AC-GAME-02) */
 .creator-tip {
   position: absolute; left: 50%; bottom: calc(100% + var(--space-1)); transform: translateX(-50%); z-index: 5;
   padding: var(--space-1) var(--space-2); border-radius: var(--radius-md); white-space: nowrap; pointer-events: none;
@@ -421,3 +424,18 @@ a { color: var(--color-accent); }
 .contrib-list li { display: flex; flex-wrap: wrap; gap: var(--space-1) var(--space-3); padding: var(--space-2) var(--space-3); border-radius: var(--radius-md); background: var(--color-soft); }
 .contrib-status { font-weight: 600; }
 .contrib-invite { margin: var(--space-3) 0; }
+/* AC-CONTRIB-13: pick each element from the plate, or drop a chip on the field */
+.contrib-pick { position: relative; display: grid; gap: var(--space-1); font-size: var(--text-sm); font-weight: 600; }
+.contrib-pick-box {
+  display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-1); padding: 0 var(--space-1);
+  border: 1px solid var(--color-control); border-radius: var(--radius-md); background: var(--color-surface);
+}
+.contrib-pick-box input { flex: 1 1 6rem; min-width: 0; font: inherit; font-weight: 400; padding: var(--space-1); border: 0; background: transparent; color: var(--color-text); }
+.contrib-picked { display: inline-flex; align-items: center; gap: var(--space-1); padding: 0 0 0 var(--space-2); border-radius: var(--radius-pill); background: var(--color-soft); }
+.contrib-unpick { padding: 0 var(--space-1); border: 0; background: transparent; font-size: var(--text-xs); }
+.contrib-options {
+  position: absolute; z-index: 6; top: 100%; left: 0; right: 0; max-height: 14rem; overflow-y: auto; margin: var(--space-1) 0 0; padding: var(--space-1);
+  list-style: none; background: var(--color-surface); border: 1px solid var(--color-control); border-radius: var(--radius-md); box-shadow: var(--shadow-1);
+}
+.contrib-options li { padding: var(--space-1) var(--space-2); border-radius: var(--radius-sm); font-weight: 400; cursor: pointer; }
+.contrib-options li:hover, .contrib-options li[aria-selected='true'] { background: var(--color-soft); }

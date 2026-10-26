@@ -66,8 +66,8 @@
   }
  },
  "green": {
-  "ts": "2026-10-25T11:52:21+00:00",
-  "commit": "9527ce9",
+  "ts": "2026-10-26T00:26:29+00:00",
+  "commit": "b15da77",
   "results": {
    "AC-CONTRIB-01": {
     "status": "PASS",
@@ -108,6 +108,10 @@
    "AC-CONTRIB-10": {
     "status": "PASS",
     "test": "contrib.ui.test.tsx#contrib ui: người tạo trên phần tử > AC-CONTRIB-10: sau khi tải manifest game gọi GET api/creators/<version>; phần tử đóng góp có dòng \"Meme của Bún Chả\" / \"Meme của Thực khách ẩn danh\" nối bằng aria-describedby, ẩn sẵn; phần tử lõi và khởi đầu không có"
+   },
+   "AC-CONTRIB-13": {
+    "status": "PASS",
+    "test": "contrib.ui.test.tsx#contrib ui: đóng góp meme > AC-CONTRIB-13: \"Phần tử 1\" và \"Phần tử 2\" là combobox có nhãn; focus hiện danh sách phần tử trong Đĩa "
    },
    "AC-CONTRIB-11": {
     "status": "PASS",

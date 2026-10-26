@@ -10,27 +10,35 @@ import {
   type Contribution,
   type ContributionRequest,
 } from './api'
+import { ElementPicker, type Choice } from './ElementPicker'
 
-type Props = { policyVersion: number; storage: Storage | null }
+/** The two elements of the proposal; Game holds them so a chip dropped on a field lands here (AC-CONTRIB-13). */
+export type Picks = [Choice | null, Choice | null]
+
+type Props = {
+  policyVersion: number
+  storage: Storage | null
+  plate: Choice[]
+  picks: Picks
+  onPicks: (picks: Picks) => void
+}
 type Sent = { kind: 'ok' } | { kind: 'error'; text: string } | { kind: 'consent' }
 
 const FIELDS = [
-  ['a', 'Phần tử 1'],
-  ['b', 'Phần tử 2'],
   ['name', 'Tên meme'],
   ['emoji', 'Biểu tượng'],
   ['description', 'Mô tả'],
   ['image_url', 'Link ảnh'],
 ] as const
 type Field = (typeof FIELDS)[number][0]
-const EMPTY: Record<Field, string> = { a: '', b: '', name: '', emoji: '', description: '', image_url: '' }
+const EMPTY: Record<Field, string> = { name: '', emoji: '', description: '', image_url: '' }
 const OPTIONAL: Field[] = ['emoji', 'description', 'image_url']
 
 /**
- * "Đóng góp meme" (AC-CONTRIB-01..06): a signed-in player proposes a new element from two existing ones and sees
+ * "Đóng góp meme" (AC-CONTRIB-01..06, 13): a signed-in player proposes a new element from two of their plate and sees
  * their own proposals with their status. Signed out it only invites to sign in. The server checks everything again.
  */
-export function ContribPanel({ policyVersion, storage }: Props) {
+export function ContribPanel({ policyVersion, storage, plate, picks, onPicks }: Props) {
   const signedIn = useSession() !== null
   const [form, setForm] = useState(EMPTY)
   const [sending, setSending] = useState(false)
@@ -54,7 +62,12 @@ export function ContribPanel({ policyVersion, storage }: Props) {
 
   const submit = async (e: FormEvent) => {
     e.preventDefault()
-    const body: ContributionRequest = { a: form.a, b: form.b, name: form.name }
+    const [a, b] = picks
+    if (!a || !b) {
+      setSent({ kind: 'error', text: 'Chọn Phần tử 1 và Phần tử 2 từ Đĩa trước khi gửi' })
+      return
+    }
+    const body: ContributionRequest = { a: a.name, b: b.name, name: form.name }
     for (const k of OPTIONAL) if (form[k].trim() !== '') body[k] = form[k].trim()
     setSending(true)
     setSent(null)
@@ -62,6 +75,7 @@ export function ContribPanel({ policyVersion, storage }: Props) {
       await submitContribution(body, { storage, policyVersion })
       setSent({ kind: 'ok' })
       setForm(EMPTY)
+      onPicks([null, null])
       setReload((n) => n + 1)
     } catch (err) {
       if (err instanceof ConsentRequiredError) setSent({ kind: 'consent' })
@@ -74,6 +88,16 @@ export function ContribPanel({ policyVersion, storage }: Props) {
   return (
     <section className="contrib" role="region" aria-label="Đóng góp meme">
       <form onSubmit={submit} className="contrib-form">
+        {([1, 2] as const).map((n) => (
+          <ElementPicker
+            key={n}
+            field={n}
+            label={`Phần tử ${n}`}
+            items={plate}
+            value={n === 1 ? picks[0] : picks[1]}
+            onChange={(v) => onPicks(n === 1 ? [v, picks[1]] : [picks[0], v])}
+          />
+        ))}
         {FIELDS.map(([key, label]) => (
           <label key={key}>
             <span>{label}</span>
