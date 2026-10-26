@@ -67,3 +67,6 @@
 - Món đặc biệt chỉ định (AC-DAILY-19, ADR 0019): admin chọn một món đang hoạt động và nhập gợi ý làm Món đặc biệt của mẻ kế tiếp, trên tab "Món đặc biệt" của trang quản trị. Chỉ áp cho một mẻ; mẻ không đăng được thì chỉ định còn nguyên; món không còn hoạt động hoặc bị chặn lúc mẻ chạy thì mẻ tự chọn như thường.
 - Món đặc biệt chỉ định (AC-INV-10): món admin chỉ định có thể nằm ngoài độ sâu 4-8 của luật thường; các điều kiện còn lại (đang hoạt động, tới được) vẫn giữ.
 - Triển khai staging: Worker version `5113600b`, git sha `f1d6fec`.
+- Đĩa theo tài khoản (AC-SYNC-03 cập nhật): món ghép trước khi có SYNC (không lưu cặp) được client tự tìm cặp từ Đĩa của máy rồi gửi lên Đĩa tài khoản qua `/me/plate/merge` mỗi lần tải trang khi đã đăng nhập; món không tìm được cặp ở lại máy và thử lại lần tải sau. Không đổi API.
+- Đĩa theo tài khoản (AC-SYNC-11): tab hiện lại sau ít nhất 30 s từ lần kéo trước thì kéo và gộp Đĩa tài khoản, không cần tải lại trang.
+- Triển khai staging: Worker version `592a5f9a`, git sha `f7ebb10`.
