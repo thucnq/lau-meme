@@ -3,7 +3,8 @@
 Expected module `lau_meme_pipeline.feedback` (does not exist yet; the pure rule, no I/O, no clock):
 
     hidden_recipes(feedback: list[dict]) -> Collection[str]
-        `feedback` is PipelineState.feedback (docs/api/openapi.yaml): items {recipe_id, votes, nhat}, anonymous, no UUID.
+        `feedback` is PipelineState.feedback (docs/api/openapi.yaml): items {recipe_id, votes, nhat},
+        anonymous, no UUID.
         Returns the recipe ids that must be hidden: votes >= 10 and nhat / votes >= 0.6 (default threshold, open
         question 15). Both bounds are inclusive. Order of the input does not matter; entries with 0 votes never divide.
 
@@ -252,7 +253,8 @@ def test_ac_feedback_04_doi_chung_x_co_trong_graph_khi_chua_co_phieu(picked, bas
 
 
 def test_ac_feedback_04_x_bi_an_khoi_graph_moi(picked, with_votes):
-    """AC-FEEDBACK-04: X (>= 10 phiếu, >= 60 % Nhạt) không còn trong graph mới và danh sách công thức; mẻ vẫn thành công."""
+    """AC-FEEDBACK-04: X (>= 10 phiếu, >= 60 % Nhạt) không còn trong graph mới và danh sách công thức;
+    mẻ vẫn thành công."""
     outcome, body = with_votes
     assert outcome.ok is True
     assert body["status"] == "success"
@@ -261,7 +263,8 @@ def test_ac_feedback_04_x_bi_an_khoi_graph_moi(picked, with_votes):
 
 
 def test_ac_feedback_04_y_giu_nguyen_vi_chua_du_phieu(picked, baseline, with_votes):
-    """AC-FEEDBACK-04: Y (5 phiếu, 5 Nhạt) chưa đủ phiếu nên vẫn trong graph; chỉ X (và không công thức nào khác ngoài đường duy nhất) mất."""
+    """AC-FEEDBACK-04: Y (5 phiếu, 5 Nhạt) chưa đủ phiếu nên vẫn trong graph;
+    chỉ X (và không công thức nào khác ngoài đường duy nhất) mất."""
     _, body = with_votes
     assert rid(picked["y"]) in graph_keys(body)
     assert rid(picked["y"]) in recipe_ids_in(body)
@@ -269,24 +272,28 @@ def test_ac_feedback_04_y_giu_nguyen_vi_chua_du_phieu(picked, baseline, with_vot
 
 
 def test_ac_feedback_04_cong_thuc_duy_nhat_giu_phan_tu_tuoi_duoc_van_con_va_chi_canh_bao(picked, with_votes):
-    """AC-FEEDBACK-04: S là công thức duy nhất cho phần tử của nó, dù 18/20 Nhạt vẫn ở lại graph; báo cáo đợt nhắc tới S."""
+    """AC-FEEDBACK-04: S là công thức duy nhất cho phần tử của nó, dù 18/20 Nhạt vẫn ở lại graph;
+    báo cáo đợt nhắc tới S."""
     outcome, body = with_votes
     s = picked["s"]
     assert rid(s) in graph_keys(body)
     assert rid(s) in recipe_ids_in(body)
     assert outcome.ok is True
-    assert any(s["a"] in ln and s["b"] in ln for ln in outcome.report_body.splitlines()), "báo cáo phải có cảnh báo về S"
+    report_lines = outcome.report_body.splitlines()
+    assert any(s["a"] in ln and s["b"] in ln for ln in report_lines), "báo cáo phải có cảnh báo về S"
 
 
 def test_ac_feedback_04_bao_cao_dot_liet_ke_cong_thuc_bi_an_do_nhat(picked, with_votes):
-    """AC-FEEDBACK-04: báo cáo đợt có dòng chứa "Nhạt" cùng tên hai phần tử của X; Y không bị liệt kê là bị ẩn do Nhạt."""
+    """AC-FEEDBACK-04: báo cáo đợt có dòng chứa "Nhạt" cùng tên hai phần tử của X;
+    Y không bị liệt kê là bị ẩn do Nhạt."""
     outcome, _ = with_votes
     assert lines_about(outcome.report_body, picked["x"], "Nhạt"), outcome.report_body
     assert lines_about(outcome.report_body, picked["y"], "Nhạt") == []
 
 
 def test_ac_feedback_04_khong_co_phieu_thi_bao_cao_khong_nhac_nhat(picked):
-    """AC-FEEDBACK-04: không công thức nào đạt ngưỡng thì graph giữ đủ công thức và báo cáo không liệt kê công thức bị ẩn do Nhạt."""
+    """AC-FEEDBACK-04: không công thức nào đạt ngưỡng thì graph giữ đủ công thức
+    và báo cáo không liệt kê công thức bị ẩn do Nhạt."""
     outcome, client = run([fb(picked["x"], 9, 9), fb(picked["y"], 10, 5)])
     body = client.posted[0]
     assert outcome.ok is True
