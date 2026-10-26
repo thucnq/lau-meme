@@ -80,3 +80,9 @@
 - **Khi** A xuất dữ liệu (AC-PRIV-08); rồi A xóa tài khoản (AC-AUTH-06)
 - **Thì** bản xuất có cả 3 đề xuất (đủ các trường A đã gửi và trạng thái); sau khi xóa: đề xuất chờ duyệt bị xóa, 2 phần tử đã duyệt vẫn ở trong game nhưng không còn gắn với tài khoản và hiện "Meme của Thực khách ẩn danh" từ mẻ kế tiếp (mặc định - câu hỏi mở 56), A biến khỏi "Top cống hiến" ngay
 - Ưu tiên: Bắt buộc
+
+### AC-CONTRIB-14: Admin biết meme đã duyệt khi nào lên danh mục
+- **Cho** token admin đúng; đề xuất X chờ duyệt; đề xuất Y đã duyệt từ mẻ trước và phần tử của Y đã có trong danh mục (thêm 2026-10-26, góp ý "duyệt meme 'chia hành lý' xong không thấy hiển thị trong mục nội dung")
+- **Khi** admin duyệt X ở tab "Đề xuất meme"; xem danh sách lọc "Đã duyệt" trước và sau mẻ kế tiếp; mở tab "Nội dung" ngay sau khi duyệt
+- **Thì** duyệt xong hiện thông báo `role="status"` "Đã duyệt. Meme lên danh mục và game ở mẻ kế tiếp"; dòng X ghi "Chờ mẻ kế tiếp" cho tới khi phần tử của X có trong danh mục (bảng phần tử do mẻ đăng cập nhật - ADR 0013), sau đó không ghi nữa; dòng Y không ghi; nếu tới mẻ kế tiếp X chưa vào được graph vì cha bị ẩn/chặn (AC-CONTRIB-08) thì dòng X vẫn ghi "Chờ mẻ kế tiếp"; tab "Nội dung" không đổi (chỉ liệt kê phần tử đã có trong danh mục); `AdminContribution` thêm trường `in_catalog` (boolean, `false` với đề xuất chưa duyệt) - thay đổi contract dạng thêm trường, cần `/dk:approve contract` (mặc định - câu hỏi mở 84)
+- Ưu tiên: Nên có

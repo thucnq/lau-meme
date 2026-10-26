@@ -41,7 +41,7 @@
 | SHARE | Thẻ chia sẻ | Thẻ Daily kiểu Wordle (chữ + PNG) và thẻ Công thức gia truyền; sao chép / chia sẻ hệ thống; không lộ đáp án | Bắt buộc | `docs/acceptance/share.md` |
 | REPORT | Báo cáo + chặn nóng | Báo cáo phần tử và ảnh; 3 UUID khác nhau ⇒ tự ẩn; ảnh bị báo cáo về emoji; danh sách chặn nóng tải khi khởi động | Bắt buộc | `docs/acceptance/report.md` |
 | ADMIN | Trang quản trị tối giản | Token; xem báo cáo, ẩn/hiện/chặn phần tử và công thức, nhật ký đợt + thống kê crawl; gán tier; duyệt đề xuất meme; audit mọi thao tác | Bắt buộc | `docs/acceptance/admin.md` |
-| CONTRIB | Đóng góp meme (thêm 2026-10-23) | Đề xuất meme từ cặp có sẵn (chỉ tên bắt buộc); (cập nhật 2026-10-25) hai ô chọn phần tử trong Đĩa của người chơi, hoặc kéo món từ bàn/Đĩa vào ô; từ cấm + admin duyệt, không gửi LLM; hiện nickname người tạo; "Top cống hiến" | Bắt buộc | `docs/acceptance/contrib.md` |
+| CONTRIB | Đóng góp meme (thêm 2026-10-23) | Đề xuất meme từ cặp có sẵn (chỉ tên bắt buộc); (cập nhật 2026-10-25) hai ô chọn phần tử trong Đĩa của người chơi, hoặc kéo món từ bàn/Đĩa vào ô; từ cấm + admin duyệt, không gửi LLM; hiện nickname người tạo; "Top cống hiến"; (cập nhật 2026-10-26) admin thấy "Chờ mẻ kế tiếp" trên meme đã duyệt chưa lên danh mục | Bắt buộc | `docs/acceptance/contrib.md` |
 | TIER | Tier của meme (thêm 2026-10-23) | 5 bậc admin gán; màu nền + hình nhỏ giữa mép dưới; (cập nhật 2026-10-26) viền 1 px cùng màu cho thẻ và hình nhỏ, lúc thường không sáng; mặc định Xám; (cập nhật 2026-10-24) mặc định theo độ sâu, admin sửa được; Vàng/Đỏ phải có ảnh | Bắt buộc | `docs/acceptance/tier.md` |
 | FEEDBACK | Ngon / Nhạt | 1 phiếu/UUID/công thức; pipeline hạ/ẩn công thức nhiều "Nhạt" | Tùy chọn | `docs/acceptance/feedback.md` |
 | METRIC | Đo chỉ số thành công | Cloudflare Web Analytics + bảng sự kiện ẩn danh D1 (câu hỏi phạm vi 3: cần bảng sự kiện); tổng hợp D1/D7, Daily/ngày, chia sẻ, ghép trượt, "Nhạt", báo cáo | Bắt buộc | `docs/acceptance/metric.md` |
@@ -88,7 +88,7 @@
 
 ### 4.6 Đóng góp meme (CONTRIB + ADMIN + TIER) (thêm 2026-10-23)
 1. Thực khách đã đăng nhập chọn 2 phần tử có sẵn trong Đĩa của mình (gõ để lọc hoặc kéo thả vào ô), nhập tên (bắt buộc), biểu tượng, mô tả, link ảnh rồi gửi; Worker lọc từ cấm + bí danh, lưu "Chờ duyệt".
-2. Quản trị xem đề xuất, sửa thông tin, viết gợi ý ảnh, chọn tier, rồi duyệt hoặc từ chối (có lý do); mọi thao tác vào audit.
+2. Quản trị xem đề xuất, sửa thông tin, viết gợi ý ảnh, chọn tier, rồi duyệt hoặc từ chối (có lý do); mọi thao tác vào audit. (cập nhật 2026-10-26) Duyệt xong trang báo meme lên danh mục ở mẻ kế tiếp; dòng đã duyệt ghi "Chờ mẻ kế tiếp" tới khi phần tử có trong danh mục (AC-CONTRIB-14).
 3. Mẻ kế tiếp đưa phần tử đã duyệt và công thức của nó vào graph; mẻ `full` vẽ ảnh từ gợi ý của quản trị.
 4. Người chơi ghép ra phần tử thấy "Meme của <nickname>" khi rê chuột/chạm giữ; người tạo lên "Top cống hiến".
 
@@ -203,3 +203,4 @@ Stack là Cloudflare Worker + D1 + Python pipeline (không Docker/Postgres), nê
 | 2026-10-26 | 1.5 | Góp ý giao diện 2026-10-25: viền thẻ 1 px `--color-chip-ring` dùng chung, lúc thường không sáng (AC-TIER-02 cập nhật); món bóng theo con trỏ (AC-GAME-02 cập nhật); chọn hai phần tử bằng ô chọn trong Đĩa hoặc kéo thả (AC-CONTRIB-13); câu hỏi mở 79-82 đã chốt | nguyenquythuc (chưa duyệt) |
 | 2026-10-26 | 1.6 | Chỉ định Món đặc biệt (AC-DAILY-19, ADR 0019): admin chọn một món đang hoạt động và gợi ý cho đúng một mẻ kế tiếp (tab "Món đặc biệt"); mẻ không thành công thì chỉ định còn nguyên. AC-INV-10 miễn điều kiện độ sâu 4-8 cho món được chỉ định. Dọn dữ liệu hằng ngày giữ 12 tháng cho `admin_change`, `admin_image_change` và `daily_pin_change` (cùng `admin_audit`) | - |
 | 2026-10-26 | 1.7 | Góp ý "chưa thấy đĩa được đồng bộ giữa các phiên": AC-SYNC-03 cập nhật (món cục bộ ghép trước khi có SYNC, không lưu cặp, được client tự tìm cặp từ Đĩa cục bộ rồi gửi lên mỗi lần tải trang); AC-SYNC-11 mới (tab hiện lại sau ≥ 30 s từ lần kéo trước thì kéo và gộp Đĩa của tài khoản, không tải lại trang); không đổi contract | - |
+| 2026-10-26 | 1.8 | Góp ý "duyệt meme 'chia hành lý' xong không thấy hiển thị trong mục nội dung": AC-CONTRIB-14 mới (thông báo sau khi duyệt, nhãn "Chờ mẻ kế tiếp" tới khi phần tử có trong danh mục; duyệt vẫn chỉ ghi D1 theo ADR 0013); contract thêm trường `in_catalog` vào `AdminContribution`; câu hỏi mở 84 | - |
