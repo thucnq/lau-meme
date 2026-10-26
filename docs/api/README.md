@@ -68,11 +68,11 @@ Mọi lỗi là RFC 9457 `application/problem+json` (`type`, `title`, `status`, 
 ### Pipeline
 | Method | Path | Mô tả | Xác thực | AC chính |
 |---|---|---|---|---|
-| GET | `/pipeline/state` | Trạng thái cần cho mẻ mới (thêm `admin_blocked`) | PipelineToken | AC-PIPE-13, AC-DAILY-01 |
+| GET | `/pipeline/state` | Trạng thái cần cho mẻ mới (thêm `admin_blocked`, `daily_pin`) | PipelineToken | AC-PIPE-13, AC-DAILY-01 |
 | GET | `/pipeline/store` | Kho pipeline giai đoạn 2 của version hiện hành hoặc `?version=` (ADR 0009) | PipelineToken | AC-PIPE-07, AC-PIPE-10 |
 | PUT | `/pipeline/images/{key}` | Tải ảnh WebP đã kiểm duyệt lên R2; Worker kiểm khóa = sha256 nội dung (ADR 0012) | PipelineToken | AC-ART-04 |
 | PUT | `/pipeline/banned-terms/{source}` | Thay toàn bộ từ cấm của một nguồn (`wordlist`, `mod`) | PipelineToken | AC-DISC-03, AC-MOD-06 |
-| POST | `/pipeline/batches` | Đăng một version mới (nguyên tử, mẻ `full` kèm `store`) hoặc ghi đợt lỗi | PipelineToken | AC-PIPE-01, AC-PIPE-11, AC-GRAPH-05 |
+| POST | `/pipeline/batches` | Đăng một version mới (nguyên tử, mẻ `full` kèm `store`; khi có chỉ định thì kèm `daily_pin_id` và `stats.daily_pin`, AC-DAILY-19) hoặc ghi đợt lỗi | PipelineToken | AC-PIPE-01, AC-PIPE-11, AC-GRAPH-05 |
 | PATCH | `/pipeline/batches/{id}` | Gắn link GitHub Issue báo cáo đợt | PipelineToken | AC-PIPE-14 |
 | POST | `/pipeline/rollback` | Về version trước (hoặc version chỉ định) | PipelineToken | AC-GRAPH-06/07 |
 | GET | `/metrics/summary` | Số liệu tổng hợp một ngày GMT+7 | PipelineToken hoặc AdminToken | AC-METRIC-05/06 |
@@ -92,8 +92,13 @@ Mọi lỗi là RFC 9457 `application/problem+json` (`type`, `title`, `status`, 
 | POST | `/admin/contributions/{id}/reject` | Từ chối đề xuất (cần lý do) | AdminToken | AC-CONTRIB-08, AC-ADMIN-09 |
 | GET | `/admin/batches` | Nhật ký các đợt, kèm `summary` (tổng crawl và thêm của các đợt `full` thành công, hàng chờ và thiếu ảnh của đợt gần nhất) | AdminToken | AC-ADMIN-08, AC-ADMIN-11 |
 | GET | `/admin/audit` | Nhật ký audit | AdminToken | AC-ADMIN-09 |
+| GET | `/admin/daily-pin` | Chỉ định Món đặc biệt đang chờ mẻ kế tiếp, hoặc `null` | AdminToken | AC-DAILY-19 |
+| PUT | `/admin/daily-pin` | Chỉ định Món đặc biệt cho mẻ kế tiếp (`element_id`, `hint`); thay chỉ định cũ. Phần tử không có → 404; bị chặn hoặc gợi ý sai → 400 | AdminToken | AC-DAILY-19, AC-ADMIN-09 |
+| DELETE | `/admin/daily-pin` | Bỏ chỉ định (204; không có chỉ định thì vẫn 204) | AdminToken | AC-DAILY-19, AC-ADMIN-09 |
 
 > `/admin/elements/{id}/image` (AC-ART-13) đã định tuyến và triển khai staging 2026-10-25 (PR #107, git sha `ccb0b5d`); host quản trị phục vụ thêm `/lau-meme/img/*` (chỉ đọc) để trang quản trị hiện ảnh dưới CSP `default-src 'self'` (ADR 0016). `/me/plate` và `/me/plate/merge` (SYNC) đã định tuyến trong `worker/src/index.ts`. Contract 0.6.0 thêm `use_image_url` khi duyệt đề xuất và `PipelineState.image_links` (AC-ART-14, ADR 0018) - đã triển khai 2026-10-25 (migration 0009).
+
+Contract 0.7.0 thêm `/admin/daily-pin` (GET, PUT, DELETE), `PipelineState.daily_pin`, `PublishBatchRequest.daily_pin_id` và `BatchStats.daily_pin` (AC-DAILY-19, ADR 0019).
 
 ## Thử nhanh
 ```bash
