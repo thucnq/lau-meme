@@ -309,6 +309,28 @@ export function mergePlate(p: Progress, server: PlateItem[], resolved: Item[]): 
   return changed ? { ...p, items } : p
 }
 
+/**
+ * Pairs for items made before pairs were kept (AC-SYNC-03): any two items of this plate, neither blocked, whose recipe
+ * makes one. Starters (depth 0) need none. Items no pair of the plate makes keep no pair and are tried again next load.
+ */
+export async function findPairs(graph: Graph, p: Progress, bl: Blocklist): Promise<Progress> {
+  const missing = new Set(p.items.filter((i) => !i.pair && i.depth > 0).map((i) => i.id))
+  if (missing.size === 0) return p
+  const inputs = visibleItems(p, bl)
+  const found = new Map<string, [string, string]>()
+  for (let x = 0; x < inputs.length && found.size < missing.size; x++) {
+    const tries = inputs.slice(x).map((y) => [inputs[x]!.name, y.name] as [string, string])
+    const keys = await Promise.all(tries.map(([a, b]) => lookupKey(a, b)))
+    const open = tries.filter((_, n) => typeof graph.entries[keys[n]!] === 'string' &&!bl.recipes.includes(keys[n]!))
+    const results = await Promise.all(open.map(([a, b]) => decryptEntry(graph, a, b)))
+    results.forEach((r, n) => {
+      if (r && missing.has(r.id) && !found.has(r.id) && !bl.elements.includes(r.id)) found.set(r.id, open[n]!)
+    })
+  }
+  if (found.size === 0) return p
+  return { ...p, items: p.items.map((i) => (found.has(i.id) && !i.pair ? { ...i, pair: found.get(i.id)! } : i)) }
+}
+
 /** Items the account plate refused (404/422/skipped) lose their pair, so they stay on this browser only (AC-SYNC-04). */
 export function dropPairs(p: Progress, ids: Set<string>): Progress {
   return { ...p, items: p.items.map((i) => (ids.has(i.id) ? withoutPair(i) : i)) }

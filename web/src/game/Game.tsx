@@ -356,9 +356,19 @@ export function Game({ onDiscover, onItems, heirlooms = {}, onReport, blocklistR
   // Đĩa of the signed-in account (AC-SYNC-01..06): read and merged on load and at sign-in, then fed every new discovery.
   const graph = loaded?.graph
   const policyVersion = loaded?.manifest.policy_version
+  const blocklistRef = useRef(EMPTY_BLOCKLIST)
+  useEffect(() => {
+    blocklistRef.current = loaded?.blocklist ?? EMPTY_BLOCKLIST
+  }, [loaded])
   useEffect(() => {
     if (!session || !graph || policyVersion === undefined) return
-    const sync = startPlateSync({ graph, opts: { storage: storage(), policyVersion }, progress: () => progressRef.current, commit })
+    const sync = startPlateSync({
+      graph,
+      blocklist: () => blocklistRef.current,
+      opts: { storage: storage(), policyVersion },
+      progress: () => progressRef.current,
+      commit,
+    })
     syncRef.current = sync
     sync.kick()
     return () => {

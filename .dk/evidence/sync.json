@@ -58,8 +58,8 @@
   }
  },
  "green": {
-  "ts": "2026-10-25T05:27:05+00:00",
-  "commit": "2d74910",
+  "ts": "2026-10-26T07:57:48+00:00",
+  "commit": "34adeba",
   "results": {
    "AC-SYNC-01": {
     "status": "PASS",
@@ -101,13 +101,9 @@
     "status": "PASS",
     "test": "sync.ui.test.tsx#sync "
    },
-   "AC-SYNC-TENANT": {
+   "AC-SYNC-11": {
     "status": "PASS",
-    "test": "sync.test.ts#sync > AC-SYNC-TENANT: tài khoản B không đọc, không sửa Đĩa của tài khoản A; cookie giả -> 401; B ghi cùng món chỉ tạo dòng của B"
-   },
-   "AC-SYNC-VALIDATION": {
-    "status": "PASS",
-    "test": "sync.test.ts#sync > AC-SYNC-VALIDATION: script, SQL, tên quá dài, trường lạ giả danh tài khoản khác, merge rỗng hoặc sai kiểu đều bị từ chối 4xx "
+    "test": "sync.ui.test.tsx#sync "
    }
   }
  }
