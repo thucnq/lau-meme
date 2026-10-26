@@ -28,7 +28,7 @@
 ## 3. Danh sách tính năng
 | Mã | Tính năng | Mô tả ngắn | Ưu tiên (Bắt buộc/Tùy chọn) | File tiêu chí |
 |---|---|---|---|---|
-| GAME | Chơi ghép (Nhúng lẩu) | Nồi lẩu 2 chỗ thả + thả chồng; Đĩa nhúng (tìm không dấu, sắp xếp); Nồi trào cố định theo cặp + gợi ý; nhãn "MỚI"; lưu cục bộ; chế độ tối; hướng dẫn lần đầu; ghép < 50 ms; (cập nhật 2026-10-24) bàn cao hơn, Đĩa cao bằng bàn, vùng cấm đặt món, bấm là vào nồi, hiệu ứng Vàng/Đỏ, giao diện mới | Bắt buộc | `docs/acceptance/game.md` |
+| GAME | Chơi ghép (Nhúng lẩu) | Nồi lẩu 2 chỗ thả + thả chồng; Đĩa nhúng (tìm không dấu, sắp xếp); Nồi trào cố định theo cặp + gợi ý; nhãn "MỚI"; lưu cục bộ; chế độ tối; hướng dẫn lần đầu; ghép < 50 ms; (cập nhật 2026-10-24) bàn cao hơn, Đĩa cao bằng bàn, vùng cấm đặt món, bấm là vào nồi, hiệu ứng Vàng/Đỏ, giao diện mới; (cập nhật 2026-10-25) món bóng theo con trỏ, mang nền/viền/hình nhỏ tier | Bắt buộc | `docs/acceptance/game.md` |
 | GRAPH | Graph mã hóa + manifest + rollback | Khóa = băm cặp tên chuẩn hóa, kết quả mã hóa bằng khóa dẫn xuất từ 2 tên; manifest có version + giờ mẻ thật; giữ 14 bản; rollback bằng workflow chạy tay | Bắt buộc | `docs/acceptance/graph.md` |
 | SEED | Nạp lõi nội dung classic | Nạp `noi-dung-loi.json` (174 phần tử, 518 công thức, 40 câu Nồi trào, 4 khởi đầu); kiểm tới được, không trùng | Bắt buộc | `docs/acceptance/seed.md` |
 | PIPE | Pipeline Mẻ nhúng mới | Chế độ lõi (giai đoạn 1); crawl theo adapter, khử trùng, liên kết ngược + BFS, hàng chờ, công thức bổ sung, giám khảo, deploy; idempotent; gom lô Gemini; báo cáo đợt qua GitHub Issue (giai đoạn 2); nguồn Tuổi Trẻ và Threads, mức trending `trend_peak`, staging mỗi 2 tiếng (cập nhật 2026-10-23) | Bắt buộc | `docs/acceptance/pipe.md` |
@@ -41,8 +41,8 @@
 | SHARE | Thẻ chia sẻ | Thẻ Daily kiểu Wordle (chữ + PNG) và thẻ Công thức gia truyền; sao chép / chia sẻ hệ thống; không lộ đáp án | Bắt buộc | `docs/acceptance/share.md` |
 | REPORT | Báo cáo + chặn nóng | Báo cáo phần tử và ảnh; 3 UUID khác nhau ⇒ tự ẩn; ảnh bị báo cáo về emoji; danh sách chặn nóng tải khi khởi động | Bắt buộc | `docs/acceptance/report.md` |
 | ADMIN | Trang quản trị tối giản | Token; xem báo cáo, ẩn/hiện/chặn phần tử và công thức, nhật ký đợt + thống kê crawl; gán tier; duyệt đề xuất meme; audit mọi thao tác | Bắt buộc | `docs/acceptance/admin.md` |
-| CONTRIB | Đóng góp meme (thêm 2026-10-23) | Đề xuất meme từ cặp có sẵn (chỉ tên bắt buộc); từ cấm + admin duyệt, không gửi LLM; hiện nickname người tạo; "Top cống hiến" | Bắt buộc | `docs/acceptance/contrib.md` |
-| TIER | Tier của meme (thêm 2026-10-23) | 5 bậc admin gán; màu nền + hình nhỏ giữa mép dưới; mặc định Xám; (cập nhật 2026-10-24) mặc định theo độ sâu, admin sửa được; Vàng/Đỏ phải có ảnh | Bắt buộc | `docs/acceptance/tier.md` |
+| CONTRIB | Đóng góp meme (thêm 2026-10-23) | Đề xuất meme từ cặp có sẵn (chỉ tên bắt buộc); (cập nhật 2026-10-25) hai ô chọn phần tử trong Đĩa của người chơi, hoặc kéo món từ bàn/Đĩa vào ô; từ cấm + admin duyệt, không gửi LLM; hiện nickname người tạo; "Top cống hiến" | Bắt buộc | `docs/acceptance/contrib.md` |
+| TIER | Tier của meme (thêm 2026-10-23) | 5 bậc admin gán; màu nền + hình nhỏ giữa mép dưới; (cập nhật 2026-10-26) viền 1 px cùng màu cho thẻ và hình nhỏ, lúc thường không sáng; mặc định Xám; (cập nhật 2026-10-24) mặc định theo độ sâu, admin sửa được; Vàng/Đỏ phải có ảnh | Bắt buộc | `docs/acceptance/tier.md` |
 | FEEDBACK | Ngon / Nhạt | 1 phiếu/UUID/công thức; pipeline hạ/ẩn công thức nhiều "Nhạt" | Tùy chọn | `docs/acceptance/feedback.md` |
 | METRIC | Đo chỉ số thành công | Cloudflare Web Analytics + bảng sự kiện ẩn danh D1 (câu hỏi phạm vi 3: cần bảng sự kiện); tổng hợp D1/D7, Daily/ngày, chia sẻ, ghép trượt, "Nhạt", báo cáo | Bắt buộc | `docs/acceptance/metric.md` |
 | PRIV | Chính sách quyền riêng tư | Trang chính sách; đồng ý trước khi gửi dữ liệu; IP chỉ lưu băm, xóa sau thời hạn ngắn; xem/xuất/xóa dữ liệu qua UUID | Bắt buộc | `docs/acceptance/priv.md` |
@@ -87,7 +87,7 @@
 - Mục tiêu: khôi phục trong 5 phút.
 
 ### 4.6 Đóng góp meme (CONTRIB + ADMIN + TIER) (thêm 2026-10-23)
-1. Thực khách đã đăng nhập chọn 2 phần tử có sẵn, nhập tên (bắt buộc), biểu tượng, mô tả, link ảnh rồi gửi; Worker lọc từ cấm + bí danh, lưu "Chờ duyệt".
+1. Thực khách đã đăng nhập chọn 2 phần tử có sẵn trong Đĩa của mình (gõ để lọc hoặc kéo thả vào ô), nhập tên (bắt buộc), biểu tượng, mô tả, link ảnh rồi gửi; Worker lọc từ cấm + bí danh, lưu "Chờ duyệt".
 2. Quản trị xem đề xuất, sửa thông tin, viết gợi ý ảnh, chọn tier, rồi duyệt hoặc từ chối (có lý do); mọi thao tác vào audit.
 3. Mẻ kế tiếp đưa phần tử đã duyệt và công thức của nó vào graph; mẻ `full` vẽ ảnh từ gợi ý của quản trị.
 4. Người chơi ghép ra phần tử thấy "Meme của <nickname>" khi rê chuột/chạm giữ; người tạo lên "Top cống hiến".
@@ -200,3 +200,4 @@ Stack là Cloudflare Worker + D1 + Python pipeline (không Docker/Postgres), nê
 | 2026-10-24 | 1.2 | Góp ý UI/gameplay: tính năng mới SYNC (Đĩa nhúng theo tài khoản, AC-SYNC-01..10; AC-AUTH-04/06 cập nhật); TIER mặc định theo độ sâu, admin sửa được, Vàng/Đỏ phải có ảnh, hình nhỏ đè lên viền dưới (AC-TIER-01/02 cập nhật, AC-TIER-04/05, AC-ADMIN-12 cập nhật); GAME: bàn cao hơn (AC-GAME-18 cập nhật), vùng cấm đặt món, Đĩa cao bằng bàn, bấm là vào nồi, hiệu ứng và âm thanh Vàng/Đỏ, giao diện mới (AC-GAME-22..27); ART ưu tiên vẽ món Vàng/Đỏ, admin tải tranh vẽ tay (AC-ART-12/13); câu hỏi mở 67-74 | nguyenquythuc (chưa duyệt) |
 | 2026-10-24 | 1.3 | Câu hỏi mở 67-70, 72-75 chốt theo mặc định (ngưỡng tier, Vàng/Đỏ chưa có ảnh, giới hạn ghi Đĩa, tranh vẽ tay, chiều cao bàn, âm thanh, hiệu ứng lặp lại, chỉ gộp Đĩa khi đăng nhập Google); câu 71: bỏ hẳn nút "Chơi lại từ đầu" (AC-GAME-11, AC-GAME-19, AC-GAME-22, AC-SYNC-07 cập nhật) | nguyenquythuc (chưa duyệt) |
 | 2026-10-25 | 1.4 | ART: AC-ART-13 (admin tải PNG/WebP ≤ 1 MB cho phần tử, chuẩn hóa WebP 256×256 trên trình duyệt, mẻ sau không vẽ đè, audit `set_image`); AC-ART-14 (khi duyệt đề xuất, admin chọn "Dùng link làm ảnh"; mẻ `full` tải link có chặn SSRF, không vẽ bằng Workers AI; báo cáo "Link ảnh lỗi: N"); câu hỏi mở 46 đổi theo chủ dự án; ADR 0016, 0018; contract 0.6.0; triển khai staging ngày 2026-10-25 | nguyenquythuc (chưa duyệt) |
+| 2026-10-26 | 1.5 | Góp ý giao diện 2026-10-25: viền thẻ 1 px `--color-chip-ring` dùng chung, lúc thường không sáng (AC-TIER-02 cập nhật); món bóng theo con trỏ (AC-GAME-02 cập nhật); chọn hai phần tử bằng ô chọn trong Đĩa hoặc kéo thả (AC-CONTRIB-13); câu hỏi mở 79-82 đã chốt | nguyenquythuc (chưa duyệt) |
