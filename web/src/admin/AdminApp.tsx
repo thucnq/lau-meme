@@ -438,6 +438,7 @@ function ContributionsTab(ctx: Ctx) {
             value={status}
             onChange={(e) => {
               setStatus(e.target.value as ContributionStatus)
+              setNotice(null)
               setPage(1)
               setOpen(null)
             }}

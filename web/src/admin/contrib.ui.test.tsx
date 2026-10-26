@@ -353,6 +353,21 @@ describe('admin ui: đề xuất meme', () => {
     expect(notice()).toBeTruthy()
   })
 
+  it('AC-CONTRIB-14: đổi bộ lọc trạng thái sau khi duyệt thì thông báo duyệt biến mất', async () => {
+    await openTab()
+    const NOTICE = 'Đã duyệt. Meme lên danh mục và game ở mẻ kế tiếp'
+    const notice = () => screen.queryAllByRole('status').find((el) => (el.textContent ?? '').trim() === NOTICE)
+
+    fireEvent.click(btn(rowOf('Cà Phê Chạy Deadline'), 'Duyệt'))
+    fireEvent.change(screen.getByLabelText('Gợi ý ảnh'), { target: { value: HINT } })
+    fireEvent.click(screen.getByRole('button', { name: 'Xác nhận duyệt' }))
+    await waitFor(() => expect(approves()).toHaveLength(1))
+    await waitFor(() => expect(notice()).toBeTruthy())
+
+    fireEvent.change(screen.getByLabelText('Trạng thái'), { target: { value: 'approved' } })
+    await waitFor(() => expect(notice()).toBeUndefined())
+  })
+
   it('AC-CONTRIB-14: duyệt bị máy chủ từ chối thì không hiện thông báo thành công', async () => {
     await openTab()
     failNext = { method: 'POST', re: /\/approve$/, status: 409, title: 'Xung đột', detail: 'Cặp đã có công thức' }
