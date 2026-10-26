@@ -929,9 +929,10 @@ describe('sync (web)', () => {
     fetchMock.mockClear()
   }
 
-  it('AC-SYNC-11: tab ẩn rồi hiện lại sau >= 30 s - GET me/plate, C mới của máy 1 hiện trong Đĩa với nhãn MỚI không cần tải lại; bàn không đổi; món cục bộ còn thiếu trên server được gửi bù', async () => {
+  it('AC-SYNC-11: tab ẩn rồi hiện lại sau >= 30 s - GET me/plate, C mới của máy 1 hiện trong Đĩa với nhãn MỚI theo AC-GAME-09 không cần tải lại; bàn không đổi; món cục bộ còn thiếu trên server được gửi bù', async () => {
     await setup({
-      specs: [SPEC_C, SPEC_D, SPEC_J],
+      // C thuộc lô hiện hành (added_version = version manifest = 7) nên có nhãn MỚI; J thuộc lô 6 nên không
+      specs: [{ ...SPEC_C, added_version: 7 }, SPEC_D, SPEC_J],
       progress: (p) => {
         p.items.push(withPair(item(NAME_J, '🫠', 1, 6, '2026-10-05T00:00:00.000Z'), ['Toang', 'Deadline']))
         p.table = [{ uid: 't1', id: eid('Cay'), name: 'Cay', emoji: '🌶️', x: 40, y: 50 }]
