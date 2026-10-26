@@ -437,7 +437,7 @@ const DAILY_HISTORY_LIMIT = 1000
  */
 export async function getPipelineState(_req: Request, env: Env): Promise<Response> {
   const db = env.DB
-  const [current, blocks, aliases, history, admin, catalog, tiers, contributions, drawings, links, pin] = await db.batch([
+  const [current, blocks, aliases, history, admin, catalog, tiers, contributions, drawings, links, pin, votes] = await db.batch([
     db.prepare('SELECT value FROM app_meta WHERE key = ?').bind('current_version'),
     db.prepare('SELECT kind, target_id FROM block ORDER BY kind, target_id'),
     db.prepare("SELECT term_fold FROM banned_term WHERE source IN ('mod', 'admin') ORDER BY term_fold"),
@@ -464,6 +464,10 @@ export async function getPipelineState(_req: Request, env: Env): Promise<Respons
     ),
     // the admin's Món đặc biệt for the next batch (AC-DAILY-19, ADR 0019); its id comes back as daily_pin_id
     db.prepare('SELECT id, element_id, hint FROM daily_pin'),
+    // FEEDBACK (AC-FEEDBACK-04): counts per recipe only, never a UUID
+    db.prepare(
+      `SELECT recipe_id, COUNT(*) AS votes, SUM(value = 'nhat') AS nhat FROM vote GROUP BY recipe_id ORDER BY recipe_id`,
+    ),
   ])
   const value = (current?.results[0] as { value: string } | undefined)?.value
   const blocklist: Record<'elements' | 'recipes' | 'images', string[]> = { elements: [], recipes: [], images: [] }
@@ -478,7 +482,7 @@ export async function getPipelineState(_req: Request, env: Env): Promise<Respons
     daily_history: ((history?.results ?? []) as { version: number; daily_element_id: string; batch_at: number }[]).reverse().map(
       (r) => ({ version: r.version, element_id: r.daily_element_id, batch_at: new Date(r.batch_at).toISOString() }),
     ),
-    feedback: [], // FEEDBACK (optional feature) is not built yet
+    feedback: (votes?.results ?? []) as { recipe_id: string; votes: number; nhat: number }[],
     catalog: (catalog?.results ?? []) as { id: string; first_version: number; trend_peak: number }[],
     tiers: (tiers?.results ?? []) as { element_id: string; tier: number }[],
     contributions: (

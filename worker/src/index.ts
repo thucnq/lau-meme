@@ -17,6 +17,7 @@ import {
 import { createDiscovery, listDiscoveries, putBannedTerms } from './features/disc/disc'
 import { getSession, signInWithGoogle, signOut } from './features/auth/auth'
 import { getDailyLeaderboard, getDailyPeriodLeaderboard, getMyStreak, getStreakLeaderboard, submitDailyResult } from './features/daily/daily'
+import { putVote } from './features/feedback/feedback'
 import { getPipelineState, getPipelineStore, patchBatchRun, publishBatch, rollbackBatch } from './features/pipeline/batches'
 import { putPipelineImage } from './features/pipeline/images'
 import { createEvents, getMetricsSummary } from './features/metric/metric'
@@ -59,6 +60,7 @@ const routes: Route[] = [
   { pattern: /^\/api\/creators\/([^/]+)$/, methods: { GET: getCreators } },
   { pattern: /^\/api\/blocklist$/, methods: { GET: getBlocklist } },
   { pattern: /^\/api\/reports$/, methods: { POST: createReport } },
+  { pattern: /^\/api\/votes$/, methods: { PUT: putVote } },
   { pattern: /^\/api\/discoveries$/, methods: { GET: listDiscoveries, POST: createDiscovery } },
   { pattern: /^\/api\/auth\/google$/, methods: { POST: signInWithGoogle } },
   { pattern: /^\/api\/auth\/session$/, methods: { GET: getSession, DELETE: signOut } },
