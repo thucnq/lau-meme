@@ -57,6 +57,7 @@ type AdminRow = ContributionRow & {
   element_id: string | null
   nickname: string | null
   decided_at: number | null
+  in_catalog: number
 }
 
 const starter = (id: string, name: string | null, emoji: string | null) => ({ id, name: name ?? '', emoji: emoji ?? '' })
@@ -77,7 +78,10 @@ export function contribution(r: ContributionRow) {
   }
 }
 
-/** The admin's view: adds the hint, tier, element id, the sender's nickname (never an account id) and decision time. */
+/**
+ * The admin's view: adds the hint, tier, element id, the sender's nickname (never an account id) and decision time.
+ * `in_catalog`: the element is already in the catalog, which only a published batch fills (AC-CONTRIB-14, ADR 0013).
+ */
 function adminContribution(r: AdminRow) {
   return {
     ...contribution(r),
@@ -86,6 +90,7 @@ function adminContribution(r: AdminRow) {
     tier: r.tier ?? 1,
     element_id: r.element_id,
     nickname: r.nickname ?? ANONYMOUS,
+    in_catalog: r.in_catalog === 1,
     decided_at: r.decided_at === null ? null : iso(r.decided_at),
   }
 }
@@ -367,7 +372,8 @@ export async function getCreators(_req: Request, env: Env, _ctx: ExecutionContex
 
 async function loadAdminRow(db: D1Database, id: string): Promise<AdminRow> {
   const row = await db.prepare(`SELECT c.id, c.a_id, c.b_id, ea.name AS a_name, ea.emoji AS a_emoji, eb.name AS b_name, eb.emoji AS b_emoji,
-         c.name, c.emoji, c.description, c.image_url, c.status, c.reject_reason, c.created_at, c.image_hint, c.use_image_url, c.element_id, c.decided_at, acc.nickname, t.tier
+         c.name, c.emoji, c.description, c.image_url, c.status, c.reject_reason, c.created_at, c.image_hint, c.use_image_url, c.element_id, c.decided_at, acc.nickname, t.tier,
+         EXISTS (SELECT 1 FROM element ec WHERE ec.id = c.element_id) AS in_catalog
        FROM contribution c LEFT JOIN element ea ON ea.id = c.a_id LEFT JOIN element eb ON eb.id = c.b_id
        LEFT JOIN account acc ON acc.id = c.account_id LEFT JOIN element_tier t ON t.element_id = c.element_id WHERE c.id = ?`).bind(id).first<AdminRow>()
   if (!row) throw notFound()
@@ -412,7 +418,8 @@ export async function adminListContributions(req: Request, env: Env): Promise<Re
   const [items, total] = await db.batch([
     db
       .prepare(`SELECT c.id, c.a_id, c.b_id, ea.name AS a_name, ea.emoji AS a_emoji, eb.name AS b_name, eb.emoji AS b_emoji,
-         c.name, c.emoji, c.description, c.image_url, c.status, c.reject_reason, c.created_at, c.image_hint, c.use_image_url, c.element_id, c.decided_at, acc.nickname, t.tier
+         c.name, c.emoji, c.description, c.image_url, c.status, c.reject_reason, c.created_at, c.image_hint, c.use_image_url, c.element_id, c.decided_at, acc.nickname, t.tier,
+         EXISTS (SELECT 1 FROM element ec WHERE ec.id = c.element_id) AS in_catalog
        FROM contribution c LEFT JOIN element ea ON ea.id = c.a_id LEFT JOIN element eb ON eb.id = c.b_id
        LEFT JOIN account acc ON acc.id = c.account_id LEFT JOIN element_tier t ON t.element_id = c.element_id WHERE ?1 IS NULL OR c.status = ?1 ORDER BY c.created_at, c.id LIMIT ?2 OFFSET ?3`)
       .bind(status, p.size, p.offset),
@@ -435,7 +442,8 @@ export async function adminEditContribution(req: Request, env: Env, _ctx: Execut
   const db = env.DB
   const [found, elementFolds, approvedFolds] = await db.batch([
     db.prepare(`SELECT c.id, c.a_id, c.b_id, ea.name AS a_name, ea.emoji AS a_emoji, eb.name AS b_name, eb.emoji AS b_emoji,
-         c.name, c.emoji, c.description, c.image_url, c.status, c.reject_reason, c.created_at, c.image_hint, c.use_image_url, c.element_id, c.decided_at, acc.nickname, t.tier
+         c.name, c.emoji, c.description, c.image_url, c.status, c.reject_reason, c.created_at, c.image_hint, c.use_image_url, c.element_id, c.decided_at, acc.nickname, t.tier,
+         EXISTS (SELECT 1 FROM element ec WHERE ec.id = c.element_id) AS in_catalog
        FROM contribution c LEFT JOIN element ea ON ea.id = c.a_id LEFT JOIN element eb ON eb.id = c.b_id
        LEFT JOIN account acc ON acc.id = c.account_id LEFT JOIN element_tier t ON t.element_id = c.element_id WHERE c.id = ?`).bind(id),
     ...nameFoldsStatements(db),

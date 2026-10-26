@@ -45,6 +45,7 @@ type Row = {
   status: 'pending' | 'approved' | 'rejected'
   reject_reason: string | null
   image_hint: string | null
+  in_catalog: boolean
   tier: number
   element_id: string | null
   nickname: string
@@ -63,6 +64,7 @@ const mk = (id: string, name: string, over: Partial<Row> = {}): Row => ({
   status: 'pending',
   reject_reason: null,
   image_hint: null,
+  in_catalog: false,
   tier: 1,
   element_id: null,
   nickname: 'Bún Chả',
@@ -89,6 +91,7 @@ function authOf(init?: RequestInit): string | null {
 
 let pending: Row[]
 let approved: Row[]
+let rejected: Row[]
 let total: number | null // ép total (để thử phân trang)
 let failNext: { method: string; re: RegExp; status: number; title: string; detail: string } | null
 let fetchMock: ReturnType<typeof vi.fn>
@@ -118,6 +121,7 @@ beforeEach(() => {
   sessionStorage.setItem(KEY, GOOD)
   pending = [mk(ID1, 'Cà Phê Chạy Deadline'), mk(ID2, 'Meme Thứ Hai', { emoji: null, description: null, image_url: null, nickname: 'Thực khách ẩn danh' })]
   approved = [mk(ID3, 'Meme Đã Duyệt', { status: 'approved', tier: 3, element_id: 'E'.repeat(43), image_hint: HINT, decided_at: '2026-10-20T09:00:00.000Z' })]
+  rejected = []
   total = null
   failNext = null
   fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
@@ -133,7 +137,7 @@ beforeEach(() => {
     }
     if (method === 'GET' && path === '/api/admin/contributions') {
       const status = url.searchParams.get('status') ?? 'pending'
-      const items = status === 'approved' ? approved : status === 'pending' ? pending : []
+      const items = status === 'approved' ? approved : status === 'pending' ? pending : status === 'rejected' ? rejected : []
       const size = Number(url.searchParams.get('size') ?? 50)
       return reply({ page: Number(url.searchParams.get('page') ?? 1), size, total: total ?? items.length, items })
     }
@@ -329,6 +333,58 @@ describe('admin ui: đề xuất meme', () => {
     expect(post!.auth).toBe(`Bearer ${GOOD}`)
     await waitFor(() => expect(listGets().length).toBeGreaterThan(getsBefore))
     await waitFor(() => expect(() => rowOf('Meme Thứ Hai')).toThrow())
+  })
+
+  it('AC-CONTRIB-14: duyệt xong hiện thông báo role="status" "Đã duyệt. Meme lên danh mục và game ở mẻ kế tiếp", vẫn còn sau khi danh sách tải lại', async () => {
+    await openTab()
+    const NOTICE = 'Đã duyệt. Meme lên danh mục và game ở mẻ kế tiếp'
+    const notice = () => screen.queryAllByRole('status').find((el) => (el.textContent ?? '').trim() === NOTICE)
+    expect(notice()).toBeUndefined() // chưa duyệt thì chưa có thông báo
+
+    const getsBefore = listGets().length
+    fireEvent.click(btn(rowOf('Cà Phê Chạy Deadline'), 'Duyệt'))
+    fireEvent.change(screen.getByLabelText('Gợi ý ảnh'), { target: { value: HINT } })
+    fireEvent.click(screen.getByRole('button', { name: 'Xác nhận duyệt' }))
+    await waitFor(() => expect(approves()).toHaveLength(1))
+    await waitFor(() => expect(notice()).toBeTruthy())
+    // danh sách tải lại, dòng đã duyệt rời khỏi "Chờ duyệt", thông báo vẫn còn
+    await waitFor(() => expect(listGets().length).toBeGreaterThan(getsBefore))
+    await waitFor(() => expect(() => rowOf('Cà Phê Chạy Deadline')).toThrow())
+    expect(notice()).toBeTruthy()
+  })
+
+  it('AC-CONTRIB-14: duyệt bị máy chủ từ chối thì không hiện thông báo thành công', async () => {
+    await openTab()
+    failNext = { method: 'POST', re: /\/approve$/, status: 409, title: 'Xung đột', detail: 'Cặp đã có công thức' }
+    fireEvent.click(btn(rowOf('Cà Phê Chạy Deadline'), 'Duyệt'))
+    fireEvent.change(screen.getByLabelText('Gợi ý ảnh'), { target: { value: HINT } })
+    fireEvent.click(screen.getByRole('button', { name: 'Xác nhận duyệt' }))
+    await screen.findByRole('alert')
+    expect(screen.queryAllByRole('status').some((el) => (el.textContent ?? '').includes('Meme lên danh mục'))).toBe(false)
+  })
+
+  it('AC-CONTRIB-14: lọc "Đã duyệt": dòng in_catalog=false ghi "Chờ mẻ kế tiếp", dòng in_catalog=true thì không', async () => {
+    const WAIT = 'Chờ mẻ kế tiếp'
+    approved = [
+      mk(ID3, 'Meme Chưa Lên Danh Mục', { status: 'approved', element_id: 'E'.repeat(43), image_hint: HINT, decided_at: '2026-10-26T09:00:00.000Z', in_catalog: false }),
+      mk(ID2, 'Meme Đã Có Trong Danh Mục', { status: 'approved', element_id: 'F'.repeat(43), image_hint: HINT, decided_at: '2026-10-20T09:00:00.000Z', in_catalog: true }),
+    ]
+    await openTab()
+    // đề xuất đang chờ duyệt không ghi nhãn này
+    expect(rowOf('Cà Phê Chạy Deadline').textContent).not.toContain(WAIT)
+
+    fireEvent.change(screen.getByLabelText('Trạng thái'), { target: { value: 'approved' } })
+    await waitFor(() => expect(rowOf('Meme Chưa Lên Danh Mục')).toBeTruthy())
+    expect(within(rowOf('Meme Chưa Lên Danh Mục')).getByText(WAIT)).toBeTruthy()
+    expect(rowOf('Meme Đã Có Trong Danh Mục').textContent).not.toContain(WAIT)
+  })
+
+  it('AC-CONTRIB-14: lọc "Bị từ chối": dòng bị từ chối không bao giờ ghi "Chờ mẻ kế tiếp"', async () => {
+    rejected = [mk(ID3, 'Meme Bị Loại', { status: 'rejected', reject_reason: 'Trùng ý với Stonks', decided_at: '2026-10-20T09:00:00.000Z', in_catalog: false })]
+    await openTab()
+    fireEvent.change(screen.getByLabelText('Trạng thái'), { target: { value: 'rejected' } })
+    await waitFor(() => expect(rowOf('Meme Bị Loại')).toBeTruthy())
+    expect(rowOf('Meme Bị Loại').textContent).not.toContain('Chờ mẻ kế tiếp')
   })
 
   it('AC-CONTRIB-08: từ chối bị máy chủ trả lỗi (400 thiếu lý do) thì chi tiết lỗi hiện trong role="alert"', async () => {

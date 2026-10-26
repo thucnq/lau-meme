@@ -310,11 +310,12 @@ const EDIT_FIELDS = [
 ] as const
 type EditField = (typeof EDIT_FIELDS)[number][0]
 type Open = { id: string; mode: 'edit' | 'approve' | 'reject' }
+const APPROVED = 'Đã duyệt. Meme lên danh mục và game ở mẻ kế tiếp'
 
 /**
  * "Đề xuất meme" (AC-CONTRIB-07/08): oldest first, filtered by status. Edit sends only the changed fields; approve
  * needs the image hint the illustration is drawn from; reject needs a reason. The image link is plain text - the
- * page never loads it.
+ * page never loads it. An approved meme reaches the catalog only with the next batch (AC-CONTRIB-14, ADR 0013).
  */
 function ContributionsTab(ctx: Ctx) {
   const [status, setStatus] = useState<ContributionStatus>('pending')
@@ -328,20 +329,23 @@ function ContributionsTab(ctx: Ctx) {
   const [useLink, setUseLink] = useState(false)
   const [reason, setReason] = useState('')
   const [actionError, setActionError] = useState<string | null>(null)
+  const [notice, setNotice] = useState<string | null>(null)
 
   const start = (c: ContributionItem, mode: Open['mode']) => {
     setOpen({ id: c.id, mode })
     setActionError(null)
+    setNotice(null)
     setDraft({ name: c.name, emoji: c.emoji ?? '', description: c.description ?? '', image_url: c.image_url ?? '' })
     setHint('')
     setTierValue(1)
     setUseLink(false)
     setReason('')
   }
-  const run = (task: Promise<unknown>) =>
+  const run = (task: Promise<unknown>, done: string | null = null) =>
     task.then(
       () => {
         setOpen(null)
+        setNotice(done)
         setReload((n) => n + 1)
       },
       (err: unknown) => (err instanceof AuthError ? ctx.onAuthError() : setActionError(errorText(err))),
@@ -380,7 +384,7 @@ function ContributionsTab(ctx: Ctx) {
       return (
         <form
           className="admin-inline"
-          onSubmit={(e: FormEvent) => (e.preventDefault(), void run(approveContribution(ctx.token, c.id, hint.trim(), tier, useLink && c.image_url !== null)))}
+          onSubmit={(e: FormEvent) => (e.preventDefault(), void run(approveContribution(ctx.token, c.id, hint.trim(), tier, useLink && c.image_url !== null), APPROVED))}
         >
           <label>
             Gợi ý ảnh
@@ -447,6 +451,7 @@ function ContributionsTab(ctx: Ctx) {
         </label>
       </div>
       <Alert>{error ?? actionError}</Alert>
+      {notice && <p role="status">{notice}</p>}
       <table className="admin-table">
         <thead>
           <tr>
@@ -468,6 +473,12 @@ function ContributionsTab(ctx: Ctx) {
               <td>
                 {c.emoji ?? ''} {c.name}
                 {c.status === 'approved' && ` (tier ${c.tier})`}
+                {c.status === 'approved' && !c.in_catalog && (
+                  <>
+                    {' - '}
+                    <span>Chờ mẻ kế tiếp</span>
+                  </>
+                )}
                 {c.reject_reason && ` - ${c.reject_reason}`}
               </td>
               <td>{c.description ?? ''}</td>

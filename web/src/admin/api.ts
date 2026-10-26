@@ -146,6 +146,7 @@ export type ContributionItem = {
   use_image_url?: boolean
   tier: number
   element_id: string | null
+  in_catalog: boolean
   nickname: string
   created_at: string
   decided_at: string | null

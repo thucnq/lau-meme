@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: lau-meme API
-  version: 0.7.0
+  version: 0.8.0
   description: |
     API của Worker Lẩu Meme. Bốn chủ thể (BRD mục 2): thực khách ẩn danh (header `X-Player-Id` = UUID v4
     sinh trên trình duyệt), thực khách đã đăng nhập Google (cookie phiên `laumeme_sid`, ADR 0010 - kết quả Daily,
@@ -1096,9 +1096,10 @@ paths:
       description: |
         Mỗi dòng có nickname người gửi (hoặc "Thực khách ẩn danh"), không bao giờ có mã tài khoản hay UUID.
         `image_url` chỉ hiện dạng chữ: trang quản trị không tải hay nhúng ảnh từ link. Khi duyệt, admin có thể chọn dùng
-        link làm ảnh món (`use_image_url`, AC-ART-14) - pipeline tải ở mẻ full kế tiếp.
+        link làm ảnh món (`use_image_url`, AC-ART-14) - pipeline tải ở mẻ full kế tiếp. `in_catalog` cho biết phần tử
+        của đề xuất đã duyệt có trong danh mục chưa (danh mục chỉ cập nhật khi đăng mẻ, AC-CONTRIB-14).
       security: [{ AdminToken: [] }]
-      x-ac: [AC-CONTRIB-07, AC-ADMIN-10]
+      x-ac: [AC-CONTRIB-07, AC-ADMIN-10, AC-CONTRIB-14]
       parameters:
         - name: status
           in: query
@@ -1164,7 +1165,7 @@ paths:
         409; cặp hoặc tên đã bị chiếm từ lúc gửi → 409. `use_image_url: true` mà đề xuất không có link ảnh → 400
         (AC-ART-14, ADR 0018); giá trị này nằm trong audit `approve_contribution`.
       security: [{ AdminToken: [] }]
-      x-ac: [AC-CONTRIB-08, AC-CONTRIB-09, AC-TIER-01, AC-ADMIN-09, AC-ART-14]
+      x-ac: [AC-CONTRIB-08, AC-CONTRIB-09, AC-TIER-01, AC-ADMIN-09, AC-ART-14, AC-CONTRIB-14]
       parameters:
         - $ref: '#/components/parameters/ContributionId'
       requestBody:
@@ -1781,7 +1782,7 @@ components:
     AdminContribution:
       type: object
       additionalProperties: false
-      required: [id, a, b, name, emoji, description, image_url, use_image_url, status, reject_reason, image_hint, tier, element_id, nickname, created_at, decided_at]
+      required: [id, a, b, name, emoji, description, image_url, use_image_url, status, reject_reason, image_hint, tier, element_id, in_catalog, nickname, created_at, decided_at]
       properties:
         id: { type: string, format: uuid }
         a: { $ref: '#/components/schemas/Starter' }
@@ -1799,6 +1800,7 @@ components:
           oneOf:
             - type: 'null'
             - $ref: '#/components/schemas/ElementId'
+        in_catalog: { type: boolean, description: '`element_id` đã có trong danh mục (bảng phần tử do mẻ đăng cập nhật); `false` với đề xuất chưa duyệt; trang quản trị ghi "Chờ mẻ kế tiếp" khi đã duyệt mà `false` (AC-CONTRIB-14)' }
         nickname: { type: string, description: '"Thực khách ẩn danh" khi không có nickname hoặc tài khoản đã xóa' }
         created_at: { $ref: '#/components/schemas/Instant' }
         decided_at:

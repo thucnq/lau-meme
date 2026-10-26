@@ -2029,7 +2029,7 @@
    ],
    "owner": "Thuc",
    "lane": "Thuc",
-   "pct": 8,
+   "pct": 7,
    "pctAuto": true,
    "status": "doing",
    "slip": 0,
@@ -2149,6 +2149,14 @@
      "tested": true,
      "done": false,
      "line": 243
+    },
+    {
+     "id": "AC-CONTRIB-14",
+     "title": "Admin biết meme đã duyệt khi nào lên danh mục",
+     "optional": false,
+     "tested": false,
+     "done": false,
+     "line": 244
     }
    ]
   },
@@ -2170,7 +2178,7 @@
    "pctAuto": false,
    "status": "done",
    "slip": 0,
-   "note": "",
+   "note": "2026-10-26 AC-SYNC-03 cập nhật và AC-SYNC-11 (PR #120, staging 592a5f9a)",
    "startActual": "2026-10-24",
    "finishActual": "2026-10-25",
    "kh": [
@@ -2181,7 +2189,7 @@
     "2026-10-24",
     "2026-10-25"
    ],
-   "line": 246,
+   "line": 247,
    "acs": [
     {
      "id": "AC-SYNC-01",
@@ -2189,7 +2197,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 247
+     "line": 248
     },
     {
      "id": "AC-SYNC-02",
@@ -2197,7 +2205,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 248
+     "line": 249
     },
     {
      "id": "AC-SYNC-03",
@@ -2205,7 +2213,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 249
+     "line": 250
     },
     {
      "id": "AC-SYNC-04",
@@ -2213,7 +2221,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 250
+     "line": 251
     },
     {
      "id": "AC-SYNC-05",
@@ -2221,7 +2229,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 251
+     "line": 252
     },
     {
      "id": "AC-SYNC-06",
@@ -2229,7 +2237,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 252
+     "line": 253
     },
     {
      "id": "AC-SYNC-07",
@@ -2237,7 +2245,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 253
+     "line": 254
     },
     {
      "id": "AC-SYNC-08",
@@ -2245,7 +2253,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 254
+     "line": 255
     },
     {
      "id": "AC-SYNC-09",
@@ -2253,7 +2261,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 255
+     "line": 256
     },
     {
      "id": "AC-SYNC-10",
@@ -2261,7 +2269,15 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 256
+     "line": 257
+    },
+    {
+     "id": "AC-SYNC-11",
+     "title": "Quay lại tab thì kéo Đĩa mới của tài khoản (thêm 2026-10-26)",
+     "optional": false,
+     "tested": true,
+     "done": true,
+     "line": 258
     }
    ]
   },
@@ -2293,7 +2309,7 @@
     "2026-10-24",
     "2026-10-25"
    ],
-   "line": 257,
+   "line": 259,
    "acs": [
     {
      "id": "AC-GAME-11",
@@ -2301,7 +2317,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 258
+     "line": 260
     },
     {
      "id": "AC-GAME-18",
@@ -2309,7 +2325,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 259
+     "line": 261
     },
     {
      "id": "AC-GAME-19",
@@ -2317,7 +2333,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 260
+     "line": 262
     },
     {
      "id": "AC-GAME-22",
@@ -2325,7 +2341,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 261
+     "line": 263
     },
     {
      "id": "AC-GAME-23",
@@ -2333,7 +2349,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 262
+     "line": 264
     },
     {
      "id": "AC-GAME-24",
@@ -2341,7 +2357,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 263
+     "line": 265
     },
     {
      "id": "AC-GAME-25",
@@ -2349,7 +2365,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 264
+     "line": 266
     },
     {
      "id": "AC-GAME-27",
@@ -2357,7 +2373,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 265
+     "line": 267
     }
    ]
   },
@@ -2390,7 +2406,7 @@
     "2026-12-02",
     "2026-12-14"
    ],
-   "line": 268,
+   "line": 270,
    "acs": []
   },
   {
@@ -2420,7 +2436,7 @@
     "2027-07-01",
     "2027-07-01"
    ],
-   "line": 269,
+   "line": 271,
    "acs": [
     {
      "id": "AC-GAME-01",
@@ -2428,7 +2444,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 270
+     "line": 272
     },
     {
      "id": "AC-GAME-02",
@@ -2436,7 +2452,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 271
+     "line": 273
     },
     {
      "id": "AC-GAME-03",
@@ -2444,7 +2460,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 272
+     "line": 274
     },
     {
      "id": "AC-GAME-04",
@@ -2452,7 +2468,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 273
+     "line": 275
     },
     {
      "id": "AC-GAME-05",
@@ -2460,7 +2476,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 274
+     "line": 276
     },
     {
      "id": "AC-GAME-06",
@@ -2468,7 +2484,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 275
+     "line": 277
     },
     {
      "id": "AC-GAME-07",
@@ -2476,7 +2492,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 276
+     "line": 278
     },
     {
      "id": "AC-GAME-08",
@@ -2484,7 +2500,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 277
+     "line": 279
     },
     {
      "id": "AC-GAME-09",
@@ -2492,7 +2508,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 278
+     "line": 280
     },
     {
      "id": "AC-GAME-10",
@@ -2500,7 +2516,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 279
+     "line": 281
     },
     {
      "id": "AC-GAME-11",
@@ -2508,7 +2524,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 280
+     "line": 282
     },
     {
      "id": "AC-GAME-12",
@@ -2516,7 +2532,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 281
+     "line": 283
     },
     {
      "id": "AC-GAME-13",
@@ -2524,7 +2540,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 282
+     "line": 284
     },
     {
      "id": "AC-GAME-14",
@@ -2532,7 +2548,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 283
+     "line": 285
     },
     {
      "id": "AC-GAME-15",
@@ -2540,7 +2556,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 284
+     "line": 286
     },
     {
      "id": "AC-GAME-16",
@@ -2548,7 +2564,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 285
+     "line": 287
     },
     {
      "id": "AC-GAME-17",
@@ -2556,7 +2572,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 286
+     "line": 288
     },
     {
      "id": "AC-GAME-18",
@@ -2564,7 +2580,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 287
+     "line": 289
     },
     {
      "id": "AC-GAME-19",
@@ -2572,7 +2588,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 288
+     "line": 290
     },
     {
      "id": "AC-GAME-20",
@@ -2580,7 +2596,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 289
+     "line": 291
     },
     {
      "id": "AC-GAME-21",
@@ -2588,7 +2604,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 290
+     "line": 292
     },
     {
      "id": "AC-GAME-22",
@@ -2596,7 +2612,7 @@
      "optional": false,
      "tested": true,
      "done": false,
-     "line": 291
+     "line": 293
     },
     {
      "id": "AC-GAME-23",
@@ -2604,7 +2620,7 @@
      "optional": false,
      "tested": true,
      "done": false,
-     "line": 292
+     "line": 294
     },
     {
      "id": "AC-GAME-24",
@@ -2612,7 +2628,7 @@
      "optional": false,
      "tested": true,
      "done": false,
-     "line": 293
+     "line": 295
     },
     {
      "id": "AC-GAME-25",
@@ -2620,7 +2636,7 @@
      "optional": false,
      "tested": true,
      "done": false,
-     "line": 294
+     "line": 296
     },
     {
      "id": "AC-GAME-26",
@@ -2628,7 +2644,7 @@
      "optional": true,
      "tested": true,
      "done": false,
-     "line": 295
+     "line": 297
     },
     {
      "id": "AC-GAME-27",
@@ -2636,7 +2652,7 @@
      "optional": false,
      "tested": true,
      "done": false,
-     "line": 296
+     "line": 298
     },
     {
      "id": "AC-GAME-28",
@@ -2644,7 +2660,7 @@
      "optional": true,
      "tested": true,
      "done": false,
-     "line": 297
+     "line": 299
     },
     {
      "id": "AC-METRIC-01",
@@ -2652,7 +2668,7 @@
      "optional": false,
      "tested": true,
      "done": false,
-     "line": 298
+     "line": 300
     },
     {
      "id": "AC-METRIC-02",
@@ -2660,7 +2676,7 @@
      "optional": false,
      "tested": true,
      "done": false,
-     "line": 299
+     "line": 301
     },
     {
      "id": "AC-METRIC-03",
@@ -2668,7 +2684,7 @@
      "optional": false,
      "tested": true,
      "done": false,
-     "line": 300
+     "line": 302
     },
     {
      "id": "AC-METRIC-04",
@@ -2676,7 +2692,7 @@
      "optional": false,
      "tested": true,
      "done": false,
-     "line": 301
+     "line": 303
     },
     {
      "id": "AC-METRIC-05",
@@ -2684,7 +2700,7 @@
      "optional": false,
      "tested": true,
      "done": false,
-     "line": 302
+     "line": 304
     },
     {
      "id": "AC-METRIC-06",
@@ -2692,7 +2708,7 @@
      "optional": false,
      "tested": true,
      "done": false,
-     "line": 303
+     "line": 305
     },
     {
      "id": "AC-METRIC-07",
@@ -2700,7 +2716,7 @@
      "optional": false,
      "tested": true,
      "done": false,
-     "line": 304
+     "line": 306
     },
     {
      "id": "AC-METRIC-08",
@@ -2708,7 +2724,7 @@
      "optional": false,
      "tested": true,
      "done": false,
-     "line": 305
+     "line": 307
     }
    ]
   },
@@ -2739,7 +2755,7 @@
     "2026-10-20",
     "2026-10-20"
    ],
-   "line": 308,
+   "line": 310,
    "acs": [
     {
      "id": "AC-MOD-01",
@@ -2747,7 +2763,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 309
+     "line": 311
     },
     {
      "id": "AC-MOD-02",
@@ -2755,7 +2771,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 310
+     "line": 312
     },
     {
      "id": "AC-MOD-03",
@@ -2763,7 +2779,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 311
+     "line": 313
     },
     {
      "id": "AC-MOD-04",
@@ -2771,7 +2787,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 312
+     "line": 314
     },
     {
      "id": "AC-MOD-05",
@@ -2779,7 +2795,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 313
+     "line": 315
     },
     {
      "id": "AC-MOD-06",
@@ -2787,7 +2803,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 314
+     "line": 316
     },
     {
      "id": "AC-MOD-07",
@@ -2795,7 +2811,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 315
+     "line": 317
     },
     {
      "id": "AC-MOD-08",
@@ -2803,7 +2819,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 316
+     "line": 318
     },
     {
      "id": "AC-MOD-09",
@@ -2811,7 +2827,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 317
+     "line": 319
     },
     {
      "id": "AC-MOD-10",
@@ -2819,7 +2835,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 318
+     "line": 320
     }
    ]
   },
@@ -2850,7 +2866,7 @@
     "2026-10-21",
     "2026-10-21"
    ],
-   "line": 319,
+   "line": 321,
    "acs": [
     {
      "id": "AC-PIPE-03",
@@ -2858,7 +2874,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 320
+     "line": 322
     },
     {
      "id": "AC-PIPE-04",
@@ -2866,7 +2882,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 321
+     "line": 323
     },
     {
      "id": "AC-PIPE-05",
@@ -2874,7 +2890,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 322
+     "line": 324
     },
     {
      "id": "AC-PIPE-06",
@@ -2882,7 +2898,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 323
+     "line": 325
     },
     {
      "id": "AC-PIPE-07",
@@ -2890,7 +2906,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 324
+     "line": 326
     },
     {
      "id": "AC-PIPE-08",
@@ -2898,7 +2914,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 325
+     "line": 327
     },
     {
      "id": "AC-PIPE-09",
@@ -2906,7 +2922,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 326
+     "line": 328
     },
     {
      "id": "AC-PIPE-10",
@@ -2914,7 +2930,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 327
+     "line": 329
     },
     {
      "id": "AC-PIPE-12",
@@ -2922,7 +2938,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 328
+     "line": 330
     }
    ]
   },
@@ -2954,7 +2970,7 @@
     "2026-10-24",
     "2026-10-24"
    ],
-   "line": 329,
+   "line": 331,
    "acs": [
     {
      "id": "AC-ADMIN-11",
@@ -2962,7 +2978,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 330
+     "line": 332
     },
     {
      "id": "AC-PIPE-15",
@@ -2970,7 +2986,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 331
+     "line": 333
     },
     {
      "id": "AC-PIPE-16",
@@ -2978,7 +2994,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 332
+     "line": 334
     },
     {
      "id": "AC-PIPE-17",
@@ -2986,7 +3002,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 333
+     "line": 335
     }
    ]
   },
@@ -3018,7 +3034,7 @@
     "2026-10-24",
     "2026-10-24"
    ],
-   "line": 334,
+   "line": 336,
    "acs": [
     {
      "id": "AC-PIPE-18",
@@ -3026,7 +3042,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 335
+     "line": 337
     },
     {
      "id": "AC-PIPE-19",
@@ -3034,7 +3050,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 336
+     "line": 338
     },
     {
      "id": "AC-PIPE-20",
@@ -3042,7 +3058,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 337
+     "line": 339
     },
     {
      "id": "AC-SUBPATH-13",
@@ -3050,7 +3066,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 338
+     "line": 340
     }
    ]
   },
@@ -3081,7 +3097,7 @@
     "2026-10-21",
     "2026-10-22"
    ],
-   "line": 339,
+   "line": 341,
    "acs": [
     {
      "id": "AC-ART-01",
@@ -3089,7 +3105,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 340
+     "line": 342
     },
     {
      "id": "AC-ART-02",
@@ -3097,7 +3113,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 341
+     "line": 343
     },
     {
      "id": "AC-ART-03",
@@ -3105,7 +3121,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 342
+     "line": 344
     },
     {
      "id": "AC-ART-04",
@@ -3113,7 +3129,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 343
+     "line": 345
     },
     {
      "id": "AC-ART-05",
@@ -3121,7 +3137,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 344
+     "line": 346
     },
     {
      "id": "AC-ART-06",
@@ -3129,7 +3145,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 345
+     "line": 347
     },
     {
      "id": "AC-ART-07",
@@ -3137,7 +3153,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 346
+     "line": 348
     },
     {
      "id": "AC-ART-08",
@@ -3145,7 +3161,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 347
+     "line": 349
     },
     {
      "id": "AC-ART-09",
@@ -3153,7 +3169,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 348
+     "line": 350
     },
     {
      "id": "AC-ART-10",
@@ -3161,7 +3177,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 349
+     "line": 351
     },
     {
      "id": "AC-ART-11",
@@ -3169,7 +3185,7 @@
      "optional": false,
      "tested": true,
      "done": false,
-     "line": 350
+     "line": 352
     },
     {
      "id": "AC-ART-12",
@@ -3177,7 +3193,7 @@
      "optional": false,
      "tested": true,
      "done": false,
-     "line": 351
+     "line": 353
     },
     {
      "id": "AC-ART-13",
@@ -3185,7 +3201,7 @@
      "optional": true,
      "tested": true,
      "done": true,
-     "line": 352
+     "line": 354
     },
     {
      "id": "AC-ART-14",
@@ -3193,7 +3209,7 @@
      "optional": true,
      "tested": true,
      "done": true,
-     "line": 353
+     "line": 355
     }
    ]
   },
@@ -3225,7 +3241,7 @@
     "2026-10-23",
     "2026-10-25"
    ],
-   "line": 354,
+   "line": 356,
    "acs": [
     {
      "id": "AC-ART-11",
@@ -3233,7 +3249,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 355
+     "line": 357
     },
     {
      "id": "AC-ART-12",
@@ -3241,7 +3257,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 356
+     "line": 358
     }
    ]
   },
@@ -3272,7 +3288,7 @@
     "2027-07-02",
     "2027-07-26"
    ],
-   "line": 359,
+   "line": 361,
    "acs": [
     {
      "id": "AC-ART-01",
@@ -3280,7 +3296,7 @@
      "optional": false,
      "tested": true,
      "done": false,
-     "line": 360
+     "line": 362
     },
     {
      "id": "AC-ART-02",
@@ -3288,7 +3304,7 @@
      "optional": false,
      "tested": true,
      "done": false,
-     "line": 361
+     "line": 363
     },
     {
      "id": "AC-ART-03",
@@ -3296,7 +3312,7 @@
      "optional": false,
      "tested": true,
      "done": false,
-     "line": 362
+     "line": 364
     },
     {
      "id": "AC-ART-04",
@@ -3304,7 +3320,7 @@
      "optional": false,
      "tested": true,
      "done": false,
-     "line": 363
+     "line": 365
     },
     {
      "id": "AC-ART-05",
@@ -3312,7 +3328,7 @@
      "optional": false,
      "tested": true,
      "done": false,
-     "line": 364
+     "line": 366
     },
     {
      "id": "AC-ART-06",
@@ -3320,7 +3336,7 @@
      "optional": false,
      "tested": true,
      "done": false,
-     "line": 365
+     "line": 367
     },
     {
      "id": "AC-ART-07",
@@ -3328,7 +3344,7 @@
      "optional": false,
      "tested": true,
      "done": false,
-     "line": 366
+     "line": 368
     },
     {
      "id": "AC-ART-08",
@@ -3336,7 +3352,7 @@
      "optional": false,
      "tested": true,
      "done": false,
-     "line": 367
+     "line": 369
     },
     {
      "id": "AC-ART-09",
@@ -3344,7 +3360,7 @@
      "optional": false,
      "tested": true,
      "done": false,
-     "line": 368
+     "line": 370
     },
     {
      "id": "AC-ART-10",
@@ -3352,7 +3368,7 @@
      "optional": false,
      "tested": true,
      "done": false,
-     "line": 369
+     "line": 371
     },
     {
      "id": "AC-ART-11",
@@ -3360,7 +3376,7 @@
      "optional": false,
      "tested": true,
      "done": false,
-     "line": 370
+     "line": 372
     },
     {
      "id": "AC-ART-12",
@@ -3368,7 +3384,7 @@
      "optional": false,
      "tested": true,
      "done": false,
-     "line": 371
+     "line": 373
     },
     {
      "id": "AC-ART-13",
@@ -3376,7 +3392,7 @@
      "optional": true,
      "tested": true,
      "done": false,
-     "line": 372
+     "line": 374
     },
     {
      "id": "AC-ART-14",
@@ -3384,7 +3400,7 @@
      "optional": true,
      "tested": true,
      "done": false,
-     "line": 373
+     "line": 375
     }
    ]
   }
@@ -3620,7 +3636,7 @@
   "  - [x] AC-TIER-05 Admin sửa tier và trả về tự động (thêm 2026-10-24)",
   "",
   "## Cộng đồng",
-  "- [ ] **CONTRIB** Đóng góp meme · 13đ · rủi ro: HIGH · KH: 2027-10-25 → 2027-12-02 · tiến độ: 8% (theo AC) · người: Thuc · bắt đầu:  · xong:  · ghi chú: ",
+  "- [ ] **CONTRIB** Đóng góp meme · 13đ · rủi ro: HIGH · KH: 2027-10-25 → 2027-12-02 · tiến độ: 7% (theo AC) · người: Thuc · bắt đầu:  · xong:  · ghi chú: ",
   "  - [ ] AC-CONTRIB-01 Gửi đề xuất hợp lệ",
   "  - [ ] AC-CONTRIB-02 Đầu vào không hợp lệ",
   "  - [ ] AC-CONTRIB-03 Trùng cặp, trùng tên, gửi lặp",
@@ -3634,9 +3650,10 @@
   "  - [x] AC-CONTRIB-13 Chọn hai phần tử cho đề xuất",
   "  - [ ] AC-CONTRIB-11 Bảng xếp hạng \"Top cống hiến\"",
   "  - [ ] AC-CONTRIB-12 Xóa tài khoản và xuất dữ liệu",
+  "  - [ ] AC-CONTRIB-14 Admin biết meme đã duyệt khi nào lên danh mục",
   "",
   "## Trò chơi",
-  "- [x] **SYNC** Đĩa nhúng theo tài khoản · 10.5đ · rủi ro: HIGH · KH: 2027-12-20 → 2028-01-20 · tiến độ: 100% · người: Thuc · bắt đầu: 2026-10-24 · xong: 2026-10-25 · ghi chú: ",
+  "- [x] **SYNC** Đĩa nhúng theo tài khoản · 10.5đ · rủi ro: HIGH · KH: 2027-12-20 → 2028-01-20 · tiến độ: 100% · người: Thuc · bắt đầu: 2026-10-24 · xong: 2026-10-25 · ghi chú: 2026-10-26 AC-SYNC-03 cập nhật và AC-SYNC-11 (PR #120, staging 592a5f9a)",
   "  - [x] AC-SYNC-01 Ghép ra món mới thì ghi vào Đĩa của tài khoản",
   "  - [x] AC-SYNC-02 Tải lại trang kéo Đĩa tổng hợp của mọi phiên",
   "  - [x] AC-SYNC-03 Tiến độ trước khi đăng nhập được gộp vào tài khoản",
@@ -3647,6 +3664,7 @@
   "  - [x] AC-SYNC-08 Phần tử bị chặn và graph đổi version",
   "  - [x] AC-SYNC-09 Giới hạn tần suất và kích thước",
   "  - [x] AC-SYNC-10 Xóa và xuất dữ liệu",
+  "  - [x] AC-SYNC-11 Quay lại tab thì kéo Đĩa mới của tài khoản (thêm 2026-10-26)",
   "- [x] **UI3** Giao diện mới và cảm giác chơi - góp ý 2026-10-24 · 10đ · rủi ro: MEDIUM · KH: 2028-01-21 → 2028-02-21 · tiến độ: 100% · người: Thuc · bắt đầu: 2026-10-24 · xong: 2026-10-25 · ghi chú: AC-GAME-27 cập nhật 2026-10-25 (không cuộn ngang khi đã đăng nhập)",
   "  - [x] AC-GAME-11 Dọn bàn (cập nhật 2026-10-24: bỏ \"Chơi lại từ đầu\" - câu hỏi mở 71)",
   "  - [x] AC-GAME-18 Nồi lẩu nằm trong màn hình đầu tiên (thêm 2026-10-21)",
