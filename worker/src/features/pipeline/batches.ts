@@ -52,7 +52,7 @@ export function toBatchRun(row: BatchRunRow) {
 }
 
 const COUNT_KEYS = ['crawled', 'added', 'queued', 'quota_used', 'queue_size', 'without_image', 'core_without_image', 'contributions_waiting']
-const STATS_KEYS = [...COUNT_KEYS, 'blocked', 'source_errors', 'sources', 'images', 'daily_pool_exhausted']
+const STATS_KEYS = [...COUNT_KEYS, 'blocked', 'source_errors', 'sources', 'images', 'daily_pool_exhausted', 'daily_pin']
 
 /** BatchStats of the contract: stored as sent and shown on the admin page (AC-ADMIN-11), so checked key by key. */
 function parseStats(value: unknown): string {
@@ -83,6 +83,7 @@ function parseStats(value: unknown): string {
   }
   // "Pool thử thách cạn" (AC-DAILY-01)
   if ('daily_pool_exhausted' in stats && typeof stats.daily_pool_exhausted !== 'boolean') fail('stats.daily_pool_exhausted: phải là boolean')
+  if ('daily_pin' in stats) oneOf(stats.daily_pin, 'stats.daily_pin', ['used', 'dropped'] as const) // AC-DAILY-19
   return JSON.stringify(stats)
 }
 
@@ -220,7 +221,7 @@ export async function publishBatch(req: Request, env: Env): Promise<Response> {
   const b = obj(
     body,
     'body',
-    ['status', 'version', 'batch_at', 'mode', 'manifest', 'graph', 'content', 'stats', 'store'],
+    ['status', 'version', 'batch_at', 'mode', 'manifest', 'graph', 'content', 'stats', 'store', 'daily_pin_id'],
     ['status', 'version', 'batch_at', 'mode', 'manifest', 'graph', 'content', 'stats'],
   )
   const version = int(b.version, 'version', 1)
@@ -238,6 +239,13 @@ export async function publishBatch(req: Request, env: Env): Promise<Response> {
   const manifestJson = parseManifest(b.manifest, { version, batchAt, starters, daily, byId })
   const statsJson = parseStats(b.stats)
   const storeJson = b.store === undefined ? null : parseStore(b.store)
+  const pinId = b.daily_pin_id === undefined ? null : (b.daily_pin_id as string)
+  if (pinId !== null && (typeof pinId !== 'string' || !UUID.test(pinId))) fail('daily_pin_id: phải là UUID')
+  if ((b.stats as { daily_pin?: string }).daily_pin === 'used') {
+    // ADR 0019: a pipeline token cannot clear the admin's pin without publishing it
+    const pin = await env.DB.prepare('SELECT element_id FROM daily_pin').first<{ element_id: string }>()
+    if (pin && pin.element_id !== daily) fail('content.daily_element_id: không phải món admin đã chỉ định')
+  }
 
   if (version <= (await maxPublishedVersion(env.DB))) {
     return problem(409, 'Version phải lớn hơn mọi version đã đăng')
@@ -317,6 +325,8 @@ export async function publishBatch(req: Request, env: Env): Promise<Response> {
       ? []
       : [db.prepare('INSERT INTO pipeline_store (version, store_json, created_at) VALUES (?, ?, ?)').bind(version, storeJson, now)]),
     db.prepare('DELETE FROM pipeline_store WHERE version NOT IN (SELECT version FROM batch_content)'),
+    // the pin this batch read (used or dropped); one the admin set meanwhile has another id and stays (ADR 0019)
+    ...(pinId === null ? [] : [db.prepare('DELETE FROM daily_pin WHERE id = ?').bind(pinId)]),
   ])
   return json(toBatchRun(run), { status: 201 })
 }
@@ -424,7 +434,7 @@ const DAILY_HISTORY_LIMIT = 1000
  */
 export async function getPipelineState(_req: Request, env: Env): Promise<Response> {
   const db = env.DB
-  const [current, blocks, aliases, history, admin, catalog, tiers, contributions, drawings, links] = await db.batch([
+  const [current, blocks, aliases, history, admin, catalog, tiers, contributions, drawings, links, pin] = await db.batch([
     db.prepare('SELECT value FROM app_meta WHERE key = ?').bind('current_version'),
     db.prepare('SELECT kind, target_id FROM block ORDER BY kind, target_id'),
     db.prepare("SELECT term_fold FROM banned_term WHERE source IN ('mod', 'admin') ORDER BY term_fold"),
@@ -449,6 +459,8 @@ export async function getPipelineState(_req: Request, env: Env): Promise<Respons
          AND NOT (e.image_source IS 'admin' AND e.image_key IS NOT NULL)
        ORDER BY c.element_id`,
     ),
+    // the admin's Món đặc biệt for the next batch (AC-DAILY-19, ADR 0019); its id comes back as daily_pin_id
+    db.prepare('SELECT id, element_id, hint FROM daily_pin'),
   ])
   const value = (current?.results[0] as { value: string } | undefined)?.value
   const blocklist: Record<'elements' | 'recipes' | 'images', string[]> = { elements: [], recipes: [], images: [] }
@@ -487,6 +499,7 @@ export async function getPipelineState(_req: Request, env: Env): Promise<Respons
     })),
     admin_images: (drawings?.results ?? []) as { element_id: string; image_key: string }[],
     image_links: (links?.results ?? []) as { element_id: string; url: string }[],
+    daily_pin: (pin?.results[0] as { id: string; element_id: string; hint: string } | undefined) ?? null,
   })
 }
 

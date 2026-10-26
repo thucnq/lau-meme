@@ -97,3 +97,17 @@ def build_daily_block(element: Mapping, hint: str) -> dict:
     if re.search(r"(?<!\w)" + re.escape(fold(name)) + r"(?!\w)", fold(hint)):
         raise ValueError("Gợi ý không được chứa tên Món đặc biệt")
     return {"element_id": element_id(name), "emoji": element["emoji"], "hint": hint, "depth": element["depth"]}
+
+
+def pinned_daily(pin: Mapping | None, element: Mapping | None, blocked: frozenset[str]) -> dict | None:
+    """The admin's Món đặc biệt for this batch (AC-DAILY-19, ADR 0019): any element still active and not blocked, with
+    the admin's hint, whatever its depth or how recently it was a dish. None when the pin cannot be used (dropped).
+
+    `element` is the stored element of `pin["element_id"]` as {name, emoji, depth, active} or None when absent.
+    """
+    if pin is None or element is None or not element["active"] or pin["element_id"] in blocked:
+        return None
+    try:
+        return build_daily_block(element, pin["hint"])
+    except ValueError:  # the Worker checks the hint, but a renamed element could now be named in it
+        return None

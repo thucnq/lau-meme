@@ -150,8 +150,9 @@ def check_moderation(store: ContentStore, lists: ModLists) -> list[str]:
     return violations
 
 
-def check_daily(manifest: Mapping, store: ContentStore) -> list[str]:
-    """AC-INV-10: the Món đặc biệt exists, is active, reachable, and its depth is within [4, 8]."""
+def check_daily(manifest: Mapping, store: ContentStore, *, pinned: bool = False) -> list[str]:
+    """AC-INV-10: the Món đặc biệt exists, is active, reachable, and its depth is within [4, 8] - except an admin pin
+    (AC-DAILY-19), which may have any depth."""
     daily = manifest.get("daily") or {}
     eid = daily.get("element_id")
     e = store.elements.get(eid) if isinstance(eid, str) else None
@@ -162,12 +163,12 @@ def check_daily(manifest: Mapping, store: ContentStore) -> list[str]:
         violations.append(f"INV-10: Món đặc biệt {e.name} không hoạt động")
     if eid not in _bfs(store):
         violations.append(f"INV-10: Món đặc biệt {e.name} không tới được")
-    if not MIN_DEPTH <= e.depth <= MAX_DEPTH:
+    if not pinned and not MIN_DEPTH <= e.depth <= MAX_DEPTH:
         violations.append(f"INV-10: Món đặc biệt {e.name} có depth {e.depth}, ngoài [{MIN_DEPTH}, {MAX_DEPTH}]")
     return violations
 
 
-def check_all(graph: Mapping, manifest: Mapping, store: ContentStore, lists: ModLists) -> None:
+def check_all(graph: Mapping, manifest: Mapping, store: ContentStore, lists: ModLists, *, pinned: bool = False) -> None:
     """Every blocking invariant (AC-INV-01..04, 07, 10); raises InvariantError listing all violations."""
     names = [store.elements[k].name for k in sorted(store.elements)]
     violations = [
@@ -176,7 +177,7 @@ def check_all(graph: Mapping, manifest: Mapping, store: ContentStore, lists: Mod
         *check_reachability(store),
         *check_opaque(graph, store),
         *check_moderation(store, lists),
-        *check_daily(manifest, store),
+        *check_daily(manifest, store, pinned=pinned),
     ]
     if violations:
         raise InvariantError(violations)

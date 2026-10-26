@@ -31,7 +31,7 @@ from lau_meme_pipeline.art import (
 )
 from lau_meme_pipeline.contrib import add_contributions
 from lau_meme_pipeline.crawl import Http, crawl, source_error_text
-from lau_meme_pipeline.daily import build_daily_block, core_hints, pick_daily
+from lau_meme_pipeline.daily import build_daily_block, core_hints, pick_daily, pinned_daily
 from lau_meme_pipeline.full import run_full
 from lau_meme_pipeline.graph import build_manifest, decrypt_entry, export_graph
 from lau_meme_pipeline.ids import element_id
@@ -121,6 +121,12 @@ def _iso(at: datetime) -> str:
 
 def _core_stats() -> dict:
     return {"crawled": 0, "added": 0, "blocked": {}, "queued": 0, "source_errors": [], "quota_used": 0}
+
+
+def _pin_element(store: ContentStore, element_id: str) -> dict | None:
+    """The stored element a pin names, in the shape `pinned_daily` reads (AC-DAILY-19)."""
+    e = store.elements.get(element_id)
+    return None if e is None else {"name": e.name, "emoji": e.emoji, "depth": e.depth, "active": e.status == ACTIVE}
 
 
 def _pick_daily(store: ContentStore, core: Mapping, state: Mapping, version: int) -> tuple[dict, bool]:
@@ -338,6 +344,11 @@ def _render_report(
         ),
         *([f"- {line}" for line in tier_lines] if not failed_step else []),
         f"- Món đặc biệt: {emoji or '-'}",
+        *(
+            ["- ⚠️ Chỉ định Món đặc biệt bị bỏ: món không còn hoạt động hoặc bị chặn, mẻ tự chọn như thường"]
+            if stats.get("daily_pin") == "dropped"
+            else []
+        ),
         *(
             ["- ⚠️ Pool thử thách cạn: mọi món đều đã ra trong 30 mẻ gần nhất, lấy lại món lâu chưa ra nhất"]
             if stats.get("daily_pool_exhausted")
@@ -578,6 +589,7 @@ def run_batch(
                 image_links={x["element_id"]: x["url"] for x in state.get("image_links", [])},
                 link_image=link_image,
                 contributions=state.get("contributions", []),
+                daily_pin=state.get("daily_pin"),
                 first_versions=_first_versions(state),
                 trend_peaks=_trend_peaks(state),
                 schedule_hours_utc=hours,
@@ -605,6 +617,8 @@ def run_batch(
             miss = tuple(full.report["miss_rate"]) if full.report.get("miss_rate") else None
             if full.report.get("daily_pool_exhausted"):
                 stats["daily_pool_exhausted"] = True
+            if full.report.get("daily_pin"):
+                stats["daily_pin"] = full.report["daily_pin"]
             content = _content(store, full.daily_element_id, _blocked_images(state))
             if art_report is not None:
                 stats["images"] = {k: int(art_report.get(k, 0)) for k in ("drawn", "fallback", "pending")}
@@ -630,9 +644,16 @@ def run_batch(
             store = apply_images(store, {eid: key for eid, key in drawings.items() if eid in store.elements})
             store = apply_tiers(store, state.get("tiers", []), _blocked_images(state))
             step = "daily"
-            daily, exhausted = _pick_daily(store, core, state, version)
-            if exhausted:
-                stats["daily_pool_exhausted"] = True
+            pin = state.get("daily_pin")
+            daily = pinned_daily(
+                pin, pin and _pin_element(store, pin["element_id"]), frozenset(state["blocklist"]["elements"])
+            )
+            if pin is not None:
+                stats["daily_pin"] = "used" if daily is not None else "dropped"
+            if daily is None:
+                daily, exhausted = _pick_daily(store, core, state, version)
+                if exhausted:
+                    stats["daily_pool_exhausted"] = True
             emoji = daily["emoji"]
             step = "export"
             graph = export_graph(store, version)
@@ -644,7 +665,7 @@ def run_batch(
             step = "check"
             _check(store, graph, content)
             step = "invariants"
-            check_all(graph, manifest, store, _mod_lists(state, banned_words))
+            check_all(graph, manifest, store, _mod_lists(state, banned_words), pinned=stats.get("daily_pin") == "used")
             miss = _miss_rate(graph, manifest["starters"], log)
         step = "banned"
         terms = banned_terms(banned_words)
@@ -669,6 +690,8 @@ def run_batch(
         }
         if store_out is not None:
             body["store"] = store_out
+        if state.get("daily_pin") is not None:  # used or dropped, the Worker clears this pin (ADR 0019)
+            body["daily_pin_id"] = state["daily_pin"]["id"]
         stats["quota_used"] = counted.used(llm if mode == "full" else None)
         run_id = client.post_batch(body).get("id")
         _send_aliases(client, state, new_aliases, log)
@@ -709,6 +732,7 @@ def run_batch(
             detail = "; ".join(shown + ([f"INV-07: {hidden} phần tử khớp danh mục cấm"] if hidden else []))
         log(f"Mẻ thất bại ở bước {step}: {detail}")
         stats["quota_used"] = counted.used(llm if mode == "full" else None)
+        stats.pop("daily_pin", None)  # nothing was published: the pin waits for the next batch (AC-DAILY-19)
         error_body = {"status": "error", "batch_at": _iso(batch_at), "mode": mode, "failed_step": step, "stats": stats}
         try:
             run_id = client.post_batch(error_body).get("id")

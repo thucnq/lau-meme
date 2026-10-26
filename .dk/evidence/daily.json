@@ -90,8 +90,8 @@
   }
  },
  "green": {
-  "ts": "2026-10-24T04:12:05+00:00",
-  "commit": "01df1a7",
+  "ts": "2026-10-26T04:52:00+00:00",
+  "commit": "3d1c0bd",
   "results": {
    "AC-DAILY-01": {
     "status": "PASS",
@@ -165,13 +165,17 @@
     "status": "PASS",
     "test": "test_batch#test_ac_daily_18_90_me_core_59_mon_dau_khac_nhau_khong_lap_trong_30_me"
    },
+   "AC-DAILY-19": {
+    "status": "PASS",
+    "test": "test_daily_pin#test_ac_daily_19_chi_dinh_phan_tu_khong_co_daily_hint_duoc_dung_lam_mon_dac_biet_o_core"
+   },
    "AC-DAILY-TENANT": {
     "status": "PASS",
     "test": "daily.test.ts#daily > AC-DAILY-TENANT: kết quả, streak và hạng của tài khoản A không hiện ở tài khoản B; header UUID của A kèm cookie của B không ghi vào A"
    },
    "AC-DAILY-VALIDATION": {
     "status": "PASS",
-    "test": "daily.test.ts#daily > AC-DAILY-VALIDATION: tên quá dài, script, SQL, kiểu sai, trường thừa "
+    "test": "daily-pin.test.ts#daily pin "
    }
   }
  }

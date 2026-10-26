@@ -42,6 +42,8 @@ export type BatchStats = {
   sources?: { source: string; concepts: number | null; error: string | null }[]
   images?: { drawn: number; fallback: number; pending: number }
   without_image?: number
+  /** AC-DAILY-19: món admin chỉ định đã dùng hay bị bỏ; vắng = mẻ không có chỉ định. */
+  daily_pin?: 'used' | 'dropped'
 }
 export type BatchSummary = { crawled_total: number; added_total: number; queue_size: number | null; without_image: number | null }
 export type BatchItem = {
@@ -60,8 +62,9 @@ export type AuditItem = {
   action: Action
   target_kind: Kind
   target_id: string
-  before: State
-  after: State
+  /** Trạng thái kiểm duyệt, hoặc object (tier, ảnh, đề xuất, chỉ định Món đặc biệt), hoặc null (chưa/không còn chỉ định). */
+  before: State | Record<string, unknown> | null
+  after: State | Record<string, unknown> | null
   reason?: string | null
   token_fp: string
   created_at: string
@@ -101,6 +104,7 @@ export async function call<T>(token: string, path: string, init: { method?: stri
     const problem = (await res.json().catch(() => null)) as { title?: string; detail?: string } | null
     throw new ApiError(res.status, problem?.detail ?? problem?.title ?? `HTTP ${res.status}`)
   }
+  if (res.status === 204) return undefined as T
   return (await res.json()) as T
 }
 
@@ -111,6 +115,14 @@ export const setTier = (token: string, id: string, tier: number | 'auto') =>
 /** AC-ART-13: tranh vẽ tay đã chuẩn hóa về WebP 256×256 (`drawing.ts`). */
 export const setImage = (token: string, id: string, webp: Blob) =>
   call<{ element_id: string; before_key: string | null; after_key: string }>(token, `elements/${id}/image`, { method: 'PUT', webp })
+
+/** Món đặc biệt admin chỉ định cho mẻ kế tiếp (AC-DAILY-19, ADR 0019). */
+export type DailyPin = { element_id: string; name: string; emoji: string; hint: string; created_at: string }
+
+export const getDailyPin = (token: string) => call<{ pin: DailyPin | null }>(token, 'daily-pin')
+export const setDailyPin = (token: string, element_id: string, hint: string) =>
+  call<{ before: DailyPin | null; after: DailyPin }>(token, 'daily-pin', { method: 'PUT', body: { element_id, hint } })
+export const clearDailyPin = (token: string) => call<undefined>(token, 'daily-pin', { method: 'DELETE' })
 
 export const moderate = (token: string, target_kind: Kind, target_id: string, action: Action, reason: string) =>
   call<{ before: State; after: State }>(token, 'moderation', {
