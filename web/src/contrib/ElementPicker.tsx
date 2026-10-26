@@ -1,7 +1,7 @@
 import { useId, useState, type KeyboardEvent } from 'react'
 import { fold } from '../graph/crypto'
 
-export type Choice = { name: string; emoji: string }
+export type Choice = { id: string; name: string; emoji: string }
 
 type Props = {
   label: string
@@ -43,7 +43,8 @@ export function ElementPicker({ label, field, items, value, onChange }: Props) {
     } else if (e.key === 'Enter' && shown && active >= 0 && options[active]) {
       e.preventDefault() // picks the option, does not send the form
       pick(options[active])
-    } else if (e.key === 'Escape') {
+    } else if (e.key === 'Escape' && shown) {
+      e.stopPropagation() // closes only the list, not a dialog around it
       close()
     }
   }
@@ -84,7 +85,7 @@ export function ElementPicker({ label, field, items, value, onChange }: Props) {
         <ul className="contrib-options" role="listbox" id={`${id}-list`} aria-label={label}>
           {options.map((it, i) => (
             <li
-              key={it.name}
+              key={it.id}
               id={`${id}-opt-${i}`}
               role="option"
               aria-selected={i === active}

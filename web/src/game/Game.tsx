@@ -738,6 +738,9 @@ export function Game({ onDiscover, onItems, heirlooms = {}, onReport, blocklistR
     if (itemIds) onItems?.(itemIds.split(','))
   }, [itemIds, onItems])
   const byId = new Map(items.map((i) => [i.id, i]))
+  // A picked element that left the plate (blocked, a new progress) is not offered any more (AC-CONTRIB-13).
+  const onPlate = (c: Picks[number]) => (c && byId.has(c.id) ? c : null)
+  const picks: Picks = [onPlate(contribPicks[0]), onPlate(contribPicks[1])]
   const plate = sortItems(filterItems(items, query), progress?.sort ?? 'newest')
   const table = progress ? visibleTable(progress, blocklist) : []
   const potState = !ready ? 'disabled' : boiling ? 'boiling' : 'idle'
@@ -994,7 +997,7 @@ export function Game({ onDiscover, onItems, heirlooms = {}, onReport, blocklistR
               policyVersion={loaded.manifest.policy_version}
               storage={storage()}
               plate={items}
-              picks={contribPicks}
+              picks={picks}
               onPicks={setContribPicks}
             />
           )}
