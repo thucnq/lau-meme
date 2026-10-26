@@ -14,10 +14,12 @@ import { ContribPanel, type Picks } from '../contrib/ContribPanel'
 import { ElementIcon } from '../art/ElementIcon'
 import { startManifestWatch } from '../daily/countdown'
 import { DailyPanel, Leaderboards } from '../daily/DailyPanel'
+import { FeedbackButtons } from '../feedback/FeedbackButtons'
 import { loadSolved, saveSolved, type SolvedDaily } from '../daily/solved'
 import { recordCombine, trackEvent } from '../metrics/app'
 import { BLOCKLIST_POLL_MS, loadBlocklist } from '../report/blocklist'
 import type { Graph } from '../graph/crypto'
+import { canSend } from '../privacy/consent'
 import { localStore as storage, migrateLegacyKeys } from '../storage'
 import {
   EMPTY_BLOCKLIST,
@@ -202,6 +204,9 @@ export function Game({ onDiscover, onItems, heirlooms = {}, onReport, blocklistR
   const [boiling, setBoiling] = useState(false)
   const boilingRef = useRef(false)
   const [miss, setMiss] = useState<Miss | null>(null)
+  // the recipe just combined, for Ngon / Nhạt (AC-FEEDBACK-01); seq gives each combine fresh buttons
+  const [voteOn, setVoteOn] = useState<{ a: string; b: string; seq: number } | null>(null)
+  const voteSeq = useRef(0)
   // First discovery shown large (AC-ART-08); `seq` remounts the overlay so each discovery gets its full 2,5 s.
   const [zoom, setZoom] = useState<{ item: Item; seq: number } | null>(null)
   const showZoom = useCallback((item: Item) => setZoom((z) => ({ item, seq: (z?.seq ?? 0) + 1 })), [])
@@ -458,6 +463,7 @@ export function Game({ onDiscover, onItems, heirlooms = {}, onReport, blocklistR
     boilingRef.current = true
     setBoiling(true)
     setMiss(null)
+    setVoteOn(null)
     const outcome = combine(ctx, p, a.name, b.name)
     const grid = slotGrid(tableRef.current, potRef.current)
     const [pa, pb] = [slotPosition(p.table.length, grid), slotPosition(p.table.length + 1, grid)]
@@ -470,6 +476,7 @@ export function Game({ onDiscover, onItems, heirlooms = {}, onReport, blocklistR
             const item = out.progress.items.find((i) => i.id === out.result.id)!
             commit({ ...out.progress, table: [...table, onTable(item, pa.x, pa.y)] })
             checkDaily(a.name, b.name, item)
+            setVoteOn({ a: a.name, b: b.name, seq: ++voteSeq.current })
             if (out.isNew) {
               onDiscoverRef.current?.({ a: a.name, b: b.name, result: item.name, id: item.id, emoji: item.emoji })
               syncRef.current?.kick()
@@ -495,6 +502,7 @@ export function Game({ onDiscover, onItems, heirlooms = {}, onReport, blocklistR
     if (!ctx || !p) return
     busyRef.current = true
     setMiss(null)
+    setVoteOn(null)
     try {
       const out = await combine(ctx, p, source.item.name, target.name)
       const table = (progressRef.current ?? p).table.filter((t) => t.uid !== source.uid)
@@ -504,6 +512,7 @@ export function Game({ onDiscover, onItems, heirlooms = {}, onReport, blocklistR
         const rest = table.filter((t) => t.uid !== target.uid)
         commit({ ...out.progress, table: [...rest, onTable(item, target.x, target.y)] })
         checkDaily(source.item.name, target.name, item)
+        setVoteOn({ a: source.item.name, b: target.name, seq: ++voteSeq.current })
         if (out.isNew) {
           onDiscoverRef.current?.({ a: source.item.name, b: target.name, result: item.name, id: item.id, emoji: item.emoji })
           syncRef.current?.kick()
@@ -934,6 +943,18 @@ export function Game({ onDiscover, onItems, heirlooms = {}, onReport, blocklistR
               <div className="miss-area" data-testid="miss-area" data-zone>
                 <p data-testid="miss-line">{miss.line}</p>
                 {miss.hint && <p data-testid="miss-hint">{miss.hint}</p>}
+              </div>
+            )}
+            {voteOn && loaded && canSend(storage(), loaded.manifest.policy_version) && (
+              <div className="feedback-area" data-zone>
+                <FeedbackButtons
+                  key={voteOn.seq}
+                  a={voteOn.a}
+                  b={voteOn.b}
+                  policyVersion={loaded.manifest.policy_version}
+                  storage={storage()}
+                  metrics={{ track: trackEvent }}
+                />
               </div>
             )}
           </div>

@@ -164,6 +164,16 @@ a { color: var(--color-accent); }
   background: var(--color-surface); color: var(--color-text);
 }
 .miss p { margin: var(--space-1); font-size: var(--text-sm); }
+.feedback-area {
+  display: inline-flex; gap: var(--space-2); padding: var(--space-1); border-radius: var(--radius-pill);
+  background: var(--color-surface); pointer-events: auto;
+}
+.feedback { display: contents; }
+.feedback button {
+  padding: var(--space-1) var(--space-3); border-radius: var(--radius-pill); border: 1px solid var(--color-chip-ring);
+  background: var(--color-surface); color: var(--color-text); font-size: var(--text-sm); cursor: pointer;
+}
+.feedback button[aria-pressed='true'] { border-color: var(--color-accent); color: var(--color-accent); font-weight: 600; }
 .steam { position: absolute; pointer-events: none; font-size: 1.6rem; animation: steam 0.5s ease-out forwards; }
 @keyframes steam { to { opacity: 0; transform: translateY(-1.2rem); } }
 
