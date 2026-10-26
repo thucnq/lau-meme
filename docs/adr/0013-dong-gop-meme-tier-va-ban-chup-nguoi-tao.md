@@ -40,6 +40,7 @@
 ## Hệ quả
 - Một migration: 3 bảng, 2 cột nullable. Thêm 9 endpoint: 5 cho thực khách/công khai, 4 cho quản trị cộng gán tier. Thêm 3 trường trong `PipelineState`.
 - Duyệt là thao tác D1 thuần, nên admin không cần chờ pipeline. Người gửi thấy "Đã duyệt" ngay, còn meme lên game ở mẻ kế tiếp (staging 2 tiếng, production 12 tiếng).
+  - (Cập nhật 2026-10-26, AC-CONTRIB-14, contract 0.8.0) Tab "Nội dung" chỉ liệt kê danh mục, nên meme vừa duyệt chưa có ở đó. `AdminContribution.in_catalog` cho trang quản trị ghi "Chờ mẻ kế tiếp" tới khi mẻ đăng đưa phần tử vào danh mục. Duyệt vẫn không ghi `element`/`recipe`.
 - Worker phải tính ElementId (`lm1|e|` + `fold`) giống hệt pipeline và web. Test chéo dùng cùng bộ ví dụ với `pipeline/tests/test_graph.py`.
 - `GET /api/creators/{version}` cho biết phần tử nào (theo id băm) là meme đóng góp, kèm nickname, nhưng không lộ tên phần tử. Nickname vốn đã công khai trên bảng xếp hạng.
 - Hai bảng audit thay vì một. Trang quản trị và API đọc gộp, nên người xem không thấy khác biệt.
