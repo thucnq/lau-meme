@@ -65,6 +65,7 @@ type Contribution = {
 type AdminContribution = Omit<Contribution, 'created_at'> & {
   image_hint: string | null
   use_image_url: boolean
+  in_catalog: boolean
   tier: number
   element_id: string | null
   nickname: string
@@ -77,7 +78,7 @@ type Board = { rows: Array<{ rank: number; nickname: string; approved: number }>
 
 const CONTRIB_KEYS = ['a', 'b', 'created_at', 'description', 'emoji', 'id', 'image_url', 'name', 'reject_reason', 'status']
 const ADMIN_KEYS = [
-  'a', 'b', 'created_at', 'decided_at', 'description', 'element_id', 'emoji', 'id', 'image_hint', 'image_url', 'name', 'nickname',
+  'a', 'b', 'created_at', 'decided_at', 'description', 'element_id', 'emoji', 'id', 'image_hint', 'image_url', 'in_catalog', 'name', 'nickname',
   'reject_reason', 'status', 'tier', 'use_image_url',
 ]
 const STATE_KEYS = ['a', 'approved_at', 'b', 'element_id', 'emoji', 'image_hint', 'name']
@@ -1463,4 +1464,87 @@ describe('contrib (worker)', () => {
     expect(changes[0]!.action).toBe(status === 'approved' ? 'approve_contribution' : 'reject_contribution')
     expect(await changeRows()).toHaveLength(1)
   })
+
+  // ========================================================================== AC-CONTRIB-14
+  it(
+    'AC-CONTRIB-14: danh sách admin có in_catalog là boolean ở mọi dòng; đề xuất chờ duyệt và bị từ chối -> false; đã duyệt mà phần tử chưa có trong danh mục -> false',
+    async () => {
+      const A = await acct('Bún Chả')
+      const rows: CRow[] = [
+        { account: A.id, a: 'Deadline', b: 'Cà Phê', name: 'Meme Đang Chờ' },
+        { account: A.id, a: 'Cay', b: 'Cà Phê', name: 'Meme Bị Loại', status: 'rejected' },
+        { account: A.id, a: 'Toang', b: 'Cà Phê', name: 'Meme Chưa Lên Danh Mục', status: 'approved' },
+      ]
+      await env.DB.batch([...A.stmts, ...(await stmtsOf(rows))])
+
+      const seen = new Map<string, boolean>()
+      for (const status of ['pending', 'rejected', 'approved']) {
+        const page = await json<Page<AdminContribution>>(await adminList(`?status=${status}`))
+        expect(page.items).toHaveLength(1)
+        for (const item of page.items) {
+          expect(Object.keys(item).sort()).toEqual(ADMIN_KEYS)
+          expect(typeof item.in_catalog, item.name).toBe('boolean')
+          seen.set(item.name, item.in_catalog)
+        }
+      }
+      expect(seen.get('Meme Đang Chờ')).toBe(false)
+      expect(seen.get('Meme Bị Loại')).toBe(false)
+      expect(seen.get('Meme Chưa Lên Danh Mục')).toBe(false)
+      // phần tử chưa có trong bảng element
+      expect(await n('SELECT COUNT(*) AS n FROM element WHERE id = ?', await elementId('Meme Chưa Lên Danh Mục'))).toBe(0)
+    },
+    120_000,
+  )
+
+  it(
+    'AC-CONTRIB-14: đề xuất đã duyệt chuyển in_catalog thành true khi mẻ đăng đưa phần tử vào danh mục; đề xuất đã duyệt khác chưa vào mẻ vẫn false',
+    async () => {
+      const A = await acct('Bún Chả')
+      const rows: CRow[] = [
+        { account: A.id, a: 'Deadline', b: 'Cà Phê', name: 'Cà Phê Chạy Deadline', status: 'approved' },
+        { account: A.id, a: 'Cay', b: 'Cà Phê', name: 'Meme Chưa Vào Mẻ', status: 'approved' },
+      ]
+      await env.DB.batch([...A.stmts, ...(await stmtsOf(rows))])
+      const inCatalog = async () => {
+        const page = await json<Page<AdminContribution>>(await adminList('?status=approved'))
+        return Object.fromEntries(page.items.map((i) => [i.name, i.in_catalog]))
+      }
+
+      expect(await inCatalog()).toEqual({ 'Cà Phê Chạy Deadline': false, 'Meme Chưa Vào Mẻ': false })
+
+      await publish(2, [{ a: 'Deadline', b: 'Cà Phê', result: 'Cà Phê Chạy Deadline', emoji: '☕', depth: 2 }])
+      expect(await inCatalog()).toEqual({ 'Cà Phê Chạy Deadline': true, 'Meme Chưa Vào Mẻ': false })
+
+      // mẻ sau đưa nốt phần tử còn lại
+      await publish(3, [
+        { a: 'Deadline', b: 'Cà Phê', result: 'Cà Phê Chạy Deadline', emoji: '☕', depth: 2 },
+        { a: 'Cay', b: 'Cà Phê', result: 'Meme Chưa Vào Mẻ', emoji: '🍲', depth: 2 },
+      ])
+      expect(await inCatalog()).toEqual({ 'Cà Phê Chạy Deadline': true, 'Meme Chưa Vào Mẻ': true })
+    },
+    180_000,
+  )
+
+  it(
+    'AC-CONTRIB-14: duyệt đề xuất chờ duyệt -> phản hồi có in_catalog false; dòng trong danh sách "Đã duyệt" vẫn false cho tới khi mẻ đăng đưa phần tử vào danh mục',
+    async () => {
+      const A = await acct('Bún Chả')
+      const x = await crow({ account: A.id, a: 'Deadline', b: 'Cà Phê', name: 'Cà Phê Chạy Deadline' })
+      await env.DB.batch([...A.stmts, x.stmt])
+
+      const res = await adminApprove(x.id, { image_hint: HINT })
+      expect(res.status).toBe(200)
+      const body = await json<AdminContribution>(res)
+      expect(Object.keys(body).sort()).toEqual(ADMIN_KEYS)
+      expect(body).toMatchObject({ id: x.id, status: 'approved', in_catalog: false })
+
+      const listed = await json<Page<AdminContribution>>(await adminList('?status=approved'))
+      expect(listed.items.find((i) => i.id === x.id)).toMatchObject({ in_catalog: false })
+
+      await publish(2, [{ a: 'Deadline', b: 'Cà Phê', result: 'Cà Phê Chạy Deadline', emoji: '☕', depth: 2 }])
+      const after = await json<Page<AdminContribution>>(await adminList('?status=approved'))
+      expect(after.items.find((i) => i.id === x.id)).toMatchObject({ in_catalog: true })
+    },
+    120_000,
+  )
 })
