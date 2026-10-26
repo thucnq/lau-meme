@@ -496,8 +496,10 @@ describe('contrib ui: đóng góp meme', () => {
   const flat = (s: string | null): string => (s ?? '').replace(/\s+/g, ' ').trim()
   const escapeRe = (s: string): string => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
   const combo = (root: HTMLElement, label: string): HTMLElement => within(root).getByRole('combobox', { name: label })
+  // chỉ lấy mục trong listbox của combobox, không lấy <option> gốc của ô chọn sắp xếp Đĩa
+  const listOptions = (): HTMLElement[] => screen.queryAllByRole('listbox').flatMap((lb) => within(lb).queryAllByRole('option'))
   const optionFor = (name: string): HTMLElement | undefined =>
-    screen.queryAllByRole('option').find((o) => new RegExp(`^\\S*\\s*${escapeRe(name)}$`).test(flat(o.textContent)))
+    listOptions().find((o) => new RegExp(`^\\S*\\s*${escapeRe(name)}$`).test(flat(o.textContent)))
   const choose = async (root: HTMLElement, label: string, name: string): Promise<void> => {
     const box = combo(root, label)
     fireEvent.focus(box)
@@ -620,7 +622,7 @@ describe('contrib ui: đóng góp meme', () => {
   })
 
   // ---------------------------------------------------------------- AC-CONTRIB-13: chọn hai phần tử
-  const optionNames = (): string[] => screen.queryAllByRole('option').map((o) => flat(o.textContent))
+  const optionNames = (): string[] => listOptions().map((o) => flat(o.textContent))
   const openForm = async (progress: (p: Progress) => void = withCafe): Promise<HTMLElement> => {
     await setup({ signedIn: true, progress })
     await mountReady()
