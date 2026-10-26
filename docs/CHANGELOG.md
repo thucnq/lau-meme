@@ -64,3 +64,6 @@
 - Món bóng khi kéo (AC-GAME-02, cập nhật 2026-10-25): món bóng đi theo con trỏ hoặc ngón tay, tâm cách điểm con trỏ không quá 4 px ở mọi vị trí trên trang, kể cả khi trang đã cuộn; món bóng mang nền, viền và hình nhỏ tier của món đang kéo.
 - Chọn hai phần tử khi đóng góp meme (AC-CONTRIB-13, 2026-10-25): hai ô "Phần tử 1" và "Phần tử 2" là ô chọn trong Đĩa của người chơi. Gõ để lọc (không dấu), chọn bằng chuột, chạm, hoặc phím mũi tên và Enter; "Bỏ chọn" xóa lựa chọn. Có thể kéo món từ Đĩa hoặc từ bàn thả vào ô; món trên bàn vẫn ở bàn. Tên không khớp món nào trong Đĩa thì nút "Gửi đề xuất" báo cần chọn phần tử; món đã chọn rời khỏi Đĩa thì ô tự bỏ chọn. Thân gửi lên không đổi.
 - Triển khai staging: Worker version `fbfbdf5b-ebbb-4e8a-9ebd-a0f77743b9bb`, git sha `140154d`, không có migration mới.
+- Món đặc biệt chỉ định (AC-DAILY-19, ADR 0019): admin chọn một món đang hoạt động và nhập gợi ý làm Món đặc biệt của mẻ kế tiếp, trên tab "Món đặc biệt" của trang quản trị. Chỉ áp cho một mẻ; mẻ không đăng được thì chỉ định còn nguyên; món không còn hoạt động hoặc bị chặn lúc mẻ chạy thì mẻ tự chọn như thường.
+- Món đặc biệt chỉ định (AC-INV-10): món admin chỉ định có thể nằm ngoài độ sâu 4-8 của luật thường; các điều kiện còn lại (đang hoạt động, tới được) vẫn giữ.
+- Triển khai staging: Worker version `5113600b`, git sha `f1d6fec`.

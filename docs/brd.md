@@ -60,7 +60,7 @@
 - Ngoại lệ: phần tử/công thức trong danh sách chặn → coi như không có; graph tải lỗi → thông báo `role="alert"` và nút thử lại, tiến độ cục bộ không mất.
 
 ### 4.2 Món đặc biệt hôm nay (DAILY)
-1. Mỗi mẻ (00:00 và 12:00 GMT+7, theo giờ chạy thật) pipeline chọn 1 món, ghi vào manifest: emoji, gợi ý mờ, khóa băm của tên (không có tên đọc được).
+1. Mỗi mẻ (00:00 và 12:00 GMT+7, theo giờ chạy thật) pipeline chọn 1 món, ghi vào manifest: emoji, gợi ý mờ, khóa băm của tên (không có tên đọc được). Nếu admin đã chỉ định món cho mẻ kế tiếp (AC-DAILY-19, ADR 0019) thì mẻ dùng món và gợi ý đó thay cho lựa chọn tự động; chỉ áp cho một mẻ.
 2. Thực khách ghép trên bàn lẩu như thường (cập nhật 2026-10-21: bỏ bàn thử thách và đếm bước). Lượt ghép ra đúng món đích là giải: tên lộ ra.
 3. Đã đăng nhập Google thì client gửi cặp vừa ghép lên server; chưa đăng nhập thì thẻ mời đăng nhập, đăng nhập xong tự gửi.
 4. Server kiểm cặp là công thức có thật ra món đích → ghi kết quả với `solved_at` = lúc nhận, cập nhật streak, trả hạng.
@@ -201,3 +201,4 @@ Stack là Cloudflare Worker + D1 + Python pipeline (không Docker/Postgres), nê
 | 2026-10-24 | 1.3 | Câu hỏi mở 67-70, 72-75 chốt theo mặc định (ngưỡng tier, Vàng/Đỏ chưa có ảnh, giới hạn ghi Đĩa, tranh vẽ tay, chiều cao bàn, âm thanh, hiệu ứng lặp lại, chỉ gộp Đĩa khi đăng nhập Google); câu 71: bỏ hẳn nút "Chơi lại từ đầu" (AC-GAME-11, AC-GAME-19, AC-GAME-22, AC-SYNC-07 cập nhật) | nguyenquythuc (chưa duyệt) |
 | 2026-10-25 | 1.4 | ART: AC-ART-13 (admin tải PNG/WebP ≤ 1 MB cho phần tử, chuẩn hóa WebP 256×256 trên trình duyệt, mẻ sau không vẽ đè, audit `set_image`); AC-ART-14 (khi duyệt đề xuất, admin chọn "Dùng link làm ảnh"; mẻ `full` tải link có chặn SSRF, không vẽ bằng Workers AI; báo cáo "Link ảnh lỗi: N"); câu hỏi mở 46 đổi theo chủ dự án; ADR 0016, 0018; contract 0.6.0; triển khai staging ngày 2026-10-25 | nguyenquythuc (chưa duyệt) |
 | 2026-10-26 | 1.5 | Góp ý giao diện 2026-10-25: viền thẻ 1 px `--color-chip-ring` dùng chung, lúc thường không sáng (AC-TIER-02 cập nhật); món bóng theo con trỏ (AC-GAME-02 cập nhật); chọn hai phần tử bằng ô chọn trong Đĩa hoặc kéo thả (AC-CONTRIB-13); câu hỏi mở 79-82 đã chốt | nguyenquythuc (chưa duyệt) |
+| 2026-10-26 | 1.6 | Chỉ định Món đặc biệt (AC-DAILY-19, ADR 0019): admin chọn một món đang hoạt động và gợi ý cho đúng một mẻ kế tiếp (tab "Món đặc biệt"); mẻ không thành công thì chỉ định còn nguyên. AC-INV-10 miễn điều kiện độ sâu 4-8 cho món được chỉ định. Dọn dữ liệu hằng ngày giữ 12 tháng cho `admin_change`, `admin_image_change` và `daily_pin_change` (cùng `admin_audit`) | - |
