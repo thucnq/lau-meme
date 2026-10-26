@@ -33,7 +33,9 @@ export function startPlateSync(d: Deps): PlateSync {
   let stopped = false
   let retryAt = 0
   let pulledAt = -Infinity
-  let paired = false
+  let stale = false // a tab shown again wants a fresh read; the last good read stays usable meanwhile
+  let pairing: Promise<void> | null = null
+  const recovered = new Set<string>() // pairs found by pair(): sent in a batch like the rest of old progress (AC-SYNC-03)
 
   const waiting = () => stopped || Date.now() < retryAt
 
@@ -54,6 +56,7 @@ export function startPlateSync(d: Deps): PlateSync {
 
   async function pull(): Promise<boolean> {
     pulledAt = Date.now()
+    stale = false
     const res = await playerFetch('api/me/plate', {}, d.opts)
     if (!usable(res)) return false
     const { items } = (await res.json()) as { items: PlateItem[] }
@@ -76,7 +79,7 @@ export function startPlateSync(d: Deps): PlateSync {
   async function push(todo: Item[]): Promise<void> {
     todo.forEach((i) => inflight.add(i.id))
     try {
-      if (todo.length === 1) {
+      if (todo.length === 1 && !recovered.has(todo[0]!.id)) {
         const res = await write('api/me/plate', combination(todo[0]!))
         if (res?.ok) server?.add(todo[0]!.id)
         else if (res) refuse([todo[0]!.id])
@@ -104,21 +107,21 @@ export function startPlateSync(d: Deps): PlateSync {
     if (next === p || stopped) return
     const now = d.progress() ?? p
     const pairs = new Map(next.items.flatMap((i) => (i.pair ? [[i.id, i.pair] as const] : [])))
+    for (const i of p.items) if (!i.pair && pairs.has(i.id)) recovered.add(i.id)
     d.commit({ ...now, items: now.items.map((i) => (i.pair || !pairs.has(i.id) ? i : { ...i, pair: pairs.get(i.id)! })) })
   }
 
   async function run(): Promise<void> {
     if (waiting()) return
-    if (!paired) {
-      paired = true
-      await pair()
-    }
-    if (server === null) {
+    // once per load, beside the first read; a failure leaves those items local until the next load
+    pairing ??= pair().catch(() => undefined)
+    if (server === null || stale) {
       pulling ??= pull().finally(() => {
         pulling = null
       })
-      if (!(await pulling)) return
+      if (!(await pulling) && server === null) return
     }
+    await pairing
     if (waiting() || server === null) return
     const known = server
     const todo = (d.progress()?.items ?? []).filter((i) => i.pair && !known.has(i.id) && !inflight.has(i.id))
@@ -127,7 +130,7 @@ export function startPlateSync(d: Deps): PlateSync {
 
   const onVisible = () => {
     if (document.visibilityState !== 'visible' || Date.now() - pulledAt < PULL_GAP_MS || pulling) return
-    server = null
+    stale = true
     void run().catch(() => undefined)
   }
   document.addEventListener('visibilitychange', onVisible)

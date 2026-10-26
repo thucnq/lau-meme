@@ -311,7 +311,8 @@ export function mergePlate(p: Progress, server: PlateItem[], resolved: Item[]): 
 
 /**
  * Pairs for items made before pairs were kept (AC-SYNC-03): any two items of this plate, neither blocked, whose recipe
- * makes one. Starters (depth 0) need none. Items no pair of the plate makes keep no pair and are tried again next load.
+ * makes one, other than the item itself. Starters (depth 0) need none. Items no pair of the plate makes keep no pair
+ * and are tried again next load.
  */
 export async function findPairs(graph: Graph, p: Progress, bl: Blocklist): Promise<Progress> {
   const missing = new Set(p.items.filter((i) => !i.pair && i.depth > 0).map((i) => i.id))
@@ -319,12 +320,14 @@ export async function findPairs(graph: Graph, p: Progress, bl: Blocklist): Promi
   const inputs = visibleItems(p, bl)
   const found = new Map<string, [string, string]>()
   for (let x = 0; x < inputs.length && found.size < missing.size; x++) {
-    const tries = inputs.slice(x).map((y) => [inputs[x]!.name, y.name] as [string, string])
-    const keys = await Promise.all(tries.map(([a, b]) => lookupKey(a, b)))
-    const open = tries.filter((_, n) => typeof graph.entries[keys[n]!] === 'string' &&!bl.recipes.includes(keys[n]!))
-    const results = await Promise.all(open.map(([a, b]) => decryptEntry(graph, a, b)))
+    const row = inputs.slice(x)
+    const keys = await Promise.all(row.map((y) => lookupKey(inputs[x]!.name, y.name)))
+    const open = row.filter((_, n) => typeof graph.entries[keys[n]!] === 'string' && !bl.recipes.includes(keys[n]!))
+    const results = await Promise.all(open.map((y) => decryptEntry(graph, inputs[x]!.name, y.name)))
     results.forEach((r, n) => {
-      if (r && missing.has(r.id) && !found.has(r.id) && !bl.elements.includes(r.id)) found.set(r.id, open[n]!)
+      const y = open[n]!
+      if (!r || !missing.has(r.id) || found.has(r.id) || bl.elements.includes(r.id)) return
+      if (r.id !== inputs[x]!.id && r.id !== y.id) found.set(r.id, [inputs[x]!.name, y.name])
     })
   }
   if (found.size === 0) return p
