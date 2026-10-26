@@ -34,8 +34,8 @@
   }
  },
  "green": {
-  "ts": "2026-10-25T03:23:47+00:00",
-  "commit": "18d9fb2",
+  "ts": "2026-10-26T01:15:04+00:00",
+  "commit": "816c4b6",
   "results": {
    "AC-TIER-01": {
     "status": "PASS",
@@ -43,7 +43,7 @@
    },
    "AC-TIER-02": {
     "status": "PASS",
-    "test": "tier.browser.test.tsx#tier hiển thị "
+    "test": "mobile-fit.browser.test.tsx#mobile-fit: viền phần tử và viền hình nhỏ "
    },
    "AC-TIER-03": {
     "status": "PASS",

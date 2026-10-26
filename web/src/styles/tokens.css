@@ -32,7 +32,7 @@
   --color-veil: rgb(29 23 20 / 0.25); /* inner shade of the pot rim */
   --color-steam: #8c8178;
   /* tiers (AC-TIER-02): background, and a deeper shade for the small mark; text keeps --color-text */
-  --color-badge-ring: #ffffff; /* ring round the small tier shape on hover, and round it outside a chip */
+  --color-badge-ring: #ffffff; /* chip border and tier shape ring on hover (AC-TIER-02) */
   --color-chip-ring: #a8998a; /* chip border and its tier shape's ring at rest: one colour, darker than the hover ring (AC-TIER-02) */
   --tier-1: #e5e7eb; --tier-1-strong: #6b7280;
   --tier-2: #bbf7d0; --tier-2-strong: #16a34a;

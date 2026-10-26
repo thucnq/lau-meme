@@ -321,9 +321,11 @@ a { color: var(--color-accent); }
   position: absolute; left: 50%; bottom: 0; width: 0.5rem; height: 0.5rem; transform: translate(-50%, 50%);
   pointer-events: none;
 }
-/* a light ring keeps the half that sticks out apart from the tabletop, plastic or wood (AC-GAME-28) */
-.tier-badge circle, .tier-badge polygon { fill: var(--tier-mark); stroke: var(--color-badge-ring); stroke-width: 1.6px; paint-order: stroke; }
-.chip .tier-badge circle, .chip .tier-badge polygon, .slot-item .tier-badge circle, .slot-item .tier-badge polygon { stroke: var(--color-chip-ring); transition: stroke var(--motion-fast); }
+/* a ring keeps the half that sticks out apart from the tabletop, plastic or wood (AC-GAME-28); at rest it is the chip border's
+   colour, on hover both light up (AC-TIER-02) */
+.tier-badge circle, .tier-badge polygon {
+  fill: var(--tier-mark); stroke: var(--color-chip-ring); stroke-width: 1.6px; paint-order: stroke; transition: stroke var(--motion-fast);
+}
 .chip:hover .tier-badge circle, .chip:hover .tier-badge polygon { stroke: var(--color-badge-ring); }
 .tier-badge { overflow: visible; width: 0.6rem; height: 0.6rem; }
 .discovery-card .tier-badge { width: 0.9rem; height: 0.9rem; }
