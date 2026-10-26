@@ -2426,14 +2426,16 @@ components:
                   target_kind: { type: string, enum: [element, recipe, image, contribution] }
                   target_id: { type: string }
                   before:
-                    description: 'Trạng thái kiểm duyệt; với `set_tier` là `{tier, source}` (source `auto` | `admin`), với đề xuất là object các trường đã đổi, với `set_image` là `{image_key}`'
+                    description: 'Trạng thái kiểm duyệt; với `set_tier` là `{tier, source}` (source `auto` | `admin`), với đề xuất là object các trường đã đổi, với `set_image` là `{image_key}`, với `set_daily_pin`/`clear_daily_pin` là `{element_id, hint}` hoặc `null` khi không có chỉ định'
                     oneOf:
                       - $ref: '#/components/schemas/TargetState'
                       - type: object
+                      - type: 'null'
                   after:
                     oneOf:
                       - $ref: '#/components/schemas/TargetState'
                       - type: object
+                      - type: 'null'
                   reason: { type: [string, 'null'] }
                   token_fp: { type: string, pattern: '^[0-9a-f]{8}$' }
                   created_at: { $ref: '#/components/schemas/Instant' }
