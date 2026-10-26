@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: lau-meme API
-  version: 0.6.0
+  version: 0.7.0
   description: |
     API của Worker Lẩu Meme. Bốn chủ thể (BRD mục 2): thực khách ẩn danh (header `X-Player-Id` = UUID v4
     sinh trên trình duyệt), thực khách đã đăng nhập Google (cookie phiên `laumeme_sid`, ADR 0010 - kết quả Daily,
@@ -998,6 +998,93 @@ paths:
         '404': { $ref: '#/components/responses/NotFound' }
         '429': { $ref: '#/components/responses/TooManyRequests' }
         default: { $ref: '#/components/responses/Problem' }
+  /admin/daily-pin:
+    servers:
+      - url: /api
+        description: Chỉ trên host quản trị riêng (ADR 0008) - production https://laumeme-admin.dinoduct.fun/api, staging https://laumeme-admin-staging.dinoduct.fun/api; trên host game `/lau-meme/api/admin/*` trả 404
+    get:
+      operationId: adminGetDailyPin
+      tags: [admin]
+      summary: Chỉ định Món đặc biệt đang chờ mẻ kế tiếp (Tùy chọn)
+      description: Chỉ định đang chờ (tên món, gợi ý), hoặc `null` khi không có (AC-DAILY-19).
+      security: [{ AdminToken: [] }]
+      x-ac: [AC-DAILY-19]
+      responses:
+        '200':
+          description: Chỉ định hiện tại
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required: [pin]
+                properties:
+                  pin:
+                    oneOf:
+                      - $ref: '#/components/schemas/DailyPin'
+                      - type: 'null'
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        default: { $ref: '#/components/responses/Problem' }
+    put:
+      operationId: adminSetDailyPin
+      tags: [admin]
+      summary: Chỉ định Món đặc biệt cho mẻ kế tiếp (Tùy chọn)
+      description: |
+        AC-DAILY-19, ADR 0019. Phần tử phải có trong danh mục `element` (không có → 404) và không bị chặn (`block` kind
+        `element` → 400); không xét depth, gợi ý của lõi, độ mặn hay luật không lặp 30 mẻ. `hint` sau khi bỏ khoảng
+        trắng đầu/cuối dài 1-200 ký tự và không chứa tên món (so theo `fold` nguyên từ như AC-DAILY-03) → sai thì 400.
+        Lỗi 4xx không đổi gì, không ghi audit. Hợp lệ: trong một `DB.batch` thay chỉ định cũ (nếu có) bằng dòng mới với
+        `id` mới và ghi 1 dòng `daily_pin_change` (`set_daily_pin`, trước: chỉ định cũ hoặc `null`, sau: chỉ định mới).
+        Có hiệu lực ở mẻ kế tiếp (`core` hoặc `full`).
+      security: [{ AdminToken: [] }]
+      x-ac: [AC-DAILY-19, AC-ADMIN-09]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [element_id, hint]
+              properties:
+                element_id: { $ref: '#/components/schemas/ElementId' }
+                hint: { type: string, minLength: 1, maxLength: 200 }
+      responses:
+        '200':
+          description: Đã chỉ định
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required: [before, after]
+                properties:
+                  before:
+                    oneOf:
+                      - $ref: '#/components/schemas/DailyPin'
+                      - type: 'null'
+                  after: { $ref: '#/components/schemas/DailyPin' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        default: { $ref: '#/components/responses/Problem' }
+    delete:
+      operationId: adminClearDailyPin
+      tags: [admin]
+      summary: Bỏ chỉ định Món đặc biệt (Tùy chọn)
+      description: |
+        Xóa chỉ định đang chờ; mẻ kế tiếp tự chọn theo AC-DAILY-01. Có chỉ định thì ghi 1 dòng `daily_pin_change`
+        (`clear_daily_pin`, trước: chỉ định, sau: `null`) trong cùng `DB.batch`; không có chỉ định thì vẫn 204, không
+        ghi audit (không có gì thay đổi).
+      security: [{ AdminToken: [] }]
+      x-ac: [AC-DAILY-19, AC-ADMIN-09]
+      responses:
+        '204': { description: Đã bỏ (hoặc không có chỉ định) }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        default: { $ref: '#/components/responses/Problem' }
   /admin/contributions:
     servers:
       - url: /api
@@ -1582,6 +1669,17 @@ components:
         status: { type: integer }
         detail: { type: string }
 
+    DailyPin:
+      type: object
+      additionalProperties: false
+      required: [element_id, name, emoji, hint, created_at]
+      description: Chỉ định Món đặc biệt cho mẻ kế tiếp (AC-DAILY-19)
+      properties:
+        element_id: { $ref: '#/components/schemas/ElementId' }
+        name: { type: string, maxLength: 100 }
+        emoji: { type: string, maxLength: 16 }
+        hint: { type: string, minLength: 1, maxLength: 200 }
+        created_at: { $ref: '#/components/schemas/Instant' }
     ElementId:
       type: string
       description: base64url(SHA-256("lm1|e|" + fold(tên))) - ADR 0002
@@ -2247,6 +2345,10 @@ components:
       type: object
       additionalProperties: false
       properties:
+        daily_pin:
+          type: string
+          enum: [used, dropped]
+          description: 'Chỉ định Món đặc biệt của admin (AC-DAILY-19): `used` đã dùng, `dropped` bị bỏ vì món không còn hoạt động hoặc bị chặn - báo cáo đợt ghi "Chỉ định Món đặc biệt bị bỏ"; vắng = không có chỉ định'
         crawled: { type: integer, minimum: 0 }
         added: { type: integer, minimum: 0 }
         blocked:
@@ -2320,7 +2422,7 @@ components:
                 additionalProperties: false
                 required: [action, target_kind, target_id, before, after, token_fp, created_at]
                 properties:
-                  action: { type: string, enum: [hide, show, block, unblock, dismiss_reports, set_tier, edit_contribution, approve_contribution, reject_contribution, set_image] }
+                  action: { type: string, enum: [hide, show, block, unblock, dismiss_reports, set_tier, edit_contribution, approve_contribution, reject_contribution, set_image, set_daily_pin, clear_daily_pin] }
                   target_kind: { type: string, enum: [element, recipe, image, contribution] }
                   target_id: { type: string }
                   before:
@@ -2359,7 +2461,7 @@ components:
     PipelineState:
       type: object
       additionalProperties: false
-      required: [current_version, blocklist, banned_aliases, admin_blocked, daily_history, feedback, catalog, tiers, contributions, admin_images, image_links]
+      required: [current_version, blocklist, banned_aliases, admin_blocked, daily_history, feedback, catalog, tiers, contributions, admin_images, image_links, daily_pin]
       properties:
         current_version: { type: [integer, 'null'] }
         blocklist: { $ref: '#/components/schemas/Blocklist' }
@@ -2453,6 +2555,21 @@ components:
             properties:
               element_id: { $ref: '#/components/schemas/ElementId' }
               url: { type: string, maxLength: 500, pattern: '^https://' }
+        daily_pin:
+          description: |
+            Chỉ định Món đặc biệt của admin cho mẻ kế tiếp, hoặc `null` (AC-DAILY-19, ADR 0019). Mẻ dùng `element_id`
+            với `hint` làm Món đặc biệt, bỏ qua thứ tự AC-DAILY-01 và luật 30 mẻ AC-DAILY-18; phần tử không còn hoạt động
+            hoặc bị chặn lúc mẻ chạy thì bỏ chỉ định, tự chọn như thường (`stats.daily_pin = dropped`). Mẻ đăng thành
+            công gửi lại `id` trong `daily_pin_id`.
+          oneOf:
+            - type: object
+              additionalProperties: false
+              required: [id, element_id, hint]
+              properties:
+                id: { type: string, format: uuid }
+                element_id: { $ref: '#/components/schemas/ElementId' }
+                hint: { type: string, minLength: 1, maxLength: 200 }
+            - type: 'null'
 
     PipelineStore:
       type: object
@@ -2514,6 +2631,14 @@ components:
             content: { $ref: '#/components/schemas/BatchContent' }
             stats: { $ref: '#/components/schemas/BatchStats' }
             store: { $ref: '#/components/schemas/PipelineStore' }
+            daily_pin_id:
+              type: string
+              format: uuid
+              description: |
+                `daily_pin.id` mẻ đã đọc từ `/pipeline/state` (đã dùng hoặc đã bỏ - AC-DAILY-19). Worker xóa đúng dòng có
+                id này trong cùng `DB.batch` đăng mẻ; chỉ định admin đặt lại trong lúc mẻ chạy (id khác) được giữ. Khi
+                `stats.daily_pin = used` mà dòng còn đó, `content.daily_element_id` phải bằng `element_id` của chỉ định,
+                không thì 422.
         - type: object
           additionalProperties: false
           required: [status, batch_at, mode, failed_step, stats]
