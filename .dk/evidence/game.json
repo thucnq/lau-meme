@@ -1,15 +1,15 @@
 {
  "red": {
-  "ts": "2026-10-25T06:22:44+00:00",
-  "commit": "f279f4d",
+  "ts": "2026-10-26T00:17:16+00:00",
+  "commit": "c172178",
   "results": {
    "AC-GAME-01": {
     "status": "PASS",
     "test": "Game.test.tsx#Game > AC-GAME-01: lần đầu Đĩa có đúng 4 phần tử khởi đầu từ manifest, nồi có 2 chỗ thả trống"
    },
    "AC-GAME-02": {
-    "status": "PASS",
-    "test": "Game.test.tsx#Game > AC-GAME-02: thả A và B vào nồi - nồi sôi tối đa 1,2 s, bỏ qua thao tác lúc sôi, C lên bàn và vào Đĩa"
+    "status": "FAIL",
+    "test": "ghost.browser.test.tsx#món bóng khi kéo bằng chuột "
    },
    "AC-GAME-03": {
     "status": "PASS",
@@ -84,8 +84,8 @@
     "test": "ui2.browser.test.tsx#ui2 nồi lẩu vẽ trọn "
    },
    "AC-GAME-21": {
-    "status": "FAIL",
-    "test": "ui2.browser.test.tsx#ui2 touch-action "
+    "status": "PASS",
+    "test": "mobile-fit.browser.test.tsx#mobile-fit: vuốt cuộn trên món "
    },
    "AC-GAME-22": {
     "status": "PASS",
@@ -108,7 +108,7 @@
     "test": "ui3.ui.test.tsx#ui3: âm thanh và nút loa "
    },
    "AC-GAME-27": {
-    "status": "FAIL",
+    "status": "PASS",
     "test": "mobile-fit.browser.test.tsx#mobile-fit: nickname dài ở 360 px "
    },
    "AC-GAME-28": {

@@ -13,6 +13,10 @@
  *             bàn phím, hoặc chạm giữ 500 ms (pointerType "touch", không di chuyển); rời chuột / blur / thả tay thì ẩn lại
  *             (chuột, focus). Chạm giữ không kéo thả và không đưa phần tử vào nồi. Phần tử lõi không có dòng và không có
  *             aria-describedby. Lỗi tải creators thì game vẫn chạy, không dòng nào, không báo lỗi.
+ *   AC-CONTRIB-13 (2026-10-25): "Phần tử 1"/"Phần tử 2" là role="combobox" (tên truy cập = nhãn); danh sách role="option"
+ *             ("<emoji> <tên>") chỉ gồm phần tử trong Đĩa, lọc theo fold; mỗi ô đã chọn có nút "Bỏ chọn Phần tử N"; thả món
+ *             (Đĩa hoặc bàn) lên ô qua document.elementFromPoint chọn nó mà không đổi bàn/nồi; chưa chọn thì "Gửi đề xuất" hiện
+ *             chữ có "chọn ... phần tử" và không POST.
  *   Game      nút "Đóng góp meme" ở thanh trên. Chưa đăng nhập: bấm hiện chữ "Đăng nhập bằng Google để đóng góp meme", không có
  *             form. Đã đăng nhập: mở vùng role="region" tên "Đóng góp meme" gồm form (ô "Phần tử 1", "Phần tử 2", "Tên meme",
  *             "Biểu tượng", "Mô tả", "Link ảnh", nút "Gửi đề xuất"), gửi POST api/contributions {a, b, name, emoji?, description?,
@@ -267,6 +271,11 @@ function seed(mutate: (p: Progress) => void = () => {}): void {
 const withContributed = (p: Progress): void => {
   p.items.push(item(NAME_CORE, '🔥', 1), item(NAME_X, '☕', 2), item(NAME_Y, '🍲', 2))
 }
+/** Đĩa có thêm "Cà Phê" (AC-CONTRIB-13: chỉ chọn được phần tử có trong Đĩa). */
+const withCafe = (p: Progress): void => {
+  withContributed(p)
+  p.items.push(item('Cà Phê', '🫖', 1))
+}
 
 async function setup(o: { signedIn?: boolean; progress?: (p: Progress) => void } = {}): Promise<void> {
   await installNet()
@@ -483,6 +492,39 @@ describe('contrib ui: đóng góp meme', () => {
   const fill = (root: HTMLElement, label: string, value: string): void => {
     fireEvent.change(within(root).getByLabelText(label), { target: { value } })
   }
+  // AC-CONTRIB-13: "Phần tử 1/2" là combobox, chỉ chọn trong Đĩa (chuột: gõ rồi bấm vào mục trong danh sách)
+  const flat = (s: string | null): string => (s ?? '').replace(/\s+/g, ' ').trim()
+  const escapeRe = (s: string): string => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  const combo = (root: HTMLElement, label: string): HTMLElement => within(root).getByRole('combobox', { name: label })
+  const optionFor = (name: string): HTMLElement | undefined =>
+    screen.queryAllByRole('option').find((o) => new RegExp(`^\\S*\\s*${escapeRe(name)}$`).test(flat(o.textContent)))
+  const choose = async (root: HTMLElement, label: string, name: string): Promise<void> => {
+    const box = combo(root, label)
+    fireEvent.focus(box)
+    fireEvent.change(box, { target: { value: name } })
+    await waitFor(() => expect(optionFor(name), `không có mục "${name}" trong danh sách "${label}"`).toBeTruthy())
+    fireEvent.click(optionFor(name)!)
+    await waitFor(() => expect(within(root).getByRole('button', { name: `Bỏ chọn ${label}` })).toBeTruthy())
+  }
+  const clearButton = (root: HTMLElement, label: string): HTMLElement | null => within(root).queryByRole('button', { name: `Bỏ chọn ${label}` })
+  /** Chữ (và giá trị ô nhập) của khối chứa ô combobox và nút "Bỏ chọn": phải có cả emoji lẫn tên đã chọn. */
+  const fieldText = (root: HTMLElement, label: string): string => {
+    const clear = within(root).getByRole('button', { name: `Bỏ chọn ${label}` })
+    const box = combo(root, label)
+    let el: HTMLElement | null = clear
+    while (el && !el.contains(box)) el = el.parentElement
+    return flat(`${el?.textContent ?? ''} ${(box as HTMLInputElement).value ?? ''}`)
+  }
+  const mouse = (extra: Record<string, number> = {}) => ({ pointerId: 1, pointerType: 'mouse', isPrimary: true, button: 0, buttons: 1, clientX: 5, clientY: 5, ...extra })
+  const dragOnto = async (src: HTMLElement, target: Element): Promise<void> => {
+    dropTarget = target
+    fireEvent.pointerDown(src, mouse())
+    fireEvent.pointerMove(src, mouse({ clientX: 60, clientY: 60 }))
+    fireEvent.pointerMove(src, mouse({ clientX: 120, clientY: 120 }))
+    fireEvent.pointerUp(src, mouse({ buttons: 0, clientX: 120, clientY: 120 }))
+    await advance(1500)
+    dropTarget = null
+  }
 
   it('AC-CONTRIB-05: chưa đăng nhập vẫn có nút "Đóng góp meme"; bấm hiện lời mời đăng nhập, không có form, không gửi gì', async () => {
     await setup({ signedIn: false })
@@ -508,12 +550,12 @@ describe('contrib ui: đóng góp meme', () => {
   })
 
   it('AC-CONTRIB-01: gửi chỉ với tên -> POST api/contributions {a, b, name} (trường tùy chọn rỗng bị bỏ) kèm X-Player-Id, hiện "Đã gửi, chờ duyệt"', async () => {
-    await setup({ signedIn: true })
+    await setup({ signedIn: true, progress: withCafe })
     await mountReady()
     fireEvent.click(openButton())
     const panel = await region()
-    fill(panel, 'Phần tử 1', 'Deadline')
-    fill(panel, 'Phần tử 2', 'Cà Phê')
+    await choose(panel, 'Phần tử 1', 'Deadline')
+    await choose(panel, 'Phần tử 2', 'Cà Phê')
     fill(panel, 'Tên meme', NAME_X)
     fireEvent.click(within(panel).getByRole('button', { name: 'Gửi đề xuất' }))
 
@@ -525,12 +567,12 @@ describe('contrib ui: đóng góp meme', () => {
   })
 
   it('AC-CONTRIB-01: gửi kèm biểu tượng, mô tả, link ảnh thì thân POST có đủ emoji, description, image_url', async () => {
-    await setup({ signedIn: true })
+    await setup({ signedIn: true, progress: withCafe })
     await mountReady()
     fireEvent.click(openButton())
     const panel = await region()
-    fill(panel, 'Phần tử 1', 'Cà Phê')
-    fill(panel, 'Phần tử 2', 'Deadline')
+    await choose(panel, 'Phần tử 1', 'Cà Phê')
+    await choose(panel, 'Phần tử 2', 'Deadline')
     fill(panel, 'Tên meme', 'Cà Phê Thức Đêm')
     fill(panel, 'Biểu tượng', '☕')
     fill(panel, 'Mô tả', 'Uống để thức tới sáng')
@@ -554,8 +596,8 @@ describe('contrib ui: đóng góp meme', () => {
     await mountReady()
     fireEvent.click(openButton())
     const panel = await region()
-    fill(panel, 'Phần tử 1', 'Cười')
-    fill(panel, 'Phần tử 2', 'Toang')
+    await choose(panel, 'Phần tử 1', 'Cười')
+    await choose(panel, 'Phần tử 2', 'Toang')
     fill(panel, 'Tên meme', 'Cười Mới')
     fireEvent.click(within(panel).getByRole('button', { name: 'Gửi đề xuất' }))
     const alert = await screen.findByRole('alert')
@@ -564,17 +606,150 @@ describe('contrib ui: đóng góp meme', () => {
   })
 
   it('AC-CONTRIB-04: máy chủ trả 422 thì hiện "Nội dung không phù hợp" và không nêu từ nào', async () => {
-    await setup({ signedIn: true })
+    await setup({ signedIn: true, progress: withCafe })
     submitReply = () => problem(422, 'Nội dung không phù hợp')
     await mountReady()
     fireEvent.click(openButton())
     const panel = await region()
-    fill(panel, 'Phần tử 1', 'Deadline')
-    fill(panel, 'Phần tử 2', 'Cà Phê')
+    await choose(panel, 'Phần tử 1', 'Deadline')
+    await choose(panel, 'Phần tử 2', 'Cà Phê')
     fill(panel, 'Tên meme', 'Tên Bị Chặn')
     fireEvent.click(within(panel).getByRole('button', { name: 'Gửi đề xuất' }))
     expect(await screen.findByText('Nội dung không phù hợp', { exact: false })).toBeTruthy()
     expect(screen.queryByText('Đã gửi, chờ duyệt')).toBeNull()
+  })
+
+  // ---------------------------------------------------------------- AC-CONTRIB-13: chọn hai phần tử
+  const optionNames = (): string[] => screen.queryAllByRole('option').map((o) => flat(o.textContent))
+  const openForm = async (progress: (p: Progress) => void = withCafe): Promise<HTMLElement> => {
+    await setup({ signedIn: true, progress })
+    await mountReady()
+    fireEvent.click(openButton())
+    return region()
+  }
+
+  it('AC-CONTRIB-13: "Phần tử 1" và "Phần tử 2" là combobox có nhãn; focus hiện danh sách phần tử trong Đĩa (emoji và tên)', async () => {
+    const panel = await openForm()
+    expect(combo(panel, 'Phần tử 1')).toBeTruthy()
+    expect(combo(panel, 'Phần tử 2')).toBeTruthy()
+    fireEvent.focus(combo(panel, 'Phần tử 1'))
+    await waitFor(() => expect(optionNames().length).toBeGreaterThan(0))
+    const names = optionNames()
+    expect(names.some((n) => /^\S*\s*Deadline$/.test(n)), names.join(' | ')).toBe(true)
+    expect(names.some((n) => /^\S*\s*Cà Phê$/.test(n)), names.join(' | ')).toBe(true)
+    expect(names.some((n) => n.startsWith('⏰')), 'mục có emoji').toBe(true)
+  })
+
+  it('AC-CONTRIB-13: gõ "dead" lọc danh sách theo fold (không phân biệt dấu và hoa thường): còn Deadline, mất Cười', async () => {
+    const panel = await openForm()
+    const box = combo(panel, 'Phần tử 1')
+    fireEvent.focus(box)
+    fireEvent.change(box, { target: { value: 'dead' } })
+    await waitFor(() => expect(optionNames().some((n) => /^\S*\s*Deadline$/.test(n))).toBe(true))
+    expect(optionNames().some((n) => n.includes('Cười'))).toBe(false)
+    fireEvent.change(box, { target: { value: '  CA   PHE ' } })
+    await waitFor(() => expect(optionNames().some((n) => /^\S*\s*Cà Phê$/.test(n))).toBe(true))
+    expect(optionNames().some((n) => n.includes('Cười'))).toBe(false)
+    fireEvent.change(box, { target: { value: 'CUOI' } })
+    await waitFor(() => expect(optionNames().some((n) => /^\S*\s*Cười$/.test(n))).toBe(true))
+    expect(optionNames().some((n) => n.includes('Deadline'))).toBe(false)
+  })
+
+  it('AC-CONTRIB-13: gõ "dead" rồi bấm "Deadline" trong danh sách thì ô hiện emoji và tên, có nút bỏ chọn; bấm nút thì ô trống lại', async () => {
+    const panel = await openForm()
+    await choose(panel, 'Phần tử 1', 'Deadline')
+    const text = fieldText(panel, 'Phần tử 1')
+    expect(text).toContain('Deadline')
+    expect(text).toContain('⏰')
+    expect(clearButton(panel, 'Phần tử 2')).toBeNull()
+    fireEvent.click(clearButton(panel, 'Phần tử 1')!)
+    await waitFor(() => expect(clearButton(panel, 'Phần tử 1')).toBeNull())
+  })
+
+  it('AC-CONTRIB-13: chọn bằng bàn phím: gõ rồi ArrowDown + Enter chọn mục đầu tiên của danh sách', async () => {
+    const panel = await openForm()
+    const box = combo(panel, 'Phần tử 1')
+    fireEvent.focus(box)
+    fireEvent.change(box, { target: { value: 'TOA' } }) // chỉ khớp "Toang"
+    await waitFor(() => expect(optionNames()).toHaveLength(1))
+    fireEvent.keyDown(box, { key: 'ArrowDown', code: 'ArrowDown' })
+    fireEvent.keyDown(box, { key: 'Enter', code: 'Enter' })
+    await waitFor(() => expect(clearButton(panel, 'Phần tử 1')).toBeTruthy())
+    const text = fieldText(panel, 'Phần tử 1')
+    expect(text).toContain('Toang')
+    expect(text).toContain('💀')
+  })
+
+  it('AC-CONTRIB-13: kéo "Cà Phê" từ Đĩa thả vào ô "Phần tử 2" thì chọn nó; món không vào nồi và không lên bàn', async () => {
+    const panel = await openForm()
+    const tablesBefore = tableItems().length
+    await dragOnto(plateItem('Cà Phê'), combo(panel, 'Phần tử 2'))
+    await waitFor(() => expect(clearButton(panel, 'Phần tử 2')).toBeTruthy())
+    const text = fieldText(panel, 'Phần tử 2')
+    expect(text).toContain('Cà Phê')
+    expect(text).toContain('🫖')
+    expect(clearButton(panel, 'Phần tử 1')).toBeNull()
+    expect(pot().dataset.state).toBe('idle')
+    expect(slot(1).textContent ?? '').not.toContain('Cà Phê')
+    expect(slot(2).textContent ?? '').not.toContain('Cà Phê')
+    expect(tableItems()).toHaveLength(tablesBefore)
+    expect(plateItem('Cà Phê')).toBeTruthy()
+  })
+
+  it('AC-CONTRIB-13: kéo "Deadline" từ bàn thả vào ô "Phần tử 2" thì chọn nó, món vẫn ở trên bàn, không vào nồi', async () => {
+    const panel = await openForm((p) => {
+      withCafe(p)
+      p.table = [{ uid: 't1', id: eid('Deadline'), name: 'Deadline', emoji: '⏰', x: 40, y: 50 }]
+    })
+    const onTable = (): HTMLElement | undefined => tableItems().find((e) => e.dataset.name === 'Deadline')
+    expect(onTable()).toBeTruthy()
+    await dragOnto(onTable()!, combo(panel, 'Phần tử 2'))
+    await waitFor(() => expect(clearButton(panel, 'Phần tử 2')).toBeTruthy())
+    expect(fieldText(panel, 'Phần tử 2')).toContain('Deadline')
+    expect(onTable(), 'món phải còn trên bàn').toBeTruthy()
+    expect(tableItems()).toHaveLength(1)
+    expect(pot().dataset.state).toBe('idle')
+    expect(slot(1).textContent ?? '').not.toContain('Deadline')
+    expect(slot(2).textContent ?? '').not.toContain('Deadline')
+  })
+
+  it('AC-CONTRIB-13: gõ tên không có trong Đĩa thì ô vẫn trống, "Gửi đề xuất" báo cần chọn phần tử và không gửi POST', async () => {
+    const panel = await openForm()
+    await choose(panel, 'Phần tử 2', 'Deadline')
+    const box = combo(panel, 'Phần tử 1')
+    fireEvent.focus(box)
+    fireEvent.change(box, { target: { value: 'Tên Không Có Trong Đĩa' } })
+    await advance(100)
+    expect(optionNames().some((n) => n.includes('Tên Không Có'))).toBe(false)
+    fireEvent.blur(box)
+    expect(clearButton(panel, 'Phần tử 1'), 'gõ tên lạ không được coi là đã chọn').toBeNull()
+    fill(panel, 'Tên meme', 'Meme Thiếu Phần Tử')
+    fireEvent.click(within(panel).getByRole('button', { name: 'Gửi đề xuất' }))
+    expect((await screen.findAllByText(/chọn.*phần tử|phần tử.*chọn/i)).length).toBeGreaterThan(0)
+    await advance(300)
+    expect(submits()).toEqual([])
+    expect(screen.queryByText('Đã gửi, chờ duyệt')).toBeNull()
+  })
+
+  it('AC-CONTRIB-13: chưa chọn gì mà bấm "Gửi đề xuất" cũng báo cần chọn phần tử, không gửi POST', async () => {
+    const panel = await openForm()
+    fill(panel, 'Tên meme', 'Meme Rỗng')
+    fireEvent.click(within(panel).getByRole('button', { name: 'Gửi đề xuất' }))
+    expect((await screen.findAllByText(/chọn.*phần tử|phần tử.*chọn/i)).length).toBeGreaterThan(0)
+    await advance(300)
+    expect(submits()).toEqual([])
+  })
+
+  it('AC-CONTRIB-13: thân POST vẫn là tên hai phần tử {a, b, name} khi chọn ô 1 bằng chuột và ô 2 bằng kéo thả', async () => {
+    const panel = await openForm()
+    await choose(panel, 'Phần tử 1', 'Deadline')
+    await dragOnto(plateItem('Cà Phê'), combo(panel, 'Phần tử 2'))
+    await waitFor(() => expect(clearButton(panel, 'Phần tử 2')).toBeTruthy())
+    fill(panel, 'Tên meme', 'Cà Phê Thức Khuya')
+    fireEvent.click(within(panel).getByRole('button', { name: 'Gửi đề xuất' }))
+    await waitFor(() => expect(submits()).toHaveLength(1))
+    expect(JSON.parse(submits()[0]!.body!)).toEqual({ a: 'Deadline', b: 'Cà Phê', name: 'Cà Phê Thức Khuya' })
+    expect(await screen.findByText('Đã gửi, chờ duyệt')).toBeTruthy()
   })
 
   it('AC-CONTRIB-06: mục "Đề xuất của tôi" liệt kê tên, biểu tượng, cặp "A + B", nhãn trạng thái và lý do từ chối của từng đề xuất', async () => {

@@ -2,8 +2,9 @@
  * Cập nhật 2026-10-25 (góp ý) in real Chromium (Vitest browser mode + Playwright):
  *   - AC-GAME-27: 360 px, đã đăng nhập với nickname dài: không cuộn ngang, nickname cắt bằng "…", tên đầy đủ còn trong DOM
  *     (trình đọc màn hình) và ở thuộc tính title (rê chuột);
- *   - AC-TIER-02: viền phần tử (.chip) liền >= 1,5 px cùng màu viền hình nhỏ; lúc thường tối hơn --color-badge-ring;
- *     khi rê chuột cả hai bằng --color-badge-ring (trắng ở sáng, #f4eee8 ở tối);
+ *   - AC-TIER-02 (cập nhật 2026-10-25, "border hơi dày, hơi sáng"): viền phần tử (.chip) liền 1 px (± 0,25 px) cùng màu
+ *     viền hình nhỏ; lúc thường là --color-chip-ring (#a8998a sáng, #8a7d72 tối), tối hơn --color-badge-ring; món trong
+ *     chỗ thả của nồi (pot-slot-1/2) cũng có viền đó; khi rê chuột cả hai bằng --color-badge-ring (trắng ở sáng, #f4eee8 ở tối);
  *   - AC-GAME-21: 390 px, món cho phép vuốt dọc (touch-action có pan-y) và danh sách Đĩa không chặn chuỗi cuộn sang trang.
  *
  * PUBLIC SURFACE THIS FILE REQUIRES (as tier.browser.test.tsx / ui3.browser.test.tsx)
@@ -174,13 +175,28 @@ describe.each(['light', 'dark'] as const)('mobile-fit: viền phần tử và vi
     return shape
   }
   const ring = (): Rgb => toRgb(getComputedStyle(document.documentElement).getPropertyValue('--color-badge-ring').trim())
+  const chipRingVar = (): Rgb => toRgb(getComputedStyle(document.documentElement).getPropertyValue('--color-chip-ring').trim())
+  const CHIP_RING: Rgb = theme === 'light' ? [168, 153, 138] : [138, 125, 114] // #a8998a / #8a7d72
+  const expectThinSolidBorder = (cs: CSSStyleDeclaration, label: string): void => {
+    for (const side of ['top', 'right', 'bottom', 'left']) {
+      expect(cs.getPropertyValue(`border-${side}-style`), `${label}: viền ${side} phải liền`).toBe('solid')
+      const w = Number.parseFloat(cs.getPropertyValue(`border-${side}-width`))
+      expect(w, `${label}: viền ${side} dày ${w}px, phải 1 px (± 0,25)`).toBeGreaterThanOrEqual(0.75)
+      expect(w, `${label}: viền ${side} dày ${w}px, phải 1 px (± 0,25)`).toBeLessThanOrEqual(1.25)
+    }
+  }
 
   it(`AC-TIER-02: --color-badge-ring là trắng ở chế độ sáng và #f4eee8 ở chế độ tối (${theme})`, async () => {
     await open({ width: 1366, height: 768 }, theme, true)
     expect(ring().join()).toBe(theme === 'light' ? '255,255,255' : '244,238,232')
   })
 
-  it(`AC-TIER-02: viền phần tử liền >= 1,5 px, cùng màu viền hình nhỏ, lúc thường tối hơn màu viền sáng (${theme})`, async () => {
+  it(`AC-TIER-02: --color-chip-ring là #a8998a ở chế độ sáng và #8a7d72 ở chế độ tối (${theme})`, async () => {
+    await open({ width: 1366, height: 768 }, theme, true)
+    expect(chipRingVar().join()).toBe(CHIP_RING.join())
+  })
+
+  it(`AC-TIER-02: viền phần tử liền 1 px (± 0,25), màu --color-chip-ring, cùng màu viền hình nhỏ, lúc thường tối hơn màu viền sáng (${theme})`, async () => {
     await open({ width: 1366, height: 768 }, theme, true)
     const page0 = theme === 'dark' ? ([0, 0, 0] as Rgb) : ([255, 255, 255] as Rgb)
     for (let tier = 1; tier <= 5; tier++) {
@@ -188,12 +204,11 @@ describe.each(['light', 'dark'] as const)('mobile-fit: viền phần tử và vi
       const box = tierBox(holder)
       const cs = getComputedStyle(holder)
       const label = `${theme} / tier ${tier}`
-      for (const side of ['Top', 'Right', 'Bottom', 'Left'] as const) {
-        expect(cs.getPropertyValue(`border-${side.toLowerCase()}-style`), `${label}: viền ${side} phải liền`).toBe('solid')
-        expect(Number.parseFloat(cs.getPropertyValue(`border-${side.toLowerCase()}-width`)), `${label}: viền ${side} quá mảnh`).toBeGreaterThanOrEqual(1.5)
-      }
+      expectThinSolidBorder(cs, label)
       const border = toRgb(cs.borderTopColor, page0)
       const stroke = toRgb(getComputedStyle(shapeOf(box, tier)).stroke, page0)
+      expect(border.join(), `${label}: viền phần tử phải là màu --color-chip-ring`).toBe(CHIP_RING.join())
+      expect(stroke.join(), `${label}: viền hình nhỏ phải là màu --color-chip-ring`).toBe(CHIP_RING.join())
       expect(border.join(), `${label}: viền phần tử phải cùng màu viền hình nhỏ`).toBe(stroke.join())
       expect(lum(border), `${label}: lúc thường viền phải tối hơn màu viền sáng`).toBeLessThan(lum(ring()))
     }
@@ -218,7 +233,32 @@ describe.each(['light', 'dark'] as const)('mobile-fit: viền phần tử và vi
     }
   })
 
-  it(`AC-TIER-02: món trên bàn cũng có viền liền >= 1,5 px cùng màu viền hình nhỏ (${theme})`, async () => {
+  it(`AC-TIER-02: món trong chỗ thả của nồi có cùng viền với thẻ ở bàn và Đĩa: liền 1 px (± 0,25), màu --color-chip-ring (${theme})`, async () => {
+    const page0 = theme === 'dark' ? ([0, 0, 0] as Rgb) : ([255, 255, 255] as Rgb)
+    const base = { pointerId: 1, pointerType: 'mouse', isPrimary: true, button: 0 }
+    for (const slotId of ['pot-slot-1', 'pot-slot-2']) {
+      await open({ width: 1366, height: 768 }, theme, true)
+      const src = plateItem(ITEMS[3]!)
+      const slot = screen.getByTestId(slotId)
+      const s = rect(slot)
+      const x = s.left + s.width / 2
+      const y = s.top + s.height / 2
+      fireEvent.pointerDown(src, { ...base, buttons: 1, clientX: 5, clientY: 5 })
+      fireEvent.pointerMove(src, { ...base, buttons: 1, clientX: x / 2, clientY: y / 2 })
+      fireEvent.pointerMove(src, { ...base, buttons: 1, clientX: x, clientY: y })
+      fireEvent.pointerUp(src, { ...base, buttons: 0, clientX: x, clientY: y })
+      await waitFor(() => expect(within(slot).queryByText(ITEMS[3]!)).not.toBeNull())
+      await settled()
+      const box = tierBox(slot)
+      const cs = getComputedStyle(box)
+      expectThinSolidBorder(cs, `${theme} / ${slotId}`)
+      expect(toRgb(cs.borderTopColor, page0).join(), `${theme} / ${slotId}: màu viền món trong nồi`).toBe(CHIP_RING.join())
+      const stroke = toRgb(getComputedStyle(shapeOf(box, 4)).stroke, page0)
+      expect(stroke.join(), `${theme} / ${slotId}: viền hình nhỏ`).toBe(CHIP_RING.join())
+    }
+  })
+
+  it(`AC-TIER-02: món trên bàn cũng có viền liền 1 px (± 0,25), màu --color-chip-ring, cùng màu viền hình nhỏ (${theme})`, async () => {
     await open({ width: 1366, height: 768 }, theme, true)
     const table = screen.getByTestId('table')
     const t = rect(table)
@@ -233,10 +273,10 @@ describe.each(['light', 'dark'] as const)('mobile-fit: viền phần tử và vi
     const el = await screen.findByTestId('table-item')
     await settled()
     const cs = getComputedStyle(el)
-    expect(cs.borderTopStyle).toBe('solid')
-    expect(Number.parseFloat(cs.borderTopWidth)).toBeGreaterThanOrEqual(1.5)
+    expectThinSolidBorder(cs, `${theme} / bàn`)
     const page0 = theme === 'dark' ? ([0, 0, 0] as Rgb) : ([255, 255, 255] as Rgb)
     const stroke = toRgb(getComputedStyle(shapeOf(tierBox(el), 4)).stroke, page0)
+    expect(toRgb(cs.borderTopColor, page0).join()).toBe(CHIP_RING.join())
     expect(toRgb(cs.borderTopColor, page0).join()).toBe(stroke.join())
   })
 })
