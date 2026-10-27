@@ -19,7 +19,7 @@ import {
 import { getCountdown } from './countdown'
 import { DailyCard } from './DailyCard'
 import { currentPeriods, formatSolveTime } from './period'
-import type { SolvedDaily } from './solved'
+import { loadRevealed, saveRevealed, type SolvedDaily } from './solved'
 
 type Props = { manifest: Manifest; storage: Storage | null; solved: SolvedDaily | null; onShowBoard?: () => void }
 type Sent = { kind: 'result'; result: DailyResult } | { kind: 'consent' } | { kind: 'error'; text: string }
@@ -68,6 +68,7 @@ export function DailyPanel({ manifest, storage, solved, onShowBoard }: Props) {
   const session = useSession()
   const [sent, setSent] = useState<Sent | null>(null)
   const [now, setNow] = useState(() => new Date())
+  const [revealed, setRevealed] = useState(() => loadRevealed(storage, version))
 
   useEffect(() => trackDailyStart(version), [version])
 
@@ -106,7 +107,15 @@ export function DailyPanel({ manifest, storage, solved, onShowBoard }: Props) {
 
   const countdown = getCountdown(manifest.batch_at, now, manifest.schedule_hours_utc)
   return (
-    <DailyCard daily={daily} solvedName={solved?.name ?? null}>
+    <DailyCard
+      daily={daily}
+      solvedName={solved?.name ?? null}
+      revealed={revealed}
+      onReveal={() => {
+        saveRevealed(storage, version)
+        setRevealed(true)
+      }}
+    >
       <p className="daily-countdown">{countdown.kind === 'imminent' ? countdown.text : `Mẻ mới sau ${countdown.text}`}</p>
       {solved && !signedIn && <p className="daily-invite">{INVITE}</p>}
       {solved && signedIn && sent?.kind === 'result' && (

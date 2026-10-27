@@ -286,6 +286,7 @@ a { color: var(--color-accent); }
 .daily-side { display: flex; flex-direction: column; align-items: flex-end; gap: var(--space-1); text-align: right; }
 .daily-countdown { color: var(--color-text-muted); font-size: var(--text-sm); font-variant-numeric: tabular-nums; }
 .daily-board-link { padding: var(--space-1) var(--space-3); }
+.daily-reveal { padding: var(--space-1) var(--space-3); }
 @media (max-width: 40rem) {
   .daily-card { grid-template-columns: 1fr; margin-top: var(--space-2); padding: var(--space-2) var(--space-3); gap: var(--space-1); border-radius: var(--radius-md); }
   .daily-lead { font-size: var(--text-sm); }
@@ -294,7 +295,7 @@ a { color: var(--color-accent); }
   .daily-hint { font-size: 1.05rem; line-height: 1.3; }
   .daily-side { flex-direction: row; flex-wrap: wrap; align-items: center; justify-content: space-between; text-align: left; }
   .daily-countdown { font-size: var(--text-xs); }
-  .daily-board-link { padding: 0.15rem var(--space-3); font-size: 0.8125rem; }
+  .daily-board-link, .daily-reveal { padding: 0.15rem var(--space-3); font-size: 0.8125rem; }
 }
 
 /* Table / leaderboard screens (AC-DAILY-17) */

@@ -158,13 +158,17 @@ function parseManifest(value: unknown, refs: ManifestRefs): string {
     return { id: s.id, name: s.name, emoji: s.emoji }
   })
   const missLines = arr(m.miss_lines, 'manifest.miss_lines', 1000, 1).map((v, i) => str(v, `manifest.miss_lines[${i}]`, 200))
-  const d = obj(m.daily, 'manifest.daily', ['element_id', 'emoji', 'hint', 'depth'])
+  const dailyRequired = ['element_id', 'emoji', 'hint', 'depth']
+  const d = obj(m.daily, 'manifest.daily', [...dailyRequired, 'name'], dailyRequired)
   const target = refs.byId.get(refs.daily)
   if (d.element_id !== refs.daily) fail('manifest.daily.element_id: phải bằng content.daily_element_id')
   const depth = int(d.depth, 'manifest.daily.depth', 4, 8)
   if (depth !== target?.depth) fail('manifest.daily.depth: phải bằng depth của Món đặc biệt')
+  // The readable name, shown only after "Xem đáp án" (AC-DAILY-20, ADR 0020); manifests from older pipelines have none.
+  if ('name' in d && d.name !== target?.name) fail('manifest.daily.name: phải bằng tên của Món đặc biệt')
   const daily = {
     element_id: refs.daily,
+    ...('name' in d && { name: d.name }),
     emoji: str(d.emoji, 'manifest.daily.emoji', 16),
     hint: str(d.hint, 'manifest.daily.hint', 200),
     depth,

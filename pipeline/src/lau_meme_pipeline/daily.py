@@ -90,13 +90,20 @@ def pick_daily(candidates: Sequence[Mapping], history: Sequence[Mapping], versio
 
 
 def build_daily_block(element: Mapping, hint: str) -> dict:
-    """`manifest.daily`: hashed id, emoji, hint, depth - never the readable name (AC-DAILY-03)."""
+    """`manifest.daily`: hashed id, name, emoji, hint, depth (AC-DAILY-03); the card shows the name only once solved
+    or revealed with "Xem đáp án" (AC-DAILY-20, ADR 0020)."""
     name = element["name"]
     if not hint or len(hint) > MAX_HINT_LENGTH:
         raise ValueError(f"Gợi ý phải dài 1–{MAX_HINT_LENGTH} ký tự")
     if re.search(r"(?<!\w)" + re.escape(fold(name)) + r"(?!\w)", fold(hint)):
         raise ValueError("Gợi ý không được chứa tên Món đặc biệt")
-    return {"element_id": element_id(name), "emoji": element["emoji"], "hint": hint, "depth": element["depth"]}
+    return {
+        "element_id": element_id(name),
+        "name": name,
+        "emoji": element["emoji"],
+        "hint": hint,
+        "depth": element["depth"],
+    }
 
 
 def pinned_daily(pin: Mapping | None, element: Mapping | None, blocked: frozenset[str]) -> dict | None:

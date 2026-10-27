@@ -34,7 +34,7 @@ export type Manifest = {
   graph_url: string
   starters: Starter[]
   miss_lines: string[]
-  daily: { element_id: string; emoji: string; hint: string; depth: number }
+  daily: { element_id: string; name?: string; emoji: string; hint: string; depth: number }
   schedule_hours_utc?: number[] // AC-DAILY-12; absent in manifests published before it, meaning [5, 17]
   policy_version: number
 }
