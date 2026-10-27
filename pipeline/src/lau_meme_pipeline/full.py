@@ -14,6 +14,7 @@ from lau_meme_pipeline.contrib import add_contributions
 from lau_meme_pipeline.crawl import CrawlResult, RawConcept, crawl_report_line
 from lau_meme_pipeline.daily import build_daily_block, core_hints, pick_daily, pinned_daily
 from lau_meme_pipeline.dedupe import DedupeResult, dedupe, dedupe_key
+from lau_meme_pipeline.feedback import apply_feedback, feedback_report
 from lau_meme_pipeline.graph import build_manifest, export_graph
 from lau_meme_pipeline.ids import element_id, recipe_id
 from lau_meme_pipeline.invariants import check_all, miss_rate_warning, simulate_miss_rate
@@ -151,6 +152,7 @@ def run_full(
     first_versions: Mapping[str, int] | None = None,
     trend_peaks: Mapping[str, int] | None = None,
     schedule_hours_utc: Sequence[int] = (5, 17),
+    feedback: Sequence[Mapping] = (),
 ) -> FullOutcome:
     version = _version(batch_at)
     batch_date: date = batch_at.astimezone(GMT7).date()
@@ -383,6 +385,11 @@ def run_full(
             batch=CLASSIC if held_now else e.batch,  # no "MỚI" while held (AC-MOD-08)
         )
     content = replace(content, elements=elements)
+    # 6a. Ngon / Nhạt (AC-FEEDBACK-04): bland recipes leave the graph unless they are an element's only way in.
+    voted = apply_feedback(content, feedback)
+    report["feedback_lines"] = feedback_report(voted, content, feedback)
+    content = voted.store
+    depths |= {eid: content.elements[eid].depth for eid in depths}  # hiding a recipe may push a depth down
     # links the admin chose as the picture (AC-ART-14, ADR 0018), for elements in this graph only: never drawn, a
     # failure keeps the emoji and the next batch retries; the url itself goes nowhere else
     linked = {eid: url for eid, url in (image_links or {}).items() if eid in content.elements and eid not in drawings}
