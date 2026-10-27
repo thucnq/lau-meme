@@ -5,6 +5,7 @@ comes out (ADR 0009). Every LLM answer goes through a per-batch cache, so re-run
 it wrote gives byte-identical output without calling the LLM again (AC-PIPE-10, AC-INV-05).
 """
 
+from collections import Counter
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, field, replace
 from datetime import date, datetime, timedelta, timezone
@@ -29,7 +30,7 @@ from lau_meme_pipeline.linking import (
 )
 from lau_meme_pipeline.linkqueue import next_queue
 from lau_meme_pipeline.llm import CachedLlm, QuotaExhausted
-from lau_meme_pipeline.moderation import Concept, ModLists, is_held, moderate
+from lau_meme_pipeline.moderation import QUOTA_LABEL, Concept, ModLists, is_held, moderate
 from lau_meme_pipeline.seed import ACTIVE, CLASSIC, INACTIVE, ContentStore, StoredElement, StoredRecipe, load_core
 from lau_meme_pipeline.text import fold
 from lau_meme_pipeline.tier import apply_tiers, needs_rare_image
@@ -39,6 +40,7 @@ MAX_ART_ATTEMPTS = 3  # batches an element may fail with transient errors before
 MAX_ART_PENDING = 2000  # stored backlog; anything beyond is found again from the store (ADR 0009 row size)
 MAX_NAME = 100  # D1/Worker limit of element name and fold (UTF-16 units, as the Worker counts)
 MAX_EMOJI = 16
+LLM_SLICE = 10  # memes taken through steps 2-5 together: one Gemini request per step (GeminiSteps batch)
 TREND = "trend"
 # Where a source's memes come from (D1 element.origin).
 ORIGIN_BY_SOURCE = {"Google Trends VN": "vn", "YouTube": "vn", "RSS": "vn", "Reddit": "intl", "Know Your Meme": "intl"}
@@ -214,117 +216,131 @@ def run_full(
     queued_keys = {q["key"] for q in queue}
     items = [*queue, *[i for i in new_items if i["key"] not in queued_keys]]  # AC-PIPE-07: queue first
 
-    # 2. Describe new memes (emoji, description, hints); queued ones keep what they had.
-    to_describe = [i for i in items if "described" not in i]
-    if to_describe:
-        payload = [
-            {k: i["concept"][k] for k in ("name", "quote", "context", "source_name")} | {"key": i["key"]}
-            for i in to_describe
-        ]
-        answers = ask("describe", payload)
-        by_key = {a.get("key"): a for a in answers if isinstance(a, Mapping)} if isinstance(answers, list) else {}
-        for i in to_describe:
-            answer = by_key.get(i["key"])
-            if not isinstance(answer, Mapping) or not 1 <= _units(str(answer.get("emoji", ""))) <= MAX_EMOJI:
-                continue  # no usable answer (quota, truncated, bad emoji): described again next batch, from the queue
-            i["described"] = {k: str(answer.get(k, "")) for k in ("emoji", "description", "daily_hint", "image_hint")}
-
-    # 3. Moderate.
-    concepts = [_concept_from(i, i.get("described", {})) for i in items]
-    moderated = moderate(concepts, lists, lambda reqs: ask("classify", reqs), batch_date)
-    report["moderation"] = moderated.counts
+    # 2-5 run slice by slice (AC-PIPE-12): each slice is described (queued memes keep what they had), moderated,
+    # linked and judged before the next one, so a quota that runs out mid-batch still publishes the slices already
+    # done; the slices left wait in the queue.
     by_key_item = {i["key"]: i for i in items}
-
-    # 4. Link each passed meme to existing elements; 5. judge the new recipes.
     linked: set[str] = set()
     unlinked: list[dict] = []
     graph = _graph(content, frozenset(blocked))
     name_to_id = {fold(e.name): e.id for e in content.elements.values()}
     candidates = sorted(e.name for e in content.elements.values() if e.id not in graph.inactive)
-    passed = [p for p in moderated.passed if p.concept.emoji]
-    for p in moderated.passed:
-        if not p.concept.emoji:  # not described this batch: never dropped silently, it waits in the queue
-            item = by_key_item[p.concept.key]
-            unlinked.append({**item, "reason": "quota"} if quota["hit"] else item)
-    link_answers = (
-        ask("link", [{"key": p.concept.key, "name": p.concept.name, "candidates": candidates} for p in passed])
-        if passed
-        else []
-    )
-    pairs_by_key = (
-        {a.get("key"): a.get("pairs", []) for a in link_answers if isinstance(a, Mapping)}
-        if isinstance(link_answers, list)
-        else {}
-    )
-    proposed: list[dict] = []
-    for p in passed:
-        new_id = element_id(p.concept.name)
-        proposals = []
-        for pair in pairs_by_key.get(p.concept.key, []) or []:
-            if isinstance(pair, list | tuple) and len(pair) == 2 and all(isinstance(x, str) for x in pair):
-                proposals.append((name_to_id.get(fold(pair[0]), pair[0]), name_to_id.get(fold(pair[1]), pair[1])))
-        checked = validate_links(new_id, proposals, graph)
-        for a, b in checked.accepted:
-            names = (graph.elements[a], graph.elements[b])
-            proposed.append(
-                {
-                    "id": recipe_id(*names),
-                    "a": names[0],
-                    "b": names[1],
-                    "result": p.concept.name,
-                    "key": p.concept.key,
-                    "a_id": a,
-                    "b_id": b,
-                    "result_id": new_id,
-                }
-            )
-    scores = ask("judge", [{k: r[k] for k in ("id", "a", "b", "result")} for r in proposed]) if proposed else {}
-    judged = judge(proposed, scores if isinstance(scores, Mapping) else {})
-    report["judge"] = {"kept": len(judged.kept), "rejected": len(judged.rejected)}
-    kept_by_key: dict[str, list[dict]] = {}
-    taken: set[str] = set()
-    for r in judged.kept:
-        # Two memes of this batch may get the same pair: the first keeps it, the other must not overwrite it and
-        # lose its meme (AC-INV-02); without another recipe that meme goes back to the queue.
-        if r["id"] in taken:
+    mod_counts: Counter[str] = Counter()
+    new_aliases: set[str] = set()
+    judge_counts = {"kept": 0, "rejected": 0}
+    taken: set[str] = set()  # recipe ids kept so far: two memes of this batch may get the same pair
+    for start in range(0, len(items), LLM_SLICE):
+        part = items[start : start + LLM_SLICE]
+        if quota["hit"]:  # stop calling: the slice waits in the queue as it is
+            unlinked.extend({**i, "reason": "quota"} for i in part)
+            mod_counts[QUOTA_LABEL] += len(part)
             continue
-        taken.add(r["id"])
-        kept_by_key.setdefault(r["key"], []).append(r)
-    for p in passed:
-        recipes_for = kept_by_key.get(p.concept.key, [])
-        if not recipes_for:
-            item = by_key_item[p.concept.key]
-            unlinked.append({**item, "reason": "quota"} if quota["hit"] else item)
-            continue
-        linked.add(p.concept.key)
-        new_id = recipes_for[0]["result_id"]
-        trend[new_id] = {
-            "id": new_id,
-            "name": p.concept.name,
-            "emoji": p.concept.emoji,
-            "description": p.concept.description,
-            "daily_hint": p.concept.daily_hint if p.hint_ok else "",
-            "image_hint": p.concept.image_hint,
-            "hint_ok": p.hint_ok,
-            "image_hint_ok": p.image_hint_ok,
-            "held_until": p.held_until.isoformat() if p.held_until else None,
-            "source": by_key_item[p.concept.key]["concept"].get("source_name", ""),
-            "origin": ORIGIN_BY_SOURCE.get(by_key_item[p.concept.key]["concept"].get("source_name", ""), "vn"),
-            "added_version": version,
-        }
-        for r in recipes_for:
-            trend_recipes[r["id"]] = {
-                "id": r["id"],
-                "a": r["a_id"],
-                "b": r["b_id"],
-                "result": new_id,
-                "score": r["score"],
+        to_describe = [i for i in part if "described" not in i]
+        if to_describe:
+            payload = [
+                {k: i["concept"][k] for k in ("name", "quote", "context", "source_name")} | {"key": i["key"]}
+                for i in to_describe
+            ]
+            answers = ask("describe", payload)
+            by_key = {a.get("key"): a for a in answers if isinstance(a, Mapping)} if isinstance(answers, list) else {}
+            for i in to_describe:
+                answer = by_key.get(i["key"])
+                if not isinstance(answer, Mapping) or not 1 <= _units(str(answer.get("emoji", ""))) <= MAX_EMOJI:
+                    continue  # no usable answer (quota, truncated, bad emoji): described again next batch, from queue
+                fields = ("emoji", "description", "daily_hint", "image_hint")
+                i["described"] = {k: str(answer.get(k, "")) for k in fields}
+
+        concepts = [_concept_from(i, i.get("described", {})) for i in part]
+        moderated = moderate(concepts, lists, lambda reqs: ask("classify", reqs), batch_date)
+        mod_counts.update(moderated.counts)
+        new_aliases |= moderated.new_aliases
+        passed = [p for p in moderated.passed if p.concept.emoji]
+        for p in moderated.passed:
+            if not p.concept.emoji:  # not described this batch: never dropped silently, it waits in the queue
+                item = by_key_item[p.concept.key]
+                unlinked.append({**item, "reason": "quota"} if quota["hit"] else item)
+        link_answers = (
+            ask("link", [{"key": p.concept.key, "name": p.concept.name, "candidates": candidates} for p in passed])
+            if passed
+            else []
+        )
+        pairs_by_key = (
+            {a.get("key"): a.get("pairs", []) for a in link_answers if isinstance(a, Mapping)}
+            if isinstance(link_answers, list)
+            else {}
+        )
+        proposed: list[dict] = []
+        for p in passed:
+            new_id = element_id(p.concept.name)
+            proposals = []
+            for pair in pairs_by_key.get(p.concept.key, []) or []:
+                if isinstance(pair, list | tuple) and len(pair) == 2 and all(isinstance(x, str) for x in pair):
+                    proposals.append((name_to_id.get(fold(pair[0]), pair[0]), name_to_id.get(fold(pair[1]), pair[1])))
+            checked = validate_links(new_id, proposals, graph)
+            for a, b in checked.accepted:
+                names = (graph.elements[a], graph.elements[b])
+                proposed.append(
+                    {
+                        "id": recipe_id(*names),
+                        "a": names[0],
+                        "b": names[1],
+                        "result": p.concept.name,
+                        "key": p.concept.key,
+                        "a_id": a,
+                        "b_id": b,
+                        "result_id": new_id,
+                    }
+                )
+        scores = ask("judge", [{k: r[k] for k in ("id", "a", "b", "result")} for r in proposed]) if proposed else {}
+        judged = judge(proposed, scores if isinstance(scores, Mapping) else {})
+        judge_counts["kept"] += len(judged.kept)
+        judge_counts["rejected"] += len(judged.rejected)
+        kept_by_key: dict[str, list[dict]] = {}
+        for r in judged.kept:
+            # Two memes of this batch may get the same pair: the first keeps it, the other must not overwrite it and
+            # lose its meme (AC-INV-02); without another recipe that meme goes back to the queue.
+            if r["id"] in taken:
+                continue
+            taken.add(r["id"])
+            kept_by_key.setdefault(r["key"], []).append(r)
+        for p in passed:
+            recipes_for = kept_by_key.get(p.concept.key, [])
+            if not recipes_for:
+                item = by_key_item[p.concept.key]
+                unlinked.append({**item, "reason": "quota"} if quota["hit"] else item)
+                continue
+            linked.add(p.concept.key)
+            new_id = recipes_for[0]["result_id"]
+            trend[new_id] = {
+                "id": new_id,
+                "name": p.concept.name,
+                "emoji": p.concept.emoji,
+                "description": p.concept.description,
+                "daily_hint": p.concept.daily_hint if p.hint_ok else "",
+                "image_hint": p.concept.image_hint,
+                "hint_ok": p.hint_ok,
+                "image_hint_ok": p.image_hint_ok,
+                "held_until": p.held_until.isoformat() if p.held_until else None,
+                "source": by_key_item[p.concept.key]["concept"].get("source_name", ""),
+                "origin": ORIGIN_BY_SOURCE.get(by_key_item[p.concept.key]["concept"].get("source_name", ""), "vn"),
+                "added_version": version,
             }
-    for c in moderated.queued:
-        unlinked.append({**by_key_item[c.key], "reason": "quota"})
+            for r in recipes_for:
+                trend_recipes[r["id"]] = {
+                    "id": r["id"],
+                    "a": r["a_id"],
+                    "b": r["b_id"],
+                    "result": new_id,
+                    "score": r["score"],
+                }
+        for c in moderated.queued:
+            unlinked.append({**by_key_item[c.key], "reason": "quota"})
+        quota["hit"] = quota["hit"] or bool(moderated.queued)
+    report["moderation"] = dict(mod_counts)
+    report["judge"] = judge_counts
     q = next_queue(queue, unlinked, linked)
     report["queue"] = {"linked": len(linked), "queued": len(q.queue), "dropped": q.dropped}
-    report["quota"] = bool(moderated.queued) or quota["hit"]
+    report["quota"] = quota["hit"]
 
     # 5b. Supplementary recipes (AC-PIPE-08): needy elements first, then the pairs most often on the plate together.
     asked_in = {(p[0], p[1]) for p in store.get("asked_pairs", [])}
@@ -499,7 +515,7 @@ def run_full(
         report=report,
         content=content,
         daily_element_id=chosen["element_id"],
-        new_aliases=moderated.new_aliases,
+        new_aliases=frozenset(new_aliases),
         trend_levels=levels,
     )
 
