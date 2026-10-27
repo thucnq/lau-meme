@@ -141,6 +141,24 @@ const ins = {
     env.DB.prepare(
       "INSERT INTO consent (id, player_id, purpose, action, policy_version, ip_hash, channel, created_at) VALUES (?, ?, 'play', 'grant', ?, NULL, 'web', ?)",
     ).bind(newId(), player, POLICY_VERSION, Date.now() - 1000),
+  /** Play history via a combine_summary event (AC-FEEDBACK-05); ok = 0 means only misses, which does not count. */
+  played: (player: string, ok = 1) =>
+    env.DB.prepare("INSERT INTO event (id, player_id, type, props_json, day, received_at) VALUES (?, ?, 'combine_summary', ?, ?, ?)").bind(
+      newId(),
+      player,
+      JSON.stringify({ ok, miss: 2 }),
+      new Date(Date.now() + 7 * 3_600_000).toISOString().slice(0, 10),
+      Date.now() - 1000,
+    ),
+  /** Play history via a discovery row (Công thức gia truyền). */
+  discovered: (player: string) =>
+    env.DB.prepare('INSERT INTO discovery (element_id, player_id, a_id, b_id, version, discovered_at) VALUES (?, ?, ?, ?, 1, ?)').bind(
+      `fb-el-${newId()}`,
+      player,
+      'fb-a',
+      'fb-b',
+      Date.now() - 1000,
+    ),
   block: (kind: 'element' | 'recipe' | 'image', target: string, state: 'hidden' | 'blocked' = 'blocked', reason: 'auto_report' | 'admin' = 'admin') =>
     env.DB.prepare('INSERT INTO block (kind, target_id, state, reason, created_at) VALUES (?, ?, ?, ?, ?)').bind(kind, target, state, reason, Date.now()),
 }
@@ -153,7 +171,14 @@ async function nothingWritten(): Promise<void> {
 }
 
 beforeEach(async () => {
-  await env.DB.batch([env.DB.prepare('DELETE FROM vote'), env.DB.prepare('DELETE FROM block'), env.DB.prepare('DELETE FROM consent'), env.DB.prepare('DELETE FROM rate_counter')])
+  await env.DB.batch([
+    env.DB.prepare('DELETE FROM vote'),
+    env.DB.prepare('DELETE FROM block'),
+    env.DB.prepare('DELETE FROM consent'),
+    env.DB.prepare('DELETE FROM rate_counter'),
+    env.DB.prepare('DELETE FROM event'),
+    env.DB.prepare('DELETE FROM discovery'),
+  ])
 })
 
 afterEach(() => {
@@ -378,7 +403,7 @@ describe('feedback', () => {
     async () => {
       await ensurePublished()
       const [u1, u2, u3] = [newId(), newId(), newId()]
-      await env.DB.batch([ins.consent(u1), ins.consent(u2), ins.consent(u3)])
+      await env.DB.batch([ins.consent(u1), ins.consent(u2), ins.consent(u3), ins.played(u1), ins.played(u2), ins.played(u3)])
       const reversed = { a: ACTIVE.b, b: ACTIVE.a }
       expect((await vote(u1, pair(ACTIVE, 'ngon'))).status).toBe(200)
       expect((await vote(u2, pair(ACTIVE, 'ngon'))).status).toBe(200)
@@ -401,6 +426,55 @@ describe('feedback', () => {
       for (const u of [u1, u2, u3]) expect(text).not.toContain(u)
     },
     120_000,
+  )
+
+  // ------------------------------------------------------------------------ AC-FEEDBACK-05
+  const readFeedback = async () => {
+    const res = await raw(`${BASE}/pipeline/state`, {}, { Authorization: `Bearer ${TOKEN}` })
+    expect(res.status).toBe(200)
+    return ((await res.json()) as { feedback: Array<Record<string, unknown>> }).feedback
+  }
+
+  it(
+    'AC-FEEDBACK-05: 12 phiếu "Nhạt" (9 UUID chưa chơi, 3 UUID đã chơi) đều được lưu nhưng /pipeline/state.feedback chỉ đếm 3 phiếu (3 Nhạt); combine_summary chỉ có trượt (ok = 0) không tính',
+    async () => {
+      await ensurePublished()
+      const id = await recipeId(ACTIVE.a, ACTIVE.b)
+      const played = [newId(), newId(), newId()]
+      const idle = Array.from({ length: 9 }, () => newId())
+      await env.DB.batch([
+        ...[...played, ...idle].map((u) => ins.consent(u)),
+        ins.discovered(played[0]!), // via Công thức gia truyền
+        ins.played(played[1]!, 2), // via combine_summary ok >= 1
+        ins.played(played[2]!, 1),
+        ins.played(idle[0]!, 0), // only misses: still no history
+        ins.played(idle[1]!, 0),
+      ])
+      for (const u of [...played, ...idle]) {
+        const res = await vote(u, pair(ACTIVE, 'nhat'))
+        expect(res.status).toBe(200)
+      }
+      expect(await votesOf(id)).toHaveLength(12) // all stored
+      expect(await readFeedback()).toEqual([{ recipe_id: id, votes: 3, nhat: 3 }])
+    },
+    240_000,
+  )
+
+  it(
+    'AC-FEEDBACK-05: công thức chỉ có phiếu của UUID chưa chơi không có trong feedback; khi UUID đó có lịch sử chơi thì phiếu được đếm từ lần đọc sau',
+    async () => {
+      await ensurePublished()
+      const u = newId()
+      const id = await recipeId(ACTIVE_2.a, ACTIVE_2.b)
+      await env.DB.batch([ins.consent(u)])
+      expect((await vote(u, pair(ACTIVE_2, 'nhat'))).status).toBe(200)
+      expect(await votesOf(id)).toHaveLength(1)
+      expect(await readFeedback()).toEqual([])
+
+      await env.DB.batch([ins.discovered(u)])
+      expect(await readFeedback()).toEqual([{ recipe_id: id, votes: 1, nhat: 1 }])
+    },
+    90_000,
   )
 
   // ------------------------------------------------------------------------ AC-FEEDBACK-VALIDATION
