@@ -1,60 +1,64 @@
 {
-  "red": {
-    "ts": "2026-10-26T19:01:38+00:00",
-    "commit": "8eb2d89",
-    "results": {
-      "AC-FEEDBACK-01": {
-        "status": "FAIL",
-        "test": "(không biên dịch)"
-      },
-      "AC-FEEDBACK-02": {
-        "status": "FAIL",
-        "test": "(không biên dịch)"
-      },
-      "AC-FEEDBACK-03": {
-        "status": "FAIL",
-        "test": "(không biên dịch)"
-      },
-      "AC-FEEDBACK-04": {
-        "status": "FAIL",
-        "test": "(không biên dịch)"
-      },
-      "AC-FEEDBACK-05": {
-        "status": "FAIL",
-        "test": "feedback.test.ts#feedback > AC-FEEDBACK-05: công thức chỉ có phiếu của UUID chưa chơi không có trong feedback; khi UUID đó có lịch sử chơi thì phiếu được đếm từ lần đọc sau",
-        "ts": "2026-10-27T11:58:23+00:00",
-        "commit": "dc4d577"
-      }
-    }
-  },
-  "green": {
-    "ts": "2026-10-26T19:17:29+00:00",
-    "commit": "2323273",
-    "results": {
-      "AC-FEEDBACK-01": {
-        "status": "PASS",
-        "test": "feedback.ui.test.tsx#feedback: api > AC-FEEDBACK-01: submitVote PUT /lau-meme/api/votes kèm X-Player-Id, thân {a,b,value} và trả phiếu máy chủ trả về"
-      },
-      "AC-FEEDBACK-02": {
-        "status": "PASS",
-        "test": "feedback.test.ts#feedback > AC-FEEDBACK-02: UUID đã bỏ \"Ngon\" cho "
-      },
-      "AC-FEEDBACK-03": {
-        "status": "PASS",
-        "test": "feedback.ui.test.tsx#feedback: api > AC-FEEDBACK-03: submitVote ném SendError mang status khi máy chủ trả 422 / 429"
-      },
-      "AC-FEEDBACK-04": {
-        "status": "PASS",
-        "test": "test_feedback#test_ac_feedback_04_hidden_recipes_vi_du_trong_ac"
-      },
-      "AC-FEEDBACK-VALIDATION": {
-        "status": "PASS",
-        "test": "feedback.test.ts#feedback > AC-FEEDBACK-VALIDATION: tên quá dài, script, SQL, kiểu sai, thiếu trường, trường lạ, value quá dài, JSON hỏng bị từ chối 4xx problem+json và không ghi phiếu"
-      },
-      "AC-FEEDBACK-ABUSE": {
-        "status": "PASS",
-        "test": "feedback.test.ts#feedback > AC-FEEDBACK-ABUSE: UUID không thể ghi hoặc đổi phiếu của UUID khác "
-      }
-    }
+ "red": {
+  "ts": "2026-10-26T19:01:38+00:00",
+  "commit": "8eb2d89",
+  "results": {
+   "AC-FEEDBACK-01": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-FEEDBACK-02": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-FEEDBACK-03": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-FEEDBACK-04": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-FEEDBACK-05": {
+    "status": "FAIL",
+    "test": "feedback.test.ts#feedback > AC-FEEDBACK-05: công thức chỉ có phiếu của UUID chưa chơi không có trong feedback; khi UUID đó có lịch sử chơi thì phiếu được đếm từ lần đọc sau",
+    "ts": "2026-10-27T11:58:23+00:00",
+    "commit": "dc4d577"
+   }
   }
+ },
+ "green": {
+  "ts": "2026-10-27T11:59:26+00:00",
+  "commit": "253625c",
+  "results": {
+   "AC-FEEDBACK-01": {
+    "status": "PASS",
+    "test": "feedback.test.ts#feedback > AC-FEEDBACK-01: PUT /votes \"ngon\" cho công thức có thật trả 200 {recipe_id,value,updated_at} và ghi một phiếu theo UUID"
+   },
+   "AC-FEEDBACK-02": {
+    "status": "PASS",
+    "test": "feedback.test.ts#feedback > AC-FEEDBACK-02: UUID đã bỏ \"Ngon\" cho "
+   },
+   "AC-FEEDBACK-03": {
+    "status": "PASS",
+    "test": "feedback.test.ts#feedback > AC-FEEDBACK-03: công thức không có thật "
+   },
+   "AC-FEEDBACK-04": {
+    "status": "PASS",
+    "test": "feedback.test.ts#feedback > AC-FEEDBACK-04: GET /pipeline/state.feedback là [{recipe_id,votes,nhat}] theo từng công thức có phiếu, không có UUID, phiếu đổi tính một lần với giá trị mới, xếp theo recipe_id"
+   },
+   "AC-FEEDBACK-05": {
+    "status": "PASS",
+    "test": "feedback.test.ts#feedback > AC-FEEDBACK-05: 12 phiếu \"Nhạt\" "
+   },
+   "AC-FEEDBACK-VALIDATION": {
+    "status": "PASS",
+    "test": "feedback.test.ts#feedback > AC-FEEDBACK-VALIDATION: tên quá dài, script, SQL, kiểu sai, thiếu trường, trường lạ, value quá dài, JSON hỏng bị từ chối 4xx problem+json và không ghi phiếu"
+   },
+   "AC-FEEDBACK-ABUSE": {
+    "status": "PASS",
+    "test": "feedback.test.ts#feedback > AC-FEEDBACK-ABUSE: UUID không thể ghi hoặc đổi phiếu của UUID khác "
+   }
+  }
+ }
 }
