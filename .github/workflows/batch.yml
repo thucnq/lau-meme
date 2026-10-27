@@ -9,6 +9,8 @@ name: batch
 
 on:
   schedule:
+    - cron: '0 17 * * *'
+    - cron: '0 5 * * *'
     - cron: '0 */2 * * *'
   workflow_dispatch:
     inputs:
