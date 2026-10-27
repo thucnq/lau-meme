@@ -474,6 +474,63 @@ def test_ac_pipe_12_full_link_het_quota_sau_khi_classify_xong_meme_khong_mat():
     assert "hết quota" in reporter.issues[0][1]
 
 
+class _Quota:
+    """Shared daily quota of the Gemini steps: a call of n items costs ceil(n / 10) requests, as GeminiSteps sends
+    them; the call that would exceed the budget raises QuotaExhausted."""
+
+    def __init__(self, budget):
+        self.left = budget
+
+    def wrap(self, fn):
+        from lau_meme_pipeline.llm import QuotaExhausted
+
+        def f(items):
+            cost = -(-len(items) // 10)
+            if cost > self.left:
+                self.left = 0
+                raise QuotaExhausted()
+            self.left -= cost
+            return fn(items)
+
+        return f
+
+
+def _link_distinct(items):
+    """Each meme gets its own pair, so recipes of one batch never collide (AC-INV-02)."""
+    out = []
+    for i in items:
+        cands = i.get("candidates") or []
+        n = int(i["name"].rsplit(" ", 1)[1])
+        out.append({"key": i["key"], "pairs": [[cands[2 * n], cands[2 * n + 1]]]})
+    return out
+
+
+def test_ac_pipe_12_full_het_quota_giua_me_thi_lo_dau_da_xu_ly_tron_van_duoc_dang():
+    """AC-PIPE-12: 25 meme mới, quota chỉ đủ 5 lời gọi lô: mẻ xử lý trọn từng lô 10 meme (mô tả, kiểm duyệt, nối,
+    giám khảo) nên 10 meme đầu được đăng; 15 meme còn lại vào hàng chờ với reason "quota", Issue ghi "hết quota"."""
+    quota = _Quota(5)
+    names = [f"Meme Số {n:02d}" for n in range(25)]
+    llm = make_llm(
+        describe=quota.wrap(_describe),
+        classify=quota.wrap(_classify),
+        link=quota.wrap(_link_distinct),
+        judge=quota.wrap(_judge),
+    )
+    client, reporter = FakeClient(), FakeReporter()
+    outcome = run_full_batch(client, reporter, [FakeAdapter("RSS", names)], llm)
+
+    assert outcome.ok is True and outcome.status == "success"
+    (body,) = client.success_posts
+    content_names = {e["name"] for e in body["content"]["elements"]}
+    assert set(names[:10]) <= content_names
+    assert not set(names[10:]) & content_names
+    queue = body["store"]["queue"]
+    assert [i["concept"]["name"] for i in queue] == names[10:]
+    assert all(i["reason"] == "quota" for i in queue)
+    assert body["stats"]["added"] == 10
+    assert "hết quota" in reporter.issues[0][1]
+
+
 # ================================================================ AC-PIPE-13
 
 
