@@ -25,3 +25,9 @@
 - **Khi** đợt sau chạy
 - **Thì** X (≥ 10 phiếu và ≥ 60 % "Nhạt" - ngưỡng mặc định, câu hỏi mở) bị ẩn khỏi graph mới, trừ khi là công thức duy nhất giữ phần tử tới được (khi đó chỉ ghi cảnh báo); Y giữ nguyên vì chưa đủ phiếu; báo cáo đợt liệt kê công thức bị ẩn do "Nhạt"
 - Ưu tiên: Tùy chọn
+
+### AC-FEEDBACK-05: Chỉ tính phiếu của người đã chơi (thêm 2026-10-27, câu hỏi mở 85)
+- **Cho** công thức X có 12 phiếu "Nhạt": 9 phiếu từ UUID chưa có lịch sử chơi, 3 phiếu từ UUID đã chơi (UUID có ít nhất một dòng Công thức gia truyền, hoặc ít nhất một sự kiện `combine_summary` với `ok` ≥ 1 còn trong thời hạn giữ 90 ngày)
+- **Khi** pipeline đọc `/pipeline/state.feedback`
+- **Thì** X chỉ có 3 phiếu (3 "Nhạt"): phiếu của UUID chưa chơi vẫn được lưu (`PUT /votes` vẫn 200, AC-FEEDBACK-01) nhưng không được đếm vào tổng hợp; khi UUID đó có lịch sử chơi thì phiếu được đếm từ lần đọc tiếp theo; X không bị ẩn vì chưa đủ 10 phiếu
+- Ưu tiên: Tùy chọn

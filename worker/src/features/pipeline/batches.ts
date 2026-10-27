@@ -464,9 +464,14 @@ export async function getPipelineState(_req: Request, env: Env): Promise<Respons
     ),
     // the admin's Món đặc biệt for the next batch (AC-DAILY-19, ADR 0019); its id comes back as daily_pin_id
     db.prepare('SELECT id, element_id, hint FROM daily_pin'),
-    // FEEDBACK (AC-FEEDBACK-04): counts per recipe only, never a UUID
+    // FEEDBACK (AC-FEEDBACK-04): counts per recipe only, never a UUID; only UUIDs that have played count
+    // (AC-FEEDBACK-05): a Công thức gia truyền or a combine_summary with at least one hit
     db.prepare(
-      `SELECT recipe_id, COUNT(*) AS votes, SUM(value = 'nhat') AS nhat FROM vote GROUP BY recipe_id ORDER BY recipe_id`,
+      `SELECT v.recipe_id, COUNT(*) AS votes, SUM(v.value = 'nhat') AS nhat FROM vote v
+       WHERE EXISTS (SELECT 1 FROM discovery d WHERE d.player_id = v.player_id)
+          OR EXISTS (SELECT 1 FROM event e WHERE e.player_id = v.player_id AND e.type = 'combine_summary'
+                       AND json_extract(e.props_json, '$.ok') >= 1)
+       GROUP BY v.recipe_id ORDER BY v.recipe_id`,
     ),
   ])
   const value = (current?.results[0] as { value: string } | undefined)?.value

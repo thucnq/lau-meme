@@ -1317,7 +1317,7 @@ paths:
         (không mô tả, tài khoản hay nickname - AC-CONTRIB-09, ADR 0013); link ảnh chỉ có khi admin đã chọn dùng nó làm
         ảnh món (`image_links`, AC-ART-14, ADR 0018).
       security: [{ PipelineToken: [] }]
-      x-ac: [AC-PIPE-13, AC-DAILY-01, AC-DAILY-18, AC-MOD-10, AC-FEEDBACK-04, AC-INV-03, AC-TIER-01, AC-PIPE-16, AC-CONTRIB-08, AC-CONTRIB-09, AC-ART-14]
+      x-ac: [AC-PIPE-13, AC-DAILY-01, AC-DAILY-18, AC-MOD-10, AC-FEEDBACK-04, AC-FEEDBACK-05, AC-INV-03, AC-TIER-01, AC-PIPE-16, AC-CONTRIB-08, AC-CONTRIB-09, AC-ART-14]
       responses:
         '200':
           description: Trạng thái
@@ -2489,7 +2489,7 @@ components:
               batch_at: { $ref: '#/components/schemas/Instant' }
         feedback:
           type: array
-          description: Tổng hợp ẩn danh theo công thức (không UUID)
+          description: Tổng hợp ẩn danh theo công thức (không UUID); chỉ đếm phiếu của UUID đã chơi - có Công thức gia truyền hoặc sự kiện `combine_summary` với `ok` ≥ 1 (AC-FEEDBACK-05)
           items:
             type: object
             additionalProperties: false
