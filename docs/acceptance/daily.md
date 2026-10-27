@@ -15,10 +15,10 @@
 - **Thì** mẻ thất bại theo AC-PIPE-11 (bản cũ giữ nguyên) và báo cáo đợt ghi "không chọn được Món đặc biệt"
 - Ưu tiên: Bắt buộc
 
-### AC-DAILY-03: Công bố món không lộ tên
+### AC-DAILY-03: Công bố món không lộ tên (cập nhật 2026-10-27, câu hỏi mở 86)
 - **Cho** mẻ mới đã chọn món "Stonks"
 - **Khi** client đọc manifest
-- **Thì** manifest có emoji, gợi ý mờ, depth và khóa băm của tên đã `fold`; không chứa tên "Stonks" dạng đọc được; thẻ Daily hiện emoji + gợi ý, tên hiện là "???"
+- **Thì** manifest có emoji, gợi ý mờ, depth, khóa băm của tên đã `fold` và tên "Stonks" (để hiện khi thực khách bấm xem, AC-DAILY-20); thẻ Daily hiện emoji + gợi ý, tên hiện là "???" cho tới khi giải hoặc bấm xem
 - Ưu tiên: Bắt buộc
 
 ### AC-DAILY-04: Ghép ra Món đặc biệt trên bàn lẩu
@@ -116,3 +116,9 @@
 - **Khi** admin chọn P làm Món đặc biệt cho mẻ kế tiếp kèm gợi ý; chọn Q; gửi gợi ý rỗng, dài quá 200 ký tự hoặc chứa tên P; chọn phần tử không tồn tại; chọn lại món khác trước khi mẻ chạy; bỏ chỉ định; rồi mẻ kế tiếp (`core` hoặc `full`) chạy
 - **Thì** chọn P với gợi ý hợp lệ trả 200 và ghi 1 dòng audit (trước: chỉ định cũ hoặc trống, sau: P) theo AC-ADMIN-09; chọn Q, gợi ý sai trả 400 problem+json, phần tử không tồn tại trả 404, không đổi gì và không ghi audit; chọn lại thì chỉ định sau thay chỉ định trước; mẻ kế tiếp dùng P làm Món đặc biệt với gợi ý admin nhập, bỏ qua thứ tự độ mặn/mới (AC-DAILY-01) và luật không lặp 30 mẻ (AC-DAILY-18); mẻ đăng thành công thì chỉ định được xóa, các mẻ sau tự chọn lại; mẻ thất bại thì chỉ định giữ cho mẻ sau; lúc mẻ chạy mà P đã bị chặn thì mẻ bỏ chỉ định, tự chọn như thường và báo cáo đợt ghi "Chỉ định Món đặc biệt bị bỏ"; trang quản trị hiện chỉ định đang chờ (tên P, gợi ý) và nút bỏ chỉ định; áp dụng cho cả staging và production
 - Ưu tiên: Tùy chọn
+
+### AC-DAILY-20: Xem tên Món đặc biệt (thêm 2026-10-27, câu hỏi mở 86)
+- **Cho** mẻ V có Món đặc biệt "Stonks"; thực khách chưa giải V
+- **Khi** thực khách bấm "Xem đáp án" trên thẻ Món đặc biệt rồi bấm xác nhận ở hộp hỏi lại "Xem tên món?"; hoặc bấm Hủy; rồi tải lại trang; rồi ghép ra "Stonks" (AC-DAILY-04); và khi mẻ V+1 lên
+- **Thì** nút "Xem đáp án" luôn hiện trên thẻ khi chưa giải; bấm Hủy thì không lộ gì; xác nhận thì thẻ hiện tên "Stonks" thay cho "???", nhãn vẫn là "Thử thách" (xem tên chưa tính là giải) và nút ẩn đi; trạng thái đã xem giữ qua tải lại trong mẻ V; ghép ra món sau đó vẫn tính giải, nộp kết quả, xếp hạng và streak như AC-DAILY-04/06/10 (đã xem tên không bị trừ gì); thẻ đã giải không có nút; thẻ chia sẻ vẫn không lộ tên (SHARE); sang mẻ V+1 thì trạng thái đã xem của V bị bỏ, thẻ mới hiện "???" và nút
+- Ưu tiên: Bắt buộc
