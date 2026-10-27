@@ -83,7 +83,7 @@ describe('publish validation', () => {
       (b) => (b.manifest.miss_lines = []),
       (b) => (b.manifest.daily.element_id = b.content.starters[0]!),
       (b) => (b.manifest.daily.depth = 9),
-      (b) => ((b.manifest.daily as Record<string, unknown>).name = 'Món'),
+      (b) => ((b.manifest.daily as Record<string, unknown>).name = 'Tên Khác'),
       (b) => ((b.manifest as Record<string, unknown>).extra = 1),
     ]
     for (const [i, mutate] of cases.entries()) {

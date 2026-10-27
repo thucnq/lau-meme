@@ -230,8 +230,8 @@ def test_ac_pipe_01_graph_la_export_graph_cua_kho_loi_o_version_moi():
     assert decrypt_entry(body["graph"], b, a)["name"] == result
 
 
-def test_ac_pipe_01_manifest_co_batch_at_la_t_va_khoi_daily_khong_lo_ten():
-    """AC-PIPE-01: manifest.batch_at = T, version mới, daily có element_id/emoji/hint/depth và không có tên đọc được."""
+def test_ac_pipe_01_manifest_co_batch_at_la_t_va_khoi_daily_mang_ten_mon():
+    """AC-PIPE-01: manifest.batch_at = T, version mới, daily có element_id/name/emoji/hint/depth (AC-DAILY-03)."""
     client = FakeClient()
     run(client)
     (body,) = client.success_posts
@@ -241,12 +241,13 @@ def test_ac_pipe_01_manifest_co_batch_at_la_t_va_khoi_daily_khong_lo_ten():
     assert manifest["graph_url"] == f"/api/graph/{T_VERSION}"
     assert "policy_version" not in manifest
     assert [s["name"] for s in manifest["starters"]] == STARTERS
-    assert set(manifest["daily"]) == {"element_id", "emoji", "hint", "depth"}
+    assert set(manifest["daily"]) == {"element_id", "name", "emoji", "hint", "depth"}
     assert 4 <= manifest["daily"]["depth"] <= 8
     assert manifest["daily"]["element_id"] == body["content"]["daily_element_id"]
     name = daily_name_of(body)
-    text = json.dumps({k: v for k, v in manifest.items() if k != "miss_lines"}, ensure_ascii=False)
-    assert name not in text
+    assert manifest["daily"]["name"] == name
+    rest = {k: v for k, v in manifest.items() if k not in ("miss_lines", "daily")}
+    assert name not in json.dumps(rest, ensure_ascii=False)
 
 
 def test_ac_pipe_01_content_phan_tu_cong_thuc_va_khoi_dau_khop_kho_loi():

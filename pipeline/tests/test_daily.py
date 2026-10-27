@@ -201,13 +201,15 @@ def real_dish() -> dict:
 
 
 def test_ac_daily_03_khoi_daily_chi_co_khoa_bam_emoji_goi_y_depth():
-    """AC-DAILY-03: khối daily có đúng element_id (băm tên đã fold), emoji, hint, depth; không có tên."""
+    """AC-DAILY-03: khối daily có element_id (băm tên đã fold), emoji, hint, depth và name (tên đọc được, 1-100)."""
     from lau_meme_pipeline.daily import build_daily_block
     from lau_meme_pipeline.ids import element_id
 
     dish = real_dish()
     block = build_daily_block(dish, "Món nóng hổi, ăn là nhớ")
-    assert set(block) == {"element_id", "emoji", "hint", "depth"}
+    assert set(block) == {"element_id", "emoji", "hint", "depth", "name"}
+    assert block["name"] == dish["name"]
+    assert 1 <= len(block["name"]) <= 100
     assert block["element_id"] == element_id(dish["name"])
     assert len(block["element_id"]) == 43
     assert block["emoji"] == dish["emoji"]
@@ -216,8 +218,8 @@ def test_ac_daily_03_khoi_daily_chi_co_khoa_bam_emoji_goi_y_depth():
     assert 4 <= block["depth"] <= 8
 
 
-def test_ac_daily_03_manifest_khong_chua_ten_mon_dang_doc_duoc():
-    """AC-DAILY-03: manifest có daily nhưng không chứa tên món (cả dạng gốc lẫn fold) ngoài miss_lines."""
+def test_ac_daily_03_manifest_chi_lo_ten_mon_trong_khoi_daily():
+    """AC-DAILY-03: manifest.daily mang tên món; ngoài khối daily (và miss_lines) manifest không chứa tên món."""
     from lau_meme_pipeline.daily import build_daily_block
     from lau_meme_pipeline.graph import build_manifest
     from lau_meme_pipeline.seed import ContentStore, load_core
@@ -229,7 +231,8 @@ def test_ac_daily_03_manifest_khong_chua_ten_mon_dang_doc_duoc():
     block = build_daily_block(dish, "Món nóng hổi, ăn là nhớ")
     manifest = build_manifest(store, version=3, batch_at=BATCH_AT, daily=block, previous_version=2)
     assert manifest["daily"] == block
-    text = json.dumps({k: v for k, v in manifest.items() if k != "miss_lines"}, ensure_ascii=False)
+    assert manifest["daily"]["name"] == dish["name"]
+    text = json.dumps({k: v for k, v in manifest.items() if k not in ("miss_lines", "daily")}, ensure_ascii=False)
     for form in (dish["name"], fold(dish["name"])):
         assert not re.search(r"(?<!\w)" + re.escape(form) + r"(?!\w)", text, re.IGNORECASE), form
 
