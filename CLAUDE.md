@@ -6,6 +6,7 @@ Stack profile: `.dk/stack.toml` (components pipeline / web / worker - dk reads i
 ## Workflow (dk plugin ≥ 0.7.0)
 /dk:spec (đề xuất phạm vi) → chốt docs/scope.md → /dk:spec → /dk:approve spec → /dk:estimate --no-quote → /dk:plan → /dk:design → /dk:approve contract → /dk:build <feature> → /dk:review → human merges → /dk:ship staging
 Gates are enforced by hooks; state lives in `.dk/state.md` (edit only via dk-state.sh).
+- Unfinished work: when the human says "tiếp tục việc đang dở" or you claim something was left unfinished, base it on the "Dấu hiệu việc bỏ dở" lines from session start (or `python3 <plugin>/scripts/dk-unfinished.py`, dk ≥ 0.7.6) and quote their evidence (branch, commit, check report line, log time) - never from memory alone.
 
 ## Source of truth
 - Requirements: `docs/brd.md`, `docs/acceptance/<feature>.md` (AC ids, one test each)
