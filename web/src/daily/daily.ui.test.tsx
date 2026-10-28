@@ -46,9 +46,16 @@ function manifestOf(version = VERSION, batchAt = '2026-10-20T00:00:00.000Z'): Ma
       { id: eid('Deadline'), name: 'Deadline', emoji: '⏰' },
     ],
     miss_lines: ['Nồi trào kiểu 0, khét rồi!'],
-    daily: { element_id: eid('Stonks'), emoji: '📈', hint: 'Món lên như diều gặp gió', depth: 4 },
+    daily: { element_id: eid('Stonks'), emoji: '📈', hint: 'Món lên như diều gặp gió', depth: 4, name: 'Stonks' },
     policy_version: 1,
   } as Manifest
+}
+/** A manifest posted before 2026-10-27: `daily` without `name` (AC-DAILY-20: no "Xem đáp án" button). */
+function manifestWithoutName(version = VERSION): Manifest {
+  const m = manifestOf(version)
+  const daily: Record<string, unknown> = { ...m.daily }
+  delete daily.name
+  return { ...m, daily } as unknown as Manifest
 }
 
 const json = (body: unknown, status = 200): Response =>
@@ -146,13 +153,13 @@ async function openBoard(): Promise<void> {
 
 // ================================================================ AC-DAILY-03 / 04 / 12: card and clock
 describe('daily ui: thẻ Món đặc biệt và đồng hồ', () => {
-  it('AC-DAILY-03: thẻ hiện emoji, gợi ý và tên "???", không lộ tên món, không có nút "Thử thách" hay bàn thử thách', () => {
+  it('AC-DAILY-03: manifest có name nhưng thẻ vẫn hiện emoji, gợi ý và tên "???" cho tới khi giải hoặc bấm xem, không có nút "Thử thách" hay bàn thử thách', () => {
     const { container } = render(panel())
     expect(card().textContent).toContain('📈')
     expect(within(card()).getByText('Món lên như diều gặp gió')).toBeTruthy()
     expect(within(card()).getByText('???')).toBeTruthy()
     expect(within(card()).queryByText('Đã giải')).toBeNull()
-    expect(container.textContent).not.toContain('Stonks')
+    expect(container.textContent).not.toContain('Stonks') // name is in the manifest but not on screen
     expect(screen.queryByRole('button', { name: /thử thách/i })).toBeNull()
     expect(screen.queryByRole('region', { name: 'Bàn thử thách' })).toBeNull()
     expect(container.textContent).not.toMatch(/Bước:/)
@@ -293,6 +300,120 @@ describe('daily ui: gửi kết quả', () => {
     render(panel({ manifest: manifestOf(VERSION + 1, '2026-10-20T05:04:00.000Z'), solved: null }))
     expect(within(card()).getByText('???')).toBeTruthy()
     expect(within(card()).queryByText('Đã giải')).toBeNull()
+  })
+})
+
+// ================================================================ AC-DAILY-20: nút "Xem đáp án"
+const REVEAL = { name: 'Xem đáp án' }
+const revealButton = () => within(card()).queryByRole('button', REVEAL)
+/** The confirm box "Xem tên món?" (role dialog/alertdialog), its cancel button and its confirm button (any other button). */
+function confirmBox(): HTMLElement {
+  const box = screen.getByRole(screen.queryByRole('alertdialog') ? 'alertdialog' : 'dialog')
+  expect(box.textContent).toContain('Xem tên món?')
+  return box
+}
+const confirmReveal = () => {
+  const box = confirmBox()
+  const ok = within(box)
+    .getAllByRole('button')
+    .find((b) => b.textContent?.trim() !== 'Hủy')
+  fireEvent.click(ok!)
+}
+function reveal(): void {
+  fireEvent.click(within(card()).getByRole('button', REVEAL))
+  confirmReveal()
+}
+
+describe('daily ui: Xem đáp án', () => {
+  it('AC-DAILY-20: chưa giải thì thẻ luôn có nút "Xem đáp án"; bấm thì hỏi lại "Xem tên món?" và chưa lộ gì', () => {
+    const { container } = render(panel())
+    expect(revealButton()).not.toBeNull()
+    fireEvent.click(revealButton()!)
+    const box = confirmBox()
+    expect(within(box).getByRole('button', { name: 'Hủy' })).toBeTruthy()
+    expect(container.textContent).not.toContain('Stonks')
+    expect(within(card()).getByText('???')).toBeTruthy()
+  })
+
+  it('AC-DAILY-20: bấm Hủy thì không lộ gì, thẻ vẫn "???" và vẫn còn nút', () => {
+    const { container } = render(panel())
+    fireEvent.click(revealButton()!)
+    fireEvent.click(within(confirmBox()).getByRole('button', { name: 'Hủy' }))
+    expect(screen.queryByRole('dialog')).toBeNull()
+    expect(screen.queryByRole('alertdialog')).toBeNull()
+    expect(container.textContent).not.toContain('Stonks')
+    expect(within(card()).getByText('???')).toBeTruthy()
+    expect(revealButton()).not.toBeNull()
+    cleanup()
+    render(panel()) // cancel is not remembered either
+    expect(within(card()).getByText('???')).toBeTruthy()
+  })
+
+  it('AC-DAILY-20: xác nhận thì thẻ hiện tên "Stonks" thay cho "???", nhãn vẫn "Thử thách", không "Đã giải", nút ẩn đi', () => {
+    render(panel())
+    expect(within(card()).getByText('Thử thách')).toBeTruthy()
+    reveal()
+    expect(within(card()).getByText('Stonks')).toBeTruthy()
+    expect(within(card()).queryByText('???')).toBeNull()
+    expect(within(card()).getByText('Thử thách')).toBeTruthy()
+    expect(within(card()).queryByText('Đã giải')).toBeNull()
+    expect(revealButton()).toBeNull()
+    expect(screen.queryByRole('dialog')).toBeNull()
+  })
+
+  it('AC-DAILY-20: xem tên không gửi gì lên server và lưu cục bộ dưới tiền tố "laumeme:"', () => {
+    const before = new Set(Object.keys(localStorage))
+    render(panel())
+    reveal()
+    expect(calls()).toEqual([])
+    const added = Object.keys(localStorage).filter((k) => !before.has(k))
+    expect(added.length).toBeGreaterThanOrEqual(1)
+    expect(added.every((k) => k.startsWith('laumeme:'))).toBe(true)
+  })
+
+  it('AC-DAILY-20: tải lại trang trong cùng mẻ vẫn thấy tên; sang mẻ V+1 thì trạng thái bị bỏ, thẻ mới hiện "???" và nút', () => {
+    const first = render(panel())
+    reveal()
+    first.unmount()
+
+    const reload = render(panel())
+    expect(within(card()).getByText('Stonks')).toBeTruthy()
+    expect(revealButton()).toBeNull()
+    reload.unmount()
+
+    render(panel({ manifest: manifestOf(VERSION + 1, '2026-10-20T05:04:00.000Z') }))
+    expect(within(card()).getByText('???')).toBeTruthy()
+    expect(within(card()).queryByText('Stonks')).toBeNull()
+    expect(revealButton()).not.toBeNull()
+  })
+
+  it('AC-DAILY-20: thẻ đã giải không có nút "Xem đáp án"', () => {
+    render(panel({ solved: SOLVED }))
+    expect(within(card()).getByText('Đã giải')).toBeTruthy()
+    expect(revealButton()).toBeNull()
+  })
+
+  it('AC-DAILY-20: manifest không có name (đăng trước 2026-10-27) thì không có nút và thẻ vẫn "???"', () => {
+    render(panel({ manifest: manifestWithoutName() }))
+    expect(revealButton()).toBeNull()
+    expect(screen.queryByRole('button', REVEAL)).toBeNull()
+    expect(within(card()).getByText('???')).toBeTruthy()
+  })
+
+  it('AC-DAILY-20: đã xem tên rồi ghép ra món vẫn tính giải: thẻ "Đã giải", gửi kết quả đúng một lần như AC-DAILY-06, không có nút', async () => {
+    saveConsent(localStorage, 1, 'granted')
+    await signIn()
+    const first = render(panel())
+    reveal()
+    first.unmount()
+
+    render(panel({ solved: SOLVED }))
+    await seeMatch(/Hạng #1 · Streak 1/)
+    expect(within(card()).getByText('Đã giải')).toBeTruthy()
+    expect(within(card()).getByText('Stonks')).toBeTruthy()
+    expect(revealButton()).toBeNull()
+    expect(resultPosts()).toHaveLength(1)
+    expect(JSON.parse(resultPosts()[0]!.body!)).toEqual({ a: 'Hết Cứu', b: 'Cay' })
   })
 })
 

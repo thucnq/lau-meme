@@ -27,3 +27,22 @@ export function saveSolved(storage: Storage | null, version: number, s: SolvedDa
     // storage blocked: the solved state lasts until the page closes
   }
 }
+
+const REVEALED_KEY = storageKey('daily-revealed')
+
+/** The batch whose Món đặc biệt name was shown with "Xem đáp án" (AC-DAILY-20); another batch's mark means hidden. */
+export function loadRevealed(storage: Storage | null, version: number): boolean {
+  try {
+    return storage?.getItem(REVEALED_KEY) === String(version)
+  } catch {
+    return false
+  }
+}
+
+export function saveRevealed(storage: Storage | null, version: number): void {
+  try {
+    storage?.setItem(REVEALED_KEY, String(version))
+  } catch {
+    // storage blocked: the name stays shown until the page closes
+  }
+}

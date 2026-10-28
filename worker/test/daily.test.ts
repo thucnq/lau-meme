@@ -105,7 +105,7 @@ async function batchBody(version: number, batchAt: string) {
       graph_url: `/api/graph/${version}`,
       starters: STARTER_DEFS.map((s, i) => ({ id: starterIds[i], name: s.name, emoji: s.emoji })),
       miss_lines: ['Chưa đúng vị, thử lại nhé.'],
-      daily: { element_id: targetId, emoji: '📈', hint: HINT, depth: 4 },
+      daily: { element_id: targetId, emoji: '📈', hint: HINT, depth: 4, name: TARGET },
     },
     graph: { format: 1, version, entries: { [await recipeId('graph', String(version))]: 'abc' } },
     content: {
@@ -407,20 +407,62 @@ afterAll(() => {
 
 describe('daily', () => {
   // ------------------------------------------------------------------------ AC-DAILY-03 (worker side)
-  it('AC-DAILY-03: manifest công bố emoji, gợi ý, depth, khóa băm của tên đã fold và không lộ tên món', async () => {
+  it('AC-DAILY-03: manifest công bố emoji, gợi ý, depth, khóa băm của tên đã fold và tên món đọc được', async () => {
     await publish(1, BATCH_AT)
     const res = await raw(api('/manifest'), {}, {})
     expect(res.status).toBe(200)
-    const text = await res.text()
-    const manifest = JSON.parse(text) as { daily: Record<string, unknown> }
+    const manifest = (await res.json()) as { daily: Record<string, unknown> }
     expect(manifest.daily).toEqual({
       element_id: await elementId(TARGET),
       emoji: '📈',
       hint: HINT,
       depth: 4,
+      name: TARGET,
     })
-    expect(Object.keys(manifest.daily).sort()).toEqual(['depth', 'element_id', 'emoji', 'hint'])
-    expect(text.toLowerCase()).not.toContain('stonks')
+    expect(Object.keys(manifest.daily).sort()).toEqual(['depth', 'element_id', 'emoji', 'hint', 'name'])
+  })
+
+  it('AC-DAILY-03: tên trong manifest.daily không khớp tên phần tử Món đặc biệt thì 422 problem+json, không ghi gì', async () => {
+    for (const [i, wrong] of ['Tên Khác', '', 'x'.repeat(101)].entries()) {
+      const b = await batchBody(10 + i, BATCH_AT)
+      b.manifest.daily.name = wrong
+      const res = await raw(
+        api('/pipeline/batches'),
+        { method: 'POST', body: JSON.stringify(b) },
+        { Authorization: `Bearer ${TOKEN}` },
+      )
+      expect(res.status, `name=${wrong.slice(0, 10)}`).toBe(422)
+      expect(res.headers.get('content-type')).toContain('application/problem+json')
+    }
+    const count = await env.DB.prepare('SELECT COUNT(*) AS n FROM batch_content').first<{ n: number }>()
+    expect(count?.n).toBe(0)
+  })
+
+  it('AC-DAILY-03: manifest đăng trước 2026-10-27 không có name vẫn được nhận và phát lại không có name', async () => {
+    const b = await batchBody(1, BATCH_AT)
+    delete (b.manifest.daily as { name?: string }).name
+    const post = await raw(
+      api('/pipeline/batches'),
+      { method: 'POST', body: JSON.stringify(b) },
+      { Authorization: `Bearer ${TOKEN}` },
+    )
+    expect(post.status).toBe(201)
+    const res = await raw(api('/manifest'), {}, {})
+    const manifest = (await res.json()) as { daily: Record<string, unknown> }
+    expect(manifest.daily.name).toBeUndefined()
+    expect(manifest.daily.element_id).toBe(await elementId(TARGET))
+  })
+
+  // ------------------------------------------------------------------------ AC-DAILY-20 (worker side)
+  it('AC-DAILY-20: xem đáp án không có sự kiện server: manifest chỉ đọc, không đổi kết quả hay bảng xếp hạng; giải sau đó vẫn 201', async () => {
+    await publish(1, BATCH_AT)
+    const a = await login()
+    const m1 = await (await raw(api('/manifest'), {}, {})).text()
+    const m2 = await (await raw(api('/manifest'), {}, {})).text()
+    expect(JSON.parse(m2)).toEqual(JSON.parse(m1))
+    vi.setSystemTime(new Date(Date.parse('2026-10-20T06:00:05.000Z')))
+    const res = await submit(1, a)
+    expect(res.status).toBe(201)
   })
 
   // ------------------------------------------------------------------------ AC-DAILY-06

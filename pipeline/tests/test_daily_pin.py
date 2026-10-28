@@ -51,6 +51,7 @@ def assert_used(body: dict, name: str):
         "emoji": element["emoji"],
         "hint": HINT,
         "depth": element["depth"],
+        "name": name,
     }
     assert body["daily_pin_id"] == PIN_ID
     assert body["stats"]["daily_pin"] == "used"
@@ -216,3 +217,13 @@ def test_ac_daily_19_che_do_full_cung_dung_chi_dinh_va_gui_daily_pin_id():
     assert body["mode"] == "full"
     assert_used(body, name)
     assert DROPPED_NOTE not in outcome.report_body
+
+
+def test_ac_daily_20_chi_dinh_admin_van_mang_ten_mon_trong_manifest_daily():
+    """AC-DAILY-20: món do admin chỉ định cũng có manifest.daily.name đúng tên phần tử (nút Xem đáp án cần tên)."""
+    for name in ("Cay", not_hinted_name()):
+        client, reporter = FakeClient(pinned_state(name)), FakeReporter()
+        run(client, reporter)
+        (body,) = client.success_posts
+        assert body["manifest"]["daily"]["name"] == name
+        assert body["manifest"]["daily"]["element_id"] == eid(name)

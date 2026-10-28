@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: lau-meme API
-  version: 0.8.0
+  version: 0.9.0
   description: |
     API của Worker Lẩu Meme. Bốn chủ thể (BRD mục 2): thực khách ẩn danh (header `X-Player-Id` = UUID v4
     sinh trên trình duyệt), thực khách đã đăng nhập Google (cookie phiên `laumeme_sid`, ADR 0010 - kết quả Daily,
@@ -60,7 +60,7 @@ paths:
       summary: Manifest của version hiện hành
       description: '`Cache-Control: public, max-age=60`. Chưa có mẻ nào thì 503.'
       security: []
-      x-ac: [AC-GRAPH-04, AC-GRAPH-06, AC-GRAPH-08, AC-DAILY-03, AC-DAILY-12, AC-GAME-17, AC-PRIV-09]
+      x-ac: [AC-GRAPH-04, AC-GRAPH-06, AC-GRAPH-08, AC-DAILY-03, AC-DAILY-12, AC-DAILY-20, AC-GAME-17, AC-PRIV-09]
       responses:
         '200':
           description: Manifest hiện hành
@@ -1428,7 +1428,7 @@ paths:
         là đề xuất đã duyệt → nickname hiện tại của tài khoản (không còn/không nickname → null); và cập nhật
         `element.trend_peak` từ `content.elements[].trend_peak` (vắng thì giữ giá trị cũ).
       security: [{ PipelineToken: [] }]
-      x-ac: [AC-PIPE-01, AC-PIPE-10, AC-PIPE-11, AC-GRAPH-04, AC-GRAPH-05, AC-SEED-01, AC-SEED-08, AC-DAILY-01, AC-DAILY-02, AC-INV-06, AC-ART-09, AC-PIPE-16, AC-CONTRIB-10, AC-ADMIN-11, AC-ART-11]
+      x-ac: [AC-PIPE-01, AC-PIPE-10, AC-PIPE-11, AC-GRAPH-04, AC-GRAPH-05, AC-SEED-01, AC-SEED-08, AC-DAILY-01, AC-DAILY-02, AC-DAILY-20, AC-INV-06, AC-ART-09, AC-PIPE-16, AC-CONTRIB-10, AC-ADMIN-11, AC-ART-11]
       requestBody:
         required: true
         content:
@@ -1874,9 +1874,18 @@ components:
           type: object
           additionalProperties: false
           required: [element_id, emoji, hint, depth]
-          description: Không có tên món (AC-DAILY-03); client so `element_id` với id của kết quả đã giải mã
+          description: |
+            Client so `element_id` với id của kết quả đã giải mã (AC-DAILY-03). `name` là tên món, chỉ hiện khi
+            thực khách bấm "Xem đáp án" (AC-DAILY-20, ADR 0020); thẻ hiện "???" tới khi giải hoặc bấm xem.
           properties:
             element_id: { $ref: '#/components/schemas/ElementId' }
+            name:
+              type: string
+              minLength: 1
+              maxLength: 100
+              description: |
+                Tên Món đặc biệt (cùng `name` của phần tử `element_id` trong `content`, Worker kiểm khi đăng mẻ, sai →
+                422). Manifest đăng trước 2026-10-27 không có trường này: client không hiện nút "Xem đáp án".
             emoji: { type: string }
             hint: { type: string, maxLength: 200 }
             depth: { type: integer, minimum: 4, maximum: 8 }
