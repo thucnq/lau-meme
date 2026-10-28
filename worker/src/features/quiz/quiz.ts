@@ -7,6 +7,8 @@ import { bannedTermsStatement, isBanned, roomNickname } from './nickname'
 
 /** mQuiz over HTTP (ADR 0021): create a room, read it, open its WebSocket, my history. The room itself is QuizRoom. */
 const ROOM_LIMIT: Limit = { scope: 'quiz_room', windowMs: 3_600_000, perPlayer: 5, perIp: 20 } // open question 92
+// WebSocket upgrades per IP: each one wakes the room and every join reads D1 (AC-QUIZ-25)
+const SOCKET_LIMIT: Limit = { scope: 'quiz_ws', windowMs: 60_000, perPlayer: 0, perIp: 120 }
 const HISTORY_LIMIT: Limit = { scope: 'quiz_history', windowMs: 60_000, perPlayer: 60, perIp: 120 }
 const ALPHABET = '23456789ABCDEFGHJKMNPQRSTUVWXYZ'
 const CODE = /^[2-9A-HJKMNP-Z]{6}$/
@@ -117,8 +119,14 @@ export async function getQuizRoom(req: Request, env: Env, _ctx: ExecutionContext
 export async function connectQuizRoom(req: Request, env: Env, _ctx: ExecutionContext, params: string[]): Promise<Response> {
   const code = codeParam(params[0])
   if ((req.headers.get('Upgrade') ?? '').toLowerCase() !== 'websocket') return problem(426, 'Cần nâng cấp WebSocket')
-  const live = await env.DB.prepare('SELECT 1 AS x FROM quiz_room WHERE code = ? AND closed_at IS NULL').bind(code).first()
-  if (!live) return problem(404, 'Không tìm thấy phòng')
+  const limit = await rateCounters(req, env, SOCKET_LIMIT, '', 'ip')
+  const results = await env.DB.batch([
+    ...limit.statements,
+    env.DB.prepare('SELECT 1 AS x FROM quiz_room WHERE code = ? AND closed_at IS NULL').bind(code),
+  ])
+  const over = limit.verdict(results)
+  if (over) return over
+  if (!results[limit.statements.length]?.results.length) return problem(404, 'Không tìm thấy phòng')
   return stub(env, code).fetch('https://quiz-room/ws', { headers: { Upgrade: 'websocket' } })
 }
 

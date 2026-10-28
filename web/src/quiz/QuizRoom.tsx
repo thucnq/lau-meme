@@ -216,7 +216,8 @@ export function QuizRoom({ code, onLeave }: { code: string; onLeave?: () => void
         if (ws.current !== s) return
         ws.current = null
         if (e.code === 4001) setError('Phòng đang mở ở một thẻ khác')
-        else if (e.code !== 1000) setLost(true)
+        // 1008: the server already said why (consent, room full, already started) in an error message
+        else if (e.code !== 1000 && e.code !== 1008) setLost(true)
       })
     },
     [code, storage, onMessage],

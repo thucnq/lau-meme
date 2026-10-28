@@ -1,5 +1,6 @@
 import { DurableObject } from 'cloudflare:workers'
 import { problem } from '../../http'
+import { ANONYMOUS } from '../../player'
 import { fold } from '../../ids'
 import { uuidv7 } from '../../uuid'
 import { type ConsentRow, playConsentStatement, requirePlayConsent } from '../player/consent'
@@ -18,6 +19,7 @@ const HOST_GRACE_MS = 30_000
 const IDLE_MS = 5 * 60_000 // open question 92
 const MAX_MESSAGE = 1024
 const MAX_RATE = 10 // messages per second per socket
+const MAX_FAILED_JOINS = 10
 const CLOSE_POLICY = 1008
 const CLOSE_REPLACED = 4001
 const TOP = 10
@@ -90,6 +92,8 @@ function keys(m: Msg, allowed: string[]): void {
 export class QuizRoom extends DurableObject<Env> {
   private room: Room | null | undefined
   private rate = new Map<WebSocket, number[]>()
+  private failedJoins = new Map<WebSocket, number>()
+  private starting = false // a start awaits D1: a second start in the meantime is refused
 
   private async load(): Promise<Room | null> {
     if (this.room === undefined) this.room = (await this.ctx.storage.get<Room>('room')) ?? null
@@ -123,6 +127,7 @@ export class QuizRoom extends DurableObject<Env> {
 
   private async init(m: Msg): Promise<Response> {
     if (await this.load()) return problem(409, 'Phòng đã tồn tại')
+    if (![5, 10, 15].includes(m.questions as number) || ![10, 20, 30].includes(m.seconds as number)) return problem(400, 'Cấu hình phòng không hợp lệ')
     const now = Date.now()
     await this.save({
       code: String(m.code),
@@ -225,7 +230,16 @@ export class QuizRoom extends DurableObject<Env> {
           if (['start', 'answer', 'replay', 'leave'].includes(msg.type as string)) throw new Refusal('not_joined', true)
           throw new Refusal('bad_request')
         }
-        await this.join(room, ws, msg)
+        try {
+          await this.join(room, ws, msg)
+        } catch (err) {
+          // a socket that keeps failing to join costs D1 reads on every try: closed after a few
+          const failed = (this.failedJoins.get(ws) ?? 0) + 1
+          this.failedJoins.set(ws, failed)
+          if (err instanceof Refusal && failed >= MAX_FAILED_JOINS) throw new Refusal(err.code, true)
+          throw err
+        }
+        this.failedJoins.delete(ws)
         return
       }
       const seat = att.seat
@@ -269,6 +283,7 @@ export class QuizRoom extends DurableObject<Env> {
   /** A socket left: in the lobby a player leaves the list (the host stays for HOST_GRACE_MS); in a game nobody leaves. */
   private async disconnected(ws: WebSocket): Promise<void> {
     this.rate.delete(ws)
+    this.failedJoins.delete(ws)
     const room = await this.load()
     const seat = (ws.deserializeAttachment() as Attachment | null)?.seat
     ws.serializeAttachment({} satisfies Attachment)
@@ -369,7 +384,16 @@ export class QuizRoom extends DurableObject<Env> {
   // ------------------------------------------------------------------ game
   private async start(room: Room, ws: WebSocket, seat: number): Promise<void> {
     if (seat !== room.host) throw new Refusal('not_host')
-    if (room.phase !== 'lobby') throw new Refusal('bad_request')
+    if (room.phase !== 'lobby' || this.starting) throw new Refusal('bad_request')
+    this.starting = true
+    try {
+      await this.startGame(room, ws)
+    } finally {
+      this.starting = false
+    }
+  }
+
+  private async startGame(room: Room, ws: WebSocket): Promise<void> {
     const db = this.env.DB
     const [current, blocks] = await db.batch([
       db.prepare(
@@ -460,6 +484,7 @@ export class QuizRoom extends DurableObject<Env> {
     if (room.phase !== 'question' || m.q !== room.cur) {
       throw new Refusal(room.cur > 0 && m.q <= room.cur && room.phase !== 'lobby' && room.phase !== 'solo' ? 'too_late' : 'wrong_question')
     }
+    if (Date.now() > room.deadline) throw new Refusal('too_late') // the alarm has not closed it yet
     if (room.answers[seat]) throw new Refusal('already_answered')
     const options = new Set(room.deck[room.cur - 1]!.options.map((o) => o.id))
     const picks = m.picks as unknown[]
@@ -536,9 +561,14 @@ export class QuizRoom extends DurableObject<Env> {
           db
             .prepare(
               `INSERT OR IGNORE INTO quiz_player (game_id, seat, player_id, nickname, score, correct, correct_ms, rank)
-               SELECT id, ?, ?, ?, ?, ?, ?, ? FROM quiz_game WHERE room_code = ? AND game_no = ?`,
+               SELECT g.id, ?1, CASE WHEN e.x IS NULL THEN ?2 END, CASE WHEN e.x IS NULL THEN ?3 ELSE ?4 END, ?5, ?6, ?7, ?8
+               FROM quiz_game g
+               LEFT JOIN (SELECT 1 AS x FROM (SELECT action FROM consent WHERE player_id = ?2 ORDER BY created_at DESC, id DESC LIMIT 1)
+                          WHERE action = 'erase') e
+               WHERE g.room_code = ?9 AND g.game_no = ?10`,
             )
-            .bind(p.seat, p.uuid, p.nickname, p.score, p.correct, p.correct_ms, p.rank, room.code, room.game_no),
+            // a player whose newest consent row is an erasure (erased during the game) is written anonymous (AC-QUIZ-22)
+            .bind(p.seat, p.uuid, p.nickname, ANONYMOUS, p.score, p.correct, p.correct_ms, p.rank, room.code, room.game_no),
         ),
       ])
     } catch (err) {
@@ -602,10 +632,13 @@ export class QuizRoom extends DurableObject<Env> {
     if (room.phase === 'lobby' && room.host_left_at !== null) {
       // the host stayed away: the earliest connected player takes over (AC-QUIZ-07)
       const connected = this.connectedSeats()
-      room.players = room.players.filter((p) => p.seat !== room.host)
-      room.host = room.players.find((p) => connected.has(p.seat))!.seat
-      room.host_left_at = null
-      this.broadcastLobby(room)
+      const next = room.players.find((p) => p.seat !== room.host && connected.has(p.seat))
+      if (next) {
+        room.players = room.players.filter((p) => p.seat !== room.host)
+        room.host = next.seat
+        room.host_left_at = null
+        this.broadcastLobby(room)
+      }
     }
     await this.save(room)
   }
