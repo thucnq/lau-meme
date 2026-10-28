@@ -1,6 +1,6 @@
 # API - Lẩu Meme
 
-> Nguồn sự thật: [`openapi.yaml`](openapi.yaml) (OpenAPI 3, `lau-meme API 0.8.0`). File này chỉ là mục lục; khi hai nơi khác nhau thì `openapi.yaml` đúng. Mỗi endpoint mang `x-ac` trỏ về AC trong `docs/acceptance/`.
+> Nguồn sự thật: [`openapi.yaml`](openapi.yaml) (OpenAPI 3, `lau-meme API 0.10.0`; tin WebSocket mQuiz ở [`quiz-ws.md`](quiz-ws.md)). File này chỉ là mục lục; khi hai nơi khác nhau thì `openapi.yaml` đúng. Mỗi endpoint mang `x-ac` trỏ về AC trong `docs/acceptance/`.
 
 ## Địa chỉ
 | Nhóm | Production | Staging |
@@ -103,6 +103,8 @@ Contract 0.7.0 thêm `/admin/daily-pin` (GET, PUT, DELETE), `PipelineState.daily
 Contract 0.8.0 thêm `in_catalog` vào `AdminContribution` (AC-CONTRIB-14): `element_id` đã có trong danh mục hay chưa; danh mục chỉ đổi khi mẻ đăng. Triển khai staging 2026-10-26 (Worker `31fa60ab-2166-4ab0-b33b-2b125dbd161f`, git sha `6857064`).
 
 Contract 0.9.0 thêm `manifest.daily.name` (tên Món đặc biệt, AC-DAILY-20, ADR 0020). Worker kiểm tên khớp `content.daily_element_id` khi đăng mẻ, sai → 422; deploy Worker trước rồi mới chạy mẻ có `name`. Không có endpoint mới.
+
+Contract 0.10.0 thêm mQuiz (QUIZ, ADR 0021): `POST /quiz/rooms` (PlayerId, tạo phòng), `GET /quiz/rooms/{code}` (công khai, trạng thái phòng và bảng chung cuộc), `GET /quiz/rooms/{code}/ws` (nâng cấp WebSocket tới Durable Object `QuizRoom`; tin nhắn ở [`quiz-ws.md`](quiz-ws.md)), `GET /quiz/history` (PlayerId, lịch sử của tôi, tối đa 20/trang); `MyData.quiz_history`; sự kiện `quiz_room_created`, `quiz_game_finished`. Migration 0011 (`quiz_room`, `quiz_game`, `quiz_player`).
 
 ## Thử nhanh
 ```bash

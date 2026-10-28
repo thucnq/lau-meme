@@ -1,6 +1,6 @@
 # ERD - D1 (SQLite)
 
-> Nguồn: `worker/migrations/0001..0010`. Id phần tử/công thức là băm (ADR 0002). Thời gian `INTEGER` epoch ms UTC.
+> Nguồn: `worker/migrations/0001..0011`. Id phần tử/công thức là băm (ADR 0002). Thời gian `INTEGER` epoch ms UTC.
 > Không có khóa ngoại từ dữ liệu người chơi sang `element`/`recipe`: nội dung đổi theo version, bảng người chơi chỉ giữ id.
 
 ```mermaid
@@ -271,6 +271,33 @@ erDiagram
     INTEGER found_at "lần ghi đầu tiên được nhận"
   }
 
+  quiz_room {
+    TEXT code PK "6 ký tự, ADR 0021"
+    INTEGER created_at
+    INTEGER closed_at "NULL khi DO còn sống"
+  }
+  quiz_game {
+    TEXT id PK
+    TEXT room_code FK
+    INTEGER game_no "UNIQUE(room_code, game_no)"
+    INTEGER content_version
+    INTEGER questions
+    INTEGER seconds
+    INTEGER player_count
+    INTEGER started_at
+    INTEGER finished_at
+  }
+  quiz_player {
+    TEXT game_id PK,FK
+    INTEGER seat PK "thứ tự vào phòng"
+    TEXT player_id "NULL sau khi xóa dữ liệu"
+    TEXT nickname
+    INTEGER score
+    INTEGER correct
+    INTEGER correct_ms
+    INTEGER rank
+  }
+
   element ||--o{ recipe : "a / b / result"
   element ||--o| element_tier : "element_id"
   account ||--o{ contribution : "account_id (SET NULL)"
@@ -293,6 +320,9 @@ erDiagram
   report_target ||--o{ report : "kind, target_id, cycle"
   element ||--o| block : "kind = element | image"
   recipe ||--o| block : "kind = recipe"
+  quiz_room ||--o{ quiz_game : "room_code (CASCADE)"
+  quiz_game ||--|{ quiz_player : "game_id (CASCADE)"
+  player ||--o{ quiz_player : "player_id (SET NULL khi xóa dữ liệu)"
 ```
 
 ## Ghi chú
@@ -301,3 +331,4 @@ erDiagram
 - Đóng góp meme (ADR 0013): `contribution` gắn tài khoản là dữ liệu cá nhân; xóa tài khoản xóa đề xuất chờ duyệt, phần còn lại `SET NULL`, và nickname trong `batch_content.creators_json` thành `null`. Tier admin gán (`element_tier`), tier tự động (`element.auto_tier`, pipeline tính - ADR 0016) và mức mặn (`element.trend_peak`) là dữ liệu nội dung, pipeline đọc qua `/pipeline/state`.
 - Giữ dữ liệu (Cron Trigger hằng ngày, ADR 0004): `event` 90 ngày; `consent.ip_hash` 7 ngày; `admin_audit`, `admin_change`, `admin_image_change` và `daily_pin_change` 12 tháng; `consent` 1 năm sau dòng `erase`; `session` hết hạn (90 ngày không dùng); `batch_content` và `pipeline_store` 14 version mới nhất.
 - Chỉ định Món đặc biệt (AC-DAILY-19, ADR 0019): `daily_pin` giữ tối đa một chỉ định cho mẻ kế tiếp; mẻ đăng thành công gửi lại `id` của chỉ định đã đọc và Worker xóa đúng dòng đó. `daily_pin_change` là audit đặt/bỏ.
+- mQuiz (ADR 0021): phòng đang chơi chỉ nằm trong Durable Object `QuizRoom`; D1 giữ sổ mã phòng `quiz_room` và lịch sử ván nhiều người `quiz_game`/`quiz_player` (dữ liệu cá nhân: `quiz_player.player_id`, `nickname`). Dọn hằng ngày: ván có `finished_at` cũ hơn 90 ngày, rồi `quiz_room` đã đóng không còn ván (AC-QUIZ-21). Xóa dữ liệu: `player_id = NULL`, nickname "Thực khách ẩn danh" (AC-QUIZ-22).

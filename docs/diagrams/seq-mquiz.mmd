@@ -1,0 +1,39 @@
+%% mQuiz - tạo phòng, phòng chờ, một câu hỏi, kết thúc (ADR 0021, AC-QUIZ-01..18)
+sequenceDiagram
+  autonumber
+  actor H as Chủ phòng (trình duyệt)
+  actor P as Người chơi khác
+  participant W as Worker
+  participant R as DO QuizRoom (mã)
+  participant D as D1
+
+  H->>W: POST /quiz/rooms (X-Player-Id, nickname, số câu, số giây)
+  W->>D: đồng ý play? giới hạn tần suất; INSERT quiz_room ON CONFLICT DO NOTHING
+  W->>R: init(chủ phòng, cấu hình)
+  W-->>H: 201 { code, url }
+  H->>W: GET /quiz/rooms/{mã}/ws (Upgrade)
+  W->>D: quiz_room có mã?
+  W->>R: chuyển request
+  R-->>H: 101; join → lobby
+  P->>W: mở link, WebSocket, join { uuid, nickname }
+  W->>R: chuyển request
+  R->>D: đồng ý play của uuid?
+  R-->>H: lobby (danh sách mới)
+  R-->>P: lobby
+  H->>R: start
+  R->>D: server_json version hiện hành + bảng chặn
+  Note over R: sinh đề (hàm thuần, seed = mã:game_no)<br/>1 người kết nối ⇒ solo_pack, dừng
+  R-->>H: started, question (deadline)
+  R-->>P: started, question (deadline)
+  Note over R: setAlarm(deadline)
+  P->>R: answer { q, picks }
+  R-->>P: answered
+  H->>R: answer { q, picks }
+  Note over R: mọi người đã nộp ⇒ đóng câu sớm
+  R-->>H: reveal (cặp đúng, điểm, bảng điểm)
+  R-->>P: reveal
+  Note over R: alarm +4 s ⇒ câu kế tiếp ... câu cuối
+  R->>D: DB.batch: quiz_game + quiz_player (UNIQUE room_code, game_no)
+  R-->>H: final (saved = true)
+  R-->>P: final
+  Note over R: không ai kết nối 5 phút ⇒ alarm xóa storage,<br/>đặt quiz_room.closed_at
