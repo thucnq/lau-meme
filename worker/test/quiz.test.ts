@@ -1,5 +1,5 @@
 // Acceptance tests for docs/acceptance/quiz.md, worker part: HTTP + WebSocket + Durable Object flow.
-//   AC-QUIZ-01..07, 09..11, 13..16, 18..25 (and 08, 12, 17 through the room), AC-QUIZ-27 (optional),
+//   AC-QUIZ-01..07, 09..11, 13..16, 18..25 (and 08, 12, 17 through the room); criterion 27 was dropped (open question 93),
 //   AC-QUIZ-TENANT, AC-QUIZ-VALIDATION, AC-QUIZ-ABUSE.
 // Pure functions (question generation, scoring, ranking, solo hash) are in quiz-logic.test.ts.
 // Black-box: HTTP contract docs/api/openapi.yaml (/quiz/*), WebSocket contract docs/api/quiz-ws.md, ADR 0021 and the D1
@@ -12,7 +12,7 @@
 //   - UUID travels in X-Player-Id for POST /quiz/rooms and GET /quiz/history (openapi), in the `join` message for WebSocket.
 //   - solo_pack answer_hash uses q = 1-based question number (the same number as the `q` field of `question`).
 //   - A 1-player `start` is a solo game; a game needs >= 2 connected players to be multiplayer.
-import { createExecutionContext, createScheduledController, env, runDurableObjectAlarm, waitOnExecutionContext } from 'cloudflare:test'
+import { createExecutionContext, createScheduledController, env, runDurableObjectAlarm, runInDurableObject, waitOnExecutionContext } from 'cloudflare:test'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import worker from '../src/index'
 import { DAILY, batchBody, b64u, depthByName, elementId, idMaps, resultName, sha256 } from './quiz-fixture'
@@ -1629,38 +1629,6 @@ describe('quiz', () => {
     expect(all).not.toMatch(UUID_IN_TEXT)
   })
 
-  // ============================================================== AC-QUIZ-27 (optional)
-  it('AC-QUIZ-27: POST /events nhận quiz_room_created và quiz_game_finished { players, questions, solo }; giá trị ngoài khoảng bị từ chối và không ghi gì', async () => {
-    const u = newId()
-    await env.DB.batch([ins.consent(u)])
-    const post = (body: unknown) => raw(`${BASE}/events`, { method: 'POST', body: JSON.stringify(body) }, as(u))
-    const ok = await post({
-      events: [
-        { type: 'quiz_room_created' },
-        { type: 'quiz_game_finished', players: 3, questions: 10, solo: false },
-        { type: 'quiz_game_finished', players: 1, questions: 5, solo: true },
-      ],
-    })
-    expect(ok.status).toBe(202)
-    const rows = (await env.DB.prepare('SELECT type FROM event WHERE player_id = ? ORDER BY type').bind(u).all<{ type: string }>()).results
-    expect(rows.map((r) => r.type)).toEqual(['quiz_game_finished', 'quiz_game_finished', 'quiz_room_created'])
-
-    const before = await count('SELECT COUNT(*) AS n FROM event WHERE player_id = ?', u)
-    for (const bad of [
-      { type: 'quiz_game_finished', players: 0, questions: 10, solo: false },
-      { type: 'quiz_game_finished', players: 51, questions: 10, solo: false },
-      { type: 'quiz_game_finished', players: 3, questions: 4, solo: false },
-      { type: 'quiz_game_finished', players: 3, questions: 10, solo: 'no' },
-      { type: 'quiz_game_finished', players: 3, questions: 10 },
-      { type: 'quiz_room_created', code: 'ABCDEF' },
-    ]) {
-      const res = await post({ events: [bad] })
-      expect([400, 422], JSON.stringify(bad)).toContain(res.status)
-      isProblem(res)
-    }
-    expect(await count('SELECT COUNT(*) AS n FROM event WHERE player_id = ?', u)).toBe(before)
-  })
-
   // ============================================================== TENANT / VALIDATION / ABUSE
   it('AC-QUIZ-TENANT: người chơi B không đọc được lịch sử của A, không xóa được dòng của A, và link phòng không lộ UUID của A', async () => {
     const a = newId()
@@ -1801,4 +1769,98 @@ describe('quiz', () => {
     const noConsentRes = await createRoom(victim, {})
     expect(noConsentRes.status).toBe(403)
   })
+
+  // ============================================================== review findings
+  it(
+    'AC-QUIZ-11: câu trả lời đến sau hạn nhưng trước khi alarm đóng câu bị từ chối too_late và không được điểm',
+    async () => {
+      const { code, clients: cs } = await setupGame(2, { seconds: 10 })
+      const [c1, c2] = cs as [Client, Client]
+      c1.send({ type: 'start' })
+      const q = await c1.next<QuestionMsg>('question')
+      await c2.next<QuestionMsg>('question')
+      c1.send({ type: 'answer', q: 1, picks: correctPair(q) })
+      await c1.next<AnsweredMsg>('answered')
+
+      // move the stored deadline into the past without running the alarm
+      await runInDurableObject(roomStub(code), async (instance, state) => {
+        const room = (await state.storage.get('room')) as any
+        room.deadline = Date.now() - 1
+        await state.storage.put('room', room)
+        ;(instance as any).room = undefined
+      })
+
+      c2.send({ type: 'answer', q: 1, picks: correctPair(q) })
+      expect(await c2.errorCode()).toBe('too_late')
+      expect(c2.all('answered')).toEqual([])
+
+      await tick(code)
+      const reveal = await c1.next<RevealMsg>('reveal')
+      const bySeat = new Map(reveal.results.map((r) => [r.seat, r]))
+      expect(bySeat.get(2)).toMatchObject({ picks: null, points: 0 })
+    },
+    GAME_TIMEOUT,
+  )
+
+  it('AC-QUIZ-07: host gửi start hai lần liên tiếp -> chỉ một started (game_no 1) và một question q=1, lần hai nhận bad_request, phòng playing game_no 1', async () => {
+    const { code, clients: cs } = await setupGame(2)
+    const [host, guest] = cs as [Client, Client]
+    host.send({ type: 'start' })
+    host.send({ type: 'start' })
+    expect(await host.errorCode()).toBe('bad_request')
+    await guest.next<QuestionMsg>('question')
+    await sleep(400)
+    const started = guest.all<StartedMsg>('started')
+    expect(started).toHaveLength(1)
+    expect(started[0]!.game_no).toBe(1)
+    expect(guest.all<QuestionMsg>('question').filter((m) => m.q === 1)).toHaveLength(1)
+    expect(guest.all<QuestionMsg>('question')).toHaveLength(1)
+    const view = (await (await getRoom(code)).json()) as RoomView
+    expect(view.state).toBe('playing')
+  })
+
+  it('AC-QUIZ-25: socket gửi 10 join bị từ chối nickname thì bị đóng mã 1008; socket mới join hợp lệ vẫn dùng được', async () => {
+    const [host, ok] = mkPlayers(2) as [Player, Player]
+    await env.DB.batch([ins.consent(host.id), ins.consent(ok.id)])
+    const { code } = (await (await createRoom(host)).json()) as Created
+    await join(code, host)
+
+    const bad = await Client.open(code)
+    for (let i = 0; i < 10; i++) {
+      bad.send({ type: 'join', uuid: ok.id, nickname: 'A' })
+      if (i < 9) {
+        expect(await bad.errorCode()).toBe('nickname_rejected')
+        await sleep(120) // stay below the 10 messages/second limit
+      }
+    }
+    expect((await bad.closed()).code).toBe(1008)
+
+    const fresh = await join(code, ok, 'Bếp Ổn')
+    expect(fresh.lobby.players.some((p) => p.nickname === 'Bếp Ổn' && p.connected)).toBe(true)
+  })
+
+  it(
+    'AC-QUIZ-22: người xóa dữ liệu giữa ván nhiều người được ghi lịch sử ẩn danh (player_id NULL, "Thực khách ẩn danh") và giữ điểm; người kia giữ UUID',
+    async () => {
+      const { players, code, clients: cs } = await setupGame(2)
+      cs[0]!.send({ type: 'start' })
+      expect((await delMe(players[1]!.id)).status).toBe(204) // the socket of the erased player stays connected
+      const game = await playGame(code, cs, (ci, q) => (ci === 0 || q.q === 1 ? correctPair(q) : wrongPair(q)))
+      expect(game.finals[0]!.saved).toBe(true)
+
+      const rows = (
+        await env.DB.prepare(
+          'SELECT p.seat, p.player_id, p.nickname, p.score FROM quiz_player p JOIN quiz_game g ON g.id = p.game_id WHERE g.room_code = ? ORDER BY p.seat',
+        )
+          .bind(code)
+          .all<{ seat: number; player_id: string | null; nickname: string; score: number }>()
+      ).results
+      expect(rows).toHaveLength(2)
+      const finalScore = (seat: number) => game.finals[0]!.standings.find((s) => s.seat === seat)!.score
+      expect(rows[0]).toMatchObject({ seat: 1, player_id: players[0]!.id, nickname: players[0]!.nick, score: finalScore(1) })
+      expect(rows[1]).toMatchObject({ seat: 2, player_id: null, nickname: ANON, score: finalScore(2) })
+      expect(rows[1]!.score).toBeGreaterThan(0)
+    },
+    GAME_TIMEOUT,
+  )
 })
