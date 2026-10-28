@@ -56,7 +56,7 @@
 ### AC-QUIZ-09: Không đủ câu hỏi
 - **Cho** pool hợp lệ (AC-QUIZ-08) có K công thức ứng với K' kết quả C khác nhau
 - **Khi** phòng 15 câu bắt đầu với K' = 12; và với K' = 3
-- **Thì** K' = 12: ván có 12 câu, mọi người được báo "Ván này có 12 câu" trong tin bắt đầu; K' < 5: không bắt đầu, chủ phòng nhận `error { code: "not_enough_questions" }`, phòng vẫn chờ (mặc định, câu hỏi mở 90)
+- **Thì** K' = 12: ván có 12 câu, mọi người được báo "Ván này có 12 câu" trong tin bắt đầu; K' < 5: không bắt đầu, chủ phòng nhận `error { code: "not_enough_questions" }`, phòng vẫn chờ (câu hỏi mở 90, chốt 2026-10-28)
 - Ưu tiên: Bắt buộc
 
 ### AC-QUIZ-10: Phát câu hỏi không lộ đáp án
@@ -146,7 +146,7 @@
 ### AC-QUIZ-24: Chơi lại
 - **Cho** phòng P đã kết thúc ván 1, U1 là chủ phòng, U2 còn kết nối
 - **Khi** U1 bấm "Chơi lại"; U2 bấm (không phải chủ phòng)
-- **Thì** P về phòng chờ với người đang kết nối, nhận người mới qua link như AC-QUIZ-04 (mặc định, câu hỏi mở 91), điểm về 0; bắt đầu lại thì ván 2 dùng seed mới (đề khác ván 1 khi pool đủ); `GET` link phòng vẫn xem được bảng ván 1 (AC-QUIZ-20); U2 nhận `error { code: "not_host" }`
+- **Thì** P về phòng chờ với người đang kết nối, nhận người mới qua link như AC-QUIZ-04 (câu hỏi mở 91, chốt 2026-10-28), điểm về 0; bắt đầu lại thì ván 2 dùng seed mới (đề khác ván 1 khi pool đủ); `GET` link phòng vẫn xem được bảng ván 1 (AC-QUIZ-20); U2 nhận `error { code: "not_host" }`
 - Ưu tiên: Bắt buộc
 
 ### AC-QUIZ-25: Chống lạm dụng WebSocket
