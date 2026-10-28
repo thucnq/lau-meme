@@ -242,7 +242,36 @@ class Client {
     return c
   }
 
+  // Paced send: stays at or below 10 messages per rolling second (AC-QUIZ-25) so fast machines never trip the
+  // server's flood limit. Order is preserved through an internal queue; callers need not await.
+  private sentAt: number[] = []
+  private pending = 0
+  private chain: Promise<void> = Promise.resolve()
+
   send(m: unknown): void {
+    const data = typeof m === 'string' ? m : JSON.stringify(m)
+    const trySync = (): boolean => {
+      const now = Date.now()
+      this.sentAt = this.sentAt.filter((t) => now - t <= 1000)
+      if (this.sentAt.length >= 10) return false
+      this.sentAt.push(now)
+      this.ws.send(data)
+      return true
+    }
+    if (this.pending === 0 && trySync()) return
+    this.pending++
+    this.chain = this.chain.then(async () => {
+      for (;;) {
+        if (trySync()) break
+        const wait = 1000 - (Date.now() - this.sentAt[0]!) + 20
+        await sleep(Math.max(wait, 5))
+      }
+      this.pending--
+    })
+  }
+
+  // Deliberate flooding (AC-QUIZ-25): bypasses pacing.
+  sendRaw(m: unknown): void {
     this.ws.send(typeof m === 'string' ? m : JSON.stringify(m))
   }
 
@@ -1575,7 +1604,7 @@ describe('quiz', () => {
     expect((await guest.closed()).code).toBe(1008)
 
     // too fast
-    for (let i = 0; i < 25; i++) host.send({ type: 'zzz' })
+    for (let i = 0; i < 25; i++) host.sendRaw({ type: 'zzz' })
     expect((await host.closed()).code).toBe(1008)
 
     // both come back
