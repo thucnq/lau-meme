@@ -653,6 +653,79 @@
       ],
       "risk": "LOW",
       "owner": "Thuc"
+    },
+    {
+      "id": "QUIZ",
+      "module": "Cộng đồng",
+      "name": "mQuiz - đố meme theo phòng",
+      "desc": "QUIZ · AC-QUIZ-01..26 (thêm 2026-10-28) · Durable Object phòng + WebSocket Hibernation, binding, ADR, khung test DO/alarm (2); tạo phòng, kiểm hợp lệ, 403/422/429, GET link phòng (2); phòng chờ, nickname, phòng đầy, đã bắt đầu, chủ phòng và chuyển quyền (3); sinh đề hàm thuần: pool độ sâu 1-5 trừ Món đặc biệt, đúng 1 cặp trong 4 lựa chọn, khó dần, thiếu câu (2); phát câu không lộ đáp án, nộp bài, điểm theo đồng hồ server, đóng câu sớm/hết giờ (3.5); bảng điểm trực tiếp và chung cuộc (1); rớt mạng vào lại (1); chơi một mình offline, đáp án băm, tiếp tục sau tải lại (2.5); lịch sử D1 + migration, API lịch sử, xem link cũ, dọn 90 ngày, xem/xuất/xóa (3); hủy phòng 5 phút, chơi lại, chống lạm dụng WebSocket (2); giao diện tab mQuiz, phòng chờ, câu hỏi, kết quả, lịch sử ở 375 px (4)",
+      "points": 26,
+      "deps": [
+        "PRIV",
+        "DISC",
+        "SUBPATH"
+      ],
+      "ac": [
+        "AC-QUIZ-01",
+        "AC-QUIZ-02",
+        "AC-QUIZ-03",
+        "AC-QUIZ-04",
+        "AC-QUIZ-05",
+        "AC-QUIZ-06",
+        "AC-QUIZ-07",
+        "AC-QUIZ-08",
+        "AC-QUIZ-09",
+        "AC-QUIZ-10",
+        "AC-QUIZ-11",
+        "AC-QUIZ-12",
+        "AC-QUIZ-13",
+        "AC-QUIZ-14",
+        "AC-QUIZ-15",
+        "AC-QUIZ-16",
+        "AC-QUIZ-17",
+        "AC-QUIZ-18",
+        "AC-QUIZ-19",
+        "AC-QUIZ-20",
+        "AC-QUIZ-21",
+        "AC-QUIZ-22",
+        "AC-QUIZ-23",
+        "AC-QUIZ-24",
+        "AC-QUIZ-25",
+        "AC-QUIZ-26"
+      ],
+      "risk": "HIGH",
+      "owner": "Thuc"
+    },
+    {
+      "id": "QUIZ2",
+      "module": "Cộng đồng",
+      "name": "mQuiz - đo chỉ số và thẻ chia sẻ kết quả",
+      "desc": "QUIZ · AC-QUIZ-27..28 (tùy chọn) · sự kiện quiz_room_created/quiz_game_finished + tổng hợp (0.5); thẻ chữ kết quả ván (1)",
+      "points": 1.5,
+      "optional": true,
+      "deps": [
+        "QUIZ",
+        "METRIC",
+        "SHARE"
+      ],
+      "ac": [
+        "AC-QUIZ-27",
+        "AC-QUIZ-28"
+      ],
+      "risk": "LOW",
+      "owner": "Thuc"
+    },
+    {
+      "id": "UATQ",
+      "module": "Kiểm thử",
+      "name": "Kiểm thử nghiệm thu & sửa lỗi (mQuiz)",
+      "desc": "15% của QUIZ; thử tay 2-3 điện thoại cùng phòng trên staging",
+      "points": 4,
+      "deps": [
+        "QUIZ"
+      ],
+      "risk": "MEDIUM",
+      "owner": "Thuc"
     }
   ],
   "questions": [
