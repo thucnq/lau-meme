@@ -1784,10 +1784,10 @@ describe('quiz', () => {
 
       // move the stored deadline into the past without running the alarm
       await runInDurableObject(roomStub(code), async (instance, state) => {
-        const room = (await state.storage.get('room')) as any
+        const room = (await state.storage.get('room')) as { deadline: number }
         room.deadline = Date.now() - 1
         await state.storage.put('room', room)
-        ;(instance as any).room = undefined
+        ;(instance as unknown as { room: unknown }).room = undefined
       })
 
       c2.send({ type: 'answer', q: 1, picks: correctPair(q) })
