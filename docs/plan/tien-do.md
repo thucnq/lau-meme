@@ -1,7 +1,7 @@
 # Tiến độ - ƯỚC LƯỢNG - LẨU MEME
 
 > Sinh bởi `/dk:plan` (gen-plan.py) từ `docs/estimate/items.json`. **Người sửa trực tiếp file này**: dấu `[x]` (hạng mục hoặc AC), `tiến độ: N%`, `người`, `bắt đầu`, `xong` (YYYY-MM-DD), `ghi chú` - giữ nguyên dấu ` · ` giữa các trường. Chạy lại `/dk:plan` để tính dự báo và vẽ lại `gantt.html`. `KH` là kế hoạch gốc, chỉ đổi bằng `/dk:plan rebaseline`.
-> Bắt đầu dự án: 2026-10-20 · Kỹ sư: 1 (Thuc) · Giờ/tuần: 20 · Nghiệm thu KH: 2028-06-06 · Dự báo: 2027-07-27 · Cập nhật: 2026-10-26
+> Bắt đầu dự án: 2026-10-20 · Kỹ sư: 1 (Thuc) · Giờ/tuần: 20 · Nghiệm thu KH: 2029-01-18 · Dự báo: 2027-07-27 · Cập nhật: 2026-10-28
 
 
 ## Nền tảng
@@ -90,7 +90,7 @@
 - [x] **DAILY** Món đặc biệt hôm nay · 9đ · rủi ro: MEDIUM · KH: 2027-03-10 → 2027-04-06 · tiến độ: 100% · người: Thuc · bắt đầu: 2026-10-20 · xong: 2026-10-21 · ghi chú: 
   - [x] AC-DAILY-01 Chọn Món đặc biệt (cập nhật 2026-10-23)
   - [x] AC-DAILY-02 Không có ứng viên nào
-  - [x] AC-DAILY-03 Công bố món không lộ tên
+  - [x] AC-DAILY-03 Công bố món không lộ tên (cập nhật 2026-10-27, câu hỏi mở 86)
   - [x] AC-DAILY-04 Ghép ra Món đặc biệt trên bàn lẩu
   - [x] AC-DAILY-05 Trạng thái đã giải giữ qua tải lại
   - [x] AC-DAILY-06 Nộp kết quả hợp lệ
@@ -374,3 +374,35 @@
   - [ ] AC-ART-12 Ưu tiên vẽ ảnh cho món sắp lên Vàng/Đỏ (thêm 2026-10-24)
   - [ ] AC-ART-13 Admin tải tranh vẽ tay cho phần tử (thêm 2026-10-24) _(tùy chọn)_
   - [ ] AC-ART-14 Dùng link ảnh của đề xuất làm ảnh món (thêm 2026-10-25, câu hỏi mở 46) _(tùy chọn)_
+
+## Cộng đồng
+- [ ] **QUIZ** mQuiz - đố meme theo phòng · 26đ · rủi ro: HIGH · KH: 2028-10-17 → 2029-01-04 · tiến độ: 0% (theo AC) · người: Thuc · bắt đầu:  · xong:  · ghi chú: 
+  - [ ] AC-QUIZ-01 Tạo phòng
+  - [ ] AC-QUIZ-02 Tạo phòng không hợp lệ
+  - [ ] AC-QUIZ-03 Mở link phòng
+  - [ ] AC-QUIZ-04 Vào phòng chờ
+  - [ ] AC-QUIZ-05 Vào phòng không hợp lệ
+  - [ ] AC-QUIZ-06 Phòng đã bắt đầu không nhận người mới (Q6)
+  - [ ] AC-QUIZ-07 Chủ phòng bắt đầu, chuyển quyền chủ phòng
+  - [ ] AC-QUIZ-08 Sinh đề
+  - [ ] AC-QUIZ-09 Không đủ câu hỏi
+  - [ ] AC-QUIZ-10 Phát câu hỏi không lộ đáp án
+  - [ ] AC-QUIZ-11 Nộp câu trả lời
+  - [ ] AC-QUIZ-12 Tính điểm (Q3)
+  - [ ] AC-QUIZ-13 Kết thúc câu và lộ đáp án
+  - [ ] AC-QUIZ-14 Bảng điểm trực tiếp
+  - [ ] AC-QUIZ-15 Bảng xếp hạng chung cuộc
+  - [ ] AC-QUIZ-16 Rớt mạng và vào lại
+  - [ ] AC-QUIZ-17 Chơi một mình offline (Q9, Q14)
+  - [ ] AC-QUIZ-18 Lưu lịch sử ván nhiều người (Q7, Q11)
+  - [ ] AC-QUIZ-19 Xem lịch sử của mình (Q12)
+  - [ ] AC-QUIZ-20 Xem bảng chung cuộc qua link phòng cũ (Q12)
+  - [ ] AC-QUIZ-21 Dọn lịch sử sau 90 ngày (Q13)
+  - [ ] AC-QUIZ-22 Lịch sử trong xem/xuất/xóa dữ liệu (PRIV)
+  - [ ] AC-QUIZ-23 Hủy phòng không ai dùng
+  - [ ] AC-QUIZ-24 Chơi lại
+  - [ ] AC-QUIZ-25 Chống lạm dụng WebSocket
+  - [ ] AC-QUIZ-26 Lối vào và màn hình
+
+## Kiểm thử
+- [ ] **UATQ** Kiểm thử nghiệm thu & sửa lỗi (mQuiz) · 4đ · rủi ro: MEDIUM · KH: 2029-01-05 → 2029-01-17 · tiến độ: 0% · người: Thuc · bắt đầu:  · xong:  · ghi chú: 

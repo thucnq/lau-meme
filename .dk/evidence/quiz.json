@@ -1,0 +1,246 @@
+{
+ "red": {
+  "ts": "2026-10-28T09:07:48+00:00",
+  "commit": "b2b1617",
+  "results": {
+   "AC-QUIZ-01": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-QUIZ-02": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-QUIZ-03": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-QUIZ-04": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-QUIZ-05": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-QUIZ-06": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-QUIZ-07": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-QUIZ-08": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-QUIZ-09": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-QUIZ-10": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-QUIZ-11": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-QUIZ-12": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-QUIZ-13": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-QUIZ-14": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-QUIZ-15": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-QUIZ-16": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-QUIZ-17": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-QUIZ-18": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-QUIZ-19": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-QUIZ-20": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-QUIZ-21": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-QUIZ-22": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-QUIZ-23": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-QUIZ-24": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-QUIZ-25": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-QUIZ-26": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-QUIZ-27": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-QUIZ-28": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   }
+  }
+ },
+ "green": {
+  "ts": "2026-10-28T10:08:34+00:00",
+  "commit": "79f591f",
+  "results": {
+   "AC-QUIZ-01": {
+    "status": "PASS",
+    "test": "quiz.ui.test.tsx#quiz ui: tab mQuiz > AC-QUIZ-01: đã đồng ý, bấm \"Tạo phòng\" gửi POST /quiz/rooms với X-Player-Id và { nickname, questions, seconds } rồi mở phòng vừa tạo"
+   },
+   "AC-QUIZ-02": {
+    "status": "PASS",
+    "test": "quiz.ui.test.tsx#quiz ui: tab mQuiz > AC-QUIZ-02: máy chủ trả lỗi "
+   },
+   "AC-QUIZ-03": {
+    "status": "PASS",
+    "test": "quiz.ui.test.tsx#quiz ui: mở link phòng > AC-QUIZ-03: mã không tồn tại "
+   },
+   "AC-QUIZ-04": {
+    "status": "PASS",
+    "test": "quiz.ui.test.tsx#quiz ui: phòng chờ > AC-QUIZ-04: nhập nickname, \"Vào phòng\" mở WebSocket của phòng và gửi join { uuid, nickname }; lobby hiện danh sách người chơi"
+   },
+   "AC-QUIZ-05": {
+    "status": "PASS",
+    "test": "quiz.test.ts#quiz > AC-QUIZ-05: join sai nickname -> nickname_rejected và socket giữ để nhập lại; UUID sai -> bad_request, chưa đồng ý -> consent_required, tin khác trước join -> not_joined "
+   },
+   "AC-QUIZ-06": {
+    "status": "PASS",
+    "test": "quiz.ui.test.tsx#quiz ui: mở link phòng > AC-QUIZ-06: phòng đang chơi mà mình chưa từng vào hiện \"Phòng đã bắt đầu\""
+   },
+   "AC-QUIZ-07": {
+    "status": "PASS",
+    "test": "quiz.ui.test.tsx#quiz ui: phòng chờ > AC-QUIZ-07: chỉ chủ phòng thấy nút \"Bắt đầu\" "
+   },
+   "AC-QUIZ-08": {
+    "status": "PASS",
+    "test": "quiz-logic.test.ts#quiz logic > AC-QUIZ-08: mỗi câu thỏa A != B, đang hoạt động, độ sâu 1..5, khác Món đặc biệt, không lặp C, 4 lựa chọn đôi một khác nhau, đúng 1 cặp trong 6 là công thức, khó dần"
+   },
+   "AC-QUIZ-09": {
+    "status": "PASS",
+    "test": "quiz-logic.test.ts#quiz logic > AC-QUIZ-09: pool có 12 meme đề khác nhau mà xin 15 câu thì ván có đúng 12 câu, đủ cả 12 đích"
+   },
+   "AC-QUIZ-10": {
+    "status": "PASS",
+    "test": "quiz.ui.test.tsx#quiz ui: câu hỏi, nộp bài, đáp án > AC-QUIZ-10: màn câu hỏi hiện meme đề, 4 lựa chọn, số câu và đồng hồ đếm theo deadline - server_now "
+   },
+   "AC-QUIZ-11": {
+    "status": "PASS",
+    "test": "quiz.ui.test.tsx#quiz ui: câu hỏi, nộp bài, đáp án > AC-QUIZ-11: \"Chốt\" bị khóa tới khi chọn đủ 2 ô; bấm gửi answer { q, picks } "
+   },
+   "AC-QUIZ-12": {
+    "status": "PASS",
+    "test": "quiz-logic.test.ts#quiz logic > AC-QUIZ-12: T = 20 giây: nộp đúng lúc 0, 10, 20 giây được 1000, 750, 500 điểm"
+   },
+   "AC-QUIZ-13": {
+    "status": "PASS",
+    "test": "quiz.ui.test.tsx#quiz ui: câu hỏi, nộp bài, đáp án > AC-QUIZ-13: reveal tô đúng 2 ô đúng "
+   },
+   "AC-QUIZ-14": {
+    "status": "PASS",
+    "test": "quiz.ui.test.tsx#quiz ui: câu hỏi, nộp bài, đáp án > AC-QUIZ-14: bảng điểm hiện top 10 và dòng của tôi "
+   },
+   "AC-QUIZ-15": {
+    "status": "PASS",
+    "test": "quiz.ui.test.tsx#quiz ui: bảng xếp hạng chung cuộc > AC-QUIZ-15: final hiện 🥇🥈🥉 cho 3 hạng đầu, tô dòng của mình; người chơi thường không có nút \"Chơi lại\""
+   },
+   "AC-QUIZ-16": {
+    "status": "PASS",
+    "test": "quiz.test.ts#quiz > AC-QUIZ-16: người rớt mạng ở câu 3 vào lại ở câu 4 với cùng UUID nhận câu 4 với deadline gốc, điểm đã có, câu 3 tính 0, nickname và hạng giữ nguyên"
+   },
+   "AC-QUIZ-17": {
+    "status": "PASS",
+    "test": "quiz.ui.test.tsx#quiz ui: chơi một mình > AC-QUIZ-17: nhận solo_pack thì client tự chấm và tự đếm giờ "
+   },
+   "AC-QUIZ-18": {
+    "status": "PASS",
+    "test": "quiz.test.ts#quiz > AC-QUIZ-18: ván nhiều người kết thúc ghi đúng 1 dòng quiz_game "
+   },
+   "AC-QUIZ-19": {
+    "status": "PASS",
+    "test": "quiz.ui.test.tsx#quiz ui: lịch sử mQuiz > AC-QUIZ-19: ván của tôi hiện nickname, điểm, hạng; bấm một ván mở bảng chung cuộc của phòng đó"
+   },
+   "AC-QUIZ-20": {
+    "status": "PASS",
+    "test": "quiz.ui.test.tsx#quiz ui: mở link phòng > AC-QUIZ-20: phòng đã kết thúc hiện bảng chung cuộc của ván mới nhất "
+   },
+   "AC-QUIZ-21": {
+    "status": "PASS",
+    "test": "quiz.test.ts#quiz > AC-QUIZ-21: tác vụ dọn hằng ngày xóa ván quá 90 ngày "
+   },
+   "AC-QUIZ-22": {
+    "status": "PASS",
+    "test": "quiz.test.ts#quiz > AC-QUIZ-22: GET /me có quiz_history; DELETE /me bỏ UUID và đổi nickname thành \"Thực khách ẩn danh\" ở các dòng của U, giữ điểm và hạng, bảng của U2 không đổi; lịch sử của U rỗng"
+   },
+   "AC-QUIZ-23": {
+    "status": "PASS",
+    "test": "quiz.test.ts#quiz > AC-QUIZ-23: phòng chờ không ai kết nối 5 phút bị hủy: GET trả 404 và không còn dòng quiz_room"
+   },
+   "AC-QUIZ-24": {
+    "status": "PASS",
+    "test": "quiz.test.ts#quiz > AC-QUIZ-24: chủ phòng bấm replay -> phòng về lobby "
+   },
+   "AC-QUIZ-25": {
+    "status": "PASS",
+    "test": "quiz.test.ts#quiz > AC-QUIZ-25: JSON hỏng hoặc type lạ nhận error bad_request và socket giữ; tin lớn hơn 1 KB hoặc hơn 10 tin/giây bị đóng mã 1008 và người chơi vào lại được"
+   },
+   "AC-QUIZ-26": {
+    "status": "PASS",
+    "test": "quiz.ui.test.tsx#quiz ui: tab mQuiz > AC-QUIZ-26: tab có nút \"Tạo phòng\", chọn số câu 5/10/15 "
+   },
+   "AC-QUIZ-28": {
+    "status": "PASS",
+    "test": "quiz.ui.test.tsx#quiz ui: bảng xếp hạng chung cuộc > AC-QUIZ-28: \"Chia sẻ kết quả\" chép thẻ chữ có hạng, điểm, số câu đúng / tổng và link phòng, không có đề hay đáp án"
+   },
+   "AC-QUIZ-TENANT": {
+    "status": "PASS",
+    "test": "quiz.test.ts#quiz > AC-QUIZ-TENANT: người chơi B không đọc được lịch sử của A, không xóa được dòng của A, và link phòng không lộ UUID của A"
+   },
+   "AC-QUIZ-VALIDATION": {
+    "status": "PASS",
+    "test": "quiz.test.ts#quiz > AC-QUIZ-VALIDATION: tạo phòng với số âm, số khổng lồ, kiểu sai, chuỗi dài, script, SQL, trường lạ bị từ chối 4xx "
+   },
+   "AC-QUIZ-ABUSE": {
+    "status": "PASS",
+    "test": "quiz.test.ts#quiz > AC-QUIZ-ABUSE: trường giả danh "
+   }
+  }
+ }
+}

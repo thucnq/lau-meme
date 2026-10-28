@@ -5,6 +5,8 @@ declare namespace Cloudflare {
     ASSETS: Fetcher
     /** Illustrations (AC-ART-04/05), objects `img/<sha256-12>.webp`. */
     IMG: R2Bucket
+    /** mQuiz rooms (ADR 0021): one QuizRoom Durable Object per room code. */
+    QUIZ_ROOM: DurableObjectNamespace<import('./features/quiz/room').QuizRoom>
     APP_ENV: string
     /** Sub-path the game lives under, no trailing slash (base-path.json, ADR 0007). */
     BASE_PATH: string

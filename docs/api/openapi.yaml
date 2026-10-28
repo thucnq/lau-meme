@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: lau-meme API
-  version: 0.9.0
+  version: 0.10.1
   description: |
     API của Worker Lẩu Meme. Bốn chủ thể (BRD mục 2): thực khách ẩn danh (header `X-Player-Id` = UUID v4
     sinh trên trình duyệt), thực khách đã đăng nhập Google (cookie phiên `laumeme_sid`, ADR 0010 - kết quả Daily,
@@ -25,6 +25,8 @@ tags:
     description: Khám phá, Daily, báo cáo, phiếu, sự kiện
   - name: contrib
     description: Đóng góp meme, người tạo, Top cống hiến (CONTRIB, ADR 0013)
+  - name: quiz
+    description: mQuiz - phòng đố meme, lịch sử (QUIZ, ADR 0021). Tin nhắn WebSocket mô tả ở `docs/api/quiz-ws.md`
   - name: admin
     description: Trang quản trị (ADMIN) - chỉ phục vụ trên host quản trị riêng (ADR 0008)
   - name: pipeline
@@ -241,7 +243,7 @@ paths:
         của tài khoản với đủ trường đã gửi - AC-CONTRIB-12; Đĩa của tài khoản kèm thời điểm khám phá - AC-SYNC-10);
         không bao giờ có băm `sub` (AC-AUTH-06).
       security: [{ PlayerId: [] }, { PlayerId: [], Session: [] }]
-      x-ac: [AC-PRIV-08, AC-AUTH-06, AC-CONTRIB-12, AC-SYNC-10]
+      x-ac: [AC-PRIV-08, AC-AUTH-06, AC-CONTRIB-12, AC-SYNC-10, AC-QUIZ-22]
       responses:
         '200':
           description: Dữ liệu của UUID gửi lên
@@ -264,8 +266,10 @@ paths:
         Đề xuất meme: `pending` bị xóa; đã duyệt/bị từ chối bỏ gắn tài khoản (meme đã duyệt ở lại game, hiện
         "Thực khách ẩn danh", rời Top cống hiến ngay; nickname trong bản chụp người tạo của mọi version còn lưu thành
         `null` - AC-CONTRIB-12, ADR 0013).
+        Lịch sử mQuiz: dòng `quiz_player` của UUID bỏ `player_id`, nickname thành "Thực khách ẩn danh", điểm và hạng
+        giữ nguyên (AC-QUIZ-22).
       security: [{ PlayerId: [] }, { PlayerId: [], Session: [] }]
-      x-ac: [AC-PRIV-05, AC-AUTH-06, AC-CONTRIB-12, AC-SYNC-10]
+      x-ac: [AC-PRIV-05, AC-AUTH-06, AC-CONTRIB-12, AC-SYNC-10, AC-QUIZ-22]
       responses:
         '204':
           description: Đã xóa (hoặc không có gì để xóa)
@@ -775,6 +779,112 @@ paths:
         '400': { $ref: '#/components/responses/BadRequest' }
         '403': { $ref: '#/components/responses/Forbidden' }
         '422': { $ref: '#/components/responses/Unprocessable' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        default: { $ref: '#/components/responses/Problem' }
+
+  # ---------------------------------------------------------------- quiz (ADR 0021)
+  /quiz/rooms:
+    post:
+      operationId: createQuizRoom
+      tags: [quiz]
+      summary: Tạo phòng mQuiz
+      description: |
+        UUID của người tạo đi trong header `X-Player-Id` như mọi endpoint ghi (AC-QUIZ-01 viết `uuid` trong thân là
+        tên gọi, không phải vị trí). Cần đồng ý `play` (403). Nickname lọc như `PUT /me/nickname` (422), không lưu
+        vào nickname chung. Mã 6 ký tự từ `23456789ABCDEFGHJKMNPQRSTUVWXYZ`, ghi vào `quiz_room` bằng
+        `ON CONFLICT DO NOTHING` (trùng thì sinh lại, tối đa 5 lần rồi 503). Khởi tạo Durable Object `QuizRoom`
+        (`idFromName(mã)`) với người tạo là chủ phòng. Giới hạn 5 phòng/giờ/UUID và 20 phòng/giờ/IP băm (429).
+      security: [{ PlayerId: [] }]
+      x-ac: [AC-QUIZ-01, AC-QUIZ-02, AC-PRIV-02]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/QuizRoomRequest' }
+      responses:
+        '201':
+          description: Phòng đã tạo, đang ở phòng chờ
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/QuizRoomCreated' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '415': { $ref: '#/components/responses/UnsupportedMediaType' }
+        '422': { $ref: '#/components/responses/Unprocessable' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '503': { $ref: '#/components/responses/ServiceUnavailable' }
+        default: { $ref: '#/components/responses/Problem' }
+  /quiz/rooms/{code}:
+    get:
+      operationId: getQuizRoom
+      tags: [quiz]
+      summary: Trạng thái phòng (mở link phòng)
+      description: |
+        Công khai, không cần UUID, không bao giờ trả UUID hay đề. `lobby`: cấu hình + nickname đang trong phòng (kèm
+        ván gần nhất nếu đã chơi lại - AC-QUIZ-24); `playing`: không có đề; `finished`: bảng chung cuộc ván mới
+        nhất + các ván trước (từ D1, kể cả khi Durable Object đã hủy). Mã không có trong `quiz_room`, hoặc phòng đã
+        hủy mà không còn ván nào trong lịch sử → 404. `Cache-Control: no-store`.
+      security: []
+      x-ac: [AC-QUIZ-03, AC-QUIZ-20, AC-QUIZ-21, AC-QUIZ-23]
+      parameters:
+        - $ref: '#/components/parameters/QuizCode'
+      responses:
+        '200':
+          description: Phòng còn sống hoặc còn lịch sử
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/QuizRoomView' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        default: { $ref: '#/components/responses/Problem' }
+  /quiz/rooms/{code}/ws:
+    get:
+      operationId: connectQuizRoom
+      tags: [quiz]
+      summary: Kết nối WebSocket tới phòng
+      description: |
+        Nâng cấp WebSocket (`Upgrade: websocket`), Worker chuyển nguyên yêu cầu cho Durable Object của phòng
+        (Hibernation API). Trình duyệt không đặt được header nên UUID và nickname gửi trong tin `join` đầu tiên
+        (`docs/api/quiz-ws.md`); đồng ý `play` được kiểm ở `join`. Mọi tin nhắn, mã lỗi trong tin và mã đóng socket
+        nằm ở `docs/api/quiz-ws.md`. Phòng không tồn tại hoặc đã hủy → 404 trước khi nâng cấp; thiếu
+        `Upgrade: websocket` → 426.
+      security: []
+      x-ac: [AC-QUIZ-04, AC-QUIZ-05, AC-QUIZ-06, AC-QUIZ-07, AC-QUIZ-08, AC-QUIZ-09, AC-QUIZ-10, AC-QUIZ-11, AC-QUIZ-12, AC-QUIZ-13, AC-QUIZ-14, AC-QUIZ-15, AC-QUIZ-16, AC-QUIZ-17, AC-QUIZ-18, AC-QUIZ-23, AC-QUIZ-24, AC-QUIZ-25]
+      parameters:
+        - $ref: '#/components/parameters/QuizCode'
+      responses:
+        '101': { description: Đã nâng cấp WebSocket }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '426':
+          description: "Thiếu header Upgrade websocket"
+          content:
+            application/problem+json:
+              schema: { $ref: '#/components/schemas/Problem' }
+        default: { $ref: '#/components/responses/Problem' }
+  /quiz/history:
+    get:
+      operationId: listMyQuizHistory
+      tags: [quiz]
+      summary: Lịch sử mQuiz của tôi (mới nhất trước)
+      description: |
+        UUID trong header `X-Player-Id` (AC-QUIZ-19 viết `?uuid=` là tên gọi; header để UUID không vào log URL).
+        Chỉ các ván nhiều người có `quiz_player.player_id` = UUID; tối đa 20 ván/trang. Không cần đồng ý (chỉ đọc
+        dữ liệu của mình). UUID sai định dạng → 400.
+      security: [{ PlayerId: [] }]
+      x-ac: [AC-QUIZ-19, AC-QUIZ-22]
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - name: size
+          in: query
+          schema: { type: integer, minimum: 1, maximum: 20, default: 20 }
+      responses:
+        '200':
+          description: Trang lịch sử (rỗng → client hiện "Bạn chưa chơi ván mQuiz nào")
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/QuizHistoryPage' }
+        '400': { $ref: '#/components/responses/BadRequest' }
         '429': { $ref: '#/components/responses/TooManyRequests' }
         default: { $ref: '#/components/responses/Problem' }
 
@@ -1560,6 +1670,11 @@ components:
       description: '`PIPELINE_TOKEN` (Cloudflare secret + GitHub Secret). Chỉ mở được `/pipeline/*` và `/metrics/summary`.'
 
   parameters:
+    QuizCode:
+      name: code
+      in: path
+      required: true
+      schema: { type: string, pattern: '^[2-9A-HJKMNP-Z]{6}$' }
     ContributionId:
       name: id
       in: path
@@ -1992,7 +2107,7 @@ components:
     MyData:
       type: object
       additionalProperties: false
-      required: [nickname, discoveries, daily_results, streak, reports, votes, consents, event_counts, account]
+      required: [nickname, discoveries, daily_results, streak, reports, votes, consents, event_counts, account, quiz_history]
       properties:
         nickname: { type: [string, 'null'] }
         account:
@@ -2048,6 +2163,10 @@ components:
         event_counts:
           type: object
           additionalProperties: { type: integer, minimum: 0 }
+        quiz_history:
+          type: array
+          description: Mọi ván mQuiz nhiều người của UUID còn trong hạn 90 ngày (AC-QUIZ-22)
+          items: { $ref: '#/components/schemas/QuizHistoryItem' }
 
     Combination:
       type: object
@@ -2244,6 +2363,104 @@ components:
           properties:
             type: { const: feedback }
             value: { type: string, enum: [ngon, nhat] }
+
+    QuizRoomRequest:
+      type: object
+      additionalProperties: false
+      required: [nickname]
+      properties:
+        nickname:
+          type: string
+          maxLength: 100
+          description: Nickname của chủ phòng cho phòng này, cùng luật `NicknameRequest` (sai luật → 422)
+        questions: { type: integer, enum: [5, 10, 15], default: 10 }
+        seconds: { type: integer, enum: [10, 20, 30], default: 20 }
+    QuizRoomCreated:
+      type: object
+      additionalProperties: false
+      required: [code, url, state, questions, seconds]
+      properties:
+        code: { type: string, pattern: '^[2-9A-HJKMNP-Z]{6}$' }
+        url: { type: string, format: uri, description: 'Link tuyệt đối `https://<host>/lau-meme/quiz/<mã>` (AC-SUBPATH-10)' }
+        state: { const: lobby }
+        questions: { type: integer, enum: [5, 10, 15] }
+        seconds: { type: integer, enum: [10, 20, 30] }
+    QuizStanding:
+      type: object
+      additionalProperties: false
+      required: [rank, nickname, score, correct]
+      properties:
+        rank: { type: integer, minimum: 1 }
+        nickname: { type: string }
+        score: { type: integer, minimum: 0 }
+        correct: { type: integer, minimum: 0 }
+    QuizGameSummary:
+      type: object
+      additionalProperties: false
+      required: [game_no, questions, seconds, started_at, finished_at, standings]
+      properties:
+        game_no: { type: integer, minimum: 1 }
+        questions: { type: integer, minimum: 5, maximum: 15 }
+        seconds: { type: integer, enum: [10, 20, 30] }
+        started_at: { $ref: '#/components/schemas/Instant' }
+        finished_at: { $ref: '#/components/schemas/Instant' }
+        standings:
+          type: array
+          description: Toàn bộ bảng chung cuộc, hạng tăng dần; không có UUID
+          items: { $ref: '#/components/schemas/QuizStanding' }
+    QuizRoomView:
+      type: object
+      additionalProperties: false
+      required: [code, state, questions, seconds, players, latest, earlier]
+      properties:
+        code: { type: string }
+        state: { type: string, enum: [lobby, playing, finished] }
+        questions: { type: integer, enum: [5, 10, 15] }
+        seconds: { type: integer, enum: [10, 20, 30] }
+        players:
+          type: array
+          description: Nickname đang trong phòng theo thứ tự vào (rỗng khi `finished`)
+          items: { type: string }
+        latest:
+          description: Ván gần nhất đã lưu (null khi chưa có)
+          oneOf:
+            - type: 'null'
+            - $ref: '#/components/schemas/QuizGameSummary'
+        earlier:
+          type: array
+          description: Các ván trước, mới nhất trước (chỉ `game_no`, thời điểm, số người)
+          items:
+            type: object
+            additionalProperties: false
+            required: [game_no, finished_at, player_count]
+            properties:
+              game_no: { type: integer, minimum: 1 }
+              finished_at: { $ref: '#/components/schemas/Instant' }
+              player_count: { type: integer, minimum: 2 }
+    QuizHistoryItem:
+      type: object
+      additionalProperties: false
+      required: [code, game_no, url, finished_at, player_count, questions, nickname, score, correct, rank]
+      properties:
+        code: { type: string }
+        game_no: { type: integer, minimum: 1 }
+        url: { type: string, format: uri }
+        finished_at: { $ref: '#/components/schemas/Instant' }
+        player_count: { type: integer, minimum: 2 }
+        questions: { type: integer, minimum: 5, maximum: 15 }
+        nickname: { type: string, description: Nickname lúc chơi }
+        score: { type: integer, minimum: 0 }
+        correct: { type: integer, minimum: 0 }
+        rank: { type: integer, minimum: 1 }
+    QuizHistoryPage:
+      allOf:
+        - $ref: '#/components/schemas/Page'
+        - type: object
+          required: [items]
+          properties:
+            items:
+              type: array
+              items: { $ref: '#/components/schemas/QuizHistoryItem' }
 
     Page:
       type: object

@@ -7,7 +7,8 @@ flowchart LR
     redirect["Redirect Rule (người cấu hình)<br/>dinoduct.fun/ → 302 /lau-meme/"]
     worker["Worker lau-meme<br/>route dinoduct.fun/lau-meme*<br/>(staging: staging.dinoduct.fun/lau-meme*)<br/>route dinoduct.fun/robots.txt (AC-SUBPATH-15)<br/>web tĩnh + /lau-meme/api/* + Cron dọn dữ liệu<br/>route laumeme-admin.dinoduct.fun/* (ADMIN_HOST, ADR 0008)<br/>trang quản trị + /api/admin/*"]
     web["Web React + Vite<br/>static assets web/dist/lau-meme<br/>tra + giải mã graph trong bộ nhớ"]
-    d1[("D1 (SQLite)<br/>nội dung 14 version, chặn, tier,<br/>người chơi, tài khoản, phiên,<br/>Đĩa của tài khoản (ADR 0015),<br/>đề xuất meme, sự kiện, audit")]
+    d1[("D1 (SQLite)<br/>nội dung 14 version, chặn, tier,<br/>người chơi, tài khoản, phiên,<br/>Đĩa của tài khoản (ADR 0015),<br/>đề xuất meme, sự kiện, audit,<br/>mã phòng + lịch sử mQuiz (ADR 0021)")]
+    quizdo[["Durable Object QuizRoom<br/>1 object / phòng mQuiz, SQLite storage,<br/>WebSocket Hibernation + alarm (ADR 0021)"]]
     cache[("Cache API<br/>graph, ảnh bất biến")]
     wa["Web Analytics<br/>(không cookie)"]
     r2[("R2 ảnh<br/>(giai đoạn 2)")]
@@ -31,6 +32,9 @@ flowchart LR
   worker -- "phục vụ" --> web
   worker -- "prepare().bind()" --> d1
   worker --> cache
+  player -- "WebSocket /lau-meme/api/quiz/rooms/{mã}/ws" --> worker
+  worker -- "chuyển nguyên request (idFromName(mã))" --> quizdo
+  quizdo -- "đọc nội dung version hiện hành; ghi lịch sử ván" --> d1
   player -. beacon .-> wa
   player -- "nút đăng nhập, nhận ID token" --> google
   worker -- "kiểm ID token theo JWKS (cache)" --> google

@@ -1,7 +1,7 @@
 # BRD - Lẩu Meme
 
 > Phiên bản: 0.1 · Ngày: 2026-10-19 · Trạng thái: Nháp
-> Nguồn: `docs/input/ghi-chu-hop.md`, `docs/input/noi-dung-loi.md|json`, `docs/scope.md` (đã chốt, kèm trả lời 5 câu hỏi phạm vi)
+> Nguồn: `docs/input/ghi-chu-hop.md`, `docs/input/noi-dung-loi.md|json`, `docs/scope.md` (đã chốt, kèm trả lời 5 câu hỏi phạm vi), `docs/input/mquiz.md` (QUIZ, 2026-10-28)
 
 ## 1. Bối cảnh và mục tiêu
 - **Vấn đề**: chưa có trò chơi ghép kiểu Infinite Craft bằng meme Việt; người Việt trên mạng xã hội cần một trò ngắn, hài, có lý do quay lại mỗi ngày và có thứ để khoe.
@@ -15,13 +15,15 @@
   - **Giai đoạn 1 - go-live**: GAME, GRAPH, SEED, DAILY (kèm streak), DISC, SHARE, REPORT, ADMIN, METRIC, PRIV; nội dung chỉ là lõi classic; mẻ nhúng chạy **chế độ lõi** (chỉ đổi Món đặc biệt + manifest, không crawl, không LLM) - AC-PIPE-01.
   - **Giai đoạn 2**: PIPE đầy đủ (chạy tay trước, sau đó bật cron tự động đăng), MOD, ART (ảnh minh họa; giai đoạn 1 chỉ dùng emoji).
   - Tùy chọn: FEEDBACK.
-- **Ngoài phạm vi**: quảng cáo/kiếm tiền, đăng nhập tài khoản, ảnh/video meme gốc, app mobile, đa ngôn ngữ, chơi với bạn bè thời gian thực, người chơi tự gửi meme, trang giới thiệu/landing riêng (câu hỏi phạm vi 5), scrape Facebook/TikTok.
+  - Sau go-live (thêm 2026-10-28): QUIZ (mQuiz - đố meme theo phòng).
+- **Ngoài phạm vi**: quảng cáo/kiếm tiền, đăng nhập tài khoản, ảnh/video meme gốc, app mobile, đa ngôn ngữ, người chơi tự gửi meme, trang giới thiệu/landing riêng (câu hỏi phạm vi 5), scrape Facebook/TikTok. (cập nhật 2026-10-28: bỏ "chơi với bạn bè thời gian thực" khỏi danh sách này - nay là QUIZ.)
 
 ## 2. Người dùng và vai trò
 | Vai trò | Mô tả | Quyền chính |
 |---|---|---|
-| Thực khách (người chơi ẩn danh) | Định danh bằng UUID sinh trên trình duyệt; nickname tùy chọn | Chơi ghép, ghép ra Món đặc biệt, gửi Công thức gia truyền, báo cáo, Ngon/Nhạt, xem/xuất/xóa dữ liệu của mình |
+| Thực khách (người chơi ẩn danh) | Định danh bằng UUID sinh trên trình duyệt; nickname tùy chọn | Chơi ghép, ghép ra Món đặc biệt, gửi Công thức gia truyền, báo cáo, Ngon/Nhạt, xem/xuất/xóa dữ liệu của mình; tạo/vào phòng mQuiz, xem lịch sử mQuiz của mình (thêm 2026-10-28) |
 | Thực khách đã đăng nhập Google (thêm 2026-10-21) | Như trên + tài khoản định danh bằng băm HMAC mã `sub` của Google; phiên cookie HttpOnly | Thêm: nộp kết quả Món đặc biệt, có tên trên bảng xếp hạng mẻ/tuần/tháng/streak/cống hiến; đề xuất meme mới (CONTRIB, thêm 2026-10-23); nickname và streak theo tài khoản trên nhiều máy |
+| Chủ phòng mQuiz (thêm 2026-10-28) | Thực khách đã tạo phòng, hoặc được chuyển quyền khi chủ phòng rời phòng chờ | Bắt đầu ván, chơi lại; không có quyền gì ngoài phòng đó |
 | Quản trị (Thuc) | Một người, xác thực bằng 1 token lưu trong Cloudflare secret | Xem báo cáo, ẩn/hiện/chặn phần tử và công thức, xem nhật ký đợt (kèm thống kê crawl) và audit; gán tier; sửa và duyệt đề xuất meme (cập nhật 2026-10-23) |
 | Pipeline (GitHub Actions) | Tác vụ máy, xác thực bằng token trong GitHub Secrets | Đọc nội dung, ghi nội dung + graph + manifest mới; không đọc dữ liệu người chơi |
 
@@ -46,6 +48,7 @@
 | FEEDBACK | Ngon / Nhạt | 1 phiếu/UUID/công thức; pipeline hạ/ẩn công thức nhiều "Nhạt" | Tùy chọn | `docs/acceptance/feedback.md` |
 | METRIC | Đo chỉ số thành công | Cloudflare Web Analytics + bảng sự kiện ẩn danh D1 (câu hỏi phạm vi 3: cần bảng sự kiện); tổng hợp D1/D7, Daily/ngày, chia sẻ, ghép trượt, "Nhạt", báo cáo | Bắt buộc | `docs/acceptance/metric.md` |
 | PRIV | Chính sách quyền riêng tư | Trang chính sách; đồng ý trước khi gửi dữ liệu; IP chỉ lưu băm, xóa sau thời hạn ngắn; xem/xuất/xóa dữ liệu qua UUID | Bắt buộc | `docs/acceptance/priv.md` |
+| QUIZ | mQuiz - đố meme theo phòng (thêm 2026-10-28) | Tạo phòng, chia link, phòng chờ trực tiếp, chủ phòng bắt đầu, đã bắt đầu thì không nhận thêm; mỗi câu chọn 2 trong 4 phần tử ghép ra meme đề (độ sâu 1-5, trừ Món đặc biệt mẻ hiện tại, khó dần); 5/10/15 câu, 10/20/30 s; đúng càng nhanh điểm càng cao; bảng điểm trực tiếp và chung cuộc; Durable Object + WebSocket; một người thì chơi offline; lịch sử ván nhiều người 90 ngày | Bắt buộc | `docs/acceptance/quiz.md` |
 | INV | Bất biến nội dung và trò chơi | 12 thuộc tính phải đúng với mọi dữ liệu (ghép đối xứng, tới được, graph không lộ, idempotent…) | Bắt buộc | `docs/acceptance/inv.md` |
 
 ## 4. Luồng nghiệp vụ chính
@@ -92,6 +95,15 @@
 3. Mẻ kế tiếp đưa phần tử đã duyệt và công thức của nó vào graph; mẻ `full` vẽ ảnh từ gợi ý của quản trị.
 4. Người chơi ghép ra phần tử thấy "Meme của <nickname>" khi rê chuột/chạm giữ; người tạo lên "Top cống hiến".
 
+### 4.7 mQuiz - đố meme theo phòng (QUIZ) (thêm 2026-10-28)
+1. Thực khách (đã đồng ý gửi dữ liệu) mở tab "mQuiz", chọn số câu và số giây, bấm "Tạo phòng"; server trả mã 6 ký tự và link `/lau-meme/quiz/<mã>`; thực khách sao chép/chia sẻ link.
+2. Người nhận link nhập nickname, vào phòng chờ; mọi người thấy danh sách người chơi cập nhật trực tiếp (WebSocket tới Durable Object của phòng).
+3. Chủ phòng bấm "Bắt đầu". Server sinh đề từ nội dung đang chạy (hàm thuần, có seed), phát từng câu: meme đề + 4 lựa chọn, hạn nộp theo đồng hồ server. Phòng không nhận thêm người.
+4. Người chơi chọn 2 ô, bấm "Chốt" (1 lần/câu). Hết giờ hoặc mọi người đã nộp: server lộ cặp đúng, điểm câu, bảng điểm tổng; nghỉ 4 s rồi sang câu sau.
+5. Hết câu cuối: bảng xếp hạng chung cuộc; server ghi lịch sử ván vào D1; chủ phòng có thể "Chơi lại" (về phòng chờ, đề mới).
+6. Chỉ một người bấm "Bắt đầu": nhận cả gói đề (đáp án dạng băm), chơi offline trên máy, không vào lịch sử.
+- Ngoại lệ: rớt mạng thì vào lại bằng cùng UUID, giữ điểm, câu bỏ lỡ 0 điểm; người mới vào khi đang chơi bị từ chối; phòng không ai kết nối 5 phút thì hủy, ván dở không lưu; pool không đủ 5 câu thì không bắt đầu.
+
 ## 5. Dữ liệu
 
 ### 5.1 Thực thể chính
@@ -115,6 +127,9 @@
 | Sự kiện (event) | loại, player, thời điểm, thuộc tính nhỏ (loại thẻ…) | Không có IP, không có user agent đầy đủ |
 | Đồng ý (consent) | player, mục đích, version chính sách, thời điểm, IP băm, kênh | Append-only |
 | Đề xuất meme (contribution) (thêm 2026-10-23) | cặp phần tử cha, tên, biểu tượng, mô tả, link ảnh, tài khoản, trạng thái (chờ/duyệt/từ chối), lý do, gợi ý ảnh của admin, thời điểm | Tối đa 1 đề xuất chờ duyệt/tài khoản/cặp |
+| Phòng mQuiz (thêm 2026-10-28) | mã, cấu hình (số câu, số giây), chủ phòng, người chơi (UUID, nickname), trạng thái, đề và câu trả lời của ván đang chơi | Chỉ nằm trong storage của Durable Object; xóa khi phòng hủy |
+| Ván mQuiz (thêm 2026-10-28) | mã phòng, số thứ tự ván, version nội dung, số câu, số giây, bắt đầu, kết thúc | Chỉ ván nhiều người đã xong; giữ 90 ngày |
+| Người chơi trong ván mQuiz (thêm 2026-10-28) | ván, UUID, nickname lúc chơi, tổng điểm, số câu đúng, hạng | Không lưu từng câu trả lời; xóa dữ liệu thì bỏ UUID, đổi tên "Thực khách ẩn danh" |
 | Audit quản trị | thao tác, đích, trước/sau, thời điểm, dấu vân token | Append-only |
 | Hàng chờ meme (pipeline) | khái niệm, nguồn, số lần thử, lần thử gần nhất | Nằm ở kho pipeline |
 
@@ -130,6 +145,7 @@ Phân loại theo Luật BVDLCN 2025 + NĐ 356/2025: chỉ có **dữ liệu cá
 | IP | Cơ bản | Giới hạn tần suất, chống gian lận | Chỉ lưu dạng băm HMAC (khóa trong secret); xóa sau 7 ngày | Không lưu IP thô; không ghi IP vào log |
 | Sự kiện chơi | Cơ bản (gắn UUID) | Đo D1/D7, chia sẻ, ghép trượt | 90 ngày | Không IP, không user agent; xóa theo UUID khi thực khách xóa dữ liệu |
 | Đề xuất meme (thêm 2026-10-23) | Cơ bản (gắn tài khoản) | Duyệt meme, ghi công người tạo, "Top cống hiến" | Chờ duyệt: đến khi duyệt/từ chối hoặc xóa tài khoản; đã duyệt: phần tử ở lại game, bỏ gắn tài khoản khi xóa tài khoản | Không gửi LLM; admin không thấy mã tài khoản; có trong xuất dữ liệu |
+| Lịch sử mQuiz (thêm 2026-10-28) | Cơ bản (gắn UUID) | Xem lại kết quả ván, bảng chung cuộc cho người có link phòng | 90 ngày | Không trả UUID qua link phòng; có trong xem/xuất; xóa dữ liệu thì ẩn danh hóa (AC-QUIZ-22) |
 | Bằng chứng đồng ý | Cơ bản | Chứng minh đồng ý | Theo vòng đời player + 1 năm sau khi xóa (mặc định - câu hỏi mở) | Append-only |
 
 - **Không gửi dữ liệu người chơi cho LLM** hay bất kỳ dịch vụ bên thứ ba nào. Gemini và Workers AI chỉ nhận dữ liệu meme công khai ⇒ không phát sinh chuyển dữ liệu cá nhân ra nước ngoài.
@@ -152,6 +168,7 @@ Phân loại theo Luật BVDLCN 2025 + NĐ 356/2025: chỉ có **dữ liệu cá
 | Cloudflare D1 + deploy | Ra | Wrangler/REST (token trong GitHub Secrets) | Mỗi mẻ | Deploy lỗi → bản cũ giữ nguyên |
 | GitHub Issues | Ra | REST (`GITHUB_TOKEN`) | Mỗi mẻ | Ghi log workflow, không làm hỏng đợt |
 | Cloudflare Web Analytics | Ra (beacon, không cookie) | Script | Mỗi lượt tải trang | Bỏ qua |
+| Cloudflare Durable Objects (thêm 2026-10-28) | Nội bộ (Worker → DO phòng mQuiz) | Binding + WebSocket Hibernation, SQLite storage, alarm | Mỗi phòng mQuiz | Hết hạn mức gói Free ⇒ tạo/vào phòng báo lỗi, phần còn lại của game không ảnh hưởng |
 
 ## 7. Yêu cầu phi chức năng
 Stack là Cloudflare Worker + D1 + Python pipeline (không Docker/Postgres), nên các dòng mặc định về container, `pg_dump`, JWT, RLS không áp dụng. Chỉ ghi khác biệt:
@@ -160,6 +177,7 @@ Stack là Cloudflare Worker + D1 + Python pipeline (không Docker/Postgres), nê
 |---|---|---|
 | Hiệu năng | Ghép < 50 ms (tra trong bộ nhớ, không gọi mạng); API đọc p95 < 300 ms, API ghi p95 < 800 ms; tải trang đầu < 2 s trên 4G | AC-GAME-14 (benchmark); smoke `/dk:ship`; Lighthouse thủ công trước go-live |
 | Tải | ≤ 50 người đồng thời lúc thường; đột biến khi viral do Cloudflare biên gánh (manifest/graph/ảnh cache được) | Thiết kế: graph và ảnh là file tĩnh bất biến |
+| Thời gian thực (thêm 2026-10-28) | mQuiz: ≤ 50 người/phòng; tin phát tới mọi người trong phòng ≤ 1 s; thời gian trả lời đo bằng đồng hồ server | AC-QUIZ-04/10/12; thử tay 2-3 điện thoại trên staging |
 | Nội dung | Ghép trượt khi chơi ngẫu nhiên (mô phỏng): 20 lượt đầu ≤ 45 %, cả ván 100 lượt ≤ 70 % | AC-INV-12 (mô phỏng có seed cố định) |
 | Pipeline | Một đợt < 15 phút; nằm trong quota Gemini free | `timeout-minutes: 15` trong workflow; báo cáo đợt ghi quota |
 | Khả dụng | Best-effort 99 %; health check `/api/health` | `/dk:ship` |
@@ -172,7 +190,7 @@ Stack là Cloudflare Worker + D1 + Python pipeline (không Docker/Postgres), nê
 | Khả năng bảo trì | Pipeline: logic thuần (không mạng/đồng hồ/ngẫu nhiên), adapter mạng tách riêng và mock trong test; độ phủ theo cấu hình CI | `pytest`, `vitest` coverage trong CI |
 | Tương thích | Màn hình ≥ 375 px; Chrome/Safari di động và Chrome/Edge/Safari máy tính 2 bản gần nhất; chuột + cảm ứng (Pointer Events) | Kiểm thủ công trên 2–3 điện thoại trước go-live; Playwright đo bố cục ở 5 khung nhìn (AC-GAME-18) |
 | Ngôn ngữ | Chỉ tiếng Việt; tìm kiếm không dấu | AC-GAME-07 |
-| Chi phí | Vận hành $0 (không tính domain) | Chỉ dùng gói free: Workers, D1, R2, Workers AI, Gemini free, GitHub Actions (repo public) |
+| Chi phí | Vận hành $0 (không tính domain) | Chỉ dùng gói free: Workers, D1, R2, Workers AI, Durable Objects SQLite (100 000 request/ngày, tin WebSocket tính 20:1 - thêm 2026-10-28), Gemini free, GitHub Actions (repo public) |
 
 ## 8. Giả định và ràng buộc
 - Một người làm (Thuc), ~20 giờ/tuần; không báo giá; go-live sớm nhất, không beta kín. Giảm rủi ro bằng chạy mẻ thật trên staging vài ngày và kiểm thủ công trên 2–3 điện thoại.
@@ -182,6 +200,7 @@ Stack là Cloudflare Worker + D1 + Python pipeline (không Docker/Postgres), nê
 - Cron GitHub Actions có thể trễ ⇒ mọi thứ phụ thuộc giờ mẻ dùng `batch_at` thật trong manifest.
 - Hạn mức Workers AI **cần kiểm tra** trước giai đoạn 2. R2 đã bật ngày 2026-10-21, không bị đòi thẻ thanh toán (câu hỏi mở 13, `docs/dev/huong-dan-tai-khoan.md` mục 6).
 - Graph mã hóa chống đọc trộm cả cây, **không** chống dò thử từng cặp - chấp nhận.
+- mQuiz (thêm 2026-10-28): chấp nhận mỗi câu lộ một công thức cho cả phòng (AC-INV-04 vẫn giữ: graph không đổi); ván một mình có đáp án băm trên máy nên người cố tình vẫn dò được - chấp nhận vì không vào lịch sử hay bảng xếp hạng nào. Ước tính một phòng 10 người × 10 câu ≈ 35 request Durable Objects ⇒ gói Free đủ ~2 500 phòng/ngày (kiểm lại khi viết ADR).
 - Bảng xếp hạng chỉ nhận tài khoản Google ⇒ khó tạo nhiều danh tính hơn; vẫn chấp nhận gian lận kiểu chia sẻ đáp án (ai biết cặp ra món thì nộp được ngay). Công thức gia truyền vẫn theo UUID ẩn danh.
 
 ## 9. Lịch sử thay đổi
@@ -205,3 +224,5 @@ Stack là Cloudflare Worker + D1 + Python pipeline (không Docker/Postgres), nê
 | 2026-10-26 | 1.7 | Góp ý "chưa thấy đĩa được đồng bộ giữa các phiên": AC-SYNC-03 cập nhật (món cục bộ ghép trước khi có SYNC, không lưu cặp, được client tự tìm cặp từ Đĩa cục bộ rồi gửi lên mỗi lần tải trang); AC-SYNC-11 mới (tab hiện lại sau ≥ 30 s từ lần kéo trước thì kéo và gộp Đĩa của tài khoản, không tải lại trang); không đổi contract | - |
 | 2026-10-26 | 1.8 | Góp ý "duyệt meme 'chia hành lý' xong không thấy hiển thị trong mục nội dung": AC-CONTRIB-14 mới (thông báo sau khi duyệt, nhãn "Chờ mẻ kế tiếp" tới khi phần tử có trong danh mục; duyệt vẫn chỉ ghi D1 theo ADR 0013); contract thêm trường `in_catalog` vào `AdminContribution`; câu hỏi mở 84 | - |
 | 2026-10-27 | 1.9 | Góp ý "game khó, bắt đầu từ gợi ý càng khó": AC-DAILY-20 mới (nút "Xem đáp án" trên thẻ Món đặc biệt, có hộp xác nhận, chỉ lộ tên món; xem rồi ghép ra vẫn tính giải, xếp hạng, streak); AC-DAILY-03 cập nhật (manifest có tên món, thẻ vẫn hiện "???" tới khi giải hoặc bấm xem); câu hỏi mở 86 | nguyenquythuc (chờ /dk:approve spec) |
+| 2026-10-28 | 2.0 | (cập nhật: câu hỏi mở 88, 89, 90, 91 theo mặc định; 92 hủy phòng sau 5 phút không ai kết nối) Thêm QUIZ (mQuiz - đố meme theo phòng, AC-QUIZ-01..28): phòng qua link, phòng chờ trực tiếp, chọn 2 trong 4 phần tử ghép ra meme đề, điểm theo thời gian trả lời đúng đo ở server, bảng điểm trực tiếp và chung cuộc, chơi một mình offline, lịch sử ván nhiều người 90 ngày; bỏ "chơi với bạn bè thời gian thực" khỏi Ngoài phạm vi; Durable Objects vào tích hợp và chi phí; câu hỏi mở 87-92 | nguyenquythuc (chờ /dk:approve spec) |
+| 2026-10-28 | 2.1 | Bỏ AC-QUIZ-27 (đo chỉ số mQuiz qua bảng `event`): CHECK của bảng chỉ nhận 7 loại sự kiện, đổi phải dựng lại bảng; câu hỏi mở 93; contract 0.10.1 | nguyenquythuc (chờ /dk:approve spec) |

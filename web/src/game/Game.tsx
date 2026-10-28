@@ -14,6 +14,7 @@ import { ContribPanel, type Picks } from '../contrib/ContribPanel'
 import { ElementIcon } from '../art/ElementIcon'
 import { startManifestWatch } from '../daily/countdown'
 import { DailyPanel, Leaderboards } from '../daily/DailyPanel'
+import { QuizScreen, roomFromPath } from '../quiz/QuizScreen'
 import { FeedbackButtons } from '../feedback/FeedbackButtons'
 import { loadSolved, saveSolved, type SolvedDaily } from '../daily/solved'
 import { recordCombine, trackEvent } from '../metrics/app'
@@ -164,6 +165,7 @@ export type NewDiscovery = { a: string; b: string; result: string; id: string; e
 const VIEWS = [
   ['table', 'Bàn lẩu'],
   ['board', 'Bảng xếp hạng'],
+  ['quiz', 'mQuiz'],
 ] as const
 
 type Props = {
@@ -194,7 +196,8 @@ export function Game({ onDiscover, onItems, heirlooms = {}, onReport, blocklistR
   const tutorialSeenRef = useRef(progress?.tutorial_seen ?? false)
   // Touch screens get a one-time "hold to drag, swipe the gaps to scroll" hint (AC-GAME-21).
   const [coarse] = useState(() => typeof window.matchMedia === 'function' && window.matchMedia('(pointer: coarse)').matches)
-  const [view, setView] = useState<'table' | 'board'>('table')
+  // a room link opens the mQuiz tab (AC-QUIZ-26)
+  const [view, setView] = useState<(typeof VIEWS)[number][0]>(() => (roomFromPath(window.location.pathname) ? 'quiz' : 'table'))
   const [loaded, setLoaded] = useState<Loaded | null>(null)
   const [loadError, setLoadError] = useState(false)
   const [reloadKey, setReloadKey] = useState(0)
@@ -806,7 +809,7 @@ export function Game({ onDiscover, onItems, heirlooms = {}, onReport, blocklistR
         </div>
       )}
 
-      {loaded && progress && (
+      {loaded && progress && view !== 'quiz' && (
         <DailyPanel
           key={loaded.manifest.version}
           manifest={loaded.manifest}
@@ -817,6 +820,13 @@ export function Game({ onDiscover, onItems, heirlooms = {}, onReport, blocklistR
       )}
 
       {view === 'board' && loaded && <Leaderboards version={loaded.manifest.version} />}
+
+      {/* kept mounted while hidden: switching tabs never leaves the room (AC-QUIZ-26) */}
+      {loaded && (
+        <div className="quiz-view" hidden={view !== 'quiz'}>
+          <QuizScreen policyVersion={loaded.manifest.policy_version} />
+        </div>
+      )}
 
       <div className="game-board" hidden={loaded !== null && view !== 'table'}>
         <div className="table-area">
