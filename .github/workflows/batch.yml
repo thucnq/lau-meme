@@ -9,6 +9,8 @@ name: batch
 
 on:
   schedule:
+    - cron: '0 17 * * *'
+    - cron: '0 5 * * *'
     - cron: '0 */2 * * *'
   workflow_dispatch:
     inputs:
@@ -34,6 +36,7 @@ permissions:
 jobs:
   batch:
     runs-on: ubuntu-latest
+    if: github.event_name != 'schedule' || github.event.schedule == '0 */2 * * *' || vars.PRODUCTION_BATCH == 'on'
     timeout-minutes: 15
     # `production` có required reviewers (deploy code); mẻ nhúng chỉ đăng dữ liệu nên dùng environment
     # `production-no-approval` (cùng secret PIPELINE_TOKEN/API_BASE_URL của production) để cron không đứng chờ duyệt.
