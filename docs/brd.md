@@ -102,7 +102,7 @@
 4. Người chơi chọn 2 ô, bấm "Chốt" (1 lần/câu). Hết giờ hoặc mọi người đã nộp: server lộ cặp đúng, điểm câu, bảng điểm tổng; nghỉ 4 s rồi sang câu sau.
 5. Hết câu cuối: bảng xếp hạng chung cuộc; server ghi lịch sử ván vào D1; chủ phòng có thể "Chơi lại" (về phòng chờ, đề mới).
 6. Chỉ một người bấm "Bắt đầu": nhận cả gói đề (đáp án dạng băm), chơi offline trên máy, không vào lịch sử.
-- Ngoại lệ: rớt mạng thì vào lại bằng cùng UUID, giữ điểm, câu bỏ lỡ 0 điểm; người mới vào khi đang chơi bị từ chối; phòng không ai kết nối 30 phút thì hủy, ván dở không lưu; pool không đủ 5 câu thì không bắt đầu.
+- Ngoại lệ: rớt mạng thì vào lại bằng cùng UUID, giữ điểm, câu bỏ lỡ 0 điểm; người mới vào khi đang chơi bị từ chối; phòng không ai kết nối 5 phút thì hủy, ván dở không lưu; pool không đủ 5 câu thì không bắt đầu.
 
 ## 5. Dữ liệu
 
@@ -224,4 +224,4 @@ Stack là Cloudflare Worker + D1 + Python pipeline (không Docker/Postgres), nê
 | 2026-10-26 | 1.7 | Góp ý "chưa thấy đĩa được đồng bộ giữa các phiên": AC-SYNC-03 cập nhật (món cục bộ ghép trước khi có SYNC, không lưu cặp, được client tự tìm cặp từ Đĩa cục bộ rồi gửi lên mỗi lần tải trang); AC-SYNC-11 mới (tab hiện lại sau ≥ 30 s từ lần kéo trước thì kéo và gộp Đĩa của tài khoản, không tải lại trang); không đổi contract | - |
 | 2026-10-26 | 1.8 | Góp ý "duyệt meme 'chia hành lý' xong không thấy hiển thị trong mục nội dung": AC-CONTRIB-14 mới (thông báo sau khi duyệt, nhãn "Chờ mẻ kế tiếp" tới khi phần tử có trong danh mục; duyệt vẫn chỉ ghi D1 theo ADR 0013); contract thêm trường `in_catalog` vào `AdminContribution`; câu hỏi mở 84 | - |
 | 2026-10-27 | 1.9 | Góp ý "game khó, bắt đầu từ gợi ý càng khó": AC-DAILY-20 mới (nút "Xem đáp án" trên thẻ Món đặc biệt, có hộp xác nhận, chỉ lộ tên món; xem rồi ghép ra vẫn tính giải, xếp hạng, streak); AC-DAILY-03 cập nhật (manifest có tên món, thẻ vẫn hiện "???" tới khi giải hoặc bấm xem); câu hỏi mở 86 | nguyenquythuc (chờ /dk:approve spec) |
-| 2026-10-28 | 2.0 | Thêm QUIZ (mQuiz - đố meme theo phòng, AC-QUIZ-01..28): phòng qua link, phòng chờ trực tiếp, chọn 2 trong 4 phần tử ghép ra meme đề, điểm theo thời gian trả lời đúng đo ở server, bảng điểm trực tiếp và chung cuộc, chơi một mình offline, lịch sử ván nhiều người 90 ngày; bỏ "chơi với bạn bè thời gian thực" khỏi Ngoài phạm vi; Durable Objects vào tích hợp và chi phí; câu hỏi mở 87-92 | nguyenquythuc (chờ /dk:approve spec) |
+| 2026-10-28 | 2.0 | (cập nhật: câu hỏi mở 88, 89 theo mặc định; 92 hủy phòng sau 5 phút không ai kết nối) Thêm QUIZ (mQuiz - đố meme theo phòng, AC-QUIZ-01..28): phòng qua link, phòng chờ trực tiếp, chọn 2 trong 4 phần tử ghép ra meme đề, điểm theo thời gian trả lời đúng đo ở server, bảng điểm trực tiếp và chung cuộc, chơi một mình offline, lịch sử ván nhiều người 90 ngày; bỏ "chơi với bạn bè thời gian thực" khỏi Ngoài phạm vi; Durable Objects vào tích hợp và chi phí; câu hỏi mở 87-92 | nguyenquythuc (chờ /dk:approve spec) |

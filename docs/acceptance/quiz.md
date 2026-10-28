@@ -134,12 +134,12 @@
 ### AC-QUIZ-22: Lịch sử trong xem/xuất/xóa dữ liệu (PRIV)
 - **Cho** UUID U có 2 ván trong lịch sử cùng U2
 - **Khi** U xem/xuất dữ liệu (AC-PRIV-08); U xóa dữ liệu (AC-PRIV-05)
-- **Thì** bản xuất có các ván của U (mã phòng, thời điểm, nickname lúc chơi, điểm, hạng); xóa dữ liệu thì dòng của U trong các ván bị bỏ UUID và đổi nickname thành "Thực khách ẩn danh", điểm và hạng giữ nguyên để bảng của U2 không đổi (mặc định, câu hỏi mở 88); `GET /api/quiz/history?uuid=U` sau đó trả rỗng. Trang chính sách (AC-PRIV-01) nêu lịch sử mQuiz: dữ liệu (nickname, điểm), ai xem được (người có link phòng), giữ 90 ngày
+- **Thì** bản xuất có các ván của U (mã phòng, thời điểm, nickname lúc chơi, điểm, hạng); xóa dữ liệu thì dòng của U trong các ván bị bỏ UUID và đổi nickname thành "Thực khách ẩn danh", điểm và hạng giữ nguyên để bảng của U2 không đổi (câu hỏi mở 88, chốt 2026-10-28); `GET /api/quiz/history?uuid=U` sau đó trả rỗng. Trang chính sách (AC-PRIV-01) nêu lịch sử mQuiz: dữ liệu (nickname, điểm), ai xem được (người có link phòng), giữ 90 ngày
 - Ưu tiên: Bắt buộc
 
 ### AC-QUIZ-23: Hủy phòng không ai dùng
 - **Cho** phòng P không còn socket nào kết nối
-- **Khi** đã 30 phút (mặc định, câu hỏi mở 92) ở phòng chờ, đang chơi, hoặc sau khi kết thúc
+- **Khi** đã 5 phút (câu hỏi mở 92, chốt 2026-10-28) ở phòng chờ, đang chơi, hoặc sau khi kết thúc
 - **Thì** Durable Object xóa toàn bộ trạng thái của P (alarm dọn); ván đang chơi dở bị bỏ, không ghi lịch sử; sau đó `GET` link phòng trả 404 nếu P chưa có ván nào trong lịch sử, hoặc `finished` với lịch sử còn lại (AC-QUIZ-20); khi mọi người rời giữa ván, đồng hồ câu vẫn chạy tới hết rồi dừng ở câu kế tiếp chờ người quay lại
 - Ưu tiên: Bắt buộc
 

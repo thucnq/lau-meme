@@ -29,7 +29,7 @@
 3. **Câu hỏi.** Server phát câu i (meme C + 4 lựa chọn đã xáo, giờ bắt đầu, hạn). Người chơi chọn 2 ô, bấm "Chốt" (chỉ 1 lần nộp mỗi câu). Server ghi thời điểm nhận.
 4. **Lộ đáp án.** Hết giờ hoặc mọi người đã nộp: server phát đáp án, điểm câu đó của từng người, bảng điểm tổng (top + hạng của mình). Ngắt 3-5 s rồi sang câu tiếp.
 5. **Kết thúc.** Server ghi kết quả ván vào D1 (lịch sử, Q7). Bảng xếp hạng chung cuộc (🥇🥈🥉 như AC-DAILY-17), nút "Chơi lại" (chủ phòng, cùng người chơi, đề mới) và thẻ chia sẻ (tùy chọn).
-- Ngoại lệ: mất mạng thì vào lại bằng cùng link, server nhận ra người chơi qua mã người chơi lưu cục bộ, giữ điểm; phòng đã bắt đầu thì không nhận người mới, link hiện "Phòng đã bắt đầu" (Q6); chủ phòng rời thì quyền chủ phòng chuyển cho người vào sớm nhất còn lại; phòng không ai kết nối quá 30 phút thì tự hủy.
+- Ngoại lệ: mất mạng thì vào lại bằng cùng link, server nhận ra người chơi qua mã người chơi lưu cục bộ, giữ điểm; phòng đã bắt đầu thì không nhận người mới, link hiện "Phòng đã bắt đầu" (Q6); chủ phòng rời thì quyền chủ phòng chuyển cho người vào sớm nhất còn lại; phòng không ai kết nối quá 5 phút thì tự hủy (câu hỏi mở 92, chốt 2026-10-28).
 
 ### 4.1 Chơi một mình (Q9, chốt 2026-10-28)
 1. Tạo phòng như thường (cần mạng). Phòng chờ chỉ có chủ phòng mà bấm "Bắt đầu" thì vào chế độ một mình.
