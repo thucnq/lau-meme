@@ -1,0 +1,654 @@
+{
+  "period": {
+    "from": "2026-10-19T13:52:49+00:00",
+    "to": "2026-10-26T09:27:36+00:00",
+    "calendar_days": 7
+  },
+  "authors": [
+    "nguyenquythuc",
+    "thucnguyenquy"
+  ],
+  "sessions": 58,
+  "events": 9667,
+  "commands": {
+    "dk:spec": 6,
+    "dk:estimate": 12,
+    "dk:plan": 5,
+    "dk:ship": 21,
+    "dk:build": 39,
+    "dk:approve": 44,
+    "dk:design": 15,
+    "dk:review": 29,
+    "dk:doctor": 2
+  },
+  "human_prompts_by_command": {
+    "dk:plan": 10,
+    "dk:build": 147,
+    "(ngoài lệnh dk)": 178,
+    "dk:design": 7,
+    "dk:review": 140,
+    "dk:doctor": 1,
+    "dk:ship": 57,
+    "dk:approve": 10,
+    "dk:spec": 1
+  },
+  "tokens": {
+    "total": 1449304711,
+    "cache_read_ratio": 0.968,
+    "by_model": {
+      "claude-opus-5-5": {
+        "in": 17344,
+        "cache_read": 1265166618,
+        "cache_write": 19149753,
+        "out": 5791572,
+        "calls": 8141
+      },
+      "claude-sonnet-5-5": {
+        "in": 4308,
+        "cache_read": 131020114,
+        "cache_write": 20042908,
+        "out": 170450,
+        "calls": 2094
+      },
+      "claude-haiku-5-5": {
+        "in": 488,
+        "cache_read": 7129717,
+        "cache_write": 801575,
+        "out": 9864,
+        "calls": 243
+      }
+    },
+    "by_command": {
+      "dk:new-project": 839091,
+      "dk:spec": 15226868,
+      "dk:estimate": 10916471,
+      "dk:plan": 2831037,
+      "dk:ship": 127460363,
+      "dk:build": 597484706,
+      "(ngoài lệnh dk)": 255897772,
+      "dk:approve": 25187719,
+      "dk:design": 81843166,
+      "dk:review": 331454897,
+      "dk:doctor": 162621
+    }
+  },
+  "tools": {
+    "Bash": 4575,
+    "AskUserQuestion": 38,
+    "Write": 220,
+    "Edit": 510,
+    "PowerShell": 1,
+    "Read": 605,
+    "Agent": 101,
+    "SubagentHandback": 6,
+    "Glob": 2,
+    "SendMessage": 77,
+    "Grep": 2,
+    "ReadNotifications": 2,
+    "ToolSearch": 21,
+    "WebFetch": 17,
+    "WebSearch": 5,
+    "ListAgents": 4,
+    "TaskStop": 4,
+    "Skill": 1,
+    "Artifact": 2,
+    "SendUserFile": 4
+  },
+  "tool_failures": {
+    "Bash": 88,
+    "Read": 30
+  },
+  "guard_blocks": {
+    "push_main": 3,
+    "precommit_failed": 13,
+    "push_from_main": 2,
+    "merge": 1,
+    "agent_blind": 195,
+    "suppression": 6,
+    "agent_scope": 37,
+    "prod": 3,
+    "quality_config": 3,
+    "agent_git": 25,
+    "secret_read": 4,
+    "force_push": 1,
+    "state_edit": 2
+  },
+  "gate_blocked": {
+    "contract": 1
+  },
+  "gates": [
+    [
+      "2026-10-19",
+      "spec",
+      "49e1bd1",
+      "nguyenquythuc"
+    ],
+    [
+      "2026-10-19",
+      "contract",
+      "128a6a7",
+      "nguyenquythuc"
+    ],
+    [
+      "2026-10-20",
+      "spec",
+      "d05ebe2",
+      "thucnguyenquy"
+    ],
+    [
+      "2026-10-20",
+      "contract",
+      "bbc3f82",
+      "thucnguyenquy"
+    ],
+    [
+      "2026-10-20",
+      "contract",
+      "c64ed37",
+      "thucnguyenquy"
+    ],
+    [
+      "2026-10-20",
+      "spec",
+      "c64ed37",
+      "thucnguyenquy"
+    ],
+    [
+      "2026-10-20",
+      "spec",
+      "4fa1934",
+      "thucnguyenquy"
+    ],
+    [
+      "2026-10-20",
+      "contract",
+      "4fa1934",
+      "thucnguyenquy"
+    ],
+    [
+      "2026-10-21",
+      "spec",
+      "5499e15",
+      "thucnguyenquy"
+    ],
+    [
+      "2026-10-21",
+      "contract",
+      "aa33964",
+      "thucnguyenquy"
+    ],
+    [
+      "2026-10-21",
+      "contract",
+      "732bb73",
+      "thucnguyenquy"
+    ],
+    [
+      "2026-10-21",
+      "contract",
+      "c3d77a4",
+      "thucnguyenquy"
+    ],
+    [
+      "2026-10-21",
+      "contract",
+      "02bca48",
+      "thucnguyenquy"
+    ],
+    [
+      "2026-10-21",
+      "spec",
+      "756f862",
+      "thucnguyenquy"
+    ],
+    [
+      "2026-10-21",
+      "contract",
+      "b9da19b",
+      "thucnguyenquy"
+    ],
+    [
+      "2026-10-22",
+      "spec",
+      "ad30ead",
+      "thucnguyenquy"
+    ],
+    [
+      "2026-10-22",
+      "contract",
+      "29be42a",
+      "thucnguyenquy"
+    ],
+    [
+      "2026-10-22",
+      "spec",
+      "7d8d78f",
+      "thucnguyenquy"
+    ],
+    [
+      "2026-10-23",
+      "spec",
+      "c016ee5",
+      "thucnguyenquy"
+    ],
+    [
+      "2026-10-23",
+      "contract",
+      "87a6c4e",
+      "thucnguyenquy"
+    ],
+    [
+      "2026-10-23",
+      "spec",
+      "fc39c07",
+      "thucnguyenquy"
+    ],
+    [
+      "2026-10-23",
+      "contract",
+      "9b3d573",
+      "thucnguyenquy"
+    ],
+    [
+      "2026-10-23",
+      "spec",
+      "b7b2cdc",
+      "thucnguyenquy"
+    ],
+    [
+      "2026-10-23",
+      "contract",
+      "b7b2cdc",
+      "thucnguyenquy"
+    ],
+    [
+      "2026-10-24",
+      "spec",
+      "d254a60",
+      "thucnguyenquy"
+    ],
+    [
+      "2026-10-24",
+      "contract",
+      "1579e99",
+      "thucnguyenquy"
+    ],
+    [
+      "2026-10-24",
+      "spec",
+      "4648ddb",
+      "thucnguyenquy"
+    ],
+    [
+      "2026-10-24",
+      "contract",
+      "cb3635a",
+      "thucnguyenquy"
+    ],
+    [
+      "2026-10-24",
+      "spec",
+      "135803d",
+      "thucnguyenquy"
+    ],
+    [
+      "2026-10-24",
+      "contract",
+      "3fc3c28",
+      "thucnguyenquy"
+    ],
+    [
+      "2026-10-26",
+      "spec",
+      "c172178",
+      "thucnguyenquy"
+    ],
+    [
+      "2026-10-26",
+      "spec",
+      "816c4b6",
+      "thucnguyenquy"
+    ],
+    [
+      "2026-10-26",
+      "spec",
+      "0285273",
+      "thucnguyenquy"
+    ],
+    [
+      "2026-10-26",
+      "contract",
+      "dd8b5b8",
+      "thucnguyenquy"
+    ],
+    [
+      "2026-10-26",
+      "spec",
+      "2074af1",
+      "thucnguyenquy"
+    ]
+  ],
+  "checks": {
+    "full": {
+      "FAIL": 31
+    },
+    "precommit-strict": {
+      "FAIL": 13,
+      "PASS": 275
+    },
+    "quick": {
+      "FAIL": 33,
+      "PASS": 36
+    }
+  },
+  "check_failures": {
+    "stack profile (.dk/stack.toml)": 5,
+    "AC traceability (all)": 29,
+    "worker build": 3,
+    "web coverage": 22,
+    "AC traceability (daily)": 1,
+    "worker coverage": 24,
+    "pipeline coverage": 10,
+    "AC traceability (pipe)": 1,
+    "pipeline test": 4,
+    "worker test": 5,
+    "pipeline lint": 4,
+    "web test": 1,
+    "pipeline format": 1
+  },
+  "skipped_checks": {
+    "Semgrep": 31,
+    "osv-scanner": 31,
+    "pipeline format": 5,
+    "pipeline lint": 5,
+    "pipeline coverage": 5
+  },
+  "first_check_result": {
+    "None|full": "FAIL",
+    "None|precommit-strict": "FAIL",
+    "None|quick": "FAIL",
+    "seed|quick": "PASS",
+    "seed|full": "FAIL",
+    "graph|quick": "FAIL",
+    "graph|full": "FAIL",
+    "graph|precommit-strict": "FAIL",
+    "daily|quick": "FAIL",
+    "daily|precommit-strict": "PASS",
+    "daily|full": "FAIL",
+    "game|quick": "FAIL",
+    "game|precommit-strict": "PASS",
+    "pipe|precommit-strict": "PASS",
+    "pipe|quick": "FAIL",
+    "subpath|precommit-strict": "PASS",
+    "subpath|quick": "FAIL",
+    "subpath|full": "FAIL",
+    "priv|precommit-strict": "PASS",
+    "priv|quick": "FAIL",
+    "priv|full": "FAIL",
+    "disc|precommit-strict": "PASS",
+    "disc|quick": "FAIL",
+    "report|precommit-strict": "PASS",
+    "report|quick": "FAIL",
+    "inv|precommit-strict": "FAIL",
+    "inv|quick": "PASS",
+    "inv|full": "FAIL",
+    "admin|precommit-strict": "PASS",
+    "admin|quick": "FAIL",
+    "admin|full": "FAIL",
+    "art|precommit-strict": "PASS",
+    "art|quick": "PASS",
+    "auth|precommit-strict": "PASS",
+    "auth|quick": "FAIL",
+    "auth|full": "FAIL",
+    "pipe|full": "FAIL",
+    "art|full": "FAIL",
+    "ui2|precommit-strict": "PASS",
+    "ui2|quick": "PASS",
+    "ui2|full": "FAIL",
+    "tier|precommit-strict": "PASS",
+    "tier|quick": "PASS",
+    "share|quick": "PASS",
+    "share|precommit-strict": "PASS",
+    "metric|precommit-strict": "PASS",
+    "metric|quick": "PASS",
+    "metric|full": "FAIL",
+    "sync|precommit-strict": "PASS",
+    "sync|quick": "FAIL",
+    "tier|full": "FAIL",
+    "contrib|precommit-strict": "PASS",
+    "contrib|quick": "FAIL",
+    "sync|full": "FAIL"
+  },
+  "reviewer": {
+    "APPROVE": 34,
+    "CHANGES_REQUIRED": 20
+  },
+  "reviewer_blockers": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    2,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    2,
+    2,
+    0,
+    0,
+    0
+  ],
+  "test_runs_by_feature": {
+    "seed": 1,
+    "graph": 2,
+    "daily": 19,
+    "game": 14,
+    "pipe": 6,
+    "subpath": 4,
+    "priv": 2,
+    "disc": 3,
+    "report": 3,
+    "inv": 1,
+    "admin": 6,
+    "art": 8,
+    "auth": 1,
+    "ui2": 4,
+    "tier": 13,
+    "share": 1,
+    "metric": 7,
+    "sync": 9,
+    "contrib": 9
+  },
+  "feature_span": {
+    "seed": {
+      "from": "2026-10-19T17:59:50+00:00",
+      "to": "2026-10-19T18:47:19+00:00"
+    },
+    "graph": {
+      "from": "2026-10-19T18:47:56+00:00",
+      "to": "2026-10-20T00:03:04+00:00"
+    },
+    "daily": {
+      "from": "2026-10-20T00:03:08+00:00",
+      "to": "2026-10-26T07:15:01+00:00"
+    },
+    "game": {
+      "from": "2026-10-20T01:20:24+00:00",
+      "to": "2026-10-26T01:11:50+00:00"
+    },
+    "pipe": {
+      "from": "2026-10-20T02:29:14+00:00",
+      "to": "2026-10-24T15:09:14+00:00"
+    },
+    "subpath": {
+      "from": "2026-10-20T03:06:43+00:00",
+      "to": "2026-10-24T18:03:24+00:00"
+    },
+    "priv": {
+      "from": "2026-10-20T04:45:11+00:00",
+      "to": "2026-10-20T06:27:32+00:00"
+    },
+    "disc": {
+      "from": "2026-10-20T05:04:06+00:00",
+      "to": "2026-10-20T06:27:29+00:00"
+    },
+    "report": {
+      "from": "2026-10-20T05:25:40+00:00",
+      "to": "2026-10-20T06:00:47+00:00"
+    },
+    "inv": {
+      "from": "2026-10-20T06:57:20+00:00",
+      "to": "2026-10-20T12:13:49+00:00"
+    },
+    "admin": {
+      "from": "2026-10-20T12:13:49+00:00",
+      "to": "2026-10-20T17:51:06+00:00"
+    },
+    "art": {
+      "from": "2026-10-21T03:14:08+00:00",
+      "to": "2026-10-26T00:09:29+00:00"
+    },
+    "auth": {
+      "from": "2026-10-21T04:59:06+00:00",
+      "to": "2026-10-21T05:40:28+00:00"
+    },
+    "ui2": {
+      "from": "2026-10-22T02:43:08+00:00",
+      "to": "2026-10-23T05:18:44+00:00"
+    },
+    "tier": {
+      "from": "2026-10-23T05:18:51+00:00",
+      "to": "2026-10-26T04:19:00+00:00"
+    },
+    "share": {
+      "from": "2026-10-23T12:46:36+00:00",
+      "to": "2026-10-23T12:57:04+00:00"
+    },
+    "metric": {
+      "from": "2026-10-23T12:57:07+00:00",
+      "to": "2026-10-23T17:18:57+00:00"
+    },
+    "sync": {
+      "from": "2026-10-24T19:15:41+00:00",
+      "to": "2026-10-26T09:27:36+00:00"
+    },
+    "contrib": {
+      "from": "2026-10-25T09:55:44+00:00",
+      "to": "2026-10-25T15:41:40+00:00"
+    }
+  },
+  "most_edited": [
+    [
+      "docs/runbook.md",
+      35
+    ],
+    [
+      "pipeline/tests/test_art_core_backfill.py",
+      22
+    ],
+    [
+      "pipeline/tests/test_pipe2.py",
+      20
+    ],
+    [
+      "docs/api/README.md",
+      19
+    ],
+    [
+      "pipeline/tests/test_art_full_batch.py",
+      19
+    ],
+    [
+      "docs/dev/huong-dan-tai-khoan.md",
+      17
+    ],
+    [
+      "pipeline/tests/test_pipe_gemini.py",
+      17
+    ],
+    [
+      "web/src/admin/admin.ui.test.tsx",
+      16
+    ],
+    [
+      "pipeline/tests/test_pipe_full_batch.py",
+      15
+    ],
+    [
+      "worker/test/tier.test.ts",
+      14
+    ],
+    [
+      "web/src/game/sync.ui.test.tsx",
+      13
+    ],
+    [
+      "web/src/contrib/contrib.ui.test.tsx",
+      13
+    ],
+    [
+      "worker/test/metric.test.ts",
+      12
+    ],
+    [
+      "worker/test/subpath.test.ts",
+      11
+    ],
+    [
+      "worker/test/priv.test.ts",
+      11
+    ]
+  ],
+  "estimate": {
+    "mandatory_points": 226.5,
+    "optional_points": 10.5
+  },
+  "excuse_signals": {
+    "flaky": 17,
+    "unrelated": 1,
+    "later": 6
+  },
+  "context_high_notices": 108,
+  "notes": []
+}
