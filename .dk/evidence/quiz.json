@@ -118,8 +118,8 @@
   }
  },
  "green": {
-  "ts": "2026-10-28T09:20:50+00:00",
-  "commit": "de5cea7",
+  "ts": "2026-10-28T10:08:34+00:00",
+  "commit": "79f591f",
   "results": {
    "AC-QUIZ-01": {
     "status": "PASS",
@@ -224,10 +224,6 @@
    "AC-QUIZ-26": {
     "status": "PASS",
     "test": "quiz.ui.test.tsx#quiz ui: tab mQuiz > AC-QUIZ-26: tab có nút \"Tạo phòng\", chọn số câu 5/10/15 "
-   },
-   "AC-QUIZ-27": {
-    "status": "FAIL",
-    "test": "quiz.test.ts#quiz > AC-QUIZ-27: POST /events nhận quiz_room_created và quiz_game_finished { players, questions, solo }; giá trị ngoài khoảng bị từ chối và không ghi gì"
    },
    "AC-QUIZ-28": {
     "status": "PASS",
