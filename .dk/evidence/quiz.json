@@ -1,0 +1,120 @@
+{
+ "red": {
+  "ts": "2026-10-28T09:07:48+00:00",
+  "commit": "b2b1617",
+  "results": {
+   "AC-QUIZ-01": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-QUIZ-02": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-QUIZ-03": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-QUIZ-04": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-QUIZ-05": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-QUIZ-06": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-QUIZ-07": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-QUIZ-08": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-QUIZ-09": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-QUIZ-10": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-QUIZ-11": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-QUIZ-12": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-QUIZ-13": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-QUIZ-14": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-QUIZ-15": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-QUIZ-16": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-QUIZ-17": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-QUIZ-18": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-QUIZ-19": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-QUIZ-20": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-QUIZ-21": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-QUIZ-22": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-QUIZ-23": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-QUIZ-24": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-QUIZ-25": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-QUIZ-26": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-QUIZ-27": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-QUIZ-28": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   }
+  }
+ }
+}
