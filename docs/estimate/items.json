@@ -699,9 +699,9 @@
     {
       "id": "QUIZ2",
       "module": "Cộng đồng",
-      "name": "mQuiz - đo chỉ số và thẻ chia sẻ kết quả",
-      "desc": "QUIZ · AC-QUIZ-27..28 (tùy chọn) · sự kiện quiz_room_created/quiz_game_finished + tổng hợp (0.5); thẻ chữ kết quả ván (1)",
-      "points": 1.5,
+      "name": "mQuiz - thẻ chia sẻ kết quả",
+      "desc": "QUIZ · AC-QUIZ-28 (tùy chọn) · thẻ chữ kết quả ván (1); AC-QUIZ-27 đã bỏ (câu hỏi mở 93)",
+      "points": 1,
       "optional": true,
       "deps": [
         "QUIZ",
@@ -709,7 +709,6 @@
         "SHARE"
       ],
       "ac": [
-        "AC-QUIZ-27",
         "AC-QUIZ-28"
       ],
       "risk": "LOW",

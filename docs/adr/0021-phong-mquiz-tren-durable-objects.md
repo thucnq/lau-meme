@@ -33,3 +33,7 @@
 - **Server-Sent Events + POST**: vẫn cần nơi giữ trạng thái và đồng hồ (lại là DO hoặc D1), hai kênh thay cho một.
 - **DO lớp cũ dùng KV storage**: gói Free không cho; SQLite-backed là mặc định được khuyên dùng.
 - **Lưu lịch sử trong storage của DO**: không truy vấn được theo UUID (AC-QUIZ-19) và mất khi phòng hủy.
+
+## Bổ sung 2026-10-28
+- Không ghi sự kiện mQuiz vào bảng `event` (AC-QUIZ-27 đã bỏ, câu hỏi mở 93): CHECK của cột `type` chỉ cho 7 loại và migration chỉ được mở rộng. Contract 0.10.1.
+- Sau review: `start` từ chối lần gọi thứ hai khi lần đầu còn đang đọc D1; bài nộp sau `deadline` mà alarm chưa chạy vẫn bị `too_late`; nâng cấp WebSocket giới hạn 120 lần/phút/IP băm, socket sai `join` 10 lần bị đóng 1008; người xóa dữ liệu giữa ván được ghi lịch sử ẩn danh. Rút đồng ý giữa ván không đuổi người chơi ra (ván dài tối đa vài phút); lần vào phòng sau mới bị kiểm lại.

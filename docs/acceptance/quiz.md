@@ -161,11 +161,8 @@
 - **Thì** tab có nút "Tạo phòng" (chọn số câu 5/10/15, số giây 10/20/30, mặc định 10 và 20) và mục "Lịch sử mQuiz"; chưa đồng ý thì hiện lời mời đồng ý (AC-PRIV-02), không gửi gì; "Sao chép link" chép link tuyệt đối của phòng và báo "Đã chép" (dùng chia sẻ hệ thống nếu có, như SHARE); màn câu hỏi hiện meme đề, 4 ô lựa chọn, đồng hồ, số câu, nút "Chốt" vừa trong khung nhìn 375 px không cuộn ngang; chuyển tab khi đang ở phòng không làm rời phòng (socket giữ)
 - Ưu tiên: Bắt buộc
 
-### AC-QUIZ-27: Đo chỉ số mQuiz
-- **Cho** thực khách đã đồng ý đo chỉ số
-- **Khi** tạo phòng; một ván nhiều người hoặc một mình kết thúc
-- **Thì** hàng đợi sự kiện (AC-METRIC-02) gửi `quiz_room_created` và `quiz_game_finished { players, questions, solo }`; tổng hợp chỉ số có số phòng tạo và số ván xong mỗi ngày
-- Ưu tiên: Tùy chọn
+### Đã bỏ: AC-QUIZ-27 Đo chỉ số mQuiz (2026-10-28, câu hỏi mở 93)
+- Bảng `event` chỉ nhận 7 loại sự kiện (CHECK trong migration 0003); thêm loại mới phải dựng lại bảng, trái luật migration chỉ mở rộng. Chủ dự án chọn bỏ AC này; mã AC-QUIZ-27 không dùng lại.
 
 ### AC-QUIZ-28: Thẻ chia sẻ kết quả ván (Q10)
 - **Cho** ván đã kết thúc

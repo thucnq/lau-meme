@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: lau-meme API
-  version: 0.10.0
+  version: 0.10.1
   description: |
     API của Worker Lẩu Meme. Bốn chủ thể (BRD mục 2): thực khách ẩn danh (header `X-Player-Id` = UUID v4
     sinh trên trình duyệt), thực khách đã đăng nhập Google (cookie phiên `laumeme_sid`, ADR 0010 - kết quả Daily,
@@ -766,7 +766,7 @@ paths:
       summary: Gửi lô sự kiện ẩn danh
       description: '`text/plain` = cùng JSON gửi bằng `navigator.sendBeacon` (không đặt được header), UUID nằm trong `player_id`. Cả lô hợp lệ hoặc không ghi gì. Không lưu IP, user agent, referrer. Giới hạn 20 lô/phút/UUID và 60 lô/phút/IP (vượt thì 429).'
       security: [{ PlayerId: [] }]
-      x-ac: [AC-METRIC-02, AC-METRIC-03, AC-METRIC-04, AC-SHARE-06, AC-PRIV-02, AC-QUIZ-27]
+      x-ac: [AC-METRIC-02, AC-METRIC-03, AC-METRIC-04, AC-SHARE-06, AC-PRIV-02]
       requestBody:
         required: true
         content:
@@ -2363,19 +2363,6 @@ components:
           properties:
             type: { const: feedback }
             value: { type: string, enum: [ngon, nhat] }
-        - type: object
-          additionalProperties: false
-          required: [type]
-          properties:
-            type: { const: quiz_room_created }
-        - type: object
-          additionalProperties: false
-          required: [type, players, questions, solo]
-          properties:
-            type: { const: quiz_game_finished }
-            players: { type: integer, minimum: 1, maximum: 50 }
-            questions: { type: integer, minimum: 5, maximum: 15 }
-            solo: { type: boolean }
 
     QuizRoomRequest:
       type: object
