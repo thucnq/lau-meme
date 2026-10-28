@@ -102,6 +102,8 @@ Contract 0.7.0 thêm `/admin/daily-pin` (GET, PUT, DELETE), `PipelineState.daily
 
 Contract 0.8.0 thêm `in_catalog` vào `AdminContribution` (AC-CONTRIB-14): `element_id` đã có trong danh mục hay chưa; danh mục chỉ đổi khi mẻ đăng. Triển khai staging 2026-10-26 (Worker `31fa60ab-2166-4ab0-b33b-2b125dbd161f`, git sha `6857064`).
 
+Contract 0.9.0 thêm `manifest.daily.name` (tên Món đặc biệt, AC-DAILY-20, ADR 0020). Worker kiểm tên khớp `content.daily_element_id` khi đăng mẻ, sai → 422; deploy Worker trước rồi mới chạy mẻ có `name`. Không có endpoint mới.
+
 ## Thử nhanh
 ```bash
 curl -s https://staging.dinoduct.fun/lau-meme/api/health
