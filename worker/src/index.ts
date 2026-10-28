@@ -25,8 +25,11 @@ import { cleanup } from './features/player/cleanup'
 import { createConsent, deleteMyData, getMyData, putNickname } from './features/player/me'
 import { addToMyPlate, getMyPlate, mergeMyPlate } from './features/plate/plate'
 import { createReport, getBlocklist } from './features/report/report'
+import { connectQuizRoom, createQuizRoom, getQuizRoom, listMyQuizHistory } from './features/quiz/quiz'
 import { HttpError, ResponseError, json, problem } from './http'
 import { maskId } from './log'
+
+export { QuizRoom } from './features/quiz/room'
 
 type Handler = (req: Request, env: Env, ctx: ExecutionContext, params: string[]) => Promise<Response>
 type Route = { pattern: RegExp; methods: Partial<Record<string, Handler>> }
@@ -75,6 +78,11 @@ const routes: Route[] = [
   { pattern: /^\/api\/me\/contributions$/, methods: { GET: listMyContributions } },
   { pattern: /^\/api\/contributors\/leaderboard$/, methods: { GET: getContributorLeaderboard } },
   { pattern: /^\/api\/events$/, methods: { POST: createEvents } },
+  // mQuiz (ADR 0021): the room lives in the QuizRoom Durable Object
+  { pattern: /^\/api\/quiz\/rooms$/, methods: { POST: createQuizRoom } },
+  { pattern: /^\/api\/quiz\/rooms\/([^/]+)$/, methods: { GET: getQuizRoom } },
+  { pattern: /^\/api\/quiz\/rooms\/([^/]+)\/ws$/, methods: { GET: connectQuizRoom } },
+  { pattern: /^\/api\/quiz\/history$/, methods: { GET: listMyQuizHistory } },
   // PIPELINE_TOKEN or ADMIN_TOKEN, checked inside (AC-METRIC-06)
   { pattern: /^\/api\/metrics\/summary$/, methods: { GET: getMetricsSummary } },
   { pattern: /^\/api\/pipeline\/batches$/, methods: { POST: pipelineOnly(publishBatch) } },

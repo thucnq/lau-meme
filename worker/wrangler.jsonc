@@ -32,6 +32,10 @@
   ],
   // Illustration images (ART, phase 2), served via /lau-meme/img/* - never public. Not inherited by env.staging.
   "r2_buckets": [{ "binding": "IMG", "bucket_name": "lau-meme-img" }],
+  // mQuiz rooms (ADR 0021): one SQLite-backed Durable Object per room. Bindings are not inherited by env.staging or
+  // previews, so both declare it again; the class migration is top level only.
+  "durable_objects": { "bindings": [{ "name": "QUIZ_ROOM", "class_name": "QuizRoom" }] },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["QuizRoom"] }],
   // Daily retention job 03:00 GMT+7 (ADR 0004, AC-PRIV-06). Not inherited by env.staging: declared there too.
   "triggers": { "crons": ["0 20 * * *"] },
   "vars": { "APP_ENV": "production", "POLICY_VERSION": "1", "BASE_PATH": "/lau-meme", "ADMIN_HOST": "laumeme-admin.dinoduct.fun", "GOOGLE_CLIENT_ID": "983893414114-5s71asl52rc0c5o5pffdnbfa1n0uc2r1.apps.googleusercontent.com" },
@@ -43,6 +47,7 @@
       { "binding": "DB", "database_name": "lau-meme-staging", "database_id": "03517712-b21e-427d-8881-53e34bf6c44b", "migrations_dir": "migrations" }
     ],
     "r2_buckets": [{ "binding": "IMG", "bucket_name": "lau-meme-img-staging" }],
+    "durable_objects": { "bindings": [{ "name": "QUIZ_ROOM", "class_name": "QuizRoom" }] },
     "vars": { "APP_ENV": "preview", "POLICY_VERSION": "1", "BASE_PATH": "/lau-meme", "GOOGLE_CLIENT_ID": "983893414114-4fqirgtmr60j2ae9mumhtuuthr31vl4c.apps.googleusercontent.com" }
   },
   "env": {
@@ -57,6 +62,7 @@
         { "binding": "DB", "database_name": "lau-meme-staging", "database_id": "03517712-b21e-427d-8881-53e34bf6c44b", "migrations_dir": "migrations" }
       ],
       "r2_buckets": [{ "binding": "IMG", "bucket_name": "lau-meme-img-staging" }],
+      "durable_objects": { "bindings": [{ "name": "QUIZ_ROOM", "class_name": "QuizRoom" }] },
       "triggers": { "crons": ["0 20 * * *"] },
       "vars": { "APP_ENV": "staging", "POLICY_VERSION": "1", "BASE_PATH": "/lau-meme", "ADMIN_HOST": "laumeme-admin-staging.dinoduct.fun", "GOOGLE_CLIENT_ID": "983893414114-4fqirgtmr60j2ae9mumhtuuthr31vl4c.apps.googleusercontent.com" }
     }

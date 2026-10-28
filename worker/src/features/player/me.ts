@@ -1,6 +1,6 @@
 import { HttpError, ResponseError, json, readJson } from '../../http'
 import { fold } from '../../ids'
-import { playerId } from '../../player'
+import { ANONYMOUS, playerId } from '../../player'
 import { ipHash, rateCounters, type Limit } from '../../ratelimit'
 import { clearedCookie, hasSessionCookie, readSession, sessionCookie } from '../../session'
 import { uuidv7 } from '../../uuid'
@@ -8,6 +8,7 @@ import { fail, int, obj, oneOf } from '../../validate'
 import { accountStreakStatement, liveCurrent } from '../daily/daily'
 import { contribution, myContributionsStatement, type ContributionRow } from '../contrib/contrib'
 import { bannedKey } from '../disc/disc'
+import { historyItems, historyStatement } from '../quiz/quiz'
 import { policyVersion } from '../content/content'
 import {
   type ConsentRow,
@@ -15,7 +16,7 @@ import {
 
 /** Consent, nickname and the player's own data (AC-PRIV-03/04/05/08, BRD 5.2). */
 const PLAYER_LIMIT: Limit = { scope: 'player', windowMs: 60_000, perPlayer: 10, perIp: 30 } // open question #10
-const NICKNAME = /^[\p{L}\p{M}\p{N} _-]+$/u
+export const NICKNAME = /^[\p{L}\p{M}\p{N} _-]+$/u
 
 const iso = (ms: number) => new Date(ms).toISOString()
 const rows = <T>(r: D1Result | undefined) => (r?.results ?? []) as T[]
@@ -62,7 +63,7 @@ export async function createConsent(req: Request, env: Env): Promise<Response> {
   return json({ purpose, action, policy_version: version, created_at: iso(now) }, { status: 201 })
 }
 
-const INVALID_NICKNAME = 'Nickname không hợp lệ' // never says which word was refused (AC-DISC-03)
+export const INVALID_NICKNAME = 'Nickname không hợp lệ' // never says which word was refused (AC-DISC-03)
 
 /**
  * PUT /api/me/nickname - needs both `play` and `nickname` consent (AC-PRIV-03); 2–20 allowed characters and no
@@ -137,7 +138,7 @@ export async function getMyData(req: Request, env: Env): Promise<Response> {
   const session = await readSession(req, env)
   const accountId = session?.accountId ?? ''
   const now = Date.now()
-  const [nick, discoveries, daily, streak, reports, votes, consents, events, account, sessions, entries, accStreak, plate, contribs] =
+  const [nick, discoveries, daily, streak, reports, votes, consents, events, account, sessions, entries, accStreak, plate, contribs, quiz] =
     await limited(req, env, player, [
     db.prepare('SELECT nickname FROM player WHERE id = ?').bind(player),
     db.prepare('SELECT element_id, discovered_at FROM discovery WHERE player_id = ? ORDER BY discovered_at').bind(player),
@@ -171,6 +172,7 @@ export async function getMyData(req: Request, env: Env): Promise<Response> {
     accountStreakStatement(db, accountId),
     db.prepare('SELECT element_id, found_at FROM account_element WHERE account_id = ? ORDER BY found_at, element_id').bind(accountId),
     myContributionsStatement(db, accountId),
+    historyStatement(db, player),
   ])
   const acc = rows<{ nickname: string | null; created_at: number }>(account)[0]
   const accRow = rows<StreakRow & { reached_at: number }>(accStreak)[0] ?? null
@@ -206,6 +208,8 @@ export async function getMyData(req: Request, env: Env): Promise<Response> {
       (r) => ({ ...r, created_at: iso(r.created_at) }),
     ),
     event_counts: Object.fromEntries(rows<{ type: string; n: number }>(events).map((r) => [r.type, r.n])),
+    // multiplayer mQuiz games still kept (AC-QUIZ-22)
+    quiz_history: historyItems(req, env, quiz),
     account:
       session && acc
         ? {
@@ -247,6 +251,8 @@ function eraseStatements(db: D1Database, player: string, version: number, ip: st
     db.prepare('DELETE FROM account_player WHERE player_id = ?').bind(player),
     db.prepare('UPDATE discovery SET player_id = NULL WHERE player_id = ?').bind(player),
     db.prepare('UPDATE report SET player_id = NULL WHERE player_id = ?').bind(player),
+    // mQuiz boards keep the score and rank so the other players' games do not change (AC-QUIZ-22)
+    db.prepare('UPDATE quiz_player SET player_id = NULL, nickname = ? WHERE player_id = ?').bind(ANONYMOUS, player),
     db
       .prepare(
         `INSERT INTO consent (id, player_id, purpose, action, policy_version, ip_hash, channel, created_at)

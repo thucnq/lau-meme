@@ -494,6 +494,7 @@ describe('priv', () => {
       votes: [],
       consents: [],
       event_counts: {},
+      quiz_history: [], // contract 0.10.0 (AC-QUIZ-22)
     })
   })
 
