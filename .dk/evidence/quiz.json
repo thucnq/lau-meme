@@ -126,8 +126,8 @@
   }
  },
  "green": {
-  "ts": "2026-10-28T10:08:34+00:00",
-  "commit": "79f591f",
+  "ts": "2026-10-30T03:10:50+00:00",
+  "commit": "873f4e7",
   "results": {
    "AC-QUIZ-01": {
     "status": "PASS",
@@ -159,11 +159,11 @@
    },
    "AC-QUIZ-08": {
     "status": "PASS",
-    "test": "quiz-logic.test.ts#quiz logic > AC-QUIZ-08: mỗi câu thỏa A != B, đang hoạt động, độ sâu 1..5, khác Món đặc biệt, không lặp C, 4 lựa chọn đôi một khác nhau, đúng 1 cặp trong 6 là công thức, khó dần"
+    "test": "quiz.test.ts#quiz > AC-QUIZ-08: đề trong gói chơi một mình có 10 câu khó dần, đích khác nhau và khác Món đặc biệt, độ sâu 1..5, 4 lựa chọn khác nhau với đúng một cặp là công thức"
    },
    "AC-QUIZ-09": {
     "status": "PASS",
-    "test": "quiz-logic.test.ts#quiz logic > AC-QUIZ-09: pool có 12 meme đề khác nhau mà xin 15 câu thì ván có đúng 12 câu, đủ cả 12 đích"
+    "test": "quiz.test.ts#quiz > AC-QUIZ-09: pool 12 meme đề mà phòng xin 15 câu thì ván có 12 câu và tin started báo total 12"
    },
    "AC-QUIZ-10": {
     "status": "PASS",
@@ -175,7 +175,7 @@
    },
    "AC-QUIZ-12": {
     "status": "PASS",
-    "test": "quiz-logic.test.ts#quiz logic > AC-QUIZ-12: T = 20 giây: nộp đúng lúc 0, 10, 20 giây được 1000, 750, 500 điểm"
+    "test": "quiz.test.ts#quiz > AC-QUIZ-12: nộp đúng ngay được điểm cao "
    },
    "AC-QUIZ-13": {
     "status": "PASS",

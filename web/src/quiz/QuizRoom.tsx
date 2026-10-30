@@ -3,7 +3,7 @@ import { ElementIcon } from '../art/ElementIcon'
 import { readConsent } from '../privacy/consent'
 import { getPlayerId } from '../privacy/player'
 import { localStore, storageKey } from '../storage'
-import { getRoom, roomLink, socketUrl, type GameSummary, type Item } from './api'
+import { getRoom, hostKey, joinedKey, roomLink, savedNickname, socketUrl, type GameSummary, type Item } from './api'
 import { checkSoloAnswer, soloCorrectPair } from './solo'
 
 /** One mQuiz room (AC-QUIZ-03..17, 26): lobby, questions, reveal, final board, and the offline solo game. */
@@ -38,7 +38,6 @@ const points = (ok: boolean, ms: number, seconds: number) =>
   ok ? Math.round(1000 * (1 - (0.5 * Math.min(Math.max(ms, 0), seconds * 1000)) / (seconds * 1000))) : 0
 
 const soloKey = (code: string) => storageKey(`quiz:solo:${code}`)
-const joinedKey = (code: string) => storageKey(`quiz:joined:${code}`)
 
 function read<T>(storage: Storage | null, key: string): T | null {
   try {
@@ -231,11 +230,18 @@ export function QuizRoom({ code, onLeave }: { code: string; onLeave?: () => void
       (room) => {
         if (!live) return
         const joined = read<string>(storage, joinedKey(code))
+        const host = read<string>(storage, hostKey(code))
+        write(storage, hostKey(code), null)
         if (!room) setScreen({ kind: 'missing' })
         else if (room.state === 'finished' && room.latest) setScreen({ kind: 'history', game: room.latest })
         else if (room.state === 'playing' && joined === null) setScreen({ kind: 'started' })
         else if (room.state === 'playing' && joined !== null) connect(joined)
-        else setScreen({ kind: 'join' })
+        else if (host !== null) {
+          // just created on this device (AC-QUIZ-26)
+          write(storage, joinedKey(code), host)
+          setNickname(host)
+          connect(host)
+        } else setScreen({ kind: 'join' })
       },
       () => live && setError('Không tải được phòng, thử lại sau'),
     )
@@ -243,6 +249,16 @@ export function QuizRoom({ code, onLeave }: { code: string; onLeave?: () => void
       live = false
     }
   }, [code, storage, resumed, connect])
+
+  // the join screen starts from the nickname saved at Bàn lẩu (AC-QUIZ-04)
+  useEffect(() => {
+    if (screen.kind !== 'join' || readConsent(storage)?.choice !== 'granted') return
+    let live = true
+    void savedNickname(storage).then((saved) => live && saved && setNickname((typed) => typed || saved))
+    return () => {
+      live = false
+    }
+  }, [screen.kind, storage])
 
   // solo: the question closes itself at its deadline
   useEffect(() => {
@@ -290,6 +306,15 @@ export function QuizRoom({ code, onLeave }: { code: string; onLeave?: () => void
     setAnswered(true)
     if (screen.kind === 'solo' && solo) void soloAnswer(solo, picks, question.deadline - solo.pack.seconds * 1000)
     else send({ type: 'answer', q: question.q, picks })
+  }
+
+  /** AC-QUIZ-26: the system share sheet with the room link. */
+  const shareLink = async () => {
+    try {
+      await navigator.share({ url: roomLink(code) })
+    } catch {
+      // the player closed the share sheet
+    }
   }
 
   /** AC-QUIZ-28: rank, points, right answers and the link; never the questions or answers. */
@@ -379,10 +404,18 @@ export function QuizRoom({ code, onLeave }: { code: string; onLeave?: () => void
               </li>
             ))}
           </ul>
+          <p className="quiz-link">
+            Link mời: <span>{roomLink(code)}</span>
+          </p>
           <div className="quiz-actions">
             <button type="button" onClick={() => void copy(roomLink(code))}>
               Sao chép link
             </button>
+            {typeof navigator.share === 'function' && (
+              <button type="button" onClick={() => void shareLink()}>
+                Chia sẻ
+              </button>
+            )}
             {copied && <span className="quiz-note">Đã chép</span>}
             {lobby.you === lobby.host ? (
               <button type="button" onClick={() => send({ type: 'start' })}>

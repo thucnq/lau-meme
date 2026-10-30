@@ -1,5 +1,7 @@
 import { SITE_URL, withBase } from '../base'
+import { getMyData } from '../privacy/client'
 import { getPlayerId } from '../privacy/player'
+import { storageKey } from '../storage'
 
 /** mQuiz HTTP calls (contract 0.10.0, ADR 0021). The WebSocket messages are in docs/api/quiz-ws.md. */
 export type Item = { id: string; name: string; emoji: string; image_key: string | null }
@@ -77,3 +79,25 @@ export function socketUrl(code: string): string {
 
 /** The room's public link (AC-QUIZ-01, AC-SUBPATH-10). */
 export const roomLink = (code: string): string => `${SITE_URL}quiz/${code}`
+
+/** The nickname saved at Bàn lẩu (AC-QUIZ-04), or null; a failed read only leaves the field empty. */
+export async function savedNickname(storage: Storage | null): Promise<string | null> {
+  try {
+    return (await getMyData(storage)).nickname ?? null
+  } catch {
+    return null
+  }
+}
+
+/** The nickname this device joined a room with: after a reload during a game it joins again at once. */
+export const joinedKey = (code: string) => storageKey(`quiz:joined:${code}`)
+/** Set once by "Tạo phòng": the host enters the lobby with that nickname, not through the guests' join screen. */
+export const hostKey = (code: string) => storageKey(`quiz:host:${code}`)
+
+export function rememberHost(storage: Storage | null, code: string, nickname: string): void {
+  try {
+    storage?.setItem(hostKey(code), JSON.stringify(nickname))
+  } catch {
+    // storage blocked: the host then types the nickname again on the join screen
+  }
+}
