@@ -351,6 +351,31 @@ describe('game engine', () => {
     for (let i = 0; i < 3; i++) expect(await run()).toEqual(first)
   })
 
+  it('AC-GAME-06: không gợi ý cặp X + X (A và B khác nhau); chỉ có X + X chưa khám phá thì không có gợi ý', async () => {
+    // X = Cay (phần tử đầu tiên của Đĩa) có công thức Cay + Cay chưa khám phá; cặp hợp lệ khác: Toang + Cười
+    const withPair = await ctxOf([
+      { a: 'Cay', b: 'Cay', name: 'Món Đôi', emoji: '2️⃣' },
+      { a: 'Toang', b: 'Cười', name: 'Món Cặp', emoji: '🤝' },
+    ])
+    const p1 = base()
+    p1.miss_streak = 2
+    const out1 = await combine(withPair, p1, 'Cay', 'Deadline')
+    if (out1.kind !== 'miss') throw new Error('miss expected')
+    expect(out1.hint_pair).not.toBeNull()
+    const [a, b] = out1.hint_pair!
+    expect(a).not.toBe(b)
+    expect([a, b].sort()).toEqual([eid('Toang'), eid('Cười')].sort())
+    expect(out1.hint).not.toContain('Món Đôi')
+
+    const onlySelf = await ctxOf([{ a: 'Cay', b: 'Cay', name: 'Món Đôi', emoji: '2️⃣' }])
+    const p2 = base()
+    p2.miss_streak = 2
+    const out2 = await combine(onlySelf, p2, 'Cay', 'Deadline')
+    if (out2.kind !== 'miss') throw new Error('miss expected')
+    expect(out2.hint).toBeNull()
+    expect(out2.hint_pair).toBeNull()
+  })
+
   it('AC-GAME-06: một lần ghép thành công làm bộ đếm trượt về 0 (trượt phải liên tiếp)', async () => {
     const ctx = await ctxOf([{ a: 'Cay', b: 'Cười', name: 'Tới Công Chuyện' }])
     const m1 = await combine(ctx, base(), 'Cay', 'Deadline')
