@@ -24,6 +24,7 @@ from lau_meme_pipeline.links import fetch_link, https_get, resolve_host
 from lau_meme_pipeline.text import fold
 
 DEFAULT_LIMIT = 50
+BUDGET_SECONDS = 25 * 60  # under the workflow's 30 min: 50 elements x 3 fetches x 15 s could reach ~37 min
 MAX_CANDIDATES = 3
 PAGE_SIZE = 100  # the admin API's maximum `size`
 QUERY_SUFFIX = "meme"
@@ -69,13 +70,20 @@ def run_art_search(
     limit: int = DEFAULT_LIMIT,
     dry_run: bool = False,
     log: Callable[..., None] = print,
+    clock: Callable[[], float] = time.monotonic,
+    budget_seconds: float = BUDGET_SECONDS,
 ) -> dict:
+    start = clock()
     picked = pick_elements(_catalog(admin), limit)
     attached: list[str] = []
     not_found: list[str] = []
     errors: dict[str, int] = {}
     planned: list[tuple[str, str]] = []
-    for element in picked:
+    remaining = 0
+    for done, element in enumerate(picked):
+        if clock() - start >= budget_seconds:  # the rest waits for the next run
+            remaining = len(picked) - done
+            break
         eid, name = str(element["id"]), str(element["name"])
         try:
             urls = search(f"{name} {QUERY_SUFFIX}")
@@ -99,7 +107,12 @@ def run_art_search(
             planned.append((name, url))
             log(f"Sẽ gắn: {name} <- {url}")
             continue
-        admin.put_image(eid, webp)
+        try:
+            admin.put_image(eid, webp)
+        except Exception as exc:  # the admin API refused this one image (4xx/5xx): it keeps its emoji, go on
+            errors[type(exc).__name__] = errors.get(type(exc).__name__, 0) + 1
+            log(f"Gắn ảnh lỗi: {name}")
+            continue
         attached.append(eid)
         log(f"Đã gắn ảnh: {name}")
     return {
@@ -108,6 +121,7 @@ def run_art_search(
         "not_found": not_found,
         "errors": errors,
         "planned": planned,
+        "remaining": remaining,
     }
 
 
@@ -192,7 +206,9 @@ def summary_lines(result: Mapping, *, dry_run: bool) -> list[str]:
         f"- {'Sẽ gắn' if dry_run else 'Gắn được'}: {len(result['planned'] if dry_run else result['attached'])}",
         f"- Không tìm được: {len(result['not_found'])}",
     ]
-    lines += [f"- Lỗi tải `{kind}`: {count}" for kind, count in sorted(result["errors"].items())]
+    lines += [f"- Lỗi `{kind}`: {count}" for kind, count in sorted(result["errors"].items())]
+    if result.get("remaining"):
+        lines.append(f"- Dừng vì hết thời gian, còn {result['remaining']} phần tử (lần chạy sau làm tiếp)")
     return lines
 
 

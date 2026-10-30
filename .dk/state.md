@@ -46,3 +46,4 @@ review-fix-quiz-uat-1030: approved
 review-feat-quiz-ui-1030: approved
 review-feat-not-meme-filter: approved
 review-feat-hint-pair: approved
+review-feat-art-search: approved

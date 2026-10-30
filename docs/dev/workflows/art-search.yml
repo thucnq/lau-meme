@@ -34,8 +34,9 @@ jobs:
   art-search:
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    # Chỉ ghi ảnh qua API quản trị, không deploy code: production dùng `production-no-approval` như mẻ nhúng.
-    environment: ${{ inputs.target == 'staging' && 'staging' || 'production-no-approval' }}
+    # ADMIN_TOKEN có toàn quyền quản trị: production chạy trong environment `production` (có required reviewers),
+    # không dùng `production-no-approval` của mẻ nhúng (ADR 0024).
+    environment: ${{ inputs.target == 'staging' && 'staging' || 'production' }}
     defaults: { run: { working-directory: pipeline } }
     steps:
       - uses: actions/checkout@v5
