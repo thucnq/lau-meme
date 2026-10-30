@@ -3,7 +3,13 @@ import {
   ApiError,
   AuthError,
   approveContribution,
+  approveRejected,
   clearDailyPin,
+  editElement,
+  editRejected,
+  getElement,
+  getRejected,
+  unblockRejected,
   getDailyPin,
   setDailyPin,
   editContribution,
@@ -22,11 +28,16 @@ import {
   type ContributionItem,
   type ContributionStatus,
   type DailyPin,
+  type ElementDetail,
+  type ElementEdit,
   type ElementItem,
   type Kind,
   type Page,
   type RecipeItem,
   type ReportItem,
+  type RejectedItem,
+  type RejectedStatus,
+  type RejectedText,
 } from './api'
 import { withBase } from '../base'
 import { DRAWING_TYPES, DrawingError, drawingProblem, toWebp256 } from './drawing'
@@ -112,7 +123,7 @@ function Login({ onSignIn, notice }: { onSignIn: (token: string) => void; notice
   )
 }
 
-const TABS = ['Báo cáo', 'Nội dung', 'Đề xuất meme', 'Món đặc biệt', 'Đợt + Audit'] as const
+const TABS = ['Báo cáo', 'Nội dung', 'Bị chặn', 'Đề xuất meme', 'Món đặc biệt', 'Đợt + Audit'] as const
 type Tab = (typeof TABS)[number]
 type Ctx = { token: string; onAuthError: () => void }
 
@@ -137,6 +148,7 @@ function Console({ token, onAuthError, onSignOut }: Ctx & { onSignOut: () => voi
       <section role="tabpanel" aria-label={tab}>
         {tab === 'Báo cáo' && <ReportsTab {...ctx} />}
         {tab === 'Nội dung' && <ContentTab {...ctx} />}
+        {tab === 'Bị chặn' && <RejectedTab {...ctx} />}
         {tab === 'Đề xuất meme' && <ContributionsTab {...ctx} />}
         {tab === 'Món đặc biệt' && <DailyPinTab {...ctx} />}
         {tab === 'Đợt + Audit' && <LogsTab {...ctx} />}
@@ -524,6 +536,7 @@ function ContentTab(ctx: Ctx) {
   const [page, setPage] = useState(1)
   const [reload, setReload] = useState(0)
   const [open, setOpen] = useState<ElementItem | null>(null)
+  const [editing, setEditing] = useState<ElementItem | null>(null)
   const [tierError, setTierError] = useState<string | null>(null)
   const [imageError, setImageError] = useState<string | null>(null)
   const params = new URLSearchParams({ page: String(page) })
@@ -672,12 +685,16 @@ function ContentTab(ctx: Ctx) {
                 <button type="button" onClick={() => setOpen(open?.id === e.id ? null : e)}>
                   Công thức
                 </button>
+                <button type="button" aria-label={`Sửa ${e.name}`} onClick={() => setEditing(editing?.id === e.id ? null : e)}>
+                  Sửa
+                </button>
               </td>
             </tr>
           ))}
         </tbody>
       </table>
       <Pager page={data} onPage={setPage} />
+      {editing && <ElementEditor key={editing.id} {...ctx} item={editing} onSaved={() => setReload((n) => n + 1)} />}
       {open && (
         <section aria-label={`Công thức của ${open.name}`}>
           <h2>
@@ -695,6 +712,353 @@ function ContentTab(ctx: Ctx) {
         </section>
       )}
     </>
+  )
+}
+
+// ------------------------------------------------------------------------------------------------ AC-ADMIN-16
+
+type TextField = 'name' | 'emoji' | 'description' | 'daily_hint' | 'image_hint'
+const TEXT_FIELDS: { key: TextField; label: string; max: number; long?: boolean }[] = [
+  { key: 'name', label: 'Tên', max: 100 },
+  { key: 'emoji', label: 'Emoji', max: 16 },
+  { key: 'description', label: 'Mô tả', max: 200, long: true },
+  { key: 'daily_hint', label: 'Gợi ý Daily', max: 200, long: true },
+  { key: 'image_hint', label: 'Gợi ý ảnh', max: 300, long: true },
+]
+type Texts = Record<TextField, string>
+
+/** Only the fields that differ from `from`; an emptied field is sent as null. */
+function changed<K extends string>(from: Record<K, string>, to: Record<K, string>): Partial<Record<K, string | null>> {
+  const out: Partial<Record<K, string | null>> = {}
+  for (const k of Object.keys(to) as K[]) if (to[k] !== from[k]) out[k] = to[k].trim() === '' ? null : to[k]
+  return out
+}
+
+function TextInputs({ values, onChange, readOnly }: { values: Texts; onChange: (v: Texts) => void; readOnly?: boolean }) {
+  return (
+    <>
+      {TEXT_FIELDS.map((f) =>
+        readOnly ? (
+          <p key={f.key}>
+            {f.label}: {values[f.key] || 'chưa có'}
+          </p>
+        ) : (
+          <label key={f.key}>
+            {f.label}
+            {f.long ? (
+              <textarea value={values[f.key]} maxLength={f.max} onChange={(e) => onChange({ ...values, [f.key]: e.target.value })} />
+            ) : (
+              <input value={values[f.key]} maxLength={f.max} onChange={(e) => onChange({ ...values, [f.key]: e.target.value })} />
+            )}
+          </label>
+        ),
+      )}
+    </>
+  )
+}
+
+/** "Sửa <tên>" in "Nội dung": every field of a live element; the graph has it from the next batch ("Chờ mẻ kế tiếp"). */
+function ElementEditor({ token, onAuthError, item, onSaved }: Ctx & { item: ElementItem; onSaved: () => void }) {
+  const [detail, setDetail] = useState<ElementDetail | null>(null)
+  const [error, setError] = useState<string | null>(null)
+  useEffect(() => {
+    let live = true
+    getElement(token, item.id).then(
+      (d) => live && setDetail(d),
+      (err: unknown) => live && (err instanceof AuthError ? onAuthError() : setError(errorText(err))),
+    )
+    return () => {
+      live = false
+    }
+  }, [token, item.id, onAuthError])
+  return (
+    <section aria-label={`Sửa ${item.name}`}>
+      <h2>
+        Sửa {item.emoji} {item.name}
+      </h2>
+      <Alert>{error}</Alert>
+      {detail && (
+        <ElementForm
+          key={JSON.stringify(detail)}
+          detail={detail}
+          save={(body) =>
+            editElement(token, item.id, body).then(
+              (d) => {
+                setError(null)
+                setDetail(d)
+                onSaved()
+              },
+              (err: unknown) => (err instanceof AuthError ? onAuthError() : setError(errorText(err))),
+            )
+          }
+        />
+      )}
+    </section>
+  )
+}
+
+function ElementForm({ detail, save }: { detail: ElementDetail; save: (body: ElementEdit) => void }) {
+  const current = (k: TextField | 'origin') => String(detail.edit?.[k] ?? detail.published[k] ?? '')
+  const initial = { ...(Object.fromEntries(TEXT_FIELDS.map((f) => [f.key, current(f.key)])) as Texts), origin: current('origin') }
+  const [values, setValues] = useState(initial)
+  const submit = (e: FormEvent) => {
+    e.preventDefault()
+    const body = changed(initial, values) as ElementEdit
+    if (Object.keys(body).length) save(body)
+  }
+  return (
+    <form className="admin-edit" onSubmit={submit}>
+      {detail.pending && <p className="admin-pending">Chờ mẻ kế tiếp</p>}
+      <TextInputs values={values} onChange={(v) => setValues({ ...values, ...v })} />
+      <label>
+        Nguồn gốc
+        <select value={values.origin} onChange={(e) => setValues({ ...values, origin: e.target.value })}>
+          <option value="vn">VN</option>
+          <option value="intl">Quốc tế</option>
+        </select>
+      </label>
+      <button type="submit">Lưu</button>
+    </form>
+  )
+}
+
+// ------------------------------------------------------------------------------------------------ AC-ADMIN-13..15
+
+const REJECTED_STATUS: Record<RejectedStatus, string> = {
+  blocked: 'Bị chặn',
+  unblocked: 'Đã bỏ chặn - chờ mẻ',
+  added: 'Đã thêm',
+  approved: 'Đã duyệt tay',
+}
+const STEP_LABEL = { layer1: 'Lớp 1', layer2: 'Lớp 2' } as const
+/** Reason codes the pipeline sends (moderation.LABELS); a code seen in the list is added with its own label. */
+const KNOWN_REASONS: [string, string][] = [
+  ['banned_word', 'Từ cấm'],
+  ['blocked_alias', 'Bí danh bị chặn'],
+  ['admin_blocked', 'Đã bị quản trị chặn'],
+  ['real_person', 'Người thật'],
+  ['accusation', 'Cáo buộc người thật'],
+  ['politics', 'Chính trị'],
+  ['religion', 'Tôn giáo'],
+  ['sexual', 'Tình dục'],
+  ['discrimination', 'Phân biệt'],
+  ['body_shaming', 'Body shaming'],
+  ['violence', 'Bạo lực'],
+  ['drugs', 'Ma túy'],
+  ['self_harm', 'Tự hại'],
+  ['harassment', 'Quấy rối'],
+  ['unsure', 'Không chắc'],
+]
+
+function RejectedTab(ctx: Ctx) {
+  const [q, setQ] = useState('')
+  const [query, setQuery] = useState('')
+  const [reason, setReason] = useState('')
+  const [step, setStep] = useState('')
+  const [status, setStatus] = useState('')
+  const [page, setPage] = useState(1)
+  const [reload, setReload] = useState(0)
+  const [open, setOpen] = useState<RejectedItem | null>(null)
+  const [error, setError] = useState<string | null>(null)
+  const params = new URLSearchParams({ page: String(page) })
+  if (query) params.set('q', query)
+  if (reason) params.set('reason', reason)
+  if (step) params.set('step', step)
+  if (status) params.set('status', status)
+  const { data, error: listError } = useList<RejectedItem>(ctx, `rejected?${params}`, reload)
+  const reasons = new Map(KNOWN_REASONS)
+  for (const r of data?.items ?? []) for (const x of r.reasons) if (!reasons.has(x.code)) reasons.set(x.code, x.label)
+  const filter = (set: (v: string) => void) => (e: { target: { value: string } }) => {
+    set(e.target.value)
+    setPage(1)
+  }
+  const search = (e: FormEvent) => {
+    e.preventDefault()
+    setQuery(q.trim().slice(0, 100))
+    setPage(1)
+  }
+  const show = (row: RejectedItem) => {
+    setError(null)
+    getRejected(ctx.token, row.id).then(setOpen, (err: unknown) => (err instanceof AuthError ? ctx.onAuthError() : setError(errorText(err))))
+  }
+  const done = (row: RejectedItem) => {
+    setOpen(row)
+    setReload((n) => n + 1)
+  }
+
+  return (
+    <>
+      <form className="admin-filters" onSubmit={search}>
+        <label>
+          Lý do
+          <select value={reason} onChange={filter(setReason)}>
+            <option value="">Tất cả</option>
+            {[...reasons].map(([code, label]) => (
+              <option key={code} value={code}>
+                {label}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label>
+          Bước
+          <select value={step} onChange={filter(setStep)}>
+            <option value="">Tất cả</option>
+            <option value="layer1">Lớp 1</option>
+            <option value="layer2">Lớp 2</option>
+          </select>
+        </label>
+        <label>
+          Trạng thái
+          <select value={status} onChange={filter(setStatus)}>
+            <option value="">Tất cả</option>
+            {Object.entries(REJECTED_STATUS).map(([value, label]) => (
+              <option key={value} value={value}>
+                {label}
+              </option>
+            ))}
+          </select>
+        </label>
+        <input aria-label="Tìm theo tên" placeholder="Tìm theo tên" value={q} maxLength={100} onChange={(e) => setQ(e.target.value)} />
+        <button type="submit">Tìm</button>
+      </form>
+      <Alert>{listError ?? error}</Alert>
+      {data?.items.length === 0 ? (
+        <p>Chưa có nội dung bị chặn</p>
+      ) : (
+        <table className="admin-table">
+          <thead>
+            <tr>
+              <th>Khái niệm</th>
+              <th>Lý do</th>
+              <th>Bước</th>
+              <th>Nguồn</th>
+              <th>Số lần gặp</th>
+              <th>Lần gặp cuối</th>
+              <th>Trạng thái</th>
+              <th>Thao tác</th>
+            </tr>
+          </thead>
+          <tbody>
+            {data?.items.map((r) => (
+              <tr key={r.id}>
+                <td>
+                  {r.emoji} {r.name}
+                </td>
+                <td>{r.reasons.map((x) => x.label).join(', ')}</td>
+                <td>{STEP_LABEL[r.step]}</td>
+                <td>{r.source_name}</td>
+                <td>{r.seen_count} lần</td>
+                <td>{when(r.last_seen_at)}</td>
+                <td>{REJECTED_STATUS[r.status]}</td>
+                <td>
+                  <button type="button" aria-label={`Xem ${r.name}`} onClick={() => show(r)}>
+                    Xem
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+      <Pager page={data} onPage={setPage} />
+      {open && <RejectedDetail key={JSON.stringify(open)} {...ctx} row={open} onDone={done} />}
+    </>
+  )
+}
+
+const textsOf = (r: RejectedItem): Texts => Object.fromEntries(TEXT_FIELDS.map((f) => [f.key, r[f.key] ?? ''])) as Texts
+
+/** Detail, "Lưu", "Bỏ chặn" and "Duyệt luôn" of one row; added / approved rows are read-only (AC-ADMIN-14). */
+function RejectedDetail({ token, onAuthError, row, onDone }: Ctx & { row: RejectedItem; onDone: (row: RejectedItem) => void }) {
+  const initial = textsOf(row)
+  const [values, setValues] = useState(initial)
+  const [error, setError] = useState<string | null>(null)
+  const [a, setA] = useState<ElementItem | null>(null)
+  const [b, setB] = useState<ElementItem | null>(null)
+  const editable = row.status === 'blocked' || row.status === 'unblocked'
+  const run = (command: Promise<RejectedItem>) =>
+    command.then(onDone, (err: unknown) => (err instanceof AuthError ? onAuthError() : setError(errorText(err))))
+  const save = (e: FormEvent) => {
+    e.preventDefault()
+    const body = changed(initial, values) as RejectedText
+    if (Object.keys(body).length) run(editRejected(token, row.id, body))
+  }
+  const canApprove = a !== null && b !== null && a.id !== b.id && values.name.trim() !== '' && values.emoji.trim() !== ''
+  const approve = () => {
+    if (!a || !b) return
+    const optional = Object.fromEntries((['description', 'daily_hint', 'image_hint'] as const).filter((k) => values[k].trim()).map((k) => [k, values[k]]))
+    run(approveRejected(token, row.id, { a: a.id, b: b.id, name: values.name.trim(), emoji: values.emoji.trim(), ...optional }))
+  }
+  return (
+    <section aria-label={`Chi tiết ${row.name}`} className="admin-edit">
+      <h2>
+        {row.emoji} {row.name} · {REJECTED_STATUS[row.status]}
+      </h2>
+      <p>Lý do: {row.reasons.map((x) => x.label).join(', ')}</p>
+      <p>
+        Nguồn: {row.source_name}
+        {row.source_url && (
+          <>
+            {' · '}
+            <a href={row.source_url} target="_blank" rel="noopener noreferrer">
+              {row.source_url}
+            </a>
+          </>
+        )}
+      </p>
+      <p>Ngữ cảnh: {row.context ?? 'không có'}</p>
+      <Alert>{error}</Alert>
+      {editable ? (
+        <form onSubmit={save}>
+          <TextInputs values={values} onChange={setValues} />
+          <button type="submit">Lưu</button>
+          {row.status === 'blocked' && (
+            <button type="button" onClick={() => run(unblockRejected(token, row.id))}>
+              Bỏ chặn
+            </button>
+          )}
+          <ElementPicker side="A" token={token} onAuthError={onAuthError} picked={a} onPick={setA} />
+          <ElementPicker side="B" token={token} onAuthError={onAuthError} picked={b} onPick={setB} />
+          <button type="button" disabled={!canApprove} onClick={approve}>
+            Duyệt luôn
+          </button>
+        </form>
+      ) : (
+        <TextInputs values={values} onChange={setValues} readOnly />
+      )}
+    </section>
+  )
+}
+
+/** "Tìm phần tử A/B" for "Duyệt luôn": the pair A + B that makes the concept (AC-ADMIN-15). */
+function ElementPicker({ side, token, onAuthError, picked, onPick }: Ctx & { side: 'A' | 'B'; picked: ElementItem | null; onPick: (e: ElementItem) => void }) {
+  const [q, setQ] = useState('')
+  const [found, setFound] = useState<ElementItem[]>([])
+  const [error, setError] = useState<string | null>(null)
+  const find = () => {
+    setError(null)
+    call<Page<ElementItem>>(token, `elements?${new URLSearchParams({ q: q.trim().slice(0, 100), state: 'active' })}`).then(
+      (p) => setFound(p.items),
+      (err: unknown) => (err instanceof AuthError ? onAuthError() : setError(errorText(err))),
+    )
+  }
+  return (
+    <fieldset>
+      <legend>
+        Phần tử {side}: {picked ? `${picked.emoji} ${picked.name}` : 'chưa chọn'}
+      </legend>
+      <input aria-label={`Tìm phần tử ${side}`} value={q} maxLength={100} onChange={(e) => setQ(e.target.value)} />
+      <button type="button" onClick={find}>
+        Tìm {side}
+      </button>
+      <Alert>{error}</Alert>
+      {found.map((e) => (
+        <button key={e.id} type="button" aria-label={`Chọn ${side} ${e.name}`} onClick={() => onPick(e)}>
+          {e.emoji} {e.name}
+        </button>
+      ))}
+    </fieldset>
   )
 }
 

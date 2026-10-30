@@ -1,93 +1,17 @@
 {
  "red": {
-  "ts": "2026-10-24T13:29:41+00:00",
-  "commit": "cb3635a",
+  "ts": "2026-10-30T08:29:14+00:00",
+  "commit": "ec229fa",
   "results": {
-   "AC-PIPE-01": {
-    "status": "PASS",
-    "test": "test_batch#test_ac_pipe_01_version_for_doi_gio_sang_gmt7"
-   },
-   "AC-PIPE-02": {
-    "status": "PASS",
-    "test": "test_batch#test_ac_pipe_02_lich_chay_hai_cron_00_va_12_gio_gmt7"
-   },
-   "AC-PIPE-03": {
-    "status": "PASS",
-    "test": "test_pipe2#test_ac_pipe_03_mot_nguon_loi_khong_lam_hong_ca_dot"
-   },
-   "AC-PIPE-04": {
-    "status": "PASS",
-    "test": "test_crawl_http#test_ac_pipe_04_http_get_tu_choi_url_http_khong_mo_ket_noi"
-   },
-   "AC-PIPE-05": {
-    "status": "PASS",
-    "test": "test_pipe2#test_ac_pipe_05_dedupe_key_fold_bo_dau_cau"
-   },
-   "AC-PIPE-06": {
-    "status": "PASS",
-    "test": "test_pipe2#test_ac_pipe_06_chi_cap_hop_le_duoc_them_hai_cap_kia_bi_loai_kem_ly_do"
-   },
-   "AC-PIPE-07": {
-    "status": "PASS",
-    "test": "test_pipe2#test_ac_pipe_07_meme_chua_noi_duoc_vao_hang_cho_voi_so_lan_thu_1"
-   },
-   "AC-PIPE-08": {
-    "status": "PASS",
-    "test": "test_pipe2#test_ac_pipe_08_phan_tu_duoi_3_cong_thuc_can_bo_sung"
-   },
-   "AC-PIPE-09": {
-    "status": "PASS",
-    "test": "test_pipe2#test_ac_pipe_09_chi_giu_diem_tu_3_tro_len_va_luu_diem_kem_cong_thuc"
-   },
-   "AC-PIPE-10": {
-    "status": "PASS",
-    "test": "test_art_adapters#test_ac_pipe_10_workers_ai_gui_seed_nguyen_cung_prompt_thi_cung_seed_o_lan_dau"
-   },
-   "AC-PIPE-11": {
-    "status": "PASS",
-    "test": "test_batch#test_ac_pipe_11_loi_o_buoc_state_khong_dang_gi_va_ghi_dot_loi"
-   },
-   "AC-PIPE-12": {
-    "status": "PASS",
-    "test": "test_pipe2#test_ac_pipe_12_vi_du_25_khai_niem_429_hai_lan_roi_het_quota_o_lo_3"
-   },
-   "AC-PIPE-13": {
-    "status": "PASS",
-    "test": "test_art_adapters#test_ac_pipe_13_workers_ai_token_khong_nam_trong_duong_dan_hay_thong_bao_loi[429]"
-   },
-   "AC-PIPE-14": {
-    "status": "PASS",
-    "test": "test_batch#test_ac_pipe_14_tieu_de_co_version_trang_thai_che_do_emoji_khong_lo_ten"
-   },
-   "AC-PIPE-15": {
-    "status": "PASS",
-    "test": "test_pipe3#test_ac_pipe_15_tuoi_tre_tra_20_khai_niem_dung_truong"
-   },
-   "AC-PIPE-16": {
-    "status": "PASS",
-    "test": "test_pipe3#test_ac_pipe_16_sau_dot_1_con_cai_nit_4_stonks_1_meme_moi_2"
-   },
-   "AC-PIPE-17": {
+   "AC-PIPE-21": {
     "status": "FAIL",
-    "test": "test_pipe3#test_ac_pipe_17_threads_ten_nguoi_dang_khong_toi_llm_khong_vao_noi_dung_dang"
-   },
-   "AC-PIPE-18": {
-    "status": "FAIL",
-    "test": "test_pipe4#test_ac_pipe_18_ca_hai_luong_khong_cham_host_cu"
-   },
-   "AC-PIPE-19": {
-    "status": "FAIL",
-    "test": "test_pipe4#test_ac_pipe_19_workflow_threads_token_lich_thu_hai_ghi_ca_hai_environment_mo_issue_khi_loi"
-   },
-   "AC-PIPE-20": {
-    "status": "FAIL",
-    "test": "test_pipe4#test_ac_pipe_20_threads_0_khai_niem_khong_loi_trong_stats_sources"
+    "test": "admin-rejected.test.ts#rejected concepts + element edit "
    }
   }
  },
  "green": {
-  "ts": "2026-10-24T13:35:16+00:00",
-  "commit": "cb3635a",
+  "ts": "2026-10-30T09:13:20+00:00",
+  "commit": "ec229fa",
   "results": {
    "AC-PIPE-01": {
     "status": "PASS",
@@ -168,6 +92,10 @@
    "AC-PIPE-20": {
     "status": "PASS",
     "test": "test_pipe4#test_ac_pipe_20_ca_hai_tu_khoa_rong_co_dong_canh_bao_khong_phai_loi_nguon"
+   },
+   "AC-PIPE-21": {
+    "status": "PASS",
+    "test": "test_mod_rejected#test_ac_pipe_21_khai_niem_bo_chan_vao_dau_hang_cho_bo_qua_kiem_duyet_va_vao_graph"
    }
   }
  }

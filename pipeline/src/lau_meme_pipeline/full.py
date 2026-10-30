@@ -30,7 +30,8 @@ from lau_meme_pipeline.linking import (
 )
 from lau_meme_pipeline.linkqueue import next_queue
 from lau_meme_pipeline.llm import CachedLlm, QuotaExhausted
-from lau_meme_pipeline.moderation import QUOTA_LABEL, Concept, ModLists, is_held, moderate
+from lau_meme_pipeline.moderation import QUOTA_LABEL, Concept, ModLists, Passed, is_held, moderate
+from lau_meme_pipeline.rejected import apply_edits, edited_texts, rejected_rows, unblocked_items
 from lau_meme_pipeline.seed import ACTIVE, CLASSIC, INACTIVE, ContentStore, StoredElement, StoredRecipe, load_core
 from lau_meme_pipeline.text import fold
 from lau_meme_pipeline.tier import apply_tiers, needs_rare_image
@@ -56,6 +57,10 @@ class FullOutcome:
     daily_element_id: str | None = None
     new_aliases: frozenset[str] = frozenset()  # MOD aliases found this batch (AC-MOD-06)
     trend_levels: dict[str, int] = field(default_factory=dict)  # element id → trending level of this batch (> 0)
+    rejected: list[dict] = field(default_factory=list)  # blocked this batch, for the admin (AC-MOD-11)
+    rejected_added: list[dict] = field(default_factory=list)  # unblocked concepts linked this batch (AC-PIPE-21)
+    texts: dict[str, dict] = field(default_factory=dict)  # element id → description / hints sent in content
+    exempt: frozenset[str] = frozenset()  # admin-decided elements the moderation invariant skips (ADR 0022)
 
 
 def _units(text: str) -> int:
@@ -155,6 +160,10 @@ def run_full(
     trend_peaks: Mapping[str, int] | None = None,
     schedule_hours_utc: Sequence[int] = (5, 17),
     feedback: Sequence[Mapping] = (),
+    unblocked: Sequence[Mapping] = (),
+    manual_approvals: Sequence[Mapping] = (),
+    element_edits: Sequence[Mapping] = (),
+    element_aliases: Sequence[Mapping] = (),
 ) -> FullOutcome:
     version = _version(batch_at)
     batch_date: date = batch_at.astimezone(GMT7).date()
@@ -193,7 +202,18 @@ def run_full(
 
     # 1. Dedupe this batch's crawl against everything known (queued memes were deduped when they came in).
     queue = [dict(q) for q in store.get("queue", [])]
-    known_names = [e.name for e in content.elements.values()] + [q["concept"]["name"] for q in queue]
+    # AC-PIPE-21: what the admin unblocked goes first, before the queue (it may already be in it) and the new memes
+    unblocked_first = unblocked_items(unblocked, queue)
+    unblocked_keys = {i["key"] for i in unblocked_first}
+    # one already queued keeps counting its attempts there (AC-PIPE-07)
+    queue = [*[u for u in unblocked_first if "attempts" in u], *[q for q in queue if q["key"] not in unblocked_keys]]
+    # a renamed element's old and new names both dedupe into it (AC-ADMIN-16, open question 94)
+    known_names = (
+        [e.name for e in content.elements.values()]
+        + [q["concept"]["name"] for q in [*unblocked_first, *queue]]
+        + [a["fold"] for a in element_aliases]
+        + [e["name"] for e in element_edits if e.get("name")]
+    )
     deduped = dedupe(crawl_result.concepts, known_names, lambda items: ask("same", items))
     too_long = [c for c in deduped.kept if _units(c.name) > MAX_NAME or _units(fold(c.name)) > MAX_NAME]
     report["dedupe"] = {"kept": len(deduped.kept) - len(too_long), "dropped": len(deduped.dropped)}
@@ -213,8 +233,10 @@ def run_full(
         for c in deduped.kept
         if c not in too_long
     ]
-    queued_keys = {q["key"] for q in queue}
-    items = [*queue, *[i for i in new_items if i["key"] not in queued_keys]]  # AC-PIPE-07: queue first
+    queued_keys = {q["key"] for q in queue} | unblocked_keys
+    fresh_unblocked = [u for u in unblocked_first if "attempts" not in u]
+    # AC-PIPE-07: queue first
+    items = [*fresh_unblocked, *queue, *[i for i in new_items if i["key"] not in queued_keys]]
 
     # 2-5 run slice by slice (AC-PIPE-12): each slice is described (queued memes keep what they had), moderated,
     # linked and judged before the next one, so a quota that runs out mid-batch still publishes the slices already
@@ -228,6 +250,9 @@ def run_full(
     mod_counts: Counter[str] = Counter()
     new_aliases: set[str] = set()
     judge_counts = {"kept": 0, "rejected": 0}
+    blocked_reasons: dict[str, list[str]] = {}
+    blocked_steps: dict[str, str] = {}
+    added_unblocked: list[dict] = []
     taken: set[str] = set()  # recipe ids kept so far: two memes of this batch may get the same pair
     for start in range(0, len(items), LLM_SLICE):
         part = items[start : start + LLM_SLICE]
@@ -248,14 +273,20 @@ def run_full(
                 if not isinstance(answer, Mapping) or not 1 <= _units(str(answer.get("emoji", ""))) <= MAX_EMOJI:
                     continue  # no usable answer (quota, truncated, bad emoji): described again next batch, from queue
                 fields = ("emoji", "description", "daily_hint", "image_hint")
-                i["described"] = {k: str(answer.get(k, "")) for k in fields}
+                # the admin's fields of an unblocked concept win over the LLM's (AC-PIPE-21)
+                i["described"] = {k: str(answer.get(k, "")) for k in fields} | i.get("admin", {})
 
-        concepts = [_concept_from(i, i.get("described", {})) for i in part]
+        # an unblocked concept skips both moderation layers (AC-PIPE-21)
+        concepts = [_concept_from(i, i.get("described", {})) for i in part if "unblocked" not in i]
         moderated = moderate(concepts, lists, lambda reqs: ask("classify", reqs), batch_date)
         mod_counts.update(moderated.counts)
         new_aliases |= moderated.new_aliases
-        passed = [p for p in moderated.passed if p.concept.emoji]
-        for p in moderated.passed:
+        blocked_reasons |= moderated.reasons
+        blocked_steps |= moderated.steps
+        trusted = [Passed(_concept_from(i, i.get("described", {}))) for i in part if "unblocked" in i]
+        moderated_passed = [*trusted, *moderated.passed]
+        passed = [p for p in moderated_passed if p.concept.emoji]
+        for p in moderated_passed:
             if not p.concept.emoji:  # not described this batch: never dropped silently, it waits in the queue
                 item = by_key_item[p.concept.key]
                 unlinked.append({**item, "reason": "quota"} if quota["hit"] else item)
@@ -311,6 +342,8 @@ def run_full(
                 continue
             linked.add(p.concept.key)
             new_id = recipes_for[0]["result_id"]
+            if "unblocked" in by_key_item[p.concept.key]:
+                added_unblocked.append({"id": by_key_item[p.concept.key]["unblocked"], "element_id": new_id})
             trend[new_id] = {
                 "id": new_id,
                 "name": p.concept.name,
@@ -324,6 +357,7 @@ def run_full(
                 "source": by_key_item[p.concept.key]["concept"].get("source_name", ""),
                 "origin": ORIGIN_BY_SOURCE.get(by_key_item[p.concept.key]["concept"].get("source_name", ""), "vn"),
                 "added_version": version,
+                **({"unblocked": True} if "unblocked" in by_key_item[p.concept.key] else {}),
             }
             for r in recipes_for:
                 trend_recipes[r["id"]] = {
@@ -378,6 +412,12 @@ def run_full(
     )
     content = joined.store
     report["contributions_waiting"] = joined.waiting
+    # "Duyệt luôn" (AC-ADMIN-15): like a contribution, but the admin's decision skips the moderation lists
+    by_hand = add_contributions(
+        content, manual_approvals, version=version, first_versions=first_versions or {}, blocked=frozenset(blocked)
+    )
+    content = by_hand.store
+    report["contributions_waiting"] += by_hand.waiting
     # Drawing state of the contributed elements (AC-CONTRIB-09): kept in the store like core_art, since the elements
     # themselves come from D1 every batch.
     stored_contrib = {c["id"]: c for c in store.get("contrib_art", [])}
@@ -406,6 +446,9 @@ def run_full(
     report["feedback_lines"] = feedback_report(voted, content, feedback)
     content = voted.store
     depths |= {eid: content.elements[eid].depth for eid in depths}  # hiding a recipe may push a depth down
+    # the admin's edits (AC-ADMIN-16), re-applied every batch and never overwritten by the pipeline
+    content = apply_edits(content, element_edits)
+    edited_hints = {e["element_id"]: e["daily_hint"] for e in element_edits if e.get("daily_hint")}
     # links the admin chose as the picture (AC-ART-14, ADR 0018), for elements in this graph only: never drawn, a
     # failure keeps the emoji and the next batch retries; the url itself goes nowhere else
     linked = {eid: url for eid, url in (image_links or {}).items() if eid in content.elements and eid not in drawings}
@@ -452,15 +495,17 @@ def run_full(
     candidates_daily = []
     for name, hint in core_hints(core).items():
         e = content.elements.get(element_id(name))
+        hint = edited_hints.get(element_id(name), hint)
         if e:
             added = seen.get(e.id, version)
             candidates_daily.append(_candidate(e, hint, "classic", added, salt.get(e.id, 0), False, blocked))
     for t in out_store["elements"]:
         e = content.elements[t["id"]]
         held = is_held(date.fromisoformat(t["held_until"]), batch_date) if t.get("held_until") else False
-        if t.get("daily_hint") and t.get("hint_ok", True) and _hint_valid(e, t["daily_hint"]):
+        hint = edited_hints.get(e.id, t.get("daily_hint"))
+        if hint and (t.get("hint_ok", True) or e.id in edited_hints) and _hint_valid(e, hint):
             peak = salt.get(e.id, 0)
-            candidates_daily.append(_candidate(e, t["daily_hint"], TREND, t["added_version"], peak, held, blocked))
+            candidates_daily.append(_candidate(e, hint, TREND, t["added_version"], peak, held, blocked))
     # 7a. The admin's pin wins over the automatic pick (AC-DAILY-19, ADR 0019); an unusable one is dropped.
     pinned_element = content.elements.get(daily_pin["element_id"]) if daily_pin else None
     daily = pinned_daily(
@@ -493,8 +538,11 @@ def run_full(
         previous_version=None,
         schedule_hours_utc=schedule_hours_utc,
     )
+    exempt = frozenset(t["id"] for t in out_store["elements"] if t.get("unblocked")) | frozenset(
+        m["element_id"] for m in manual_approvals
+    )
     check_all(
-        graph_out, manifest, content, lists, pinned=report.get("daily_pin") == "used"
+        graph_out, manifest, content, lists, pinned=report.get("daily_pin") == "used", exempt=exempt
     )  # raises InvariantError: nothing of this batch is published
     try:  # warns only (AC-INV-12): a failing simulation never fails the batch
         report["miss_rate"] = list(simulate_miss_rate(graph_out, manifest["starters"]))
@@ -517,6 +565,19 @@ def run_full(
         daily_element_id=chosen["element_id"],
         new_aliases=frozenset(new_aliases),
         trend_levels=levels,
+        rejected=rejected_rows(by_key_item, blocked_reasons, blocked_steps),
+        rejected_added=added_unblocked,
+        texts=edited_texts(
+            {
+                **{m["element_id"]: m for m in manual_approvals},
+                **{
+                    t["id"]: {k: t.get(k) for k in ("description", "daily_hint", "image_hint")}
+                    for t in out_store["elements"]
+                },
+            },
+            element_edits,
+        ),
+        exempt=exempt,
     )
 
 

@@ -39,6 +39,9 @@
   --tier-3: #bfdbfe; --tier-3-strong: #2563eb;
   --tier-4: #fde68a; --tier-4-strong: #ca8a04;
   --tier-5: #fecaca; --tier-5-strong: #dc2626;
+  /* mQuiz answer tiles (AC-QUIZ-29, ADR 0023): --quiz-on text on each is >= 4.5:1; the same in both themes */
+  --quiz-1: #b42318; --quiz-2: #1d4ed8; --quiz-3: #8a4e05; --quiz-4: #166534; --quiz-on: #ffffff; --quiz-picked: rgb(255 255 255 / 0.18);
+  --color-qr-dark: #000000; --color-qr-light: #ffffff; /* a QR scans only dark on light, whatever the theme */
 
   /* type */
   /* colour emoji of the OS, never downloaded; without it Windows/Linux pick black outline glyphs or boxes */

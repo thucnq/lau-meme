@@ -20,6 +20,9 @@ type Element = {
   image_key: string | null
   trend_peak: number | null
   auto_tier: number | null
+  description: string | null
+  daily_hint: string | null
+  image_hint: string | null
 }
 type Recipe = { id: string; a: string; b: string; result: string; score: number | null }
 
@@ -51,7 +54,7 @@ export function toBatchRun(row: BatchRunRow) {
   }
 }
 
-const COUNT_KEYS = ['crawled', 'added', 'queued', 'quota_used', 'queue_size', 'without_image', 'core_without_image', 'contributions_waiting']
+const COUNT_KEYS = ['crawled', 'added', 'queued', 'quota_used', 'queue_size', 'without_image', 'core_without_image', 'contributions_waiting', 'unblocked_added']
 const STATS_KEYS = [...COUNT_KEYS, 'blocked', 'source_errors', 'sources', 'images', 'daily_pool_exhausted', 'daily_pin']
 
 /** BatchStats of the contract: stored as sent and shown on the admin page (AC-ADMIN-11), so checked key by key. */
@@ -90,7 +93,12 @@ function parseStats(value: unknown): string {
 function parseElements(value: unknown): Element[] {
   return arr(value, 'content.elements', 20000, 1).map((v, i) => {
     const p = `content.elements[${i}]`
-    const e = obj(v, p, ['id', 'name', 'fold', 'emoji', 'depth', 'origin', 'image_key', 'trend_peak', 'auto_tier'], ['id', 'name', 'fold', 'emoji', 'depth'])
+    const e = obj(
+      v,
+      p,
+      ['id', 'name', 'fold', 'emoji', 'depth', 'origin', 'image_key', 'trend_peak', 'auto_tier', 'description', 'daily_hint', 'image_hint'],
+      ['id', 'name', 'fold', 'emoji', 'depth'],
+    )
     const imageKey = e.image_key ?? null
     if (imageKey !== null && (typeof imageKey !== 'string' || !/^[0-9a-f]{12}\.webp$/.test(imageKey))) fail(`${p}.image_key: sai định dạng`)
     return {
@@ -105,7 +113,69 @@ function parseElements(value: unknown): Element[] {
       trend_peak: e.trend_peak === undefined ? null : int(e.trend_peak, `${p}.trend_peak`, 0),
       // AC-TIER-04: absent → the stored value is kept
       auto_tier: e.auto_tier === undefined ? null : int(e.auto_tier, `${p}.auto_tier`, 1, 5),
+      // AC-ADMIN-16: the current text (admin edits applied) for the "Nội dung" form; absent → the stored value is kept
+      description: e.description === undefined ? null : str(e.description, `${p}.description`, 200, 0),
+      daily_hint: e.daily_hint === undefined ? null : str(e.daily_hint, `${p}.daily_hint`, 200, 0),
+      image_hint: e.image_hint === undefined ? null : str(e.image_hint, `${p}.image_hint`, 300, 0),
     }
+  })
+}
+
+type Rejected = {
+  id: string
+  name: string
+  fold: string
+  emoji: string | null
+  description: string | null
+  source_name: string
+  source_url: string | null
+  context: string | null
+  reasons: string
+  step: string
+}
+
+/** AC-MOD-11, ADR 0022: concepts this batch blocked at moderation; public meme content only (AC-PIPE-13). */
+function parseRejected(value: unknown, now: number): Rejected[] {
+  if (value === undefined) return []
+  return arr(value, 'rejected', 2000).map((v, i) => {
+    const p = `rejected[${i}]`
+    const r = obj(v, p, ['name', 'fold', 'emoji', 'description', 'source_name', 'source_url', 'context', 'reasons', 'step'], ['name', 'fold', 'source_name', 'reasons', 'step'])
+    const url = r.source_url === undefined ? null : str(r.source_url, `${p}.source_url`, 500)
+    if (url !== null && !url.startsWith('https://')) fail(`${p}.source_url: phải là https://`)
+    const reasons = arr(r.reasons, `${p}.reasons`, 20, 1).map((x, j) => {
+      const reason = obj(x, `${p}.reasons[${j}]`, ['code', 'label'])
+      return { code: str(reason.code, `${p}.reasons[${j}].code`, 50), label: str(reason.label, `${p}.reasons[${j}].label`, 100) }
+    })
+    return {
+      id: uuidv7(now),
+      name: str(r.name, `${p}.name`, 100),
+      fold: str(r.fold, `${p}.fold`, 100),
+      emoji: r.emoji === undefined ? null : str(r.emoji, `${p}.emoji`, 16),
+      description: r.description === undefined ? null : str(r.description, `${p}.description`, 200, 0),
+      source_name: str(r.source_name, `${p}.source_name`, 50),
+      source_url: url,
+      context: r.context === undefined ? null : str(r.context, `${p}.context`, 500, 0),
+      reasons: JSON.stringify(reasons),
+      step: oneOf(r.step, `${p}.step`, ['layer1', 'layer2'] as const),
+    }
+  })
+}
+
+/** AC-PIPE-21 `rejected_added` and AC-ADMIN-16 `element_edits_applied`. */
+function parseAdded(value: unknown): Array<{ id: string; element_id: string }> {
+  if (value === undefined) return []
+  return arr(value, 'rejected_added', 2000).map((v, i) => {
+    const r = obj(v, `rejected_added[${i}]`, ['id', 'element_id'])
+    if (typeof r.id !== 'string' || !UUID.test(r.id)) fail(`rejected_added[${i}].id: phải là UUID`)
+    return { id: r.id as string, element_id: id43(r.element_id, `rejected_added[${i}].element_id`) }
+  })
+}
+
+function parseApplied(value: unknown): Array<{ element_id: string; rev: number }> {
+  if (value === undefined) return []
+  return arr(value, 'element_edits_applied', 20000).map((v, i) => {
+    const r = obj(v, `element_edits_applied[${i}]`, ['element_id', 'rev'])
+    return { element_id: id43(r.element_id, `element_edits_applied[${i}].element_id`), rev: int(r.rev, `element_edits_applied[${i}].rev`, 1) }
   })
 }
 
@@ -205,6 +275,8 @@ export async function publishBatch(req: Request, env: Env): Promise<Response> {
   const status = oneOf(body.status, 'status', ['success', 'error'])
 
   if (status === 'error') {
+    // a failed batch writes nothing but its run (AC-MOD-11, AC-PIPE-11)
+    for (const k of ['rejected', 'rejected_added', 'element_edits_applied']) if (k in body) throw new HttpError(400, 'Dữ liệu không hợp lệ', `${k}: mẻ lỗi không gửi`)
     const b = obj(body, 'body', ['status', 'batch_at', 'mode', 'failed_step', 'stats'])
     const run: BatchRunRow = {
       id: uuidv7(now),
@@ -225,7 +297,7 @@ export async function publishBatch(req: Request, env: Env): Promise<Response> {
   const b = obj(
     body,
     'body',
-    ['status', 'version', 'batch_at', 'mode', 'manifest', 'graph', 'content', 'stats', 'store', 'daily_pin_id'],
+    ['status', 'version', 'batch_at', 'mode', 'manifest', 'graph', 'content', 'stats', 'store', 'daily_pin_id', 'rejected', 'rejected_added', 'element_edits_applied'],
     ['status', 'version', 'batch_at', 'mode', 'manifest', 'graph', 'content', 'stats'],
   )
   const version = int(b.version, 'version', 1)
@@ -243,6 +315,9 @@ export async function publishBatch(req: Request, env: Env): Promise<Response> {
   const manifestJson = parseManifest(b.manifest, { version, batchAt, starters, daily, byId })
   const statsJson = parseStats(b.stats)
   const storeJson = b.store === undefined ? null : parseStore(b.store)
+  const rejected = parseRejected(b.rejected, now)
+  const rejectedAdded = parseAdded(b.rejected_added)
+  const editsApplied = parseApplied(b.element_edits_applied)
   const pinId = b.daily_pin_id === undefined ? null : (b.daily_pin_id as string)
   if (pinId !== null && (typeof pinId !== 'string' || !UUID.test(pinId))) fail('daily_pin_id: phải là UUID')
   const pinUse = (b.stats as { daily_pin?: string }).daily_pin
@@ -280,7 +355,8 @@ export async function publishBatch(req: Request, env: Env): Promise<Response> {
   await db.batch([
     db
       .prepare(
-        `INSERT INTO element (id, name, name_fold, emoji, depth, origin, image_key, image_source, trend_peak, auto_tier, first_version, last_version, updated_at)
+        `INSERT INTO element (id, name, name_fold, emoji, depth, origin, image_key, image_source, trend_peak, auto_tier, first_version, last_version, updated_at,
+                              description, daily_hint, image_hint)
          SELECT json_extract(value, '$.id'), json_extract(value, '$.name'), json_extract(value, '$.fold'),
                 json_extract(value, '$.emoji'), json_extract(value, '$.depth'), json_extract(value, '$.origin'),
                 json_extract(value, '$.image_key'),
@@ -289,7 +365,8 @@ export async function publishBatch(req: Request, env: Env): Promise<Response> {
                   WHEN json_extract(value, '$.id') IN (SELECT element_id FROM contribution WHERE status = 'approved' AND use_image_url = 1)
                     THEN 'admin'
                   ELSE 'ai' END,
-                json_extract(value, '$.trend_peak'), json_extract(value, '$.auto_tier'), ?2, ?2, ?3
+                json_extract(value, '$.trend_peak'), json_extract(value, '$.auto_tier'), ?2, ?2, ?3,
+                json_extract(value, '$.description'), json_extract(value, '$.daily_hint'), json_extract(value, '$.image_hint')
          FROM json_each(?1) WHERE true
          ON CONFLICT (id) DO UPDATE SET name = excluded.name, name_fold = excluded.name_fold, emoji = excluded.emoji,
            depth = excluded.depth, origin = excluded.origin,
@@ -300,6 +377,9 @@ export async function publishBatch(req: Request, env: Env): Promise<Response> {
              ELSE 'ai' END,
            trend_peak = COALESCE(excluded.trend_peak, element.trend_peak),
            auto_tier = COALESCE(excluded.auto_tier, element.auto_tier),
+           description = COALESCE(excluded.description, element.description),
+           daily_hint = COALESCE(excluded.daily_hint, element.daily_hint),
+           image_hint = COALESCE(excluded.image_hint, element.image_hint),
            last_version = excluded.last_version, updated_at = excluded.updated_at`,
       )
       .bind(JSON.stringify(elements), version, now),
@@ -334,6 +414,56 @@ export async function publishBatch(req: Request, env: Env): Promise<Response> {
     db.prepare('DELETE FROM pipeline_store WHERE version NOT IN (SELECT version FROM batch_content)'),
     // the pin this batch read (used or dropped); one the admin set meanwhile has another id and stays (ADR 0019)
     ...(pinId === null ? [] : [db.prepare('DELETE FROM daily_pin WHERE id = ?').bind(pinId)]),
+    // "Bị chặn" (ADR 0022): a fold seen again counts once more, keeps its first batch and the admin's edits, and adds
+    // the reasons it did not have yet
+    ...(rejected.length === 0
+      ? []
+      : [
+          db
+            .prepare(
+              `INSERT INTO rejected_concept (id, name, name_fold, emoji, description, source_name, source_url, context, reasons_json, step,
+                 status, seen_count, first_batch_id, last_batch_id, first_seen_at, last_seen_at, updated_at)
+               SELECT json_extract(value, '$.id'), json_extract(value, '$.name'), json_extract(value, '$.fold'), json_extract(value, '$.emoji'),
+                      json_extract(value, '$.description'), json_extract(value, '$.source_name'), json_extract(value, '$.source_url'),
+                      json_extract(value, '$.context'), json_extract(value, '$.reasons'), json_extract(value, '$.step'),
+                      'blocked', 1, ?2, ?2, ?3, ?3, ?3
+               FROM json_each(?1) WHERE true
+               ON CONFLICT (name_fold) DO UPDATE SET seen_count = rejected_concept.seen_count + 1,
+                 last_batch_id = excluded.last_batch_id, last_seen_at = MAX(rejected_concept.last_seen_at, excluded.last_seen_at),
+                 updated_at = excluded.updated_at,
+                 reasons_json = (SELECT json_group_array(json(r)) FROM (
+                   SELECT o.value AS r FROM json_each(rejected_concept.reasons_json) o
+                   UNION ALL
+                   SELECT n.value FROM json_each(excluded.reasons_json) n
+                   WHERE json_extract(n.value, '$.code') NOT IN (
+                     SELECT json_extract(o2.value, '$.code') FROM json_each(rejected_concept.reasons_json) o2)))`,
+            )
+            .bind(JSON.stringify(rejected), run.id, now),
+        ]),
+    // AC-PIPE-21: unblocked concepts this batch linked; an id no longer unblocked is ignored
+    ...(rejectedAdded.length === 0
+      ? []
+      : [
+          db
+            .prepare(
+              `UPDATE rejected_concept SET status = 'added', updated_at = ?2,
+                 element_id = (SELECT json_extract(value, '$.element_id') FROM json_each(?1) WHERE json_extract(value, '$.id') = rejected_concept.id)
+               WHERE status = 'unblocked' AND id IN (SELECT json_extract(value, '$.id') FROM json_each(?1))`,
+            )
+            .bind(JSON.stringify(rejectedAdded), now),
+        ]),
+    // AC-ADMIN-16: an edit saved while this batch ran has a higher rev and stays "Chờ mẻ kế tiếp"
+    ...(editsApplied.length === 0
+      ? []
+      : [
+          db
+            .prepare(
+              `UPDATE element_edit SET applied_rev = MAX(applied_rev, MIN(rev,
+                 (SELECT MAX(json_extract(value, '$.rev')) FROM json_each(?1) WHERE json_extract(value, '$.element_id') = element_edit.element_id)))
+               WHERE element_id IN (SELECT json_extract(value, '$.element_id') FROM json_each(?1))`,
+            )
+            .bind(JSON.stringify(editsApplied)),
+        ]),
   ])
   return json(toBatchRun(run), { status: 201 })
 }
@@ -441,7 +571,7 @@ const DAILY_HISTORY_LIMIT = 1000
  */
 export async function getPipelineState(_req: Request, env: Env): Promise<Response> {
   const db = env.DB
-  const [current, blocks, aliases, history, admin, catalog, tiers, contributions, drawings, links, pin, votes] = await db.batch([
+  const [current, blocks, aliases, history, admin, catalog, tiers, contributions, drawings, links, pin, votes, unblocked, manual, edits, renamed] = await db.batch([
     db.prepare('SELECT value FROM app_meta WHERE key = ?').bind('current_version'),
     db.prepare('SELECT kind, target_id FROM block ORDER BY kind, target_id'),
     db.prepare("SELECT term_fold FROM banned_term WHERE source IN ('mod', 'admin') ORDER BY term_fold"),
@@ -477,6 +607,18 @@ export async function getPipelineState(_req: Request, env: Env): Promise<Respons
                        AND json_extract(e.props_json, '$.ok') >= 1)
        GROUP BY v.recipe_id ORDER BY v.recipe_id`,
     ),
+    // ADR 0022: never a blocked row, only what the admin unblocked (AC-PIPE-21) or approved by hand (AC-ADMIN-15)
+    db.prepare(
+      `SELECT id, name, name_fold AS fold, emoji, description, daily_hint, image_hint, source_name, source_url, context
+       FROM rejected_concept WHERE status = 'unblocked' ORDER BY decided_at, id`,
+    ),
+    db.prepare(
+      `SELECT element_id, name, emoji, description, daily_hint, image_hint, a_id, b_id, decided_at
+       FROM rejected_concept WHERE status = 'approved' ORDER BY decided_at, id`,
+    ),
+    // admin edits of live elements and the old names they leave as aliases (AC-ADMIN-16)
+    db.prepare('SELECT element_id, rev, name, emoji, description, daily_hint, image_hint, origin FROM element_edit ORDER BY element_id'),
+    db.prepare('SELECT fold, element_id FROM element_alias ORDER BY fold'),
   ])
   const value = (current?.results[0] as { value: string } | undefined)?.value
   const blocklist: Record<'elements' | 'recipes' | 'images', string[]> = { elements: [], recipes: [], images: [] }
@@ -516,6 +658,23 @@ export async function getPipelineState(_req: Request, env: Env): Promise<Respons
     admin_images: (drawings?.results ?? []) as { element_id: string; image_key: string }[],
     image_links: (links?.results ?? []) as { element_id: string; url: string }[],
     daily_pin: (pin?.results[0] as { id: string; element_id: string; hint: string } | undefined) ?? null,
+    unblocked: unblocked?.results ?? [],
+    manual_approvals: (
+      (manual?.results ?? []) as {
+        element_id: string
+        name: string
+        emoji: string
+        description: string | null
+        daily_hint: string | null
+        image_hint: string | null
+        a_id: string
+        b_id: string
+        decided_at: number
+      }[]
+    ).map(({ a_id, b_id, decided_at, ...r }) => ({ ...r, a: a_id, b: b_id, approved_at: new Date(decided_at).toISOString() })),
+    // a field left null is not edited: absent, as the contract says
+    element_edits: ((edits?.results ?? []) as Record<string, unknown>[]).map((r) => Object.fromEntries(Object.entries(r).filter(([, v]) => v !== null))),
+    element_aliases: renamed?.results ?? [],
   })
 }
 

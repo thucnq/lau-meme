@@ -70,10 +70,10 @@
 - **Thì** manifest hiện hành vẫn là V; kho nội dung phục vụ người chơi không đổi; workflow kết thúc với trạng thái lỗi và báo cáo đợt ghi bước lỗi
 - Ưu tiên: Bắt buộc
 
-### AC-PIPE-12: Gom lô Gemini, backoff, hết quota dừng êm
-- **Cho** 25 khái niệm cần phân loại, kích thước lô cấu hình 10; Gemini trả 429 hai lần rồi thành công ở lô 1, và báo hết quota ở lô 3
+### AC-PIPE-12: Gom lô Gemini, backoff, hết quota dừng êm (cập nhật 2026-10-30: lô 30, chia đôi khi lỗi)
+- **Cho** 65 khái niệm cần xử lý, kích thước lô cấu hình 30 (trước 2026-10-30 là 10, câu hỏi mở 97); ở lô 1 Gemini trả 429 hai lần rồi thành công; ở lô 2 Gemini trả JSON bị cắt ngang; ở lô 3 Gemini báo hết quota
 - **Khi** các bước gọi LLM chạy
-- **Thì** có đúng 3 lời gọi lô (10, 10, 5) cộng các lần retry; retry chờ theo backoff lũy thừa (thời gian chờ là tham số, test không ngủ thật); khi hết quota thì dừng gọi, các khái niệm chưa xử lý vào hàng chờ, phần đã xử lý và đạt kiểm duyệt vẫn được đăng; báo cáo đợt ghi "hết quota"
+- **Thì** mỗi bước gọi theo lô 30, 30, 5; retry chờ theo backoff lũy thừa (thời gian chờ là tham số, test không ngủ thật); lô có câu trả lời bị cắt hoặc sai schema thì chia đôi (15 + 15) và gọi lại, vẫn lỗi thì chia tiếp đến lô tối thiểu 5; lô 5 vẫn lỗi thì ở bước kiểm duyệt các khái niệm đó bị loại theo AC-MOD-03, ở các bước khác thì vào hàng chờ; không khái niệm nào bị bỏ mất; khi hết quota thì dừng gọi, các khái niệm chưa xử lý vào hàng chờ, phần đã xử lý và đạt kiểm duyệt vẫn được đăng; báo cáo đợt ghi "hết quota" và số lần chia đôi
 - Ưu tiên: Bắt buộc
 
 ### AC-PIPE-13: Không gửi dữ liệu người chơi cho LLM
@@ -122,4 +122,10 @@
 - **Cho** mẻ `full` có `THREADS_ACCESS_TOKEN` và `THREADS_KEYWORDS` = `meme,trend`; app chưa được Meta duyệt `threads_keyword_search` nên API chỉ tìm trong bài của chính tài khoản
 - **Khi** API trả 200 với `data: []` cho cả 2 từ khóa
 - **Thì** báo cáo đợt có dòng "⚠️ Threads: 0 bài cho mọi từ khóa - kiểm tra app đã được Meta duyệt quyền threads_keyword_search (xem runbook)"; đây không phải lỗi nguồn (không vào dòng lỗi AC-PIPE-03), đợt không thất bại, các nguồn khác chạy bình thường; có ít nhất 1 bài ở một từ khóa thì không có dòng này; thiếu cấu hình thì chỉ có cảnh báo thiếu cấu hình (AC-PIPE-17); mọi từ khóa đều lỗi 401/403/429 thì chỉ có lỗi nguồn, không có dòng 0 bài; dòng cảnh báo không chứa token
+- Ưu tiên: Bắt buộc
+
+### AC-PIPE-21: Khái niệm được bỏ chặn đi tiếp, không kiểm duyệt lại (thêm 2026-10-30)
+- **Cho** admin đã "Bỏ chặn" khái niệm K sau đợt N (AC-ADMIN-14) và đã sửa tên, emoji của K, để trống mô tả
+- **Khi** đợt `full` N + 1 chạy; và (trường hợp khác) đợt N + 1 hết quota trước khi tới K; và đợt N + 1 lỗi giữa chừng
+- **Thì** K vào đầu hàng chờ (trước meme mới, như AC-PIPE-07) với tên, emoji admin đã sửa; trường admin để trống vẫn qua bước mô tả của Gemini; K bỏ qua lớp 1 và lớp 2 kiểm duyệt (công thức mới sinh ra quanh K vẫn được kiểm duyệt theo AC-MOD-04); nối được thì K vào graph và dòng của K chuyển trạng thái "Đã thêm" cùng lần ghi nguyên khối với nội dung đợt (AC-PIPE-11); không nối được thì ở hàng chờ như AC-PIPE-07; hết quota thì K ở lại hàng chờ; đợt lỗi thì K vẫn ở trạng thái "Đã bỏ chặn" cho đợt sau
 - Ưu tiên: Bắt buộc

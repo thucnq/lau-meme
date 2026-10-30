@@ -1,6 +1,6 @@
 # Tin nhắn WebSocket của phòng mQuiz
 
-> Contract 0.10.0 · ADR 0021 · Tiêu chí: `docs/acceptance/quiz.md`. OpenAPI chỉ mô tả bước nâng cấp
+> Contract 0.11.0 (thêm `progress`, 2026-10-30) · ADR 0021 · Tiêu chí: `docs/acceptance/quiz.md`. OpenAPI chỉ mô tả bước nâng cấp
 > (`GET /quiz/rooms/{code}/ws`, operationId `connectQuizRoom`); file này là phần contract của mọi tin nhắn sau đó.
 > Đổi tên tin hoặc trường ở đây là đổi contract: cần `/dk:design` và `/dk:approve contract`.
 
@@ -27,6 +27,7 @@
 | `started` | `game_no`, `total` (số câu thật), `seconds`, `server_now` | Mọi socket | `total` < số câu đã chọn khi pool thiếu (AC-QUIZ-09) |
 | `question` | `q`, `total`, `target` ({`name`, `emoji`, `image_key`}), `options` ([{`id`, `name`, `emoji`, `image_key`}] × 4), `server_now`, `deadline` | Mọi socket; gửi lại cho người vừa vào lại | Không có trường nào về đáp án, độ sâu hay công thức (AC-QUIZ-10) |
 | `answered` | `q` | Riêng người vừa nộp; gửi lại khi vào lại nếu đã nộp | Chưa lộ đúng/sai |
+| `progress` | `q`, `answered` (số người đã nộp hợp lệ câu `q`), `total` (số người đang kết nối) | Mọi socket, sau mỗi lần nộp hợp lệ và mỗi lần có người rớt mạng/vào lại khi câu `q` đang mở | Không có seat, nickname hay đáp án (AC-QUIZ-37, câu hỏi mở 101); lần nộp không hợp lệ không phát; client bỏ qua tin có `q` khác câu đang mở. Chơi một mình không có tin này |
 | `reveal` | `q`, `correct` ([ElementId, ElementId]), `results` ([{`seat`, `picks` (hoặc null), `ok`, `points`}]), `board` (`QuizBoard`), `next_at` | Mọi socket | `next_at` = lúc đóng câu + 4 000 ms (AC-QUIZ-13) |
 | `final` | `game_no`, `standings` ([{`seat`, `nickname`, `score`, `correct`, `rank`}] đủ mọi người), `saved` (bool) | Mọi socket | `saved` = đã ghi lịch sử D1 (AC-QUIZ-15/18) |
 | `solo_pack` | `game_no`, `total`, `seconds`, `salt`, `items` ([{`target`, `options`, `answer_hash`}]) | Riêng chủ phòng khi chơi một mình | `answer_hash` = base64url(SHA-256(`"lmq1|" + salt + "|" + q + "|" + idNhỏ + "|" + idLớn`)), `salt` = `<mã phòng>:<game_no>`; idNhỏ/idLớn là 2 id sắp xếp theo thứ tự chuỗi (AC-QUIZ-17) |

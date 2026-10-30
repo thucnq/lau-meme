@@ -1,15 +1,177 @@
 {
  "red": {
-  "ts": "2026-10-28T17:03:49+00:00",
-  "commit": "5fe8bd3",
+  "ts": "2026-10-30T07:35:51+00:00",
+  "commit": "473b765",
+  "results": {
+   "AC-QUIZ-01": {
+    "status": "SKIP",
+    "test": "quiz.test.ts#quiz > AC-QUIZ-01: POST /quiz/rooms trả 201 với mã 6 ký tự từ bảng chữ không nhầm, link tuyệt đối, state lobby; thiếu questions/seconds thì 10 câu 20 giây; hai phòng mã khác nhau; U là chủ phòng"
+   },
+   "AC-QUIZ-02": {
+    "status": "SKIP",
+    "test": "quiz.test.ts#quiz > AC-QUIZ-02: questions/seconds ngoài tập cho phép, UUID sai, thiếu nickname, nickname quá dài trả 400 problem+json chỉ rõ trường sai; không phòng nào được tạo"
+   },
+   "AC-QUIZ-03": {
+    "status": "SKIP",
+    "test": "quiz.test.ts#quiz > AC-QUIZ-03: GET phòng chờ -> lobby "
+   },
+   "AC-QUIZ-04": {
+    "status": "SKIP",
+    "test": "quiz.test.ts#quiz > AC-QUIZ-04: join -> lobby có danh sách theo thứ tự vào, chủ phòng, số câu, số giây; mọi socket nhận lobby mới khi có người vào hoặc rời; nickname trùng "
+   },
+   "AC-QUIZ-05": {
+    "status": "SKIP",
+    "test": "quiz.test.ts#quiz > AC-QUIZ-05: join sai nickname -> nickname_rejected và socket giữ để nhập lại; UUID sai -> bad_request, chưa đồng ý -> consent_required, tin khác trước join -> not_joined "
+   },
+   "AC-QUIZ-06": {
+    "status": "SKIP",
+    "test": "quiz.test.ts#quiz > AC-QUIZ-06: phòng đang chơi không nhận UUID mới "
+   },
+   "AC-QUIZ-07": {
+    "status": "SKIP",
+    "test": "quiz.test.ts#quiz > AC-QUIZ-07: start của người không phải chủ phòng -> error not_host và phòng vẫn chờ; start của chủ phòng phát câu 1 cho mọi người"
+   },
+   "AC-QUIZ-08": {
+    "status": "SKIP",
+    "test": "quiz.test.ts#quiz > AC-QUIZ-08: đề trong gói chơi một mình có 10 câu khó dần, đích khác nhau và khác Món đặc biệt, độ sâu 1..5, 4 lựa chọn khác nhau với đúng một cặp là công thức"
+   },
+   "AC-QUIZ-09": {
+    "status": "SKIP",
+    "test": "quiz.test.ts#quiz > AC-QUIZ-09: pool 12 meme đề mà phòng xin 15 câu thì ván có 12 câu và tin started báo total 12"
+   },
+   "AC-QUIZ-10": {
+    "status": "SKIP",
+    "test": "quiz.test.ts#quiz > AC-QUIZ-10: mọi socket nhận cùng tin question "
+   },
+   "AC-QUIZ-11": {
+    "status": "SKIP",
+    "test": "quiz.test.ts#quiz > AC-QUIZ-11: lần nộp hợp lệ đầu tiên nhận answered "
+   },
+   "AC-QUIZ-12": {
+    "status": "SKIP",
+    "test": "quiz.test.ts#quiz > AC-QUIZ-12: nộp đúng ngay được điểm cao "
+   },
+   "AC-QUIZ-13": {
+    "status": "SKIP",
+    "test": "quiz.test.ts#quiz > AC-QUIZ-13: cả 3 nộp trước hạn thì câu đóng ngay và mọi socket nhận reveal "
+   },
+   "AC-QUIZ-14": {
+    "status": "SKIP",
+    "test": "quiz.test.ts#quiz > AC-QUIZ-14: 12 người chơi: bảng điểm top 10 theo điểm giảm dần rồi thứ tự vào phòng, mỗi socket nhận me của riêng mình kể cả ngoài top 10, người rớt mạng vẫn có tên"
+   },
+   "AC-QUIZ-15": {
+    "status": "SKIP",
+    "test": "quiz.test.ts#quiz > AC-QUIZ-15: hết câu cuối mọi socket nhận final với toàn bộ bảng xếp hạng "
+   },
+   "AC-QUIZ-16": {
+    "status": "SKIP",
+    "test": "quiz.test.ts#quiz > AC-QUIZ-16: người rớt mạng ở câu 3 vào lại ở câu 4 với cùng UUID nhận câu 4 với deadline gốc, điểm đã có, câu 3 tính 0, nickname và hạng giữ nguyên"
+   },
+   "AC-QUIZ-17": {
+    "status": "SKIP",
+    "test": "quiz.test.ts#quiz > AC-QUIZ-17: chủ phòng một mình bấm start nhận solo_pack "
+   },
+   "AC-QUIZ-18": {
+    "status": "SKIP",
+    "test": "quiz.test.ts#quiz > AC-QUIZ-18: ván nhiều người kết thúc ghi đúng 1 dòng quiz_game "
+   },
+   "AC-QUIZ-19": {
+    "status": "SKIP",
+    "test": "quiz.test.ts#quiz > AC-QUIZ-19: GET /quiz/history của U có 3 ván mới nhất trước "
+   },
+   "AC-QUIZ-20": {
+    "status": "SKIP",
+    "test": "quiz.test.ts#quiz > AC-QUIZ-20: link phòng cũ không kèm UUID trả finished với bảng ván mới nhất "
+   },
+   "AC-QUIZ-21": {
+    "status": "SKIP",
+    "test": "quiz.test.ts#quiz > AC-QUIZ-21: tác vụ dọn hằng ngày xóa ván quá 90 ngày "
+   },
+   "AC-QUIZ-22": {
+    "status": "SKIP",
+    "test": "quiz.test.ts#quiz > AC-QUIZ-22: GET /me có quiz_history; DELETE /me bỏ UUID và đổi nickname thành \"Thực khách ẩn danh\" ở các dòng của U, giữ điểm và hạng, bảng của U2 không đổi; lịch sử của U rỗng"
+   },
+   "AC-QUIZ-23": {
+    "status": "SKIP",
+    "test": "quiz.test.ts#quiz > AC-QUIZ-23: phòng chờ không ai kết nối 5 phút bị hủy: GET trả 404 và không còn dòng quiz_room"
+   },
+   "AC-QUIZ-24": {
+    "status": "SKIP",
+    "test": "quiz.test.ts#quiz > AC-QUIZ-24: chủ phòng bấm replay -> phòng về lobby "
+   },
+   "AC-QUIZ-25": {
+    "status": "SKIP",
+    "test": "quiz.test.ts#quiz > AC-QUIZ-25: JSON hỏng hoặc type lạ nhận error bad_request và socket giữ; tin lớn hơn 1 KB hoặc hơn 10 tin/giây bị đóng mã 1008 và người chơi vào lại được"
+   },
+   "AC-QUIZ-29": {
+    "status": "FAIL",
+    "test": "quiz.game-ui.test.tsx#quiz game ui: ô lựa chọn > AC-QUIZ-29: chọn ô có dấu ✓ và aria-pressed=\"true\"; bấm lại thì bỏ chọn; luật 2 ô rồi \"Chốt\" như AC-QUIZ-11"
+   },
+   "AC-QUIZ-30": {
+    "status": "FAIL",
+    "test": "quiz.game-ui.test.tsx#quiz game ui: đồng hồ dạng thanh > AC-QUIZ-30: đã chốt thì thanh vẫn chạy nhưng hiện \"Đã chốt, chờ mọi người\""
+   },
+   "AC-QUIZ-31": {
+    "status": "FAIL",
+    "test": "quiz.game-ui.test.tsx#quiz game ui: chuyển cảnh > AC-QUIZ-31: câu mới tới thì tiêu đề \"Câu i + 1 / n\" nổi bật tối đa 600 ms rồi thu về, không chặn bấm ô"
+   },
+   "AC-QUIZ-32": {
+    "status": "FAIL",
+    "test": "quiz.game-ui.test.tsx#quiz game ui: phản hồi đúng/sai và chuỗi đúng > AC-QUIZ-32: vào lại sau khi rớt mạng thì chuỗi tính lại từ 0 "
+   },
+   "AC-QUIZ-33": {
+    "status": "FAIL",
+    "test": "quiz.game-ui.test.tsx#quiz game ui: bảng điểm động > AC-QUIZ-33: tổng điểm chạy số từ giá trị cũ tới giá trị mới "
+   },
+   "AC-QUIZ-34": {
+    "status": "FAIL",
+    "test": "quiz.game-ui.test.tsx#quiz game ui: bục nhận giải > AC-QUIZ-34: pháo giấy "
+   },
+   "AC-QUIZ-35": {
+    "status": "FAIL",
+    "test": "quiz.game-ui.test.tsx#quiz game ui: phòng chờ sinh động > AC-QUIZ-35: thẻ người mới vào có hiệu ứng xuất hiện "
+   },
+   "AC-QUIZ-36": {
+    "status": "FAIL",
+    "test": "quiz.game-ui.test.tsx#quiz game ui: giảm chuyển động > AC-QUIZ-36: không bật reduced motion thì "
+   },
+   "AC-QUIZ-37": {
+    "status": "FAIL",
+    "test": "quiz.test.ts#quiz > AC-QUIZ-37: tin progress chỉ có type, q, answered, total "
+   },
+   "AC-QUIZ-38": {
+    "status": "FAIL",
+    "test": "quiz.game-ui.test.tsx#quiz game ui: mã QR trong phòng chờ "
+   },
+   "AC-QUIZ-39": {
+    "status": "FAIL",
+    "test": "quiz.game-ui.test.tsx#quiz game ui: âm thanh và rung "
+   },
+   "AC-QUIZ-TENANT": {
+    "status": "SKIP",
+    "test": "quiz.test.ts#quiz > AC-QUIZ-TENANT: người chơi B không đọc được lịch sử của A, không xóa được dòng của A, và link phòng không lộ UUID của A"
+   },
+   "AC-QUIZ-VALIDATION": {
+    "status": "SKIP",
+    "test": "quiz.test.ts#quiz > AC-QUIZ-VALIDATION: tạo phòng với số âm, số khổng lồ, kiểu sai, chuỗi dài, script, SQL, trường lạ bị từ chối 4xx "
+   },
+   "AC-QUIZ-ABUSE": {
+    "status": "SKIP",
+    "test": "quiz.test.ts#quiz > AC-QUIZ-ABUSE: trường giả danh "
+   }
+  }
+ },
+ "green": {
+  "ts": "2026-10-30T07:44:06+00:00",
+  "commit": "473b765",
   "results": {
    "AC-QUIZ-01": {
     "status": "PASS",
     "test": "quiz.ui.test.tsx#quiz ui: tab mQuiz > AC-QUIZ-01: đã đồng ý, bấm \"Tạo phòng\" gửi POST /quiz/rooms với X-Player-Id và { nickname, questions, seconds } rồi mở phòng vừa tạo"
    },
    "AC-QUIZ-02": {
-    "status": "FAIL",
-    "test": "quiz.test.ts#quiz > AC-QUIZ-02: quá 20 phòng/giờ/IP băm "
+    "status": "PASS",
+    "test": "quiz.ui.test.tsx#quiz ui: tab mQuiz > AC-QUIZ-02: máy chủ trả lỗi "
    },
    "AC-QUIZ-03": {
     "status": "PASS",
@@ -111,131 +273,49 @@
     "status": "PASS",
     "test": "quiz.ui.test.tsx#quiz ui: bảng xếp hạng chung cuộc > AC-QUIZ-28: \"Chia sẻ kết quả\" chép thẻ chữ có hạng, điểm, số câu đúng / tổng và link phòng, không có đề hay đáp án"
    },
-   "AC-QUIZ-TENANT": {
+   "AC-QUIZ-29": {
     "status": "PASS",
-    "test": "quiz.test.ts#quiz > AC-QUIZ-TENANT: người chơi B không đọc được lịch sử của A, không xóa được dòng của A, và link phòng không lộ UUID của A"
+    "test": "quiz.game-ui.test.tsx#quiz game ui: ô lựa chọn > AC-QUIZ-29: 4 ô theo thứ tự có ký hiệu ▲ ◆ ● ■ trong tên truy cập của nút và 4 lớp hiển thị khác nhau"
    },
-   "AC-QUIZ-VALIDATION": {
+   "AC-QUIZ-30": {
     "status": "PASS",
-    "test": "quiz.test.ts#quiz > AC-QUIZ-VALIDATION: tạo phòng với số âm, số khổng lồ, kiểu sai, chuỗi dài, script, SQL, trường lạ bị từ chối 4xx "
+    "test": "quiz.game-ui.test.tsx#quiz game ui: đồng hồ dạng thanh > AC-QUIZ-30: đồng hồ là thanh role=\"progressbar\" ngắn dần theo thời gian còn lại, có số giây còn lại bằng chữ"
    },
-   "AC-QUIZ-ABUSE": {
+   "AC-QUIZ-31": {
     "status": "PASS",
-    "test": "quiz.test.ts#quiz > AC-QUIZ-ABUSE: trường giả danh "
-   }
-  }
- },
- "green": {
-  "ts": "2026-10-30T03:10:50+00:00",
-  "commit": "873f4e7",
-  "results": {
-   "AC-QUIZ-01": {
-    "status": "PASS",
-    "test": "quiz.ui.test.tsx#quiz ui: tab mQuiz > AC-QUIZ-01: đã đồng ý, bấm \"Tạo phòng\" gửi POST /quiz/rooms với X-Player-Id và { nickname, questions, seconds } rồi mở phòng vừa tạo"
+    "test": "quiz.game-ui.test.tsx#quiz game ui: chuyển cảnh > AC-QUIZ-31: màn lộ đáp án có thanh đếm ngược 4 s ghi \"Câu kế tiếp\""
    },
-   "AC-QUIZ-02": {
+   "AC-QUIZ-32": {
     "status": "PASS",
-    "test": "quiz.ui.test.tsx#quiz ui: tab mQuiz > AC-QUIZ-02: máy chủ trả lỗi "
+    "test": "quiz.game-ui.test.tsx#quiz game ui: phản hồi đúng/sai và chuỗi đúng > AC-QUIZ-32: đúng thì dải role=\"status\" \"Chuẩn! +750\"; hai câu đúng liên tiếp thì \"Chuẩn! +900\" kèm \"🔥 2 câu liên tiếp\"; đúng một nửa \"Trượt rồi\" và chuỗi về 0; không nộp \"Hết giờ\""
    },
-   "AC-QUIZ-03": {
+   "AC-QUIZ-33": {
     "status": "PASS",
-    "test": "quiz.ui.test.tsx#quiz ui: mở link phòng > AC-QUIZ-03: mã không tồn tại "
+    "test": "quiz.game-ui.test.tsx#quiz game ui: bảng điểm động > AC-QUIZ-33: dòng lên hạng có \"▲ 2\", dòng xuống hạng có \"▼ 1\", dòng không đổi hạng không có mũi tên; thứ tự theo hạng mới"
    },
-   "AC-QUIZ-04": {
+   "AC-QUIZ-34": {
     "status": "PASS",
-    "test": "quiz.ui.test.tsx#quiz ui: phòng chờ > AC-QUIZ-04: nhập nickname, \"Vào phòng\" mở WebSocket của phòng và gửi join { uuid, nickname }; lobby hiện danh sách người chơi"
+    "test": "quiz.game-ui.test.tsx#quiz game ui: bục nhận giải > AC-QUIZ-34: 5 người, 3 hạng đầu đứng trên bục theo thứ tự trái sang phải hạng 2, hạng 1, hạng 3, mỗi bậc có huy chương, nickname và điểm; bên dưới là bảng đầy đủ"
    },
-   "AC-QUIZ-05": {
+   "AC-QUIZ-35": {
     "status": "PASS",
-    "test": "quiz.test.ts#quiz > AC-QUIZ-05: join sai nickname -> nickname_rejected và socket giữ để nhập lại; UUID sai -> bad_request, chưa đồng ý -> consent_required, tin khác trước join -> not_joined "
+    "test": "quiz.game-ui.test.tsx#quiz game ui: phòng chờ sinh động > AC-QUIZ-35: mã phòng hiện, dòng đếm \"2 người đã vào\" rồi \"3 người đã vào\" khi người thứ 3 vào; chủ phòng có nút \"Bắt đầu\""
    },
-   "AC-QUIZ-06": {
+   "AC-QUIZ-36": {
     "status": "PASS",
-    "test": "quiz.ui.test.tsx#quiz ui: mở link phòng > AC-QUIZ-06: phòng đang chơi mà mình chưa từng vào hiện \"Phòng đã bắt đầu\""
+    "test": "quiz.game-ui.test.tsx#quiz game ui: giảm chuyển động > AC-QUIZ-36: với prefers-reduced-motion: reduce, cả ván không có pháo giấy, hiệu ứng xuất hiện, tiêu đề nổi bật, và số điểm hiện ngay; mọi thông tin vẫn đủ"
    },
-   "AC-QUIZ-07": {
+   "AC-QUIZ-37": {
     "status": "PASS",
-    "test": "quiz.ui.test.tsx#quiz ui: phòng chờ > AC-QUIZ-07: chỉ chủ phòng thấy nút \"Bắt đầu\" "
+    "test": "quiz.game-ui.test.tsx#quiz game ui: đếm người đã chốt > AC-QUIZ-37: nhận progress { q, answered: 3, total: 5 } thì hiện \"3/5 người đã chốt\", cập nhật khi có tin mới"
    },
-   "AC-QUIZ-08": {
+   "AC-QUIZ-38": {
     "status": "PASS",
-    "test": "quiz.test.ts#quiz > AC-QUIZ-08: đề trong gói chơi một mình có 10 câu khó dần, đích khác nhau và khác Món đặc biệt, độ sâu 1..5, 4 lựa chọn khác nhau với đúng một cặp là công thức"
+    "test": "quiz.game-ui.test.tsx#quiz game ui: mã QR trong phòng chờ "
    },
-   "AC-QUIZ-09": {
+   "AC-QUIZ-39": {
     "status": "PASS",
-    "test": "quiz.test.ts#quiz > AC-QUIZ-09: pool 12 meme đề mà phòng xin 15 câu thì ván có 12 câu và tin started báo total 12"
-   },
-   "AC-QUIZ-10": {
-    "status": "PASS",
-    "test": "quiz.ui.test.tsx#quiz ui: câu hỏi, nộp bài, đáp án > AC-QUIZ-10: màn câu hỏi hiện meme đề, 4 lựa chọn, số câu và đồng hồ đếm theo deadline - server_now "
-   },
-   "AC-QUIZ-11": {
-    "status": "PASS",
-    "test": "quiz.ui.test.tsx#quiz ui: câu hỏi, nộp bài, đáp án > AC-QUIZ-11: \"Chốt\" bị khóa tới khi chọn đủ 2 ô; bấm gửi answer { q, picks } "
-   },
-   "AC-QUIZ-12": {
-    "status": "PASS",
-    "test": "quiz.test.ts#quiz > AC-QUIZ-12: nộp đúng ngay được điểm cao "
-   },
-   "AC-QUIZ-13": {
-    "status": "PASS",
-    "test": "quiz.ui.test.tsx#quiz ui: câu hỏi, nộp bài, đáp án > AC-QUIZ-13: reveal tô đúng 2 ô đúng "
-   },
-   "AC-QUIZ-14": {
-    "status": "PASS",
-    "test": "quiz.ui.test.tsx#quiz ui: câu hỏi, nộp bài, đáp án > AC-QUIZ-14: bảng điểm hiện top 10 và dòng của tôi "
-   },
-   "AC-QUIZ-15": {
-    "status": "PASS",
-    "test": "quiz.ui.test.tsx#quiz ui: bảng xếp hạng chung cuộc > AC-QUIZ-15: final hiện 🥇🥈🥉 cho 3 hạng đầu, tô dòng của mình; người chơi thường không có nút \"Chơi lại\""
-   },
-   "AC-QUIZ-16": {
-    "status": "PASS",
-    "test": "quiz.test.ts#quiz > AC-QUIZ-16: người rớt mạng ở câu 3 vào lại ở câu 4 với cùng UUID nhận câu 4 với deadline gốc, điểm đã có, câu 3 tính 0, nickname và hạng giữ nguyên"
-   },
-   "AC-QUIZ-17": {
-    "status": "PASS",
-    "test": "quiz.ui.test.tsx#quiz ui: chơi một mình > AC-QUIZ-17: nhận solo_pack thì client tự chấm và tự đếm giờ "
-   },
-   "AC-QUIZ-18": {
-    "status": "PASS",
-    "test": "quiz.test.ts#quiz > AC-QUIZ-18: ván nhiều người kết thúc ghi đúng 1 dòng quiz_game "
-   },
-   "AC-QUIZ-19": {
-    "status": "PASS",
-    "test": "quiz.ui.test.tsx#quiz ui: lịch sử mQuiz > AC-QUIZ-19: ván của tôi hiện nickname, điểm, hạng; bấm một ván mở bảng chung cuộc của phòng đó"
-   },
-   "AC-QUIZ-20": {
-    "status": "PASS",
-    "test": "quiz.ui.test.tsx#quiz ui: mở link phòng > AC-QUIZ-20: phòng đã kết thúc hiện bảng chung cuộc của ván mới nhất "
-   },
-   "AC-QUIZ-21": {
-    "status": "PASS",
-    "test": "quiz.test.ts#quiz > AC-QUIZ-21: tác vụ dọn hằng ngày xóa ván quá 90 ngày "
-   },
-   "AC-QUIZ-22": {
-    "status": "PASS",
-    "test": "quiz.test.ts#quiz > AC-QUIZ-22: GET /me có quiz_history; DELETE /me bỏ UUID và đổi nickname thành \"Thực khách ẩn danh\" ở các dòng của U, giữ điểm và hạng, bảng của U2 không đổi; lịch sử của U rỗng"
-   },
-   "AC-QUIZ-23": {
-    "status": "PASS",
-    "test": "quiz.test.ts#quiz > AC-QUIZ-23: phòng chờ không ai kết nối 5 phút bị hủy: GET trả 404 và không còn dòng quiz_room"
-   },
-   "AC-QUIZ-24": {
-    "status": "PASS",
-    "test": "quiz.test.ts#quiz > AC-QUIZ-24: chủ phòng bấm replay -> phòng về lobby "
-   },
-   "AC-QUIZ-25": {
-    "status": "PASS",
-    "test": "quiz.test.ts#quiz > AC-QUIZ-25: JSON hỏng hoặc type lạ nhận error bad_request và socket giữ; tin lớn hơn 1 KB hoặc hơn 10 tin/giây bị đóng mã 1008 và người chơi vào lại được"
-   },
-   "AC-QUIZ-26": {
-    "status": "PASS",
-    "test": "quiz.ui.test.tsx#quiz ui: tab mQuiz > AC-QUIZ-26: tab có nút \"Tạo phòng\", chọn số câu 5/10/15 "
-   },
-   "AC-QUIZ-28": {
-    "status": "PASS",
-    "test": "quiz.ui.test.tsx#quiz ui: bảng xếp hạng chung cuộc > AC-QUIZ-28: \"Chia sẻ kết quả\" chép thẻ chữ có hạng, điểm, số câu đúng / tổng và link phòng, không có đề hay đáp án"
+    "test": "quiz.game-ui.test.tsx#quiz game ui: âm thanh và rung "
    },
    "AC-QUIZ-TENANT": {
     "status": "PASS",

@@ -40,6 +40,7 @@ from lau_meme_pipeline.invariants import InvariantError, check_all, miss_rate_wa
 from lau_meme_pipeline.links import TIMEOUT_SECONDS as LINK_TIMEOUT_SECONDS
 from lau_meme_pipeline.links import fetch_link, https_get, resolve_host
 from lau_meme_pipeline.moderation import QUOTA_LABEL, ModLists
+from lau_meme_pipeline.rejected import applied_revs, apply_edits, edited_texts
 from lau_meme_pipeline.seed import ACTIVE, ContentStore, load_core
 from lau_meme_pipeline.text import fold
 from lau_meme_pipeline.tier import apply_tiers, auto_tiers, invalid_tiers, tier_report
@@ -175,7 +176,12 @@ def _pick_daily(store: ContentStore, core: Mapping, state: Mapping, version: int
     return build_daily_block(pick.chosen, pick.chosen["hint"]), pick.exhausted
 
 
-def _content(store: ContentStore, daily_id: str, blocked_images: frozenset[str] = frozenset()) -> dict:
+def _content(
+    store: ContentStore,
+    daily_id: str,
+    blocked_images: frozenset[str] = frozenset(),
+    texts: Mapping[str, Mapping] | None = None,
+) -> dict:
     auto = auto_tiers(store, blocked_images)  # AC-TIER-04: sent for every element, admin-tiered ones too
     elements = [store.elements[k] for k in sorted(store.elements) if store.elements[k].status == ACTIVE]
     active = {e.id for e in elements}
@@ -189,6 +195,7 @@ def _content(store: ContentStore, daily_id: str, blocked_images: frozenset[str] 
             {"id": e.id, "name": e.name, "fold": e.fold, "emoji": e.emoji, "depth": e.depth, "origin": e.origin}
             | ({"image_key": e.image_key} if e.image_key else {})
             | {"auto_tier": auto[e.id]}
+            | dict((texts or {}).get(e.id, {}))  # description and hints for the admin "Nội dung" form (AC-ADMIN-16)
             for e in elements
         ],
         "recipes": [{"id": r.id, "a": r.a, "b": r.b, "result": r.result} for r in recipes],
@@ -555,6 +562,7 @@ def run_batch(
     tier_lines: list[str] = []
     source_warnings: list[str] = []
     links_failed: dict[str, int] = {}
+    admin: dict = {}  # ADR 0022: rejected, rejected_added, element_edits_applied of the publish body
     step = "state"
     try:
         if mode not in ("core", "full"):
@@ -604,6 +612,10 @@ def run_batch(
                 trend_peaks=_trend_peaks(state),
                 schedule_hours_utc=hours,
                 feedback=state.get("feedback", []),
+                unblocked=state.get("unblocked", []),
+                manual_approvals=state.get("manual_approvals", []),
+                element_edits=state.get("element_edits", []),
+                element_aliases=state.get("element_aliases", []),
             )
             store = full.content
             graph, manifest, store_out = full.graph, full.manifest, full.store
@@ -630,7 +642,14 @@ def run_batch(
                 stats["daily_pool_exhausted"] = True
             if full.report.get("daily_pin"):
                 stats["daily_pin"] = full.report["daily_pin"]
-            content = _content(store, full.daily_element_id, _blocked_images(state))
+            content = _content(store, full.daily_element_id, _blocked_images(state), full.texts)
+            admin = {
+                "rejected": full.rejected,
+                "rejected_added": full.rejected_added,
+                "element_edits_applied": applied_revs(store, state.get("element_edits", [])),
+            }
+            if full.rejected_added:
+                stats["unblocked_added"] = len(full.rejected_added)
             if art_report is not None:
                 stats["images"] = {k: int(art_report.get(k, 0)) for k in ("drawn", "fallback", "pending")}
             stats["without_image"] = sum(1 for e in content["elements"] if not e.get("image_key"))
@@ -650,15 +669,26 @@ def run_batch(
                 first_versions=_first_versions(state),
                 blocked=frozenset(state["blocklist"]["elements"]),
             )
-            store = joined.store
-            if joined.waiting:
-                stats["contributions_waiting"] = joined.waiting
+            # "Duyệt luôn" (AC-ADMIN-15): joined like a contribution, without the moderation lists
+            manual = state.get("manual_approvals", [])
+            by_hand = add_contributions(
+                joined.store,
+                manual,
+                version=version,
+                first_versions=_first_versions(state),
+                blocked=frozenset(state["blocklist"]["elements"]),
+            )
+            store = by_hand.store
+            if joined.waiting + by_hand.waiting:
+                stats["contributions_waiting"] = joined.waiting + by_hand.waiting
             drawings = _admin_images(state)
             store = apply_images(store, {eid: key for eid, key in drawings.items() if eid in store.elements})
             # before the tiers: hiding a recipe may change a depth, and the default tier follows the depth
             voted = apply_feedback(store, state.get("feedback", []))
             feedback_lines = feedback_report(voted, store, state.get("feedback", []))
             store = apply_tiers(voted.store, state.get("tiers", []), _blocked_images(state))
+            edits = state.get("element_edits", [])
+            store = apply_edits(store, edits)  # AC-ADMIN-16, every batch
             step = "daily"
             pin = state.get("daily_pin")
             daily = pinned_daily(
@@ -676,12 +706,21 @@ def run_batch(
             manifest = build_manifest(
                 store, version=version, batch_at=batch_at, daily=daily, previous_version=None, schedule_hours_utc=hours
             )
-            content = _content(store, daily["element_id"], _blocked_images(state))
+            texts = edited_texts({m["element_id"]: m for m in manual}, edits)
+            content = _content(store, daily["element_id"], _blocked_images(state), texts)
+            admin = {"element_edits_applied": applied_revs(store, edits)}
             tier_lines = feedback_lines + tier_report(store, state.get("tiers", []), _blocked_images(state))
             step = "check"
             _check(store, graph, content)
             step = "invariants"
-            check_all(graph, manifest, store, _mod_lists(state, banned_words), pinned=stats.get("daily_pin") == "used")
+            check_all(
+                graph,
+                manifest,
+                store,
+                _mod_lists(state, banned_words),
+                pinned=stats.get("daily_pin") == "used",
+                exempt=frozenset(m["element_id"] for m in manual),
+            )
             miss = _miss_rate(graph, manifest["starters"], log)
         step = "banned"
         terms = banned_terms(banned_words)
@@ -708,6 +747,7 @@ def run_batch(
             body["store"] = store_out
         if state.get("daily_pin") is not None:  # used or dropped, the Worker clears this pin (ADR 0019)
             body["daily_pin_id"] = state["daily_pin"]["id"]
+        body |= {k: v for k, v in admin.items() if v}  # only what there is, so a plain batch keeps its shape
         stats["quota_used"] = counted.used(llm if mode == "full" else None)
         run_id = client.post_batch(body).get("id")
         _send_aliases(client, state, new_aliases, log)

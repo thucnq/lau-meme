@@ -165,3 +165,45 @@ export const approveContribution = (token: string, id: string, image_hint: strin
 
 export const rejectContribution = (token: string, id: string, reason: string) =>
   call<ContributionItem>(token, `contributions/${id}/reject`, { method: 'POST', body: { reason } })
+
+/** "Bị chặn" (AC-ADMIN-13..15, ADR 0022): a concept the pipeline blocked at moderation. */
+export type RejectedStatus = 'blocked' | 'unblocked' | 'added' | 'approved'
+export type RejectedItem = {
+  id: string
+  name: string
+  emoji: string | null
+  description: string | null
+  daily_hint: string | null
+  image_hint: string | null
+  source_name: string
+  source_url: string | null
+  context: string | null
+  reasons: { code: string; label: string }[]
+  step: 'layer1' | 'layer2'
+  status: RejectedStatus
+  seen_count: number
+  first_seen_at: string
+  last_seen_at: string
+  element_id: string | null
+  a: string | null
+  b: string | null
+  tier: number | null
+}
+export type RejectedText = Partial<Record<'name' | 'emoji' | 'description' | 'daily_hint' | 'image_hint', string | null>>
+export type RejectedApproval = { a: string; b: string; name: string; emoji: string; description?: string; daily_hint?: string; image_hint?: string }
+
+export const getRejected = (token: string, id: string) => call<RejectedItem>(token, `rejected/${id}`)
+export const editRejected = (token: string, id: string, body: RejectedText) =>
+  call<RejectedItem>(token, `rejected/${id}`, { method: 'PATCH', body })
+export const unblockRejected = (token: string, id: string) => call<RejectedItem>(token, `rejected/${id}/unblock`, { method: 'POST', body: {} })
+export const approveRejected = (token: string, id: string, body: RejectedApproval) =>
+  call<RejectedItem>(token, `rejected/${id}/approve`, { method: 'POST', body })
+
+/** A live element as the "Nội dung" form edits it (AC-ADMIN-16): `edit` holds only the fields the admin changed. */
+export type ElementText = { name: string; emoji: string; description: string | null; daily_hint: string | null; image_hint: string | null; origin: 'vn' | 'intl' | null }
+export type ElementEdit = Partial<{ [K in keyof ElementText]: ElementText[K] | null }>
+export type ElementDetail = { id: string; published: ElementText; edit: ElementEdit | null; pending: boolean; aliases: string[] }
+
+export const getElement = (token: string, id: string) => call<ElementDetail>(token, `elements/${id}`)
+export const editElement = (token: string, id: string, body: ElementEdit) =>
+  call<ElementDetail>(token, `elements/${id}`, { method: 'PATCH', body })

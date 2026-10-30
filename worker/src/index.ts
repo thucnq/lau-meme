@@ -2,6 +2,7 @@ import { hasBearer } from './auth'
 import { adminOnly, listAudit, listBatches, listElements, listRecipes, listReports, moderate, setElementTier } from './features/admin/admin'
 import { clearDailyPin, getDailyPin, setDailyPin } from './features/admin/daily-pin'
 import { setElementImage } from './features/admin/image'
+import { approveRejected, editElement, editRejected, getElement, getRejected, listRejected, unblockRejected } from './features/admin/rejected'
 import { getGraph, getImage, getManifest } from './features/content/content'
 import {
   adminApproveContribution,
@@ -98,6 +99,7 @@ const routes: Route[] = [
 const adminRoutes: Route[] = [
   { pattern: /^\/api\/admin\/reports$/, methods: { GET: adminOnly(listReports) } },
   { pattern: /^\/api\/admin\/elements$/, methods: { GET: adminOnly(listElements) } },
+  { pattern: /^\/api\/admin\/elements\/([^/]+)$/, methods: { GET: adminOnly(getElement), PATCH: adminOnly(editElement) } },
   { pattern: /^\/api\/admin\/elements\/([^/]+)\/tier$/, methods: { PUT: adminOnly(setElementTier) } },
   { pattern: /^\/api\/admin\/elements\/([^/]+)\/image$/, methods: { PUT: adminOnly(setElementImage) } },
   { pattern: /^\/api\/admin\/recipes$/, methods: { GET: adminOnly(listRecipes) } },
@@ -105,6 +107,11 @@ const adminRoutes: Route[] = [
   { pattern: /^\/api\/admin\/moderation$/, methods: { POST: adminOnly(moderate) } },
   { pattern: /^\/api\/admin\/batches$/, methods: { GET: adminOnly(listBatches) } },
   { pattern: /^\/api\/admin\/audit$/, methods: { GET: adminOnly(listAudit) } },
+  // "Bị chặn" (ADR 0022)
+  { pattern: /^\/api\/admin\/rejected$/, methods: { GET: adminOnly(listRejected) } },
+  { pattern: /^\/api\/admin\/rejected\/([^/]+)$/, methods: { GET: adminOnly(getRejected), PATCH: adminOnly(editRejected) } },
+  { pattern: /^\/api\/admin\/rejected\/([^/]+)\/unblock$/, methods: { POST: adminOnly(unblockRejected) } },
+  { pattern: /^\/api\/admin\/rejected\/([^/]+)\/approve$/, methods: { POST: adminOnly(approveRejected) } },
   { pattern: /^\/api\/admin\/contributions$/, methods: { GET: adminOnly(adminListContributions) } },
   { pattern: /^\/api\/admin\/contributions\/([^/]+)$/, methods: { PATCH: adminOnly(adminEditContribution) } },
   { pattern: /^\/api\/admin\/contributions\/([^/]+)\/approve$/, methods: { POST: adminOnly(adminApproveContribution) } },

@@ -1,53 +1,21 @@
 {
  "red": {
-  "ts": "2026-10-20T06:41:23+00:00",
-  "commit": "3287e07",
+  "ts": "2026-10-30T08:29:14+00:00",
+  "commit": "ec229fa",
   "results": {
-   "AC-MOD-01": {
+   "AC-MOD-11": {
     "status": "FAIL",
-    "test": "(không biên dịch)"
+    "test": "admin-rejected.test.ts#rejected concepts + element edit "
    },
-   "AC-MOD-02": {
-    "status": "FAIL",
-    "test": "(không biên dịch)"
-   },
-   "AC-MOD-03": {
-    "status": "FAIL",
-    "test": "(không biên dịch)"
-   },
-   "AC-MOD-04": {
-    "status": "FAIL",
-    "test": "(không biên dịch)"
-   },
-   "AC-MOD-05": {
-    "status": "FAIL",
-    "test": "(không biên dịch)"
-   },
-   "AC-MOD-06": {
-    "status": "FAIL",
-    "test": "(không biên dịch)"
-   },
-   "AC-MOD-07": {
-    "status": "FAIL",
-    "test": "(không biên dịch)"
-   },
-   "AC-MOD-08": {
-    "status": "FAIL",
-    "test": "(không biên dịch)"
-   },
-   "AC-MOD-09": {
-    "status": "FAIL",
-    "test": "(không biên dịch)"
-   },
-   "AC-MOD-10": {
-    "status": "FAIL",
-    "test": "(không biên dịch)"
+   "AC-MOD-VALIDATION": {
+    "status": "PASS",
+    "test": "admin-rejected.test.ts#rejected concepts + element edit "
    }
   }
  },
  "green": {
-  "ts": "2026-10-20T06:47:38+00:00",
-  "commit": "0fee7f6",
+  "ts": "2026-10-30T09:13:20+00:00",
+  "commit": "ec229fa",
   "results": {
    "AC-MOD-01": {
     "status": "PASS",
@@ -88,6 +56,14 @@
    "AC-MOD-10": {
     "status": "PASS",
     "test": "test_mod#test_ac_mod_10_ten_bi_quan_tri_chan_khong_quay_lai"
+   },
+   "AC-MOD-11": {
+    "status": "PASS",
+    "test": "test_mod_rejected#test_ac_mod_11_khai_niem_bi_chan_duoc_gui_lai_trong_rejected_day_du_lop_va_ly_do"
+   },
+   "AC-MOD-VALIDATION": {
+    "status": "PASS",
+    "test": "admin-rejected.test.ts#rejected concepts + element edit "
    }
   }
  }

@@ -7,7 +7,7 @@
  *   web/src/admin/AdminApp.tsx: export { AdminApp } (không prop). Không có token trong sessionStorage ('laumeme-admin.token')
  *     thì hiện form: ô mật khẩu "Token quản trị" + nút "Đăng nhập"; gửi form gọi GET /api/admin/reports?status=new
  *     với Authorization: Bearer <token>; 401 -> role="alert" "Token không đúng"; 200 -> lưu token vào sessionStorage
- *     và hiện 5 tab (role="tab"): "Báo cáo", "Nội dung", "Đợt + Audit", "Đề xuất meme", "Món đặc biệt". Không dùng localStorage hay cookie.
+ *     và hiện 6 tab (role="tab"): "Báo cáo", "Nội dung", "Đợt + Audit", "Đề xuất meme", "Món đặc biệt", "Bị chặn". Không dùng localStorage hay cookie.
  *   web/admin.html: có <meta name="robots" content="noindex, nofollow">
  */
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
@@ -90,16 +90,16 @@ describe('admin ui', () => {
     noWebStorage()
   })
 
-  it('AC-ADMIN-10: token đúng lưu vào sessionStorage (khóa laumeme-admin.token), hiện 5 mục Báo cáo / Nội dung / Đợt + Audit / Đề xuất meme / Món đặc biệt, không dùng localStorage hay cookie', async () => {
+  it('AC-ADMIN-10: token đúng lưu vào sessionStorage (khóa laumeme-admin.token), hiện 6 mục Báo cáo / Nội dung / Đợt + Audit / Đề xuất meme / Món đặc biệt / Bị chặn, không dùng localStorage hay cookie', async () => {
     render(<AdminApp />)
     submit(GOOD)
-    await waitFor(() => expect(screen.getAllByRole('tab')).toHaveLength(5))
+    await waitFor(() => expect(screen.getAllByRole('tab')).toHaveLength(6))
     expect(
       screen
         .getAllByRole('tab')
         .map((t) => t.textContent?.trim())
         .sort(),
-    ).toEqual(['Báo cáo', 'Nội dung', 'Đợt + Audit', 'Đề xuất meme', 'Món đặc biệt'].sort())
+    ).toEqual(['Báo cáo', 'Nội dung', 'Đợt + Audit', 'Đề xuất meme', 'Món đặc biệt', 'Bị chặn'].sort())
     expect(sessionStorage.getItem(KEY)).toBe(GOOD)
     expect(screen.queryByLabelText('Token quản trị')).toBeNull()
     expect(screen.queryByRole('alert')).toBeNull()
@@ -109,14 +109,14 @@ describe('admin ui', () => {
     noWebStorage()
   })
 
-  it('AC-ADMIN-10: tải lại tab (token còn trong sessionStorage) vào thẳng 5 mục (Báo cáo / Nội dung / Đợt + Audit / Đề xuất meme / Món đặc biệt), không hiện form', async () => {
+  it('AC-ADMIN-10: tải lại tab (token còn trong sessionStorage) vào thẳng 6 mục (Báo cáo / Nội dung / Đợt + Audit / Đề xuất meme / Món đặc biệt / Bị chặn), không hiện form', async () => {
     const first = render(<AdminApp />)
     submit(GOOD)
-    await waitFor(() => expect(screen.getAllByRole('tab')).toHaveLength(5))
+    await waitFor(() => expect(screen.getAllByRole('tab')).toHaveLength(6))
     first.unmount()
 
     render(<AdminApp />)
-    await waitFor(() => expect(screen.getAllByRole('tab')).toHaveLength(5))
+    await waitFor(() => expect(screen.getAllByRole('tab')).toHaveLength(6))
     expect(screen.queryByLabelText('Token quản trị')).toBeNull()
     expect(sessionStorage.getItem(KEY)).toBe(GOOD)
     noWebStorage()
@@ -125,7 +125,7 @@ describe('admin ui', () => {
   it('AC-ADMIN-10: đóng tab rồi mở lại (sessionStorage mất) thì hiện lại form đăng nhập', async () => {
     const first = render(<AdminApp />)
     submit(GOOD)
-    await waitFor(() => expect(screen.getAllByRole('tab')).toHaveLength(5))
+    await waitFor(() => expect(screen.getAllByRole('tab')).toHaveLength(6))
     first.unmount()
 
     sessionStorage.clear()

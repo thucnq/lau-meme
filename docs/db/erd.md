@@ -1,6 +1,6 @@
 # ERD - D1 (SQLite)
 
-> Nguồn: `worker/migrations/0001..0011`. Id phần tử/công thức là băm (ADR 0002). Thời gian `INTEGER` epoch ms UTC.
+> Nguồn: `worker/migrations/0001..0012`. Id phần tử/công thức là băm (ADR 0002). Thời gian `INTEGER` epoch ms UTC.
 > Không có khóa ngoại từ dữ liệu người chơi sang `element`/`recipe`: nội dung đổi theo version, bảng người chơi chỉ giữ id.
 
 ```mermaid
@@ -25,6 +25,9 @@ erDiagram
     INTEGER trend_peak "AC-PIPE-16"
     INTEGER auto_tier "AC-TIER-04, theo độ sâu"
     TEXT image_source "ai | admin"
+    TEXT description "mẻ gần nhất, AC-ADMIN-16"
+    TEXT daily_hint
+    TEXT image_hint
   }
   element_tier {
     TEXT element_id PK
@@ -271,6 +274,62 @@ erDiagram
     INTEGER found_at "lần ghi đầu tiên được nhận"
   }
 
+  rejected_concept {
+    TEXT id PK "ADR 0022"
+    TEXT name
+    TEXT name_fold UK
+    TEXT emoji
+    TEXT description
+    TEXT daily_hint
+    TEXT image_hint
+    TEXT source_name
+    TEXT source_url
+    TEXT context "<= 500"
+    TEXT reasons_json "[{code, label}]"
+    TEXT step "layer1 | layer2"
+    TEXT status "blocked | unblocked | added | approved"
+    INTEGER seen_count
+    TEXT first_batch_id
+    TEXT last_batch_id
+    INTEGER first_seen_at
+    INTEGER last_seen_at "xóa sau 90 ngày"
+    INTEGER edited_at
+    INTEGER decided_at
+    TEXT element_id
+    TEXT a_id "Duyệt luôn"
+    TEXT b_id
+    INTEGER tier
+    INTEGER updated_at
+  }
+  element_edit {
+    TEXT element_id PK "AC-ADMIN-16"
+    TEXT name
+    TEXT name_fold UK
+    TEXT emoji
+    TEXT description
+    TEXT daily_hint
+    TEXT image_hint
+    TEXT origin
+    INTEGER rev
+    INTEGER applied_rev "< rev: Chờ mẻ kế tiếp"
+    INTEGER updated_at
+  }
+  element_alias {
+    TEXT fold PK "tên cũ sau khi đổi tên"
+    TEXT element_id
+    INTEGER created_at
+  }
+  content_change {
+    TEXT id PK
+    TEXT action "edit_rejected | unblock_rejected | approve_rejected | edit_element"
+    TEXT target_kind "rejected | element"
+    TEXT target_id
+    TEXT before_json
+    TEXT after_json
+    TEXT token_fp
+    INTEGER created_at
+  }
+
   quiz_room {
     TEXT code PK "6 ký tự, ADR 0021"
     INTEGER created_at
@@ -320,6 +379,9 @@ erDiagram
   report_target ||--o{ report : "kind, target_id, cycle"
   element ||--o| block : "kind = element | image"
   recipe ||--o| block : "kind = recipe"
+  element ||--o| element_edit : "element_id"
+  element ||--o{ element_alias : "element_id"
+  rejected_concept |o--o| element : "element_id (added | approved)"
   quiz_room ||--o{ quiz_game : "room_code (CASCADE)"
   quiz_game ||--|{ quiz_player : "game_id (CASCADE)"
   player ||--o{ quiz_player : "player_id (SET NULL khi xóa dữ liệu)"
@@ -329,6 +391,7 @@ erDiagram
 - Dữ liệu cá nhân: `player`, `consent`, `discovery.player_id`, `daily_result`, `streak`, `report.player_id`, `vote`, `event` (BRD 5.2). Xóa theo UUID: AC-PRIV-05.
 - Tài khoản Google (ADR 0010): `account`, `account_player`, `session`, `daily_entry`, `account_streak`, `account_element` (Đĩa của tài khoản - ADR 0015); xóa `account` thì `ON DELETE CASCADE` xóa phần còn lại (AC-AUTH-06). Kết quả Daily, streak và nickname trên bảng xếp hạng thuộc tài khoản; `daily_result`/`streak` theo UUID cũ không còn được ghi.
 - Đóng góp meme (ADR 0013): `contribution` gắn tài khoản là dữ liệu cá nhân; xóa tài khoản xóa đề xuất chờ duyệt, phần còn lại `SET NULL`, và nickname trong `batch_content.creators_json` thành `null`. Tier admin gán (`element_tier`), tier tự động (`element.auto_tier`, pipeline tính - ADR 0016) và mức mặn (`element.trend_peak`) là dữ liệu nội dung, pipeline đọc qua `/pipeline/state`.
-- Giữ dữ liệu (Cron Trigger hằng ngày, ADR 0004): `event` 90 ngày; `consent.ip_hash` 7 ngày; `admin_audit`, `admin_change`, `admin_image_change` và `daily_pin_change` 12 tháng; `consent` 1 năm sau dòng `erase`; `session` hết hạn (90 ngày không dùng); `batch_content` và `pipeline_store` 14 version mới nhất.
+- Giữ dữ liệu (Cron Trigger hằng ngày, ADR 0004): `event` 90 ngày; `consent.ip_hash` 7 ngày; `admin_audit`, `admin_change`, `admin_image_change`, `daily_pin_change` và `content_change` 12 tháng; `rejected_concept` 90 ngày sau lần gặp cuối (AC-ADMIN-17); `consent` 1 năm sau dòng `erase`; `session` hết hạn (90 ngày không dùng); `batch_content` và `pipeline_store` 14 version mới nhất.
 - Chỉ định Món đặc biệt (AC-DAILY-19, ADR 0019): `daily_pin` giữ tối đa một chỉ định cho mẻ kế tiếp; mẻ đăng thành công gửi lại `id` của chỉ định đã đọc và Worker xóa đúng dòng đó. `daily_pin_change` là audit đặt/bỏ.
 - mQuiz (ADR 0021): phòng đang chơi chỉ nằm trong Durable Object `QuizRoom`; D1 giữ sổ mã phòng `quiz_room` và lịch sử ván nhiều người `quiz_game`/`quiz_player` (dữ liệu cá nhân: `quiz_player.player_id`, `nickname`). Dọn hằng ngày: ván có `finished_at` cũ hơn 90 ngày, rồi `quiz_room` đã đóng không còn ván (AC-QUIZ-21). Xóa dữ liệu: `player_id = NULL`, nickname "Thực khách ẩn danh" (AC-QUIZ-22).
+- Bị chặn và sửa phần tử (ADR 0022): `rejected_concept` giữ khái niệm pipeline chặn ở kiểm duyệt (nội dung meme công khai, có thể nêu tên người thật - chỉ API quản trị đọc). `element_edit` là bản sửa của admin, pipeline áp ở mọi mẻ; `element_alias` giữ tên cũ khi đổi tên (id không đổi). `content_change` là audit của các thao tác này.
