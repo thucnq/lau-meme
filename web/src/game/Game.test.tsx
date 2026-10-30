@@ -361,14 +361,16 @@ describe('Game', () => {
   // ============================================================== AC-GAME-05
   it('AC-GAME-05: cùng một câu Nồi trào cho (A,B), (B,A) và sau khi tải lại; A và B trở lại bàn', async () => {
     await installNet({ specs: [{ a: 'Cay', b: 'Cười', name: 'Tới Công Chuyện' }] })
-    seed()
+    // Tới Công Chuyện đã có trong Đĩa: không còn công thức chưa khám phá, nên lần trượt thứ 3 liên tiếp
+    // vẫn hiện câu Nồi trào (AC-GAME-06) và AC-GAME-05 kiểm tra được cả 3 lần.
+    seed((p) => p.items.push(item('Tới Công Chuyện', '🍲', 1, 7, '2026-10-01T00:00:00.000Z')))
     await mountReady()
 
     await potCombine('Cay', 'Deadline')
     const l1 = (await screen.findByTestId('miss-line')).textContent ?? ''
     expect(MISS_LINES.some((m) => l1.includes(m))).toBe(true)
     expect(tableNames()).toEqual(expect.arrayContaining(['Cay', 'Deadline']))
-    expect(plateItems()).toHaveLength(4)
+    expect(plateItems()).toHaveLength(5) // 4 phần tử khởi đầu + Tới Công Chuyện đã seed; trượt không thêm gì
 
     cleanup()
     await mountReady()
@@ -384,26 +386,144 @@ describe('Game', () => {
   })
 
   // ============================================================== AC-GAME-06
-  it('AC-GAME-06: lần trượt thứ 3 hiện thêm gợi ý "Thử <emoji> <tên> xem" cùng câu Nồi trào', async () => {
+  // Hợp đồng DOM của AC-GAME-06 (cập nhật 2026-10-30): thẻ A và B (cả data-testid="table-item" và
+  // "plate-item") có thuộc tính data-hint-glow="pulse" (nháy chậm) hoặc "static" (prefers-reduced-motion: reduce,
+  // chỉ viền sáng). Thẻ không thuộc gợi ý thì KHÔNG có thuộc tính này. Dòng gợi ý vẫn là data-testid="miss-hint".
+  const glowing = (els: HTMLElement[]): string[] =>
+    els.filter((e) => e.hasAttribute('data-hint-glow')).map((e) => e.dataset.name ?? '').sort()
+
+  // Tiến độ lưu không được chứa gợi ý cặp hay glow; trường hợp lệ `touch_hint_seen` (AC-GAME-21) được bỏ qua.
+  function expectNoPairHintStored(raw: string): void {
+    expect(raw).not.toMatch(/glow|Thử|hint_pair/i)
+    const stored = JSON.parse(raw) as Record<string, unknown>
+    const bad = Object.keys(stored).filter((k) => k !== 'touch_hint_seen' && /hint|glow/i.test(k))
+    expect(bad).toEqual([])
+  }
+
+  async function reachHint(): Promise<{ line: string }> {
     await installNet({
       specs: [
         { a: 'Cay', b: 'Cười', name: 'Tới Công Chuyện', emoji: '🔥' },
-        { a: 'Toang', b: 'Cười', name: 'Lẩu Thần Sầu', emoji: '🍲' },
+        { a: 'Toang', b: 'Cười', name: 'Lẩu Thần Sầu', emoji: '🥘' },
       ],
     })
-    seed((p) => p.items.push(item('Tới Công Chuyện', '🔥', 1, 7, '2026-10-01T00:00:00.000Z')))
+    // Toang đã nằm sẵn trên bàn (để thấy nháy ở cả bàn lẫn Đĩa); Cười chỉ ở Đĩa
+    seed((p) => {
+      p.items.push(item('Tới Công Chuyện', '🔥', 1, 7, '2026-10-01T00:00:00.000Z'))
+      p.table = [{ uid: 't1', id: eid('Toang'), name: 'Toang', emoji: '💀', x: 40, y: 50 }]
+    })
     await mountReady()
 
     await potCombine('Cay', 'Deadline')
-    const line = (await screen.findByTestId('miss-line')).textContent
+    const line = (await screen.findByTestId('miss-line')).textContent ?? ''
     expect(screen.queryByTestId('miss-hint')).toBeNull()
+    expect(glowing([...plateItems(), ...tableItems()])).toEqual([])
     await potCombine('Cay', 'Deadline')
     expect(screen.queryByTestId('miss-hint')).toBeNull()
+    expect(glowing([...plateItems(), ...tableItems()])).toEqual([])
     await potCombine('Cay', 'Deadline')
-    const hint = (await screen.findByTestId('miss-hint')).textContent ?? ''
-    expect(['Thử 💀 Toang xem', 'Thử 😂 Cười xem']).toContain(hint.trim())
+    return { line }
+  }
+
+  it('AC-GAME-06: lần trượt thứ 3 hiện gợi ý cặp "Thử <emoji A> <tên A> + <emoji B> <tên B> xem" thay câu Nồi trào, không lộ kết quả', async () => {
+    const { line } = await reachHint()
+    const hint = ((await screen.findByTestId('miss-hint')).textContent ?? '').trim()
+    expect(['Thử 💀 Toang + 😂 Cười xem', 'Thử 😂 Cười + 💀 Toang xem']).toContain(hint)
     expect(hint).not.toContain('Lẩu Thần Sầu')
-    expect(screen.getByTestId('miss-line').textContent).toBe(line)
+    expect(hint).not.toContain('🥘')
+    // lần 3 chỉ hiện gợi ý, thay cho câu Nồi trào
+    expect(screen.queryByTestId('miss-line')).toBeNull()
+    expect(line).not.toBe('')
+  })
+
+  it('AC-GAME-06: thẻ A và B nháy sáng ở mọi chỗ đang hiện (bàn và Đĩa nhúng), thẻ khác không nháy', async () => {
+    await reachHint()
+    await screen.findByTestId('miss-hint')
+    expect(glowing(plateItems())).toEqual(['Cười', 'Toang'])
+    expect(glowing(tableItems())).toEqual(['Toang'])
+    expect(plateItem('Toang').dataset.hintGlow).toBe('pulse')
+    expect(plateItem('Cười').dataset.hintGlow).toBe('pulse')
+    expect(tableItem('Toang').dataset.hintGlow).toBe('pulse')
+    expect(plateItem('Cay').hasAttribute('data-hint-glow')).toBe(false)
+    expect(plateItem('Deadline').hasAttribute('data-hint-glow')).toBe(false)
+    // thẻ A/B xuất hiện trên bàn sau đó cũng nháy
+    drag(plateItem('Cười'), tableEl(), { x: 260, y: 180 })
+    expect(glowing(tableItems())).toEqual(['Cười', 'Toang'])
+  })
+
+  it('AC-GAME-06: dòng gợi ý và hiệu ứng nháy không tự ẩn theo thời gian', async () => {
+    await reachHint()
+    await screen.findByTestId('miss-hint')
+    await advance(60000)
+    expect(screen.queryByTestId('miss-line')).toBeNull()
+    expect(screen.queryByTestId('miss-hint')).not.toBeNull()
+    expect(glowing(plateItems())).toEqual(['Cười', 'Toang'])
+    expect(glowing(tableItems())).toEqual(['Toang'])
+  })
+
+  it('AC-GAME-06: ghép trượt tiếp theo tắt dòng gợi ý và hiệu ứng nháy', async () => {
+    await reachHint()
+    await screen.findByTestId('miss-hint')
+    await potCombine('Cay', 'Deadline') // trượt thứ 1 của chuỗi mới
+    await screen.findByTestId('miss-line')
+    expect(screen.queryByTestId('miss-hint')).toBeNull()
+    expect(glowing([...plateItems(), ...tableItems()])).toEqual([])
+  })
+
+  it('AC-GAME-06: ghép thành công tắt dòng gợi ý và hiệu ứng nháy', async () => {
+    await reachHint()
+    await screen.findByTestId('miss-hint')
+    await potCombine('Cay', 'Cười')
+    expect(tableNames()).toContain('Tới Công Chuyện')
+    expect(screen.queryByTestId('miss-hint')).toBeNull()
+    expect(glowing([...plateItems(), ...tableItems()])).toEqual([])
+  })
+
+  it('AC-GAME-06: gợi ý không lưu vào tiến độ cục bộ, tải lại trang thì không còn gợi ý hay nháy', async () => {
+    await reachHint()
+    await screen.findByTestId('miss-hint')
+    const raw = localStorage.getItem(PROGRESS_KEY) ?? ''
+    expectNoPairHintStored(raw)
+    expect(loadProgress(localStorage)!.miss_streak).toBe(0)
+
+    await reload()
+    expect(screen.queryByTestId('miss-hint')).toBeNull()
+    expect(glowing([...plateItems(), ...tableItems()])).toEqual([])
+    expectNoPairHintStored(localStorage.getItem(PROGRESS_KEY) ?? '')
+  })
+
+  it('AC-GAME-06: bật giảm chuyển động (prefers-reduced-motion) thì thẻ chỉ có viền sáng tĩnh (data-hint-glow="static")', async () => {
+    Object.defineProperty(window, 'matchMedia', {
+      configurable: true,
+      writable: true,
+      value: (q: string) => ({
+        matches: q.includes('prefers-reduced-motion'),
+        media: q,
+        onchange: null,
+        addEventListener: () => {},
+        removeEventListener: () => {},
+        addListener: () => {},
+        removeListener: () => {},
+        dispatchEvent: () => false,
+      }),
+    })
+    await reachHint()
+    await screen.findByTestId('miss-hint')
+    expect(glowing(plateItems())).toEqual(['Cười', 'Toang'])
+    for (const e of [plateItem('Toang'), plateItem('Cười'), tableItem('Toang')]) {
+      expect(e.dataset.hintGlow).toBe('static')
+    }
+  })
+
+  it('AC-GAME-06: không còn công thức chưa khám phá thì sau 3 lần trượt không có gợi ý và không thẻ nào nháy', async () => {
+    await installNet({ specs: [{ a: 'Cay', b: 'Cười', name: 'Tới Công Chuyện', emoji: '🔥' }] })
+    seed((p) => p.items.push(item('Tới Công Chuyện', '🔥', 1, 7, '2026-10-01T00:00:00.000Z')))
+    await mountReady()
+    for (let i = 0; i < 3; i++) await potCombine('Cay', 'Deadline')
+    // lần 3 không có cặp hợp lệ: câu Nồi trào như thường
+    expect(await screen.findByTestId('miss-line')).toBeTruthy()
+    expect(screen.queryByTestId('miss-hint')).toBeNull()
+    expect(glowing([...plateItems(), ...tableItems()])).toEqual([])
   })
 
   // ============================================================== AC-GAME-07

@@ -15,7 +15,9 @@
  *           Ctx = { graph: Graph, manifest: Manifest, blocklist: Blocklist, now?: () => Date }
  *           CombineOutcome =
  *             | { kind: 'hit',  result: GraphResult, isNew: boolean, progress: Progress }
- *             | { kind: 'miss', line: string, hint: string | null, progress: Progress }
+ *             | { kind: 'miss', line: string, hint: string | null, hint_pair: [string, string] | null, progress: Progress }
+ *             (AC-GAME-06, 2026-10-30: hint_pair = [idA, idB] là id hai phần tử của gợi ý; null khi hint null;
+ *              hint = `Thử ${emojiA} ${nameA} + ${emojiB} ${nameB} xem` theo đúng thứ tự trong hint_pair)
  *
  *   const:  PROGRESS_KEY: string   (khóa localStorage duy nhất của tiến độ)
  *           THEME_KEY: string      (khóa localStorage của chế độ sáng/tối: 'light' | 'dark')
@@ -35,7 +37,7 @@
  *           isNew(item: Item, manifestVersion: number, blocklist: Blocklist): boolean
  *           resolveTheme(stored: string | null, systemDark: boolean): 'light' | 'dark'
  *
- * Gợi ý: chuỗi hiện ra là `Thử ${emoji} ${name} xem`.
+ * Gợi ý: chuỗi hiện ra là `Thử ${emojiA} ${nameA} + ${emojiB} ${nameB} xem`.
  */
 import { createHash, webcrypto } from 'node:crypto'
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
@@ -276,38 +278,102 @@ describe('game engine', () => {
   })
 
   // ------------------------------------------------------------ AC-GAME-06
-  it('AC-GAME-06: sau 3 lần trượt liên tiếp hiện gợi ý "Thử <emoji> <tên> xem" không lộ kết quả, bộ đếm về 0', async () => {
+  it('AC-GAME-06: sau 3 lần trượt liên tiếp hiện gợi ý cặp "Thử <emoji A> <tên A> + <emoji B> <tên B> xem" không lộ kết quả, bộ đếm về 0', async () => {
     expect(HINT_AFTER_MISSES).toBe(3)
     // Đĩa: 4 starters + "Tới Công Chuyện" (đã có). Công thức:
-    //   Cay + Cười = Tới Công Chuyện (đã có trong Đĩa -> không tính là chưa khám phá)
-    //   Toang + Cười = Lẩu Thần Sầu (chưa có)  => X hợp lệ: Toang, Cười
+    //   Cay + Cười = Tới Công Chuyện (đã có trong Đĩa -> không hợp lệ)
+    //   Toang + Cười = Lẩu Thần Sầu (chưa có)  => cặp hợp lệ duy nhất: Toang + Cười
+    //   Toang + Món Ngoài Đĩa = Món Xa (Món Ngoài Đĩa không có trong Đĩa -> không hợp lệ)
     const ctx = await ctxOf([
       { a: 'Cay', b: 'Cười', name: 'Tới Công Chuyện' },
-      { a: 'Toang', b: 'Cười', name: 'Lẩu Thần Sầu' },
+      { a: 'Toang', b: 'Cười', name: 'Lẩu Thần Sầu', emoji: '🥘' },
+      { a: 'Toang', b: 'Món Ngoài Đĩa', name: 'Món Xa', emoji: '🛰️' },
     ])
-    let p = base()
+    const p = base()
     p.items.push(item('Tới Công Chuyện', '🔥', 1, 7, '2026-10-01T00:00:00.000Z'))
 
     const m1 = await combine(ctx, p, 'Cay', 'Deadline')
     expect(m1.kind).toBe('miss')
     if (m1.kind !== 'miss') return
     expect(m1.hint).toBeNull()
+    expect(m1.hint_pair).toBeNull()
     expect(m1.progress.miss_streak).toBe(1)
 
     const m2 = await combine(ctx, m1.progress, 'Cay', 'Deadline')
     if (m2.kind !== 'miss') throw new Error('miss expected')
     expect(m2.hint).toBeNull()
+    expect(m2.hint_pair).toBeNull()
     expect(m2.progress.miss_streak).toBe(2)
 
     const m3 = await combine(ctx, m2.progress, 'Cay', 'Deadline')
     if (m3.kind !== 'miss') throw new Error('miss expected')
     expect(m3.line).toBe(m1.line) // cùng câu Nồi trào
-    expect(m3.hint).not.toBeNull()
-    expect(['Thử 💀 Toang xem', 'Thử 😂 Cười xem']).toContain(m3.hint)
+    expect(m3.hint_pair).not.toBeNull()
+    const [ida, idb] = m3.hint_pair!
+    expect([ida, idb].sort()).toEqual([eid('Toang'), eid('Cười')].sort())
+    const label = (id: string): string => {
+      const found = m3.progress.items.find((i) => i.id === id)!
+      return `${found.emoji} ${found.name}`
+    }
+    expect(m3.hint).toBe(`Thử ${label(ida)} + ${label(idb)} xem`)
     expect(m3.hint).not.toContain('Lẩu Thần Sầu')
+    expect(m3.hint).not.toContain('🥘')
     expect(m3.progress.miss_streak).toBe(0)
-    p = m3.progress
-    expect(p.items).toHaveLength(5)
+    expect(m3.progress.items).toHaveLength(5)
+  })
+
+  it('AC-GAME-06: nhiều cặp hợp lệ thì chọn đúng một cặp trong Đĩa, ổn định với cùng Đĩa', async () => {
+    const specs: Spec[] = [
+      { a: 'Cay', b: 'Cười', name: 'Món Một', emoji: '1️⃣' },
+      { a: 'Toang', b: 'Deadline', name: 'Món Hai', emoji: '2️⃣' },
+      { a: 'Cay', b: 'Toang', name: 'Món Ba', emoji: '3️⃣' },
+      { a: 'Cười', b: 'Món Ngoài Đĩa', name: 'Món Bốn', emoji: '4️⃣' },
+    ]
+    const valid = new Set(
+      [
+        ['Cay', 'Cười'],
+        ['Toang', 'Deadline'],
+        ['Cay', 'Toang'],
+      ].map((pr) => pr.map((n) => eid(n)).sort().join('|')),
+    )
+    const run = async (): Promise<[string, string]> => {
+      const ctx = await ctxOf(specs)
+      const p = base()
+      p.miss_streak = 2
+      const out = await combine(ctx, p, 'Cay', 'Deadline')
+      if (out.kind !== 'miss') throw new Error('miss expected')
+      expect(out.hint_pair).not.toBeNull()
+      expect(out.progress.miss_streak).toBe(0)
+      return out.hint_pair!
+    }
+    const first = await run()
+    expect(valid.has([...first].sort().join('|'))).toBe(true)
+    for (let i = 0; i < 3; i++) expect(await run()).toEqual(first)
+  })
+
+  it('AC-GAME-06: không gợi ý cặp X + X (A và B khác nhau); chỉ có X + X chưa khám phá thì không có gợi ý', async () => {
+    // X = Cay (phần tử đầu tiên của Đĩa) có công thức Cay + Cay chưa khám phá; cặp hợp lệ khác: Toang + Cười
+    const withPair = await ctxOf([
+      { a: 'Cay', b: 'Cay', name: 'Món Đôi', emoji: '2️⃣' },
+      { a: 'Toang', b: 'Cười', name: 'Món Cặp', emoji: '🤝' },
+    ])
+    const p1 = base()
+    p1.miss_streak = 2
+    const out1 = await combine(withPair, p1, 'Cay', 'Deadline')
+    if (out1.kind !== 'miss') throw new Error('miss expected')
+    expect(out1.hint_pair).not.toBeNull()
+    const [a, b] = out1.hint_pair!
+    expect(a).not.toBe(b)
+    expect([a, b].sort()).toEqual([eid('Toang'), eid('Cười')].sort())
+    expect(out1.hint).not.toContain('Món Đôi')
+
+    const onlySelf = await ctxOf([{ a: 'Cay', b: 'Cay', name: 'Món Đôi', emoji: '2️⃣' }])
+    const p2 = base()
+    p2.miss_streak = 2
+    const out2 = await combine(onlySelf, p2, 'Cay', 'Deadline')
+    if (out2.kind !== 'miss') throw new Error('miss expected')
+    expect(out2.hint).toBeNull()
+    expect(out2.hint_pair).toBeNull()
   })
 
   it('AC-GAME-06: một lần ghép thành công làm bộ đếm trượt về 0 (trượt phải liên tiếp)', async () => {
@@ -323,17 +389,22 @@ describe('game engine', () => {
     const m3 = await combine(ctx, hit.progress, 'Cay', 'Deadline')
     if (m3.kind !== 'miss') throw new Error('miss expected')
     expect(m3.hint).toBeNull()
+    expect(m3.hint_pair).toBeNull()
     expect(m3.progress.miss_streak).toBe(1)
   })
 
   it('AC-GAME-06: không còn công thức chưa khám phá từ Đĩa hiện tại thì không hiện gợi ý', async () => {
-    const ctx = await ctxOf([{ a: 'Cay', b: 'Cười', name: 'Tới Công Chuyện' }])
+    const ctx = await ctxOf([
+      { a: 'Cay', b: 'Cười', name: 'Tới Công Chuyện' },
+      { a: 'Toang', b: 'Món Ngoài Đĩa', name: 'Món Xa' },
+    ])
     const p = base()
     p.items.push(item('Tới Công Chuyện', '🔥', 1, 7, '2026-10-01T00:00:00.000Z'))
     p.miss_streak = 2
     const m3 = await combine(ctx, p, 'Toang', 'Deadline')
     if (m3.kind !== 'miss') throw new Error('miss expected')
     expect(m3.hint).toBeNull()
+    expect(m3.hint_pair).toBeNull()
   })
 
   // ------------------------------------------------------------ AC-GAME-07

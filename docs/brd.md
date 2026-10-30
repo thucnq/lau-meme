@@ -59,7 +59,7 @@
 3. Thực khách thả 2 phần tử vào nồi (hoặc thả chồng lên nhau trên bàn).
 4. Client tính khóa băm của cặp, tra graph trong bộ nhớ (< 50 ms), giải mã bằng 2 tên.
 5. Có kết quả: hiệu ứng nồi sôi ≤ 1,2 s (chạm để bỏ qua), phần tử mới vào Đĩa, lưu cục bộ. Nếu chưa ai khám phá và người chơi đã đồng ý gửi dữ liệu → luồng 4.3.
-6. Không có kết quả: hiện câu "Nồi trào" cố định theo cặp; thỉnh thoảng gợi ý một phần tử nên thử.
+6. Không có kết quả: hiện câu "Nồi trào" cố định theo cặp; trượt 3 lần liên tiếp thì lần thứ 3 hiện gợi ý một cặp nên thử "Thử A + B xem" thay cho câu Nồi trào, thẻ A và B nháy sáng tới khi ghép cặp kế tiếp, đổi màn hình hoặc tải lại trang (AC-GAME-06, cập nhật 2026-10-30).
 - Ngoại lệ: phần tử/công thức trong danh sách chặn → coi như không có; graph tải lỗi → thông báo `role="alert"` và nút thử lại, tiến độ cục bộ không mất.
 
 ### 4.2 Món đặc biệt hôm nay (DAILY)
@@ -230,3 +230,5 @@ Stack là Cloudflare Worker + D1 + Python pipeline (không Docker/Postgres), nê
 | 2026-10-28 | 2.1 | Bỏ AC-QUIZ-27 (đo chỉ số mQuiz qua bảng `event`): CHECK của bảng chỉ nhận 7 loại sự kiện, đổi phải dựng lại bảng; câu hỏi mở 93; contract 0.10.1 | nguyenquythuc (chờ /dk:approve spec) |
 | 2026-10-30 | 2.2 | Góp ý 2026-10-30: PIPE lô Gemini 10 → 30, chia đôi khi lỗi (AC-PIPE-12 cập nhật) để đỡ hết quota; khái niệm bị chặn được lưu kèm mọi lý do (AC-MOD-11); admin có danh sách "Bị chặn", sửa tay, Bỏ chặn (mẻ sau không kiểm duyệt lại, AC-PIPE-21), Duyệt luôn, giữ 90 ngày (AC-ADMIN-13..15, 17); sửa mọi thuộc tính của meme trong "Nội dung" (AC-ADMIN-16). QUIZ giao diện kiểu game quiz (AC-QUIZ-29..39). Câu hỏi mở 94-101 | - |
 | 2026-10-30 | 2.3 | Góp ý 2026-10-30 "những nội dung lọt qua kiểm duyệt nhưng không phải meme": chặn "không phải meme" ở lớp 1 theo dấu hiệu tiêu đề (AC-MOD-12: livestream, ngày tháng, giải đấu, hơn 10 từ) và lớp 2 bằng danh mục LLM `not_meme` (AC-MOD-13: tên người/đội/bài hát/sự kiện đứng một mình); vào danh sách "Bị chặn", Bỏ chặn được; không đổi contract; câu hỏi mở 102 | nguyenquythuc (chờ /dk:approve spec) |
+| 2026-10-30 | 2.4 | Góp ý 2026-10-30 "tỉ lệ ghép không ra meme cao quá": AC-GAME-06 cập nhật - trượt 3 lần liên tiếp thì gợi ý cả cặp "Thử A + B xem" (không lộ kết quả), thẻ A và B nháy sáng nhẹ, chậm trên bàn và trong Đĩa tới khi ghép cặp bất kỳ, sang màn hình khác hoặc tải lại trang; giảm chuyển động thì viền tĩnh; chỉ bàn lẩu chính; câu hỏi mở 103 | nguyenquythuc (chờ /dk:approve spec) |
+| 2026-10-30 | 2.5 | Chốt khi build: lần trượt thứ 1, 2 hiện câu Nồi trào; lần thứ 3 hiện gợi ý cặp ngay chỗ đó thay cho câu Nồi trào (không có cặp hợp lệ thì vẫn hiện câu); gợi ý không tự ẩn theo thời gian (AC-GAME-05, AC-GAME-06, câu hỏi mở 103) | nguyenquythuc (chờ /dk:approve spec) |

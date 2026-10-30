@@ -1,125 +1,77 @@
 {
  "red": {
-  "ts": "2026-10-26T00:17:16+00:00",
-  "commit": "c172178",
+  "ts": "2026-10-30T15:06:58+00:00",
+  "commit": "4938100",
   "results": {
    "AC-GAME-01": {
     "status": "PASS",
-    "test": "Game.test.tsx#Game > AC-GAME-01: lần đầu Đĩa có đúng 4 phần tử khởi đầu từ manifest, nồi có 2 chỗ thả trống"
+    "test": "engine.test.ts#game engine > AC-GAME-01: tiến độ ban đầu có đúng 4 phần tử khởi đầu từ manifest và bàn rỗng"
    },
    "AC-GAME-02": {
-    "status": "FAIL",
-    "test": "ghost.browser.test.tsx#món bóng khi kéo bằng chuột "
+    "status": "PASS",
+    "test": "engine.test.ts#game engine > AC-GAME-02: ghép thành công thêm C vào Đĩa với thời điểm khám phá, theo cả hai thứ tự"
    },
    "AC-GAME-03": {
     "status": "PASS",
-    "test": "Game.test.tsx#Game > AC-GAME-03: kéo A thả chồng lên B trên bàn thì thay bằng C tại vị trí của B, hơi lẩu <= 0,6 s"
+    "test": "engine.test.ts#game engine > AC-GAME-03: combine không làm đổi tiến độ đầu vào "
    },
    "AC-GAME-04": {
     "status": "PASS",
-    "test": "Game.test.tsx#Game > AC-GAME-04: ghép ra phần tử đã có thì C hiện trên bàn nhưng Đĩa không trùng, thời điểm cũ giữ nguyên"
+    "test": "engine.test.ts#game engine > AC-GAME-04: ghép ra phần tử đã có thì không trùng và giữ thời điểm khám phá cũ"
    },
    "AC-GAME-05": {
     "status": "PASS",
-    "test": "Game.test.tsx#Game > AC-GAME-05: cùng một câu Nồi trào cho "
+    "test": "engine.test.ts#game engine > AC-GAME-05: câu Nồi trào chọn tất định theo cặp đã chuẩn hóa, không dùng số ngẫu nhiên"
    },
    "AC-GAME-06": {
-    "status": "PASS",
-    "test": "Game.test.tsx#Game > AC-GAME-06: lần trượt thứ 3 hiện thêm gợi ý \"Thử <emoji> <tên> xem\" cùng câu Nồi trào"
+    "status": "FAIL",
+    "test": "engine.test.ts#game engine > AC-GAME-06: không gợi ý cặp X + X "
    },
    "AC-GAME-07": {
     "status": "PASS",
-    "test": "Game.test.tsx#Game > AC-GAME-07: gõ \"ca phe\" "
+    "test": "engine.test.ts#game engine > AC-GAME-07: tìm kiếm không dấu dùng fold, rỗng thì trả cả Đĩa"
    },
    "AC-GAME-08": {
     "status": "PASS",
-    "test": "Game.test.tsx#Game > AC-GAME-08: sắp xếp Mới khám phá / Tên / Độ sâu và nhớ lựa chọn sau khi tải lại"
+    "test": "engine.test.ts#game engine > AC-GAME-08: sắp xếp theo mới khám phá, tên "
    },
    "AC-GAME-09": {
     "status": "PASS",
-    "test": "Game.test.tsx#Game > AC-GAME-09: chỉ phần tử thêm ở mẻ hiện tại có nhãn MỚI "
+    "test": "engine.test.ts#game engine > AC-GAME-09: nhãn MỚI chỉ cho phần tử thêm ở mẻ hiện tại và không bị chặn"
    },
    "AC-GAME-10": {
     "status": "PASS",
-    "test": "Game.test.tsx#Game > AC-GAME-10: tải lại khôi phục Đĩa, vị trí trên bàn, sắp xếp, đã xem hướng dẫn; không gọi API ghi"
-   },
-   "AC-GAME-11": {
-    "status": "PASS",
-    "test": "Game.test.tsx#Game > AC-GAME-11: không còn nút/menu \"Chơi lại từ đầu\" "
+    "test": "engine.test.ts#game engine > AC-GAME-10: lưu rồi khôi phục tiến độ giống hệt "
    },
    "AC-GAME-12": {
     "status": "PASS",
-    "test": "Game.test.tsx#Game > AC-GAME-12: hướng dẫn hiện lần đầu, không hiện lại sau khi đóng, nút \"?\" mở lại"
+    "test": "engine.test.ts#game engine > AC-GAME-12: trạng thái đã xem hướng dẫn được lưu; tiến độ mới chưa xem"
    },
    "AC-GAME-13": {
     "status": "PASS",
-    "test": "Game.test.tsx#Game > AC-GAME-13: theo hệ thống tối khi chưa chọn; nút chuyển sang sáng và được nhớ, ưu tiên hơn hệ thống"
+    "test": "engine.test.ts#game engine > AC-GAME-13: chế độ tối theo hệ thống khi chưa chọn; lựa chọn đã lưu ưu tiên hơn hệ thống"
    },
    "AC-GAME-14": {
     "status": "PASS",
-    "test": "Game.test.tsx#Game > AC-GAME-14: ghép trên giao diện chỉ tra bộ nhớ, không phát thêm yêu cầu mạng nào"
+    "test": "engine.test.ts#game engine > AC-GAME-14: 1000 lượt tra + giải mã "
    },
    "AC-GAME-15": {
     "status": "PASS",
-    "test": "Game.test.tsx#Game > AC-GAME-15: phần tử bị chặn không hiện ở Đĩa/bàn nhưng còn trong lưu trữ; ghép ra nó là trượt"
+    "test": "engine.test.ts#game engine > AC-GAME-15: phần tử bị chặn bị ẩn khỏi Đĩa và bàn nhưng vẫn nằm trong lưu trữ; bỏ chặn thì hiện lại"
    },
    "AC-GAME-16": {
     "status": "PASS",
-    "test": "Game.test.tsx#Game > lỗi tải: manifest trả 503 > AC-GAME-16: manifest trả 503 -> role=alert + \"Thử lại\", Đĩa từ lưu trữ cục bộ, tiến độ còn, ghép bị vô hiệu"
+    "test": "engine.test.ts#game engine > AC-GAME-16: loadProgress không đổi dữ liệu cục bộ "
    },
    "AC-GAME-17": {
     "status": "PASS",
-    "test": "Game.test.tsx#Game > AC-GAME-17: tiến độ của V1 khi manifest là V2 - giữ mọi phần tử, tra theo graph V2, không hỏi gì"
-   },
-   "AC-GAME-18": {
-    "status": "PASS",
-    "test": "Game.browser.test.tsx#AC-GAME-18: nồi lẩu nằm trọn trong màn hình đầu tiên "
-   },
-   "AC-GAME-19": {
-    "status": "PASS",
-    "test": "ui2.browser.test.tsx#ui2 bố cục nút điều khiển "
-   },
-   "AC-GAME-20": {
-    "status": "PASS",
-    "test": "ui2.browser.test.tsx#ui2 nồi lẩu vẽ trọn "
-   },
-   "AC-GAME-21": {
-    "status": "PASS",
-    "test": "mobile-fit.browser.test.tsx#mobile-fit: vuốt cuộn trên món "
-   },
-   "AC-GAME-22": {
-    "status": "PASS",
-    "test": "ui3.browser.test.tsx#ui3 vùng cấm đặt món "
-   },
-   "AC-GAME-23": {
-    "status": "PASS",
-    "test": "ui3.browser.test.tsx#ui3 Đĩa nhúng cao bằng bàn lẩu "
-   },
-   "AC-GAME-24": {
-    "status": "PASS",
-    "test": "ui3.ui.test.tsx#ui3: bấm món là cho vào nồi "
-   },
-   "AC-GAME-25": {
-    "status": "PASS",
-    "test": "ui3.browser.test.tsx#ui3 hiệu ứng Vàng/Đỏ không chặn kéo thả "
-   },
-   "AC-GAME-26": {
-    "status": "PASS",
-    "test": "ui3.ui.test.tsx#ui3: âm thanh và nút loa "
-   },
-   "AC-GAME-27": {
-    "status": "PASS",
-    "test": "mobile-fit.browser.test.tsx#mobile-fit: nickname dài ở 360 px "
-   },
-   "AC-GAME-28": {
-    "status": "PASS",
-    "test": "table-style.ui.test.tsx#đổi kiểu mặt bàn "
+    "test": "engine.test.ts#game engine > AC-GAME-17: đổi version graph giữ mọi phần tử đã khám phá và tra cứu theo graph mới"
    }
   }
  },
  "green": {
-  "ts": "2026-10-26T01:16:15+00:00",
-  "commit": "816c4b6",
+  "ts": "2026-10-30T15:12:56+00:00",
+  "commit": "4938100",
   "results": {
    "AC-GAME-01": {
     "status": "PASS",
@@ -143,7 +95,7 @@
    },
    "AC-GAME-06": {
     "status": "PASS",
-    "test": "Game.test.tsx#Game > AC-GAME-06: lần trượt thứ 3 hiện thêm gợi ý \"Thử <emoji> <tên> xem\" cùng câu Nồi trào"
+    "test": "Game.test.tsx#Game > AC-GAME-06: lần trượt thứ 3 hiện gợi ý cặp \"Thử <emoji A> <tên A> + <emoji B> <tên B> xem\" thay câu Nồi trào, không lộ kết quả"
    },
    "AC-GAME-07": {
     "status": "PASS",

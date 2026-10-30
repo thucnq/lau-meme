@@ -68,7 +68,8 @@ type Press = {
 }
 type Celebration = { kind: CelebrationKind; tier: 4 | 5; animated: boolean; seq: number }
 type Box = { left: number; top: number; right: number; bottom: number }
-type Miss = { line: string; hint: string | null }
+/** On the 3rd miss in a row the pair hint takes the miss line's place and cards A and B glow (AC-GAME-06). */
+type Miss = { line: string; hint: string | null; pair: [string, string] | null }
 
 function systemDark(): boolean {
   return typeof window.matchMedia === 'function' && window.matchMedia('(prefers-color-scheme: dark)').matches
@@ -424,6 +425,14 @@ export function Game({ onDiscover, onItems, heirlooms = {}, onReport, blocklistR
     timers.current.push(id)
   }
 
+  // The pair hint and its glow go away on another screen, like on the next combine (AC-GAME-06).
+  const showView = (v: typeof view) => {
+    setMiss(null)
+    setView(v)
+  }
+  const glow = miss?.pair ? (prefersReducedMotion() ? 'static' : 'pulse') : undefined
+  const glowOf = (id: string) => (miss?.pair?.includes(id) ? glow : undefined)
+
   const blocklist = loaded?.blocklist ?? EMPTY_BLOCKLIST
   const ready = loaded !== null && progress !== null
   const ctx = loaded ? { ...loaded, now: () => new Date() } : null
@@ -488,10 +497,10 @@ export function Game({ onDiscover, onItems, heirlooms = {}, onReport, blocklistR
             celebrate(item, out.isNew)
           } else {
             commit({ ...out.progress, table: [...table, onTable(a, pa.x, pa.y), onTable(b, pb.x, pb.y)] })
-            setMiss({ line: out.line, hint: out.hint })
+            setMiss({ line: out.line, hint: out.hint, pair: out.hint_pair })
           }
         })
-        .catch(() => setMiss({ line: 'Nồi trục trặc, nhúng lại nhé.', hint: null }))
+        .catch(() => setMiss({ line: 'Nồi trục trặc, nhúng lại nhé.', hint: null, pair: null }))
         .finally(() => {
           setSlots([null, null])
           boilingRef.current = false
@@ -526,10 +535,10 @@ export function Game({ onDiscover, onItems, heirlooms = {}, onReport, blocklistR
         later(() => setSteam(null), STEAM_MS)
       } else {
         commit({ ...out.progress, table: [...table, onTable(source.item, x, y)] })
-        setMiss({ line: out.line, hint: out.hint })
+        setMiss({ line: out.line, hint: out.hint, pair: out.hint_pair })
       }
     } catch {
-      setMiss({ line: 'Nồi trục trặc, nhúng lại nhé.', hint: null })
+      setMiss({ line: 'Nồi trục trặc, nhúng lại nhé.', hint: null, pair: null })
     } finally {
       busyRef.current = false
     }
@@ -793,7 +802,7 @@ export function Game({ onDiscover, onItems, heirlooms = {}, onReport, blocklistR
       {loaded && (
         <div role="tablist" aria-label="Màn hình" className="view-tabs">
           {VIEWS.map(([key, label]) => (
-            <button key={key} type="button" role="tab" aria-selected={view === key} onClick={() => setView(key)}>
+            <button key={key} type="button" role="tab" aria-selected={view === key} onClick={() => showView(key)}>
               {label}
             </button>
           ))}
@@ -815,7 +824,7 @@ export function Game({ onDiscover, onItems, heirlooms = {}, onReport, blocklistR
           manifest={loaded.manifest}
           solved={solved.value}
           storage={storage()}
-          onShowBoard={() => setView('board')}
+          onShowBoard={() => showView('board')}
         />
       )}
 
@@ -880,6 +889,7 @@ export function Game({ onDiscover, onItems, heirlooms = {}, onReport, blocklistR
               className={`chip on-table tier-${tierOf(byId.get(t.id))}`}
               data-tier={tierOf(byId.get(t.id))}
               data-testid="table-item"
+              data-hint-glow={glowOf(t.id)}
               data-uid={t.uid}
               data-name={t.name}
               data-x={t.x}
@@ -951,8 +961,7 @@ export function Game({ onDiscover, onItems, heirlooms = {}, onReport, blocklistR
           <div className="miss" aria-live="polite">
             {miss && (
               <div className="miss-area" data-testid="miss-area" data-zone>
-                <p data-testid="miss-line">{miss.line}</p>
-                {miss.hint && <p data-testid="miss-hint">{miss.hint}</p>}
+                {miss.hint ? <p data-testid="miss-hint">{miss.hint}</p> : <p data-testid="miss-line">{miss.line}</p>}
               </div>
             )}
             {voteOn && loaded && canSend(storage(), loaded.manifest.policy_version) && (
@@ -996,6 +1005,7 @@ export function Game({ onDiscover, onItems, heirlooms = {}, onReport, blocklistR
                 className={`chip tier-${tierOf(it)}`}
                 data-tier={tierOf(it)}
                 data-testid="plate-item"
+                data-hint-glow={glowOf(it.id)}
                 data-name={it.name}
                 title={heirlooms[it.id]}
                 tabIndex={0}
