@@ -14,14 +14,17 @@
 - **Workflow riêng `art-search.yml`** (`workflow_dispatch`: `target` staging/production, `limit` mặc định 50, `dry_run`), chạy `python -m lau_meme_pipeline.art_search` trong `pipeline/`. Không chạy theo cron, không gộp vào mẻ nhúng.
 - **Gắn ảnh qua API quản trị** bằng `ADMIN_TOKEN` (Secret của environment) gửi tới host quản trị (ADR 0008), không qua token pipeline: ảnh tìm được có cùng vị thế với tranh admin tải tay, có audit, Worker không cần đổi. Contract không đổi.
 - **Chọn phần tử:** đang hoạt động, `image_key` rỗng; xếp độ sâu giảm dần rồi tên `fold` (món sâu sắp lên Vàng/Đỏ cần ảnh trước - AC-TIER-04); phần tử có ảnh bị ẩn/chặn không xét (admin đã chặn ảnh đó).
-- **Tìm ảnh:** adapter mạng riêng cho API tìm ảnh (mock trong test), truy vấn = tên phần tử; nhà cung cấp và cách lọc theo câu hỏi mở 104. Thử tối đa 3 kết quả đầu, mỗi kết quả tải qua `fetch_link` (cùng giới hạn AC-ART-14), rồi `to_webp_256`.
+- **Tìm ảnh:** adapter mạng riêng cho API tìm ảnh (mock trong test), truy vấn = tên phần tử + " meme"; nhà cung cấp và cách lọc theo câu hỏi mở 104. Thử tối đa 3 kết quả đầu, mỗi kết quả tải qua `fetch_link` (cùng giới hạn AC-ART-14), rồi `to_webp_256`.
 - **Không kiểm duyệt ảnh:** không gửi Gemini, không lọc mặt người thật, logo hay nhân vật có bản quyền (chủ dự án chốt). Luật vẽ của Workers AI (AC-ART-01/02) giữ nguyên.
+- **Chạy bền:** một lần gắn ảnh lỗi (API quản trị 4xx/5xx) chỉ đếm vào lỗi rồi đi tiếp; chỉ API tìm ảnh từ chối (401/403/429) mới dừng job. Ngân sách 25 phút (đồng hồ tiêm vào, test không phụ thuộc giờ thật), dưới `timeout-minutes: 30` của workflow: 50 phần tử x 3 kết quả x 15 giây có thể tới khoảng 37 phút.
+- **Production cần duyệt:** target `production` chạy trong environment `production` (có required reviewers), không dùng `production-no-approval`: `ADMIN_TOKEN` có toàn quyền quản trị (chặn, ẩn, tier, ảnh), job chạy tay nên chờ duyệt không ảnh hưởng.
 - Logic chọn phần tử và xếp thứ tự là hàm thuần; mạng (API quản trị, API tìm ảnh, tải ảnh) nằm trong adapter.
 
 ## Hệ quả
 - Rủi ro pháp lý do chủ dự án chấp nhận: ảnh có thể có bản quyền; ảnh khuôn mặt người nhận diện được là dữ liệu cá nhân theo Luật Bảo vệ dữ liệu cá nhân 2025. Giảm thiểu bằng cơ chế sẵn có: thực khách báo cáo ảnh ⇒ ảnh vào danh sách chặn, client về emoji (AC-REPORT); admin chặn ảnh (AC-ART-07) hoặc tải tranh thay (AC-ART-13).
 - Ảnh tìm được thành ảnh `admin`: Workers AI không vẽ đè, kể cả khi ảnh kém. Muốn vẽ lại thì admin phải thay ảnh bằng tay.
-- Thêm một secret cho khóa API tìm ảnh ở environment staging và production; `ADMIN_TOKEN` cũng phải có trong GitHub Secret của hai environment này.
+- Thêm một secret cho khóa API tìm ảnh ở environment `staging` và `production`; `ADMIN_TOKEN` cũng phải có trong GitHub Secret của hai environment này (không đặt ở `production-no-approval`).
+- Chạy thử in link ảnh tìm được ra log và tóm tắt của Actions (đọc được nếu repo công khai): link là ảnh công khai của bên thứ ba, không phải dữ liệu người chơi.
 - Tên phần tử (nội dung game, gồm tên meme đề xuất đã duyệt) được gửi cho nhà cung cấp tìm ảnh; không có dữ liệu người chơi.
 - Ảnh có trong graph từ mẻ kế tiếp (staging 2 tiếng, production 12 tiếng).
 
