@@ -10,7 +10,7 @@ sequenceDiagram
   P->>W: GET /pipeline/state
   W->>D: đọc chặn, bí danh, unblocked, element_edits, manual_approvals
   W-->>P: state
-  P->>G: kiểm duyệt lớp 2 (lô 30, chia đôi khi lỗi)
+  P->>G: kiểm duyệt lớp 2 (lô 10, chia đôi khi lỗi)
   G-->>P: K bị gắn "chính trị"
   P->>W: POST /pipeline/batches { content, rejected: [K] }
   W->>D: DB.batch: đăng version + upsert rejected_concept(K, blocked)
