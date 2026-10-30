@@ -17,8 +17,6 @@ sequenceDiagram
 
   A->>W: GET /admin/rejected
   W-->>A: K - Bị chặn
-  A->>W: PATCH /admin/rejected/{K} (tên, emoji)
-  W->>D: DB.batch: sửa K + content_change edit_rejected
   A->>W: POST /admin/rejected/{K}/unblock
   W->>D: DB.batch: K → unblocked + content_change unblock_rejected
 
