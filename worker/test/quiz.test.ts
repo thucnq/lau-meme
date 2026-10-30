@@ -242,8 +242,9 @@ class Client {
     return c
   }
 
-  // Paced send: stays at or below 10 messages per rolling second (AC-QUIZ-25) so fast machines never trip the
-  // server's flood limit. Order is preserved through an internal queue; callers need not await.
+  // Paced send: stays well below 10 messages per rolling second (AC-QUIZ-25): at most 7 per 1500 ms, so even when the
+  // Durable Object is busy (alarms) and delivers queued messages in a burst, fast machines never trip the server's
+  // flood limit. Order is preserved through an internal queue; callers need not await.
   private sentAt: number[] = []
   private pending = 0
   private chain: Promise<void> = Promise.resolve()
@@ -252,8 +253,8 @@ class Client {
     const data = typeof m === 'string' ? m : JSON.stringify(m)
     const trySync = (): boolean => {
       const now = Date.now()
-      this.sentAt = this.sentAt.filter((t) => now - t <= 1000)
-      if (this.sentAt.length >= 10) return false
+      this.sentAt = this.sentAt.filter((t) => now - t <= 1500)
+      if (this.sentAt.length >= 7) return false
       this.sentAt.push(now)
       this.ws.send(data)
       return true
@@ -263,7 +264,7 @@ class Client {
     this.chain = this.chain.then(async () => {
       for (;;) {
         if (trySync()) break
-        const wait = 1000 - (Date.now() - this.sentAt[0]!) + 20
+        const wait = 1500 - (Date.now() - this.sentAt[0]!) + 20
         await sleep(Math.max(wait, 5))
       }
       this.pending--
