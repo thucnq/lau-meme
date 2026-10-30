@@ -30,13 +30,13 @@
 ### AC-GAME-05: Nồi trào - câu cố định theo cặp
 - **Cho** cặp (A, B) không có công thức
 - **Khi** ghép A với B, rồi ghép B với A, rồi tải lại trang và ghép lại
-- **Thì** cả 3 lần hiện cùng một câu "Nồi trào / Khét rồi" lấy từ danh sách câu Nồi trào của manifest; câu được chọn bằng hàm tất định của cặp tên đã chuẩn hóa (không dùng số ngẫu nhiên); A và B trở lại bàn
+- **Thì** cả 3 lần hiện cùng một câu "Nồi trào / Khét rồi" lấy từ danh sách câu Nồi trào của manifest; câu được chọn bằng hàm tất định của cặp tên đã chuẩn hóa (không dùng số ngẫu nhiên); A và B trở lại bàn. Lần trượt thứ 3 liên tiếp có gợi ý thì gợi ý hiện thay câu (AC-GAME-06, cập nhật 2026-10-30)
 - Ưu tiên: Bắt buộc
 
-### AC-GAME-06: Gợi ý cặp khi trượt (cập nhật 2026-10-30: gợi ý cả cặp A + B, thẻ nháy sáng - câu hỏi mở 103)
+### AC-GAME-06: Gợi ý cặp khi trượt (cập nhật 2026-10-30: gợi ý cả cặp A + B thay câu Nồi trào ở lần trượt thứ 3, thẻ nháy sáng - câu hỏi mở 103)
 - **Cho** thực khách ở bàn lẩu chính vừa trượt 3 lần liên tiếp (ngưỡng mặc định - câu hỏi mở 9)
 - **Khi** lần trượt thứ 3 xảy ra
-- **Thì** cùng câu Nồi trào hiện thêm gợi ý "Thử <emoji A> <tên A> + <emoji B> <tên B> xem", trong đó A và B là hai phần tử người chơi đang có trong Đĩa, tồn tại công thức A + B và kết quả chưa có trong Đĩa; gợi ý không chứa tên hay emoji của kết quả; bộ đếm trượt về 0. Khi có nhiều cặp hợp lệ, chọn theo cùng quy tắc chọn phần tử như trước (một cặp, ổn định với cùng Đĩa). Thẻ A và thẻ B nháy sáng nhẹ và chậm ở mọi chỗ đang hiện (trên bàn và trong Đĩa nhúng; Đĩa không tự cuộn tới thẻ). Dòng gợi ý và hiệu ứng nháy ở lại sau khi câu Nồi trào ẩn, và cùng tắt khi người chơi ghép một cặp bất kỳ (thành công hay trượt), sang màn hình khác hoặc tải lại trang; gợi ý không lưu vào tiến độ cục bộ (AC-GAME-10). Thiết bị bật giảm chuyển động (`prefers-reduced-motion`) thì thẻ chỉ có viền sáng tĩnh, không nháy. Không còn công thức nào chưa khám phá từ Đĩa hiện tại thì không hiện gợi ý và không thẻ nào nháy. Chỉ áp cho bàn lẩu chính; Món đặc biệt (DAILY) và mQuiz không đổi
+- **Thì** chỗ câu Nồi trào hiện gợi ý "Thử <emoji A> <tên A> + <emoji B> <tên B> xem" thay cho câu Nồi trào (lần trượt thứ 1, 2 của chuỗi vẫn hiện câu Nồi trào như AC-GAME-05; lần thứ 3 chỉ hiện gợi ý), trong đó A và B là hai phần tử người chơi đang có trong Đĩa, tồn tại công thức A + B và kết quả chưa có trong Đĩa; gợi ý không chứa tên hay emoji của kết quả; bộ đếm trượt về 0. Khi có nhiều cặp hợp lệ, chọn theo cùng quy tắc chọn phần tử như trước (một cặp, ổn định với cùng Đĩa). Thẻ A và thẻ B nháy sáng nhẹ và chậm ở mọi chỗ đang hiện (trên bàn và trong Đĩa nhúng; Đĩa không tự cuộn tới thẻ). Dòng gợi ý và hiệu ứng nháy ở lại (không tự ẩn theo thời gian), và cùng tắt khi người chơi ghép một cặp bất kỳ (thành công hay trượt), sang màn hình khác hoặc tải lại trang; gợi ý không lưu vào tiến độ cục bộ (AC-GAME-10). Thiết bị bật giảm chuyển động (`prefers-reduced-motion`) thì thẻ chỉ có viền sáng tĩnh, không nháy. Không còn công thức nào chưa khám phá từ Đĩa hiện tại thì không hiện gợi ý, không thẻ nào nháy và lần trượt thứ 3 hiện câu Nồi trào như thường. Chỉ áp cho bàn lẩu chính; Món đặc biệt (DAILY) và mQuiz không đổi
 - Ưu tiên: Bắt buộc
 
 ### AC-GAME-07: Tìm trong Đĩa nhúng không dấu
