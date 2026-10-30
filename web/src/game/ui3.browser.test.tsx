@@ -255,15 +255,19 @@ describe.each([
     expect(screen.getAllByTestId('table-item')).toHaveLength(2)
     expectClear('kéo món trên bàn vào hàng nút')
 
-    // C: 3 lần ghép trượt liên tiếp, A và B tự trở lại bàn; sau lần 3 có gợi ý (AC-GAME-06)
-    for (let i = 1; i <= 3; i++) {
+    // C: 3 lần ghép trượt liên tiếp, A và B tự trở lại bàn; lần 1, 2 hiện câu Nồi trào, lần 3 hiện gợi ý
+    // thay câu (AC-GAME-06, cập nhật 2026-10-30: Cay + Cười là cặp hợp lệ chưa khám phá). miss-area bọc cả hai.
+    for (let i = 1; i <= 2; i++) {
       await combine('Toang', 'Deadline')
       const area = await screen.findByTestId('miss-area')
       expect(within(area).getByTestId('miss-line')).toBeTruthy()
+      expect(within(area).queryByTestId('miss-hint')).toBeNull()
       expectClear(`sau lần trượt ${i}`)
     }
-    const area = screen.getByTestId('miss-area')
+    await combine('Toang', 'Deadline')
+    const area = await screen.findByTestId('miss-area')
     expect(within(area).getByTestId('miss-hint')).toBeTruthy()
+    expect(within(area).queryByTestId('miss-line')).toBeNull()
     expectClear('sau lần trượt 3 có gợi ý')
 
     // D: thả vào giữa vùng câu Nồi trào + gợi ý, từ Đĩa và từ trên bàn
