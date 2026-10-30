@@ -154,6 +154,11 @@ export function QuizRoom({ code, onLeave }: { code: string; onLeave?: () => void
   const openSolo = useCallback(
     (save: SoloSave) => {
       write(storage, soloKey(code), save)
+      if (save.q === 1 && save.score === 0) {
+        // a fresh solo run: no streak or confetti carried over from the previous one
+        streakRef.current = 0
+        setConfetti(false)
+      }
       setSolo(save)
       setReveal(null)
       setPicks([])
@@ -212,6 +217,7 @@ export function QuizRoom({ code, onLeave }: { code: string; onLeave?: () => void
           setTotal(m.total as number)
           streakRef.current = 0
           standings.current = new Map()
+          setConfetti(false)
           return
         case 'question': {
           const skew = (m.server_now as number) - Date.now()
