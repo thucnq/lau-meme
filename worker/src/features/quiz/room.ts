@@ -295,9 +295,9 @@ export class QuizRoom extends DurableObject<Env> {
       if (seat === room.host) room.host_left_at = now
       else room.players = room.players.filter((p) => p.seat !== seat)
       this.broadcastLobby(room, ws)
-    } else if (room.phase === 'question' && this.allAnswered(room, connected)) {
-      await this.closeQuestion(room)
-      return
+    } else if (room.phase === 'question') {
+      if (this.allAnswered(room, connected)) return await this.closeQuestion(room)
+      this.broadcastProgress(room, ws)
     }
     await this.save(room)
   }
@@ -352,6 +352,7 @@ export class QuizRoom extends DurableObject<Env> {
         if (room.phase === 'question') {
           this.send(ws, this.questionMessage(room, now))
           if (room.answers[seat]) this.send(ws, { type: 'answered', q: room.cur })
+          this.broadcastProgress(room)
         } else if (room.phase === 'reveal' && room.last_reveal) {
           this.send(ws, this.revealFor(room, seat))
         } else if (room.phase === 'held') {
@@ -474,6 +475,14 @@ export class QuizRoom extends DurableObject<Env> {
     await this.save(room)
   }
 
+  /** AC-QUIZ-37: how many connected players have a valid answer to the open question; never who or what. */
+  private broadcastProgress(room: Room, except?: WebSocket): void {
+    const connected = this.connectedSeats(except)
+    const answered = [...connected].filter((seat) => room.answers[seat] !== undefined).length
+    const m = { type: 'progress', q: room.cur, answered, total: connected.size }
+    this.broadcast(() => m, except)
+  }
+
   private allAnswered(room: Room, connected: Set<number>): boolean {
     return connected.size > 0 && [...connected].every((seat) => room.answers[seat] !== undefined)
   }
@@ -491,6 +500,7 @@ export class QuizRoom extends DurableObject<Env> {
     if (picks.length !== 2 || picks[0] === picks[1] || !picks.every((p) => typeof p === 'string' && options.has(p))) throw new Refusal('bad_answer')
     room.answers[seat] = { picks: picks as [string, string], at: Date.now() }
     this.send(ws, { type: 'answered', q: room.cur })
+    this.broadcastProgress(room)
     if (this.allAnswered(room, this.connectedSeats())) await this.closeQuestion(room)
     else await this.save(room)
   }
