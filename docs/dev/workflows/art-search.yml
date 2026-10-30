@@ -1,0 +1,53 @@
+# Tìm ảnh trên web cho meme chưa có ảnh (AC-ART-15, ADR 0024). Đề xuất - người chép vào
+# .github/workflows/art-search.yml (guard chặn agent sửa workflow). Chỉ chạy tay, không cron.
+# Gắn ảnh qua API quản trị (`PUT /admin/elements/{id}/image`) như ảnh admin tải: mẻ sau không vẽ đè,
+# ảnh có trong graph từ mẻ kế tiếp. Không kiểm duyệt ảnh (chủ dự án chốt 2026-10-30).
+# Cần ở mỗi environment: secret ADMIN_TOKEN, IMAGE_SEARCH_API_KEY; variable ADMIN_API_BASE_URL
+# (https://laumeme-admin-staging.dinoduct.fun hoặc https://laumeme-admin.dinoduct.fun - ADR 0008).
+name: art-search
+
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: Môi trường
+        type: choice
+        options: [staging, production]
+        default: staging
+      limit:
+        description: Số meme tối đa
+        type: number
+        default: 50
+      dry_run:
+        description: Chạy thử (chỉ in tên và link, không gắn ảnh)
+        type: boolean
+        default: false
+
+concurrency:
+  group: art-search-${{ inputs.target }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  art-search:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    # Chỉ ghi ảnh qua API quản trị, không deploy code: production dùng `production-no-approval` như mẻ nhúng.
+    environment: ${{ inputs.target == 'staging' && 'staging' || 'production-no-approval' }}
+    defaults: { run: { working-directory: pipeline } }
+    steps:
+      - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@v6
+      - run: uv sync --frozen --no-dev
+      - name: Tìm ảnh
+        env:
+          ADMIN_API_BASE_URL: ${{ vars.ADMIN_API_BASE_URL }}
+          ADMIN_TOKEN: ${{ secrets.ADMIN_TOKEN }}
+          IMAGE_SEARCH_API_KEY: ${{ secrets.IMAGE_SEARCH_API_KEY }}
+          LIMIT: ${{ inputs.limit }}
+          DRY_RUN: ${{ inputs.dry_run && '--dry-run' || '' }}
+        # `shell: bash` bật pipefail: job đỏ khi python lỗi dù có `tee`.
+        shell: bash
+        run: uv run python -m lau_meme_pipeline.art_search --limit "$LIMIT" $DRY_RUN | tee -a "$GITHUB_STEP_SUMMARY"

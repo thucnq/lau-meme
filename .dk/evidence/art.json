@@ -1,57 +1,73 @@
 {
  "red": {
-  "ts": "2026-10-25T18:56:07+00:00",
-  "commit": "e6f027d",
+  "ts": "2026-10-30T18:25:53+00:00",
+  "commit": "7252f36",
   "results": {
+   "AC-ART-01": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-ART-02": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
    "AC-ART-03": {
-    "status": "PASS",
-    "test": "art-upload.test.ts#art: PipelineStore.art_pending > AC-ART-03: mẻ full kèm store.art_pending "
+    "status": "FAIL",
+    "test": "(không biên dịch)"
    },
    "AC-ART-04": {
-    "status": "PASS",
-    "test": "art-upload.test.ts#art: PUT /pipeline/images/{key} > AC-ART-04: ảnh WebP hợp lệ, khóa = 12 hex đầu SHA-256 thân thì 204, R2 có đúng byte, GET /img/<key> trả lại"
+    "status": "FAIL",
+    "test": "(không biên dịch)"
    },
    "AC-ART-05": {
-    "status": "PASS",
-    "test": "art.test.ts#art: GET /img/{key} > AC-ART-05: ảnh tồn tại trả 200 image/webp, đúng byte, Cache-Control public immutable một năm"
+    "status": "FAIL",
+    "test": "(không biên dịch)"
    },
    "AC-ART-06": {
-    "status": "PASS",
-    "test": "art.ui.test.tsx#art: emoji trước, ảnh sau > AC-ART-06: phần tử có khóa ảnh hiện emoji ngay, kèm <img> trỏ tới /lau-meme/img/<khóa>"
+    "status": "FAIL",
+    "test": "(không biên dịch)"
    },
    "AC-ART-07": {
-    "status": "PASS",
-    "test": "art.ui.test.tsx#art: ảnh bị chặn không được tải > AC-ART-07: id phần tử có trong images của danh sách chặn thì chỉ hiện emoji, không <img>, không yêu cầu /img/..."
+    "status": "FAIL",
+    "test": "(không biên dịch)"
    },
    "AC-ART-08": {
-    "status": "PASS",
-    "test": "art.ui.test.tsx#art: phóng lớn khi ghép ra món lần đầu > AC-ART-08: ghép ra phần tử chưa có thì lớp phủ hiện tên, emoji "
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-ART-09": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-ART-10": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
    },
    "AC-ART-11": {
-    "status": "PASS",
-    "test": "art-upload.test.ts#art: PipelineStore.art_pending > AC-ART-11: mẻ full kèm store.core_art "
+    "status": "FAIL",
+    "test": "(không biên dịch)"
+   },
+   "AC-ART-12": {
+    "status": "FAIL",
+    "test": "(không biên dịch)"
    },
    "AC-ART-13": {
-    "status": "PASS",
-    "test": "art-upload.ui.test.tsx#admin art upload ui > AC-ART-13: mỗi dòng phần tử ở \"Nội dung\" có ô chọn file tranh vẽ chấp nhận PNG/WebP"
+    "status": "FAIL",
+    "test": "(không biên dịch)"
    },
    "AC-ART-14": {
     "status": "FAIL",
-    "test": "art-image-links.test.ts#art image links "
+    "test": "(không biên dịch)"
    },
-   "AC-ART-VALIDATION": {
+   "AC-ART-15": {
     "status": "FAIL",
-    "test": "art-image-links.test.ts#art image links "
-   },
-   "AC-ART-ABUSE": {
-    "status": "FAIL",
-    "test": "art-image-links.test.ts#art image links "
+    "test": "(không biên dịch)"
    }
   }
  },
  "green": {
-  "ts": "2026-10-25T19:31:28+00:00",
-  "commit": "25ddd97",
+  "ts": "2026-10-30T18:44:08+00:00",
+  "commit": "7252f36",
   "results": {
    "AC-ART-01": {
     "status": "PASS",
@@ -68,22 +84,6 @@
    "AC-ART-04": {
     "status": "PASS",
     "test": "test_art#test_ac_art_04_chuyen_webp_256x256"
-   },
-   "AC-ART-05": {
-    "status": "PASS",
-    "test": "art.test.ts#art: GET /img/{key} > AC-ART-05: ảnh tồn tại trả 200 image/webp, đúng byte, Cache-Control public immutable một năm"
-   },
-   "AC-ART-06": {
-    "status": "PASS",
-    "test": "art.ui.test.tsx#art: emoji trước, ảnh sau > AC-ART-06: phần tử có khóa ảnh hiện emoji ngay, kèm <img> trỏ tới /lau-meme/img/<khóa>"
-   },
-   "AC-ART-07": {
-    "status": "PASS",
-    "test": "art.ui.test.tsx#art: ảnh bị chặn không được tải > AC-ART-07: id phần tử có trong images của danh sách chặn thì chỉ hiện emoji, không <img>, không yêu cầu /img/..."
-   },
-   "AC-ART-08": {
-    "status": "PASS",
-    "test": "art.ui.test.tsx#art: phóng lớn khi ghép ra món lần đầu > AC-ART-08: ghép ra phần tử chưa có thì lớp phủ hiện tên, emoji "
    },
    "AC-ART-09": {
     "status": "PASS",
@@ -109,13 +109,9 @@
     "status": "PASS",
     "test": "test_art_image_links#test_ac_art_14_check_target_chap_nhan_https_voi_dia_chi_cong_khai"
    },
-   "AC-ART-VALIDATION": {
+   "AC-ART-15": {
     "status": "PASS",
-    "test": "art-admin-upload.test.ts#art admin upload "
-   },
-   "AC-ART-ABUSE": {
-    "status": "PASS",
-    "test": "art-admin-upload.test.ts#art admin upload "
+    "test": "test_art_search#test_ac_art_15_pick_only_active_without_image"
    }
   }
  }
