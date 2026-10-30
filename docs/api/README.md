@@ -65,6 +65,14 @@ Mọi lỗi là RFC 9457 `application/problem+json` (`type`, `title`, `status`, 
 | GET | `/me/contributions` | Đề xuất của tôi (mới nhất trước) | Session | AC-CONTRIB-06 |
 | GET | `/contributors/leaderboard` | Top cống hiến (top 20 cố định) | - hoặc Session | AC-CONTRIB-11, AC-CONTRIB-12 |
 
+### mQuiz (QUIZ, ADR 0021)
+| Method | Path | Mô tả | Xác thực | AC chính |
+|---|---|---|---|---|
+| POST | `/quiz/rooms` | Tạo phòng mQuiz (mã 6 ký tự), chủ phòng là UUID trong header; cần đồng ý `play` (403) | PlayerId | AC-QUIZ-01, AC-QUIZ-02, AC-PRIV-02 |
+| GET | `/quiz/rooms/{code}` | Trạng thái phòng (lobby, playing, finished) và bảng chung cuộc; không trả UUID hay đề; mã lạ hoặc đã hủy không còn lịch sử → 404 | - | AC-QUIZ-03, AC-QUIZ-20, AC-QUIZ-21, AC-QUIZ-23 |
+| GET | `/quiz/rooms/{code}/ws` | Nâng cấp WebSocket tới Durable Object `QuizRoom`; UUID và nickname gửi trong tin `join`; thiếu `Upgrade` → 426; tin nhắn ở [`quiz-ws.md`](quiz-ws.md) | - (UUID trong `join`) | AC-QUIZ-04..18, AC-QUIZ-23..25 |
+| GET | `/quiz/history` | Lịch sử mQuiz của tôi, mới nhất trước, tối đa 20 ván/trang | PlayerId | AC-QUIZ-19, AC-QUIZ-22 |
+
 ### Pipeline
 | Method | Path | Mô tả | Xác thực | AC chính |
 |---|---|---|---|---|
