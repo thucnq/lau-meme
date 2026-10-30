@@ -1892,4 +1892,101 @@ describe('quiz', () => {
     },
     GAME_TIMEOUT,
   )
+
+  // ============================================================== AC-QUIZ-37 (server side: tin progress, contract 0.11.0)
+  type ProgressMsg = { type: 'progress'; q: number; answered: number; total: number }
+
+  /** 6 players join, the 6th drops while the room is still a lobby, so 5 are connected when the host starts. Returns the 5 live clients on question 1. */
+  async function startWithFiveConnected() {
+    const { players, code, clients: cs } = await setupGame(6)
+    await cs[5]!.close()
+    await sleep(200)
+    const live = cs.slice(0, 5)
+    live[0]!.send({ type: 'start' })
+    const q = (await Promise.all(live.map((c) => c.next<QuestionMsg>('question'))))[0]!
+    return { players, code, live, q }
+  }
+
+  it(
+    'AC-QUIZ-37: người thứ 3 nộp hợp lệ thì mọi socket nhận progress { q, answered: 3, total: 5 } (total = người đang kết nối, không tính người rớt mạng)',
+    async () => {
+      const { live, q } = await startWithFiveConnected()
+      const [a, b] = correctPair(q)
+      for (const c of live.slice(0, 3)) {
+        c.send({ type: 'answer', q: 1, picks: [a, b] })
+        await c.next<AnsweredMsg>('answered')
+      }
+      for (const c of live) {
+        const p = await c.waitAny<ProgressMsg>('progress', (m) => m.answered === 3)
+        expect(p).toEqual({ type: 'progress', q: 1, answered: 3, total: 5 })
+      }
+      // the earlier valid answers were announced too, in order, and never above the number of answers so far
+      const counts = live[4]!.all<ProgressMsg>('progress').map((m) => m.answered)
+      expect(counts).toEqual([...counts].sort((x, y) => x - y))
+      expect(Math.max(...counts)).toBe(3)
+    },
+    GAME_TIMEOUT,
+  )
+
+  it(
+    'AC-QUIZ-37: lần nộp không hợp lệ (bad_answer) không phát progress cho ai',
+    async () => {
+      const { live, q } = await startWithFiveConnected()
+      const [a, b] = correctPair(q)
+      live[0]!.send({ type: 'answer', q: 1, picks: [a, b] })
+      await live[0]!.next<AnsweredMsg>('answered')
+      await Promise.all(live.map((c) => c.waitAny<ProgressMsg>('progress', (m) => m.answered === 1)))
+      const before = live.map((c) => c.all('progress').length)
+
+      const stranger = await elementId('Món Lạ Không Có Trong Đề')
+      live[1]!.send({ type: 'answer', q: 1, picks: [a, stranger] })
+      expect(await live[1]!.errorCode()).toBe('bad_answer')
+      await sleep(300)
+      expect(live.map((c) => c.all('progress').length)).toEqual(before)
+      expect(Math.max(...live.flatMap((c) => c.all<ProgressMsg>('progress').map((m) => m.answered)))).toBe(1)
+    },
+    GAME_TIMEOUT,
+  )
+
+  it(
+    'AC-QUIZ-37: người chơi rớt mạng khi câu đang mở thì total giảm và progress được phát lại cho những socket còn lại',
+    async () => {
+      const { live, q } = await startWithFiveConnected()
+      const [a, b] = correctPair(q)
+      for (const c of live.slice(0, 3)) {
+        c.send({ type: 'answer', q: 1, picks: [a, b] })
+        await c.next<AnsweredMsg>('answered')
+      }
+      await live[4]!.waitAny<ProgressMsg>('progress', (m) => m.answered === 3 && m.total === 5)
+
+      await live[3]!.close() // the 4th player drops without answering
+      for (const c of [live[0]!, live[1]!, live[2]!, live[4]!]) {
+        const p = await c.waitAny<ProgressMsg>('progress', (m) => m.total === 4)
+        expect(p).toEqual({ type: 'progress', q: 1, answered: 3, total: 4 })
+      }
+    },
+    GAME_TIMEOUT,
+  )
+
+  it(
+    'AC-QUIZ-37: tin progress chỉ có type, q, answered, total (không có seat, nickname, picks hay đáp án)',
+    async () => {
+      const { live, q } = await startWithFiveConnected()
+      live[0]!.send({ type: 'answer', q: 1, picks: correctPair(q) })
+      await live[0]!.next<AnsweredMsg>('answered')
+      const p = await live[2]!.waitAny<ProgressMsg>('progress')
+      expect(Object.keys(p).sort()).toEqual(['answered', 'q', 'total', 'type'])
+      const text = JSON.stringify(live[2]!.all('progress'))
+      expect(text).not.toMatch(/seat|nickname|picks|correct|Bếp/i)
+      expect(text).not.toMatch(UUID_IN_TEXT)
+    },
+    GAME_TIMEOUT,
+  )
+
+  it('AC-QUIZ-37: chơi một mình (solo_pack) không có tin progress', async () => {
+    const { clients: cs } = await setupGame(1)
+    cs[0]!.send({ type: 'start' })
+    await cs[0]!.next<SoloPackMsg>('solo_pack')
+    await cs[0]!.none('progress', 300)
+  })
 })
