@@ -1,7 +1,7 @@
 # Tiến độ - ƯỚC LƯỢNG - LẨU MEME
 
 > Sinh bởi `/dk:plan` (gen-plan.py) từ `docs/estimate/items.json`. **Người sửa trực tiếp file này**: dấu `[x]` (hạng mục hoặc AC), `tiến độ: N%`, `người`, `bắt đầu`, `xong` (YYYY-MM-DD), `ghi chú` - giữ nguyên dấu ` · ` giữa các trường. Chạy lại `/dk:plan` để tính dự báo và vẽ lại `gantt.html`. `KH` là kế hoạch gốc, chỉ đổi bằng `/dk:plan rebaseline`.
-> Bắt đầu dự án: 2026-10-20 · Kỹ sư: 1 (Thuc) · Giờ/tuần: 20 · Nghiệm thu KH: 2029-01-18 · Dự báo: 2027-07-27 · Cập nhật: 2026-10-28
+> Bắt đầu dự án: 2026-10-20 · Kỹ sư: 1 (Thuc) · Giờ/tuần: 20 · Nghiệm thu KH: 2029-01-18 · Dự báo: 2027-07-27 · Cập nhật: 2026-10-30
 
 
 ## Nền tảng
@@ -37,7 +37,7 @@
   - [x] AC-GAME-03 Thả chồng trên mặt bàn
   - [x] AC-GAME-04 Ghép ra phần tử đã có
   - [x] AC-GAME-05 Nồi trào - câu cố định theo cặp
-  - [x] AC-GAME-06 Gợi ý khi trượt
+  - [x] AC-GAME-06 Gợi ý cặp khi trượt (cập nhật 2026-10-30: gợi ý cả cặp A + B thay câu Nồi trào ở lần trượt thứ 3, thẻ nháy sáng - câu hỏi mở 103)
   - [x] AC-GAME-07 Tìm trong Đĩa nhúng không dấu
   - [x] AC-GAME-08 Sắp xếp Đĩa nhúng
   - [x] AC-GAME-09 Nhãn "MỚI"
@@ -166,6 +166,11 @@
   - [x] AC-ADMIN-10 Trang quản trị
   - [ ] AC-ADMIN-11 Thống kê kết quả crawl (thêm 2026-10-23)
   - [ ] AC-ADMIN-12 Gán tier cho phần tử (thêm 2026-10-23)
+  - [ ] AC-ADMIN-13 Danh sách "Bị chặn" (thêm 2026-10-30)
+  - [ ] AC-ADMIN-14 Sửa tay và "Bỏ chặn" (thêm 2026-10-30)
+  - [ ] AC-ADMIN-15 "Duyệt luôn" không cần Gemini (thêm 2026-10-30)
+  - [ ] AC-ADMIN-16 Sửa mọi thuộc tính của meme trong "Nội dung" (thêm 2026-10-30)
+  - [ ] AC-ADMIN-17 Dọn danh sách "Bị chặn" sau 90 ngày (thêm 2026-10-30)
 
 ## Vận hành
 - [x] **METRIC** Đo chỉ số thành công · 5đ · rủi ro: MEDIUM · KH: 2027-05-28 → 2027-06-10 · tiến độ: 100% · người: Thuc · bắt đầu: 2026-10-23 · xong: 2026-10-23 · ghi chú: 
@@ -275,7 +280,7 @@
   - [x] AC-GAME-03 Thả chồng trên mặt bàn
   - [x] AC-GAME-04 Ghép ra phần tử đã có
   - [x] AC-GAME-05 Nồi trào - câu cố định theo cặp
-  - [x] AC-GAME-06 Gợi ý khi trượt
+  - [x] AC-GAME-06 Gợi ý cặp khi trượt (cập nhật 2026-10-30: gợi ý cả cặp A + B thay câu Nồi trào ở lần trượt thứ 3, thẻ nháy sáng - câu hỏi mở 103)
   - [x] AC-GAME-07 Tìm trong Đĩa nhúng không dấu
   - [x] AC-GAME-08 Sắp xếp Đĩa nhúng
   - [x] AC-GAME-09 Nhãn "MỚI"
@@ -319,6 +324,9 @@
   - [x] AC-MOD-08 Hoãn nội dung nóng vì một người
   - [x] AC-MOD-09 Không bao giờ - cáo buộc và quấy rối
   - [x] AC-MOD-10 Tên bị quản trị chặn không quay lại
+  - [ ] AC-MOD-11 Bị chặn thì lưu lại, không bỏ đi (thêm 2026-10-30)
+  - [ ] AC-MOD-12 Không phải meme - lớp 1 theo dấu hiệu tiêu đề (thêm 2026-10-30)
+  - [ ] AC-MOD-13 Không phải meme - lớp 2 LLM phân loại (thêm 2026-10-30)
 - [x] **PIPE2** Pipeline Mẻ nhúng - crawl và tự động đăng (giai đoạn 2) · 14đ · rủi ro: HIGH · KH: 2027-09-03 → 2027-10-15 · tiến độ: 100% · người: Thuc · bắt đầu: 2026-10-21 · xong: 2026-10-21 · ghi chú: PR #34 (mẻ full), #40, #43; trên staging
   - [x] AC-PIPE-03 Một nguồn lỗi không làm hỏng cả đợt
   - [x] AC-PIPE-04 Adapter chỉ thu khái niệm, tôn trọng robots.txt
@@ -328,7 +336,7 @@
   - [x] AC-PIPE-08 Công thức bổ sung (cập nhật 2026-10-20)
   - [x] AC-PIPE-09 Giám khảo hài
   - [x] AC-PIPE-10 Idempotent
-  - [x] AC-PIPE-12 Gom lô Gemini, backoff, hết quota dừng êm
+  - [x] AC-PIPE-12 Gom lô Gemini, backoff, hết quota dừng êm (cập nhật 2026-10-30: chia đôi khi lỗi; lô mặc định vẫn 10)
 - [x] **PIPE3** Nguồn Tuổi Trẻ, Threads, mức mặn, thống kê crawl (giai đoạn 2) · 7.5đ · rủi ro: HIGH · KH: 2028-04-10 → 2028-05-03 · tiến độ: 100% · người: Thuc · bắt đầu: 2026-10-24 · xong: 2026-10-24 · ghi chú: 
   - [x] AC-ADMIN-11 Thống kê kết quả crawl (thêm 2026-10-23)
   - [x] AC-PIPE-15 Nguồn Tuổi Trẻ chuyên mục meme (thêm 2026-10-23)
