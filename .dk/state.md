@@ -42,3 +42,4 @@ review-feat-contrib-catalog: approved
 review-feat-feedback: approved
 review-feat-daily-reveal: approved
 review-feat-quiz: approved
+review-fix-quiz-uat-1030: approved

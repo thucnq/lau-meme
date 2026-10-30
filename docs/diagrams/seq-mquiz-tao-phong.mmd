@@ -15,7 +15,10 @@ sequenceDiagram
   H->>W: GET /quiz/rooms/{mã}/ws (Upgrade)
   W->>D: quiz_room có mã?
   W->>R: chuyển request
-  R-->>H: 101; join → lobby
+  R-->>H: 101
+  H->>W: join { uuid, nickname } (tự động, không qua màn nhập nickname)
+  W->>R: chuyển request
+  R-->>H: lobby (chủ phòng vào thẳng phòng chờ)
   P->>W: mở link, WebSocket, join { uuid, nickname }
   W->>R: chuyển request
   R->>D: UUID đã đồng ý gửi dữ liệu?
