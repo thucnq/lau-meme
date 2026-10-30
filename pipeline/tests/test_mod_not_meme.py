@@ -10,7 +10,8 @@
 Giả định về hợp đồng nội bộ (suy ra từ AC và các test AC-MOD-01..11 đã có):
   - moderation.layer1(concept, mod_lists) trả mã lý do `"not_meme"` khi tên có dấu hiệu, `None` khi không.
   - moderation.CATEGORIES có thêm "not_meme"; ModerationResult.counts dùng khóa "không phải meme".
-  - `rejected` của mẻ success: {"reasons": [{"code": "not_meme", "label": "Không phải meme"}], "step": "layer1"|"layer2"}.
+  - `rejected` của mẻ success:
+    {"reasons": [{"code": "not_meme", "label": "Không phải meme"}], "step": "layer1"|"layer2"}.
   - GeminiSteps["classify"] nhét danh sách danh mục (mã + định nghĩa) vào lời gọi; test chỉ tìm mã và các cụm khóa
     của định nghĩa trong AC (so khớp không phân biệt hoa thường), không ép đúng từng chữ của prompt.
 Helper dùng lại từ test_mod.py, test_mod_rejected.py, test_pipe_gemini.py. Không mạng, không đồng hồ thật.
@@ -49,7 +50,7 @@ CONTROLS = ["Còn Cái Nịt", "Mèo vs Dưa Leo", "Live Laugh Love", "Mùa Đô
 LAYER2_NOT_MEME = [
     "đội tuyển bóng đá quốc gia bồ đào nha",
     "thủy tiên",
-    "AI Rumpelstiltskin \"Tip Toein' In My Jordans\"",
+    'AI Rumpelstiltskin "Tip Toein\' In My Jordans"',
 ]
 NOT_MEME_LABEL = "Không phải meme"
 
@@ -182,7 +183,10 @@ def test_ac_mod_12_ghi_vao_bi_chan_voi_ma_not_meme_nhan_va_buoc_lop_1():
     """AC-MOD-12: mẻ full: 3 khái niệm ví dụ vào `rejected` với mã `not_meme`, nhãn "Không phải meme", bước layer1,
     nguồn + ngữ cảnh đi kèm (AC-MOD-11); không vào graph; không gửi bước phân loại LLM; stats.blocked đếm 3."""
     items = [(n, f"ngữ cảnh {i}", f"https://ex.com/p{i}") for i, n in enumerate(POSITIVES)]
-    items += [(n, f"ngữ cảnh c{i}", f"https://ex.com/c{i}") for i, n in enumerate(CONTROLS)]
+    # "Còn Cái Nịt" là phần tử lõi đã có trong graph nền (khử trùng, không vào kiểm duyệt)
+    # nên mẻ này chỉ dùng ba đối chứng mới
+    new_controls = [n for n in CONTROLS if n != "Còn Cái Nịt"]
+    items += [(n, f"ngữ cảnh c{i}", f"https://ex.com/c{i}") for i, n in enumerate(new_controls)]
     classify = Recording(_classify)
     outcome, client, _ = batch_run(state(), [Adapter("RSS", items)], make_llm(classify=classify))
 
@@ -198,7 +202,7 @@ def test_ac_mod_12_ghi_vao_bi_chan_voi_ma_not_meme_nhan_va_buoc_lop_1():
         assert row["source_url"].startswith("https://ex.com/p")
         assert name not in names_in(classify.payloads)
     assert content_names(body).isdisjoint(set(POSITIVES))
-    for name in CONTROLS:
+    for name in new_controls:
         assert fold_of(name) not in by_fold
         assert name in names_in(classify.payloads)
     assert body["stats"]["blocked"]["không phải meme"] == 3
@@ -207,7 +211,9 @@ def test_ac_mod_12_ghi_vao_bi_chan_voi_ma_not_meme_nhan_va_buoc_lop_1():
 def test_ac_mod_12_khong_phai_meme_trong_bao_cao_dot_khong_lo_ten():
     """AC-MOD-12: báo cáo đợt chỉ đếm "không phải meme" (AC-ADMIN-11), không chứa tên khái niệm bị loại."""
     outcome, client, reporter = batch_run(
-        state(), [Adapter("RSS", [(POSITIVES[2], "x", "https://ex.com/1"), (MEME, "y", "https://ex.com/2")])], make_llm()
+        state(),
+        [Adapter("RSS", [(POSITIVES[2], "x", "https://ex.com/1"), (MEME, "y", "https://ex.com/2")])],
+        make_llm(),
     )
     assert outcome.ok is True
     (body,) = client.success_posts
@@ -222,7 +228,8 @@ def test_ac_mod_12_admin_bo_chan_thi_me_sau_bo_qua_lop_1_va_lop_2():
     name = POSITIVES[0]
     link_calls = Recording(
         lambda items: [
-            {"key": i["key"], "pairs": [["AFK", "Aura"] if i.get("name") == name else ["AFK", "Bom Hàng"]]} for i in items
+            {"key": i["key"], "pairs": [["AFK", "Aura"] if i.get("name") == name else ["AFK", "Bom Hàng"]]}
+            for i in items
         ]
     )
     classify = Recording(_classify)
@@ -273,7 +280,7 @@ def test_ac_mod_13_ba_khai_niem_not_meme_bi_loai_o_lop_2_con_cai_nit_di_tiep():
     phản hồi "an toàn" đi tiếp; cả bốn đều được gửi LLM (đã qua lớp 1)."""
     from lau_meme_pipeline.moderation import layer1
 
-    for n in LAYER2_NOT_MEME + ["Còn Cái Nịt"]:
+    for n in [*LAYER2_NOT_MEME, "Còn Cái Nịt"]:
         assert layer1(concept(name=n), lists()) is None, n  # tiền đề: qua lớp 1
 
     concepts = [concept(f"n{i}", n) for i, n in enumerate(LAYER2_NOT_MEME)] + [concept("nit", "Còn Cái Nịt")]
@@ -315,7 +322,12 @@ def test_ac_mod_13_luat_nguoi_that_van_ap_not_meme_tro_toi_nguoi_them_ten_va_bi_
     """AC-MOD-13 (+ AC-MOD-05): "thủy tiên" vừa `not_meme` vừa trỏ tới người cụ thể: vẫn bị loại, tên và mọi bí danh
     (dạng fold) vào danh sách chặn bí danh; "đội tuyển ..." chỉ `not_meme` (không trỏ tới người) thì không thêm gì."""
     person = verdict(
-        "tt", category="not_meme", confidence=0.95, targets=True, name="Thủy Tiên", aliases=["Thuỷ Tiên Công Vinh", "TT"]
+        "tt",
+        category="not_meme",
+        confidence=0.95,
+        targets=True,
+        name="Thủy Tiên",
+        aliases=["Thuỷ Tiên Công Vinh", "TT"],
     )
     team = verdict("team", category="not_meme", confidence=0.95, targets=False)
     llm = FakeLlm(answers={"tt": person, "team": team})
