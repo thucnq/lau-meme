@@ -85,3 +85,6 @@
 - mQuiz (AC-QUIZ-02, AC-QUIZ-25): tạo phòng cần đồng ý chơi (403); mỗi UUID tạo tối đa 5 phòng/giờ, mỗi IP tối đa 20 phòng/giờ (429). Nickname dùng trong phòng không ghi đè nickname chung. Mỗi socket tối đa 10 tin/giây và 1 KB mỗi tin; vượt thì server đóng socket (mã 1008).
 - mQuiz (contract 0.10.0 và 0.10.1): thêm `POST /quiz/rooms`, `GET /quiz/rooms/{code}`, `GET /quiz/rooms/{code}/ws` (WebSocket) và `GET /quiz/history`; `MyData.quiz_history` có trong `GET /me`. Không thêm loại sự kiện mới.
 - Triển khai staging: Worker version `e4d8cbf7-a589-4170-aa19-25e746565320`, git sha `8a1b89b`, 2026-10-29 19:45 UTC; D1 migration `0011_quiz_history.sql` đã áp dụng; Durable Object `QuizRoom` (SQLite) triển khai lần đầu.
+- mQuiz (AC-QUIZ-04, AC-QUIZ-26): ô nickname ở "Tạo phòng" và ở màn vào phòng điền sẵn nickname đã lưu ở Bàn lẩu (đọc qua `GET /api/me`); vẫn sửa được cho riêng phòng đó.
+- mQuiz (AC-QUIZ-26): chủ phòng tạo xong vào thẳng phòng chờ với nickname vừa nhập, không qua màn nhập nickname. Phòng chờ hiện link mời với nút "Sao chép link" và nút "Chia sẻ" (chỉ hiện khi trình duyệt hỗ trợ chia sẻ hệ thống).
+- Triển khai staging: Worker version `aa3c8cc0-f397-46a9-baea-fe1403506e03`, git `b4a5bb0` (PR #153), 2026-10-30 06:28 UTC, qua workflow deploy GitHub Actions (run `41014225784`).
