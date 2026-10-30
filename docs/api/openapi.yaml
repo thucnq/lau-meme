@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: lau-meme API
-  version: 0.10.1
+  version: 0.11.0
   description: |
     API của Worker Lẩu Meme. Bốn chủ thể (BRD mục 2): thực khách ẩn danh (header `X-Player-Id` = UUID v4
     sinh trên trình duyệt), thực khách đã đăng nhập Google (cookie phiên `laumeme_sid`, ADR 0010 - kết quả Daily,
@@ -1368,6 +1368,226 @@ paths:
         '401': { $ref: '#/components/responses/Unauthorized' }
         '429': { $ref: '#/components/responses/TooManyRequests' }
         default: { $ref: '#/components/responses/Problem' }
+  /admin/elements/{id}:
+    servers:
+      - url: /api
+        description: Chỉ trên host quản trị riêng (ADR 0008) - production https://laumeme-admin.dinoduct.fun/api, staging https://laumeme-admin-staging.dinoduct.fun/api; trên host game `/lau-meme/api/admin/*` trả 404
+    get:
+      operationId: adminGetElement
+      tags: [admin]
+      summary: Chi tiết một phần tử để sửa trong mục "Nội dung"
+      description: |
+        Giá trị mẻ gần nhất đã đăng (`published`) và giá trị admin đã sửa (`edit`, null = chưa sửa). `pending = true`
+        khi bản sửa chưa vào mẻ nào ("Chờ mẻ kế tiếp", AC-ADMIN-16). Tier, ảnh và ẩn/hiện vẫn đổi qua
+        `/admin/elements/{id}/tier`, `/admin/elements/{id}/image` và `/admin/moderation`.
+      security: [{ AdminToken: [] }]
+      x-ac: [AC-ADMIN-16]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { $ref: '#/components/schemas/ElementId' }
+      responses:
+        '200':
+          description: Chi tiết
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AdminElementDetail' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        default: { $ref: '#/components/responses/Problem' }
+    patch:
+      operationId: adminEditElement
+      tags: [admin]
+      summary: Sửa tên, emoji, mô tả, gợi ý Daily, gợi ý ảnh, nguồn gốc của phần tử
+      description: |
+        Chỉ gửi trường muốn đổi; `null` bỏ giá trị admin đã sửa (về giá trị pipeline). Trong một `DB.batch`: ghi
+        `element_edit` (tăng `rev`), đổi tên thì thêm `fold` cũ vào `element_alias` (id giữ nguyên, câu hỏi mở 94), và
+        ghi đúng 1 dòng `content_change` `edit_element` chỉ chứa các trường đã đổi (trước/sau). Không có trường nào đổi
+        so với giá trị hiện tại → 200, không ghi audit. Graph có giá trị mới từ mẻ kế tiếp (câu hỏi mở 95); pipeline
+        đọc `element_edits` từ `/pipeline/state` và không ghi đè ở mọi mẻ sau. Giá trị sai → 400; `fold` tên mới trùng
+        tên, bí danh hoặc tên đã sửa của phần tử khác, hoặc tên đề xuất đã duyệt / "Duyệt luôn" → 409; không có trong
+        danh mục → 404; lệnh thất bại không ghi gì (ADR 0022).
+      security: [{ AdminToken: [] }]
+      x-ac: [AC-ADMIN-16, AC-ADMIN-09]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { $ref: '#/components/schemas/ElementId' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ElementEditRequest' }
+      responses:
+        '200':
+          description: Đã lưu
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AdminElementDetail' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        default: { $ref: '#/components/responses/Problem' }
+  /admin/rejected:
+    servers:
+      - url: /api
+        description: Chỉ trên host quản trị riêng (ADR 0008) - production https://laumeme-admin.dinoduct.fun/api, staging https://laumeme-admin-staging.dinoduct.fun/api; trên host game `/lau-meme/api/admin/*` trả 404
+    get:
+      operationId: adminListRejected
+      tags: [admin]
+      summary: Danh sách "Bị chặn" (lần gặp cuối mới nhất trước)
+      description: |
+        Khái niệm pipeline đã chặn ở kiểm duyệt (AC-MOD-11, ADR 0022). `q` so khớp dạng `fold` (chứa chuỗi); `reason`
+        là mã lý do (dòng có lý do này trong `reasons`). Mặc định 50 dòng/trang. Không có dữ liệu người chơi.
+      security: [{ AdminToken: [] }]
+      x-ac: [AC-ADMIN-13, AC-ADMIN-01, AC-ADMIN-10]
+      parameters:
+        - name: q
+          in: query
+          schema: { type: string, maxLength: 100 }
+        - name: reason
+          in: query
+          schema: { type: string, maxLength: 50 }
+        - name: step
+          in: query
+          schema: { $ref: '#/components/schemas/RejectedStep' }
+        - name: status
+          in: query
+          schema: { $ref: '#/components/schemas/RejectedStatus' }
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Size'
+      responses:
+        '200':
+          description: Trang khái niệm bị chặn (rỗng → giao diện hiện "Chưa có nội dung bị chặn")
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AdminRejectedPage' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        default: { $ref: '#/components/responses/Problem' }
+  /admin/rejected/{id}:
+    servers:
+      - url: /api
+        description: Chỉ trên host quản trị riêng (ADR 0008) - production https://laumeme-admin.dinoduct.fun/api, staging https://laumeme-admin-staging.dinoduct.fun/api; trên host game `/lau-meme/api/admin/*` trả 404
+    get:
+      operationId: adminGetRejected
+      tags: [admin]
+      summary: Chi tiết một khái niệm bị chặn
+      security: [{ AdminToken: [] }]
+      x-ac: [AC-ADMIN-13]
+      parameters:
+        - $ref: '#/components/parameters/RejectedId'
+      responses:
+        '200':
+          description: Chi tiết đủ trường của AC-MOD-11
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AdminRejected' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        default: { $ref: '#/components/responses/Problem' }
+    patch:
+      operationId: adminEditRejected
+      tags: [admin]
+      summary: Sửa tay khái niệm bị chặn
+      description: |
+        Chỉ khi trạng thái `blocked` hoặc `unblocked`; `added`/`approved` → 409 (chỉ xem). Chỉ gửi trường muốn đổi.
+        Trong một `DB.batch` ghi dòng và đúng 1 dòng `content_change` `edit_rejected` (trước/sau các trường đã đổi).
+        Giá trị sai → 400; `fold` tên mới trùng phần tử trong danh mục, bí danh, dòng "Bị chặn" khác hoặc đề xuất đã
+        duyệt → 409; không tồn tại → 404; lệnh thất bại không ghi audit.
+      security: [{ AdminToken: [] }]
+      x-ac: [AC-ADMIN-14, AC-ADMIN-09]
+      parameters:
+        - $ref: '#/components/parameters/RejectedId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RejectedEditRequest' }
+      responses:
+        '200':
+          description: Đã lưu
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AdminRejected' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        default: { $ref: '#/components/responses/Problem' }
+  /admin/rejected/{id}/unblock:
+    servers:
+      - url: /api
+        description: Chỉ trên host quản trị riêng (ADR 0008) - production https://laumeme-admin.dinoduct.fun/api, staging https://laumeme-admin-staging.dinoduct.fun/api; trên host game `/lau-meme/api/admin/*` trả 404
+    post:
+      operationId: adminUnblockRejected
+      tags: [admin]
+      summary: Bỏ chặn - mẻ sau đưa vào đầu hàng chờ, không kiểm duyệt lại
+      description: |
+        `blocked` → `unblocked` ("Đã bỏ chặn - chờ mẻ"), ghi `content_change` `unblock_rejected` trong cùng `DB.batch`.
+        Mẻ `full` kế tiếp đọc dòng từ `/pipeline/state.unblocked` (AC-PIPE-21). Trạng thái khác `blocked` → 409. `fold`
+        đang bị quản trị chặn (nguồn `admin`, AC-ADMIN-05) → 409 "Tên đang bị chặn vĩnh viễn, gỡ chặn tên trước". Không
+        tồn tại → 404. Thất bại không ghi audit.
+      security: [{ AdminToken: [] }]
+      x-ac: [AC-ADMIN-14, AC-ADMIN-09, AC-PIPE-21]
+      parameters:
+        - $ref: '#/components/parameters/RejectedId'
+      responses:
+        '200':
+          description: Đã bỏ chặn
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AdminRejected' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        default: { $ref: '#/components/responses/Problem' }
+  /admin/rejected/{id}/approve:
+    servers:
+      - url: /api
+        description: Chỉ trên host quản trị riêng (ADR 0008) - production https://laumeme-admin.dinoduct.fun/api, staging https://laumeme-admin-staging.dinoduct.fun/api; trên host game `/lau-meme/api/admin/*` trả 404
+    post:
+      operationId: adminApproveRejected
+      tags: [admin]
+      summary: Duyệt luôn - công thức A + B = khái niệm, không qua Gemini
+      description: |
+        Như duyệt đề xuất meme (`adminApproveContribution`): trong một `DB.batch` dòng thành `approved` với
+        `element_id` = ElementId của `fold(name)`, `a_id`/`b_id` sắp thứ tự, tier khác 1 thì ghi `element_tier`, ghi
+        `content_change` `approve_rejected`. Pipeline đọc ở mẻ kế tiếp (`/pipeline/state.manual_approvals`), không gọi
+        Gemini, không kiểm duyệt. Chỉ từ `blocked`/`unblocked` (khác → 409); `fold` đang bị quản trị chặn → 409; A hoặc
+        B không có trong graph hiện hành hoặc đang ẩn/chặn → 409; cặp đã có công thức (graph hiện hành, đề xuất đã duyệt
+        hoặc "Duyệt luôn" khác) → 409; tên trùng phần tử khác → 409; thiếu A, B, tên hoặc emoji, A = B → 400; không
+        tồn tại → 404 (câu hỏi mở 98). Thất bại không ghi audit.
+      security: [{ AdminToken: [] }]
+      x-ac: [AC-ADMIN-15, AC-ADMIN-09, AC-TIER-01]
+      parameters:
+        - $ref: '#/components/parameters/RejectedId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RejectedApproveRequest' }
+      responses:
+        '200':
+          description: Đã duyệt tay
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AdminRejected' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        default: { $ref: '#/components/responses/Problem' }
   /admin/audit:
     servers:
       - url: /api
@@ -1376,9 +1596,9 @@ paths:
       operationId: adminListAudit
       tags: [admin]
       summary: Nhật ký audit (mới nhất trước)
-      description: Gộp `admin_audit` (kiểm duyệt), `admin_change` (tier, đề xuất meme - ADR 0013) và `admin_image_change` (tranh vẽ tay - ADR 0016) theo thời điểm.
+      description: Gộp `admin_audit` (kiểm duyệt), `admin_change` (tier, đề xuất meme - ADR 0013), `admin_image_change` (tranh vẽ tay - ADR 0016), `daily_pin_change` (ADR 0019) và `content_change` (Bị chặn, sửa phần tử - ADR 0022) theo thời điểm.
       security: [{ AdminToken: [] }]
-      x-ac: [AC-ADMIN-01, AC-ADMIN-09, AC-ADMIN-12, AC-CONTRIB-07, AC-CONTRIB-08, AC-TIER-05, AC-ART-13]
+      x-ac: [AC-ADMIN-01, AC-ADMIN-09, AC-ADMIN-12, AC-CONTRIB-07, AC-CONTRIB-08, AC-TIER-05, AC-ART-13, AC-ADMIN-14, AC-ADMIN-15, AC-ADMIN-16]
       parameters:
         - $ref: '#/components/parameters/Page'
         - $ref: '#/components/parameters/Size'
@@ -1427,7 +1647,7 @@ paths:
         (không mô tả, tài khoản hay nickname - AC-CONTRIB-09, ADR 0013); link ảnh chỉ có khi admin đã chọn dùng nó làm
         ảnh món (`image_links`, AC-ART-14, ADR 0018).
       security: [{ PipelineToken: [] }]
-      x-ac: [AC-PIPE-13, AC-DAILY-01, AC-DAILY-18, AC-MOD-10, AC-FEEDBACK-04, AC-FEEDBACK-05, AC-INV-03, AC-TIER-01, AC-PIPE-16, AC-CONTRIB-08, AC-CONTRIB-09, AC-ART-14]
+      x-ac: [AC-PIPE-13, AC-DAILY-01, AC-DAILY-18, AC-MOD-10, AC-FEEDBACK-04, AC-FEEDBACK-05, AC-INV-03, AC-TIER-01, AC-PIPE-16, AC-CONTRIB-08, AC-CONTRIB-09, AC-ART-14, AC-PIPE-21, AC-ADMIN-15, AC-ADMIN-16]
       responses:
         '200':
           description: Trạng thái
@@ -1536,9 +1756,11 @@ paths:
         `version` phải lớn hơn mọi version đã đăng (409). `status = error`: chỉ ghi nhật ký đợt, không đổi bản
         đang chạy. Cùng `DB.batch` đó Worker ghi `creators_json` (ADR 0013): mỗi phần tử trong `content.elements`
         là đề xuất đã duyệt → nickname hiện tại của tài khoản (không còn/không nickname → null); và cập nhật
-        `element.trend_peak` từ `content.elements[].trend_peak` (vắng thì giữ giá trị cũ).
+        `element.trend_peak` từ `content.elements[].trend_peak` (vắng thì giữ giá trị cũ). Cũng trong `DB.batch` đó (ADR 0022):
+        upsert `rejected` vào `rejected_concept`, chuyển `rejected_added` sang `added`, đặt `element_edit.applied_rev` từ
+        `element_edits_applied`, ghi `element.description`/`daily_hint`/`image_hint` từ `content.elements`.
       security: [{ PipelineToken: [] }]
-      x-ac: [AC-PIPE-01, AC-PIPE-10, AC-PIPE-11, AC-GRAPH-04, AC-GRAPH-05, AC-SEED-01, AC-SEED-08, AC-DAILY-01, AC-DAILY-02, AC-DAILY-20, AC-INV-06, AC-ART-09, AC-PIPE-16, AC-CONTRIB-10, AC-ADMIN-11, AC-ART-11]
+      x-ac: [AC-PIPE-01, AC-PIPE-10, AC-PIPE-11, AC-GRAPH-04, AC-GRAPH-05, AC-SEED-01, AC-SEED-08, AC-DAILY-01, AC-DAILY-02, AC-DAILY-20, AC-INV-06, AC-ART-09, AC-PIPE-16, AC-CONTRIB-10, AC-ADMIN-11, AC-ART-11, AC-MOD-11, AC-PIPE-12, AC-PIPE-21, AC-ADMIN-16]
       requestBody:
         required: true
         content:
@@ -1675,6 +1897,11 @@ components:
       in: path
       required: true
       schema: { type: string, pattern: '^[2-9A-HJKMNP-Z]{6}$' }
+    RejectedId:
+      name: id
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
     ContributionId:
       name: id
       in: path
@@ -2518,6 +2745,129 @@ components:
                   tier_source: { $ref: '#/components/schemas/TierSource' }
                   auto_tier: { type: [integer, 'null'], minimum: 1, maximum: 5, description: 'Tier tự động pipeline tính ở mẻ gần nhất (AC-TIER-04); null = mẻ trước TIER-04' }
                   image_source: { type: [string, 'null'], enum: [ai, admin, null] }
+    RejectedStep:
+      type: string
+      enum: [layer1, layer2]
+      description: '`layer1` = từ cấm / bí danh bị chặn, `layer2` = LLM (AC-MOD-11)'
+    RejectedStatus:
+      type: string
+      enum: [blocked, unblocked, added, approved]
+      description: 'Bị chặn / Đã bỏ chặn - chờ mẻ / Đã thêm / Đã duyệt tay (AC-ADMIN-13)'
+    RejectReason:
+      type: object
+      additionalProperties: false
+      required: [code, label]
+      properties:
+        code: { type: string, minLength: 1, maxLength: 50, description: 'Mã lý do, vd `banned_term`, `banned_alias`, `admin_blocked`, `politics`, `unsure`' }
+        label: { type: string, minLength: 1, maxLength: 100, description: Nhãn tiếng Việt }
+    AdminRejected:
+      type: object
+      additionalProperties: false
+      required: [id, name, emoji, description, daily_hint, image_hint, source_name, source_url, context, reasons, step, status, seen_count, first_batch_id, last_batch_id, first_seen_at, last_seen_at, edited_at, decided_at, element_id, a, b, tier]
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string, minLength: 1, maxLength: 100 }
+        emoji: { type: [string, 'null'], maxLength: 16 }
+        description: { type: [string, 'null'], maxLength: 200 }
+        daily_hint: { type: [string, 'null'], maxLength: 200 }
+        image_hint: { type: [string, 'null'], maxLength: 300 }
+        source_name: { type: string, maxLength: 50 }
+        source_url: { type: [string, 'null'], maxLength: 500, pattern: '^https://' }
+        context: { type: [string, 'null'], maxLength: 500 }
+        reasons:
+          type: array
+          minItems: 1
+          items: { $ref: '#/components/schemas/RejectReason' }
+        step: { $ref: '#/components/schemas/RejectedStep' }
+        status: { $ref: '#/components/schemas/RejectedStatus' }
+        seen_count: { type: integer, minimum: 1 }
+        first_batch_id: { type: string, format: uuid }
+        last_batch_id: { type: string, format: uuid }
+        first_seen_at: { $ref: '#/components/schemas/Instant' }
+        last_seen_at: { $ref: '#/components/schemas/Instant' }
+        edited_at: { oneOf: [{ $ref: '#/components/schemas/Instant' }, { type: 'null' }] }
+        decided_at: { oneOf: [{ $ref: '#/components/schemas/Instant' }, { type: 'null' }] }
+        element_id: { oneOf: [{ $ref: '#/components/schemas/ElementId' }, { type: 'null' }], description: '`added`: id mẻ đã đăng; `approved`: ElementId của `fold(name)`' }
+        a: { oneOf: [{ $ref: '#/components/schemas/ElementId' }, { type: 'null' }] }
+        b: { oneOf: [{ $ref: '#/components/schemas/ElementId' }, { type: 'null' }] }
+        tier: { oneOf: [{ $ref: '#/components/schemas/Tier' }, { type: 'null' }] }
+    AdminRejectedPage:
+      allOf:
+        - $ref: '#/components/schemas/Page'
+        - type: object
+          required: [items]
+          properties:
+            items:
+              type: array
+              items: { $ref: '#/components/schemas/AdminRejected' }
+    RejectedEditRequest:
+      type: object
+      additionalProperties: false
+      minProperties: 1
+      properties:
+        name: { type: string, minLength: 1, maxLength: 100 }
+        emoji: { type: [string, 'null'], minLength: 1, maxLength: 16 }
+        description: { type: [string, 'null'], maxLength: 200 }
+        daily_hint: { type: [string, 'null'], maxLength: 200 }
+        image_hint: { type: [string, 'null'], maxLength: 300 }
+    RejectedApproveRequest:
+      type: object
+      additionalProperties: false
+      required: [a, b, name, emoji]
+      properties:
+        a: { $ref: '#/components/schemas/ElementId' }
+        b: { $ref: '#/components/schemas/ElementId' }
+        name: { type: string, minLength: 1, maxLength: 100 }
+        emoji: { type: string, minLength: 1, maxLength: 16 }
+        description: { type: string, maxLength: 200 }
+        daily_hint: { type: string, maxLength: 200 }
+        image_hint: { type: string, maxLength: 300, description: 'Vắng → ART vẽ từ tên và mô tả như phần tử crawl' }
+        tier: { $ref: '#/components/schemas/Tier' }
+    ElementText:
+      type: object
+      additionalProperties: false
+      required: [name, emoji, description, daily_hint, image_hint, origin]
+      properties:
+        name: { type: string, maxLength: 100 }
+        emoji: { type: string, maxLength: 16 }
+        description: { type: [string, 'null'], maxLength: 200 }
+        daily_hint: { type: [string, 'null'], maxLength: 200 }
+        image_hint: { type: [string, 'null'], maxLength: 300 }
+        origin: { type: [string, 'null'], enum: [vn, intl, null] }
+    ElementEditRequest:
+      type: object
+      additionalProperties: false
+      minProperties: 1
+      description: '`null` = bỏ giá trị admin đã sửa của trường đó'
+      properties:
+        name: { type: [string, 'null'], minLength: 1, maxLength: 100 }
+        emoji: { type: [string, 'null'], minLength: 1, maxLength: 16 }
+        description: { type: [string, 'null'], maxLength: 200 }
+        daily_hint: { type: [string, 'null'], maxLength: 200 }
+        image_hint: { type: [string, 'null'], maxLength: 300 }
+        origin: { type: [string, 'null'], enum: [vn, intl, null] }
+    AdminElementDetail:
+      type: object
+      additionalProperties: false
+      required: [id, published, edit, pending, aliases, state, tier, tier_source, image_key, image_source]
+      properties:
+        id: { $ref: '#/components/schemas/ElementId' }
+        published: { $ref: '#/components/schemas/ElementText' }
+        edit:
+          description: Trường admin đã sửa (vắng = không sửa), hoặc null khi chưa sửa gì
+          oneOf:
+            - $ref: '#/components/schemas/ElementEditRequest'
+            - type: 'null'
+        pending: { type: boolean, description: 'Bản sửa chưa vào mẻ nào - nhãn "Chờ mẻ kế tiếp"' }
+        aliases:
+          type: array
+          description: Tên cũ (dạng `fold`) sau khi đổi tên
+          items: { type: string }
+        state: { $ref: '#/components/schemas/TargetState' }
+        tier: { $ref: '#/components/schemas/Tier' }
+        tier_source: { $ref: '#/components/schemas/TierSource' }
+        image_key: { type: [string, 'null'] }
+        image_source: { type: [string, 'null'], enum: [ai, admin, null] }
     AdminRecipePage:
       allOf:
         - $ref: '#/components/schemas/Page'
@@ -2594,6 +2944,9 @@ components:
               source: { type: string, maxLength: 50 }
               error: { type: string, maxLength: 200 }
         quota_used: { type: integer, minimum: 0 }
+        quota_exhausted: { type: boolean, description: 'Gemini hết quota giữa đợt - báo cáo ghi "hết quota" (AC-PIPE-12)' }
+        llm_splits: { type: integer, minimum: 0, description: 'Số lần chia đôi lô LLM vì câu trả lời bị cắt hoặc sai schema (AC-PIPE-12)' }
+        unblocked_added: { type: integer, minimum: 0, description: 'Khái niệm đã bỏ chặn vào graph ở đợt này (AC-PIPE-21)' }
         sources:
           type: array
           description: Mỗi nguồn crawl của đợt `full` (AC-ADMIN-11) - nguồn lỗi có `error` (loại lỗi, vd `RobotsDenied`) và `concepts` null
@@ -2650,11 +3003,11 @@ components:
                 additionalProperties: false
                 required: [action, target_kind, target_id, before, after, token_fp, created_at]
                 properties:
-                  action: { type: string, enum: [hide, show, block, unblock, dismiss_reports, set_tier, edit_contribution, approve_contribution, reject_contribution, set_image, set_daily_pin, clear_daily_pin] }
-                  target_kind: { type: string, enum: [element, recipe, image, contribution] }
+                  action: { type: string, enum: [hide, show, block, unblock, dismiss_reports, set_tier, edit_contribution, approve_contribution, reject_contribution, set_image, set_daily_pin, clear_daily_pin, edit_rejected, unblock_rejected, approve_rejected, edit_element] }
+                  target_kind: { type: string, enum: [element, recipe, image, contribution, rejected] }
                   target_id: { type: string }
                   before:
-                    description: 'Trạng thái kiểm duyệt; với `set_tier` là `{tier, source}` (source `auto` | `admin`), với đề xuất là object các trường đã đổi, với `set_image` là `{image_key}`, với `set_daily_pin`/`clear_daily_pin` là `{element_id, hint}` hoặc `null` khi không có chỉ định'
+                    description: 'Trạng thái kiểm duyệt; với `set_tier` là `{tier, source}` (source `auto` | `admin`), với đề xuất là object các trường đã đổi, với `set_image` là `{image_key}`, với `set_daily_pin`/`clear_daily_pin` là `{element_id, hint}` hoặc `null` khi không có chỉ định, với `edit_rejected`/`edit_element` là object các trường đã đổi, với `unblock_rejected`/`approve_rejected` là `{status}` (sau có thêm `a`, `b`, `element_id`)'
                     oneOf:
                       - $ref: '#/components/schemas/TargetState'
                       - type: object
@@ -2691,7 +3044,7 @@ components:
     PipelineState:
       type: object
       additionalProperties: false
-      required: [current_version, blocklist, banned_aliases, admin_blocked, daily_history, feedback, catalog, tiers, contributions, admin_images, image_links, daily_pin]
+      required: [current_version, blocklist, banned_aliases, admin_blocked, daily_history, feedback, catalog, tiers, contributions, admin_images, image_links, daily_pin, element_edits, element_aliases, unblocked, manual_approvals]
       properties:
         current_version: { type: [integer, 'null'] }
         blocklist: { $ref: '#/components/schemas/Blocklist' }
@@ -2800,6 +3153,69 @@ components:
                 element_id: { $ref: '#/components/schemas/ElementId' }
                 hint: { type: string, minLength: 1, maxLength: 200 }
             - type: 'null'
+        element_edits:
+          type: array
+          description: |
+            Bản sửa của admin trên phần tử đang có (AC-ADMIN-16, ADR 0022). Pipeline áp vào kho ở mọi mẻ và không ghi đè;
+            trường vắng = không sửa. Mẻ đăng thành công gửi lại `rev` đã áp trong `element_edits_applied`.
+          items:
+            allOf:
+              - $ref: '#/components/schemas/ElementEditRequest'
+              - type: object
+                required: [element_id, rev]
+                properties:
+                  element_id: { $ref: '#/components/schemas/ElementId' }
+                  rev: { type: integer, minimum: 1 }
+        element_aliases:
+          type: array
+          description: Tên cũ (`fold`) của phần tử đã đổi tên - khử trùng khái niệm crawl có tên này vào `element_id` (câu hỏi mở 94)
+          items:
+            type: object
+            additionalProperties: false
+            required: [fold, element_id]
+            properties:
+              fold: { type: string, maxLength: 100 }
+              element_id: { $ref: '#/components/schemas/ElementId' }
+        unblocked:
+          type: array
+          description: |
+            Khái niệm admin đã "Bỏ chặn" (trạng thái `unblocked`, cũ nhất trước - AC-PIPE-21). Mẻ `full` đưa vào đầu hàng
+            chờ với các trường admin đã sửa, trường null vẫn qua bước mô tả của Gemini, bỏ qua lớp 1 và lớp 2 kiểm duyệt;
+            nối được thì gửi lại trong `rejected_added`.
+          items:
+            type: object
+            additionalProperties: false
+            required: [id, name, fold, emoji, description, daily_hint, image_hint, source_name, source_url, context]
+            properties:
+              id: { type: string, format: uuid }
+              name: { type: string, maxLength: 100 }
+              fold: { type: string, maxLength: 100 }
+              emoji: { type: [string, 'null'], maxLength: 16 }
+              description: { type: [string, 'null'], maxLength: 200 }
+              daily_hint: { type: [string, 'null'], maxLength: 200 }
+              image_hint: { type: [string, 'null'], maxLength: 300 }
+              source_name: { type: string, maxLength: 50 }
+              source_url: { type: [string, 'null'], maxLength: 500 }
+              context: { type: [string, 'null'], maxLength: 500 }
+        manual_approvals:
+          type: array
+          description: |
+            "Duyệt luôn" của admin (AC-ADMIN-15), cũ nhất trước. Pipeline xử lý như `contributions`: công thức a + b =
+            `element_id`, không gọi Gemini, không kiểm duyệt; `image_hint` null thì ART vẽ từ tên và mô tả.
+          items:
+            type: object
+            additionalProperties: false
+            required: [element_id, name, emoji, description, daily_hint, image_hint, a, b, approved_at]
+            properties:
+              element_id: { $ref: '#/components/schemas/ElementId' }
+              name: { type: string, minLength: 1, maxLength: 100 }
+              emoji: { type: string, maxLength: 16 }
+              description: { type: [string, 'null'], maxLength: 200 }
+              daily_hint: { type: [string, 'null'], maxLength: 200 }
+              image_hint: { type: [string, 'null'], maxLength: 300 }
+              a: { $ref: '#/components/schemas/ElementId' }
+              b: { $ref: '#/components/schemas/ElementId' }
+              approved_at: { $ref: '#/components/schemas/Instant' }
 
     PipelineStore:
       type: object
@@ -2870,6 +3286,53 @@ components:
                 mẻ; chỉ định admin đặt lại trong lúc mẻ chạy (id khác) được giữ và không làm mẻ lỗi. Khi
                 `stats.daily_pin = used` mà còn dòng có id này, `content.daily_element_id` phải bằng `element_id` của
                 dòng đó, không thì 422.
+            rejected:
+              type: array
+              maxItems: 2000
+              description: |
+                Khái niệm bị chặn ở kiểm duyệt trong mẻ này (AC-MOD-11, ADR 0022), mọi lý do. Worker upsert vào
+                `rejected_concept` theo `fold` trong cùng `DB.batch`: dòng mới hoặc tăng `seen_count`, cập nhật lần gặp
+                cuối và gộp lý do. Khái niệm hoãn vì hết quota không nằm ở đây. Mẻ `error` không gửi.
+              items:
+                type: object
+                additionalProperties: false
+                required: [name, fold, source_name, reasons, step]
+                properties:
+                  name: { type: string, minLength: 1, maxLength: 100 }
+                  fold: { type: string, minLength: 1, maxLength: 100 }
+                  emoji: { type: string, maxLength: 16 }
+                  description: { type: string, maxLength: 200 }
+                  source_name: { type: string, minLength: 1, maxLength: 50 }
+                  source_url: { type: string, maxLength: 500, pattern: '^https://' }
+                  context: { type: string, maxLength: 500 }
+                  reasons:
+                    type: array
+                    minItems: 1
+                    maxItems: 20
+                    items: { $ref: '#/components/schemas/RejectReason' }
+                  step: { $ref: '#/components/schemas/RejectedStep' }
+            rejected_added:
+              type: array
+              maxItems: 2000
+              description: Khái niệm `unblocked` đã vào graph ở mẻ này (AC-PIPE-21) - Worker chuyển dòng sang `added` với `element_id` trong cùng `DB.batch`; id không còn `unblocked` thì bỏ qua
+              items:
+                type: object
+                additionalProperties: false
+                required: [id, element_id]
+                properties:
+                  id: { type: string, format: uuid }
+                  element_id: { $ref: '#/components/schemas/ElementId' }
+            element_edits_applied:
+              type: array
+              maxItems: 20000
+              description: '`rev` của từng bản sửa đã áp (AC-ADMIN-16) - Worker đặt `element_edit.applied_rev`; bản sửa lưu trong lúc mẻ chạy có `rev` lớn hơn nên vẫn "Chờ mẻ kế tiếp"'
+              items:
+                type: object
+                additionalProperties: false
+                required: [element_id, rev]
+                properties:
+                  element_id: { $ref: '#/components/schemas/ElementId' }
+                  rev: { type: integer, minimum: 1 }
         - type: object
           additionalProperties: false
           required: [status, batch_at, mode, failed_step, stats]
@@ -2901,6 +3364,9 @@ components:
               origin: { type: string, enum: [vn, intl] }
               image_key: { type: [string, 'null'], pattern: '^[0-9a-f]{12}\.webp$' }
               trend_peak: { type: integer, minimum: 0, description: 'Mức mặn cao nhất (AC-PIPE-16); vắng → giữ giá trị đã lưu' }
+              description: { type: string, maxLength: 200, description: 'Mô tả hiện hành (đã áp bản sửa admin) - Worker ghi `element.description` để mục "Nội dung" hiện (AC-ADMIN-16)' }
+              daily_hint: { type: string, maxLength: 200 }
+              image_hint: { type: string, maxLength: 300 }
               auto_tier: { $ref: '#/components/schemas/Tier', description: 'Tier tự động theo độ sâu, đã hạ về 3 nếu chưa có ảnh dùng được (AC-TIER-04); Worker ghi vào `element.auto_tier`. Phần tử có ảnh `admin` thì Worker giữ `image_key` đã lưu, bỏ qua giá trị gửi lên' }
         recipes:
           type: array
