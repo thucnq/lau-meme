@@ -62,3 +62,9 @@
 - **Khi** đợt sau crawl được khái niệm có `fold` trùng "X"
 - **Thì** khái niệm bị loại ở lớp 1, báo cáo đợt đếm vào "đã bị chặn"
 - Ưu tiên: Bắt buộc
+
+### AC-MOD-11: Bị chặn thì lưu lại, không bỏ đi (thêm 2026-10-30)
+- **Cho** đợt `full` có 4 khái niệm bị chặn: 1 chứa từ cấm (lớp 1), 1 trùng bí danh bị chặn (AC-MOD-06), 1 LLM gắn "chính trị" (lớp 2), 1 LLM trả "không chắc" (AC-MOD-03); khái niệm thứ 5 trùng `fold` với một dòng đã có trong danh sách "Bị chặn" từ đợt trước
+- **Khi** đợt đăng
+- **Thì** 4 khái niệm không vào graph (như cũ) nhưng được ghi vào danh sách "Bị chặn" cùng lần ghi nguyên khối với nội dung đợt (AC-PIPE-11), mỗi dòng gồm: tên, emoji và mô tả nếu đã có, nguồn (tên nguồn + URL), đoạn ngữ cảnh nguồn tối đa 500 ký tự, mọi lý do (mã + nhãn, không chỉ lý do đầu tiên), bước bị chặn (lớp 1 / lớp 2), đợt, thời điểm; khái niệm thứ 5 không tạo dòng mới mà tăng số lần gặp, cập nhật lần gặp cuối và gộp lý do mới; đợt lỗi giữa chừng không ghi gì; không có dữ liệu người chơi (AC-PIPE-13); báo cáo đợt vẫn chỉ đếm theo danh mục (AC-ADMIN-11); khái niệm hoãn vì hết quota không tính là bị chặn (vào hàng chờ, AC-PIPE-12)
+- Ưu tiên: Bắt buộc

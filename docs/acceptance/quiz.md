@@ -169,3 +169,73 @@
 - **Khi** bấm "Chia sẻ kết quả"
 - **Thì** tạo thẻ chữ (dán được lên Facebook/Zalo/Messenger) gồm hạng, điểm, số câu đúng / tổng và link phòng; không có đề hay đáp án
 - Ưu tiên: Tùy chọn
+
+## Giao diện kiểu game quiz (thêm 2026-10-30)
+
+> Góp ý 2026-10-30: "tham khảo UI UX các game quiz phổ biến để làm trò chơi bắt mắt và hấp dẫn hơn". Chỉ mượn quy ước chung của thể loại (ô màu kèm ký hiệu, đồng hồ dạng thanh, phản hồi đúng/sai, bảng điểm động, bục nhận giải), không sao chép giao diện của game cụ thể nào. AC-QUIZ-29..36 chỉ đổi web; AC-QUIZ-37 đổi tin WebSocket; AC-QUIZ-38, 39 thêm thư viện / Web Audio ở web.
+
+### AC-QUIZ-29: Ô lựa chọn có màu và ký hiệu riêng
+- **Cho** câu hỏi đang mở với 4 lựa chọn, ở giao diện sáng và tối, khung nhìn 375 px
+- **Khi** xem màn câu hỏi; chọn 1 ô rồi ô thứ 2; bấm lại ô đã chọn
+- **Thì** 4 ô theo thứ tự có ký hiệu ▲ ◆ ● ■ và 4 màu khác nhau lấy từ token màu của dự án; chữ trên ô đạt độ tương phản tối thiểu 4,5:1 ở cả hai giao diện; ký hiệu có trong tên truy cập của nút (đọc được bằng trình đọc màn hình, người mù màu vẫn phân biệt được); ô đã chọn có dấu ✓ và `aria-pressed="true"`, bấm lại thì bỏ chọn; mỗi ô cao ít nhất 56 px, 4 ô xếp 2 × 2 vừa khung 375 px không cuộn ngang; luật chọn 2 ô rồi "Chốt" giữ như AC-QUIZ-11
+- Ưu tiên: Bắt buộc
+
+### AC-QUIZ-30: Đồng hồ dạng thanh
+- **Cho** câu hỏi có `deadline - server_now` = 20 s (AC-QUIZ-10)
+- **Khi** thời gian còn lại giảm từ 20 s về 0; máy có `navigator.vibrate`; người chơi đã tắt âm thanh và rung (AC-QUIZ-39)
+- **Thì** đồng hồ là thanh `role="progressbar"` ngắn dần theo thời gian còn lại, có số giây còn lại bằng chữ; còn 5 s thì thanh chuyển sang trạng thái gấp (màu cảnh báo, nhấp nháy nhẹ) và máy rung 1 lần; đã tắt thì không rung; đã chốt thì thanh vẫn chạy nhưng hiện "Đã chốt, chờ mọi người"
+- Ưu tiên: Bắt buộc
+
+### AC-QUIZ-31: Chuyển cảnh giữa các câu
+- **Cho** câu i vừa lộ đáp án (AC-QUIZ-13), còn câu sau; và (trường hợp khác) i là câu cuối
+- **Khi** trong 4 s nghỉ; rồi câu i + 1 tới
+- **Thì** màn lộ đáp án có thanh đếm ngược 4 s ghi "Câu kế tiếp" (câu cuối ghi "Kết quả chung cuộc"); khi câu mới tới, tiêu đề "Câu i + 1 / n" hiện nổi bật tối đa 600 ms rồi thu về vị trí thường; hiệu ứng không chặn bấm ô và không làm chậm hạn nộp (hạn nộp vẫn theo `deadline` của server)
+- Ưu tiên: Bắt buộc
+
+### AC-QUIZ-32: Phản hồi đúng/sai và chuỗi đúng
+- **Cho** người chơi trả lời câu 1 đúng (750 điểm), câu 2 đúng (900 điểm), câu 3 đúng một nửa, câu 4 không nộp
+- **Khi** nhận `reveal` của từng câu
+- **Thì** câu 1 hiện dải "Chuẩn! +750", câu 2 hiện "Chuẩn! +900" kèm "🔥 2 câu liên tiếp", câu 3 hiện "Trượt rồi" và chuỗi về 0, câu 4 hiện "Hết giờ"; dải có `role="status"`; chuỗi do web tính từ các `reveal` đã nhận trong phiên (vào lại sau khi rớt mạng thì tính lại từ 0); không đổi cách tính điểm (AC-QUIZ-12)
+- Ưu tiên: Bắt buộc
+
+### AC-QUIZ-33: Bảng điểm động
+- **Cho** sau câu 1 người chơi X hạng 4, sau câu 2 X lên hạng 2 và Y từ hạng 2 xuống hạng 3
+- **Khi** nhận `reveal` câu 2
+- **Thì** dòng X có "▲ 2", dòng Y có "▼ 1", dòng không đổi hạng không có mũi tên; dòng di chuyển tới vị trí mới bằng hiệu ứng trượt tối đa 600 ms; tổng điểm chạy số từ giá trị cũ tới giá trị mới; thứ tự, top 10 và dòng của mình giữ như AC-QUIZ-14
+- Ưu tiên: Bắt buộc
+
+### AC-QUIZ-34: Bục nhận giải chung cuộc
+- **Cho** ván kết thúc với 5 người chơi; và (trường hợp khác) chỉ 2 người chơi
+- **Khi** nhận `final` (AC-QUIZ-15)
+- **Thì** 3 hạng đầu đứng trên bục 3 bậc theo thứ tự nhìn từ trái sang: hạng 2, hạng 1 (bậc cao nhất), hạng 3, mỗi bậc có 🥇🥈🥉, nickname và tổng điểm; pháo giấy chạy 1 lần; bên dưới là bảng đầy đủ, dòng của mình tô nổi, nút "Chơi lại" cho chủ phòng và "Chia sẻ kết quả" (AC-QUIZ-28); chỉ 2 người thì bục chỉ có 2 bậc
+- Ưu tiên: Bắt buộc
+
+### AC-QUIZ-35: Phòng chờ sinh động
+- **Cho** phòng chờ có 2 người, rồi người thứ 3 vào
+- **Khi** nhận tin `lobby` mới
+- **Thì** mã phòng hiện cỡ chữ lớn; mỗi người chơi là một thẻ gồm emoji và nickname, emoji chọn cố định theo nickname từ một danh sách món lẩu (cùng nickname luôn ra cùng emoji); thẻ người mới vào có hiệu ứng xuất hiện; dòng đếm "3 người đã vào" cập nhật; chủ phòng thấy nút "Bắt đầu" nổi bật
+- Ưu tiên: Bắt buộc
+
+### AC-QUIZ-36: Tôn trọng giảm chuyển động
+- **Cho** máy bật `prefers-reduced-motion: reduce`
+- **Khi** chơi một ván đủ các màn (phòng chờ, câu hỏi, lộ đáp án, chung cuộc)
+- **Thì** không có pháo giấy, không nhấp nháy, không hiệu ứng trượt hay xuất hiện, số điểm hiện ngay giá trị mới; mọi thông tin của AC-QUIZ-29..35 vẫn hiện đủ (mũi tên hạng, dải đúng/sai, chuỗi, bục)
+- Ưu tiên: Bắt buộc
+
+### AC-QUIZ-37: Đếm người đã chốt
+- **Cho** câu i đang mở, 5 người chơi đang kết nối, 1 người đang rớt mạng
+- **Khi** người thứ 3 nộp hợp lệ (AC-QUIZ-11); một lần nộp không hợp lệ (`bad_answer`); người thứ 4 rớt mạng trước khi nộp
+- **Thì** sau lần nộp hợp lệ mọi socket nhận tin `progress { q: i, answered: 3, total: 5 }` (total = số người đang kết nối, không tính người rớt mạng); lần nộp không hợp lệ không phát `progress`; người rớt mạng thì `total` giảm và phát lại; tin không chứa ai đã nộp hay nộp gì (câu hỏi mở 101); giao diện hiện "3/5 người đã chốt"; tin của câu đã đóng bị bỏ qua
+- Ưu tiên: Bắt buộc
+
+### AC-QUIZ-38: Mã QR trong phòng chờ
+- **Cho** phòng chờ của phòng mã M
+- **Khi** xem phòng chờ ở khung nhìn 375 px
+- **Thì** có mã QR mã hóa đúng link tuyệt đối của phòng (như "Sao chép link", AC-QUIZ-26), tạo ngay trên trình duyệt, không gửi mã phòng tới dịch vụ ngoài; QR có tên truy cập "Mã QR vào phòng M" và vừa khung không cuộn ngang
+- Ưu tiên: Tùy chọn
+
+### AC-QUIZ-39: Âm thanh và rung, có nút tắt
+- **Cho** người chơi trong phòng; lựa chọn âm thanh chưa từng đặt; trình duyệt chưa có thao tác nào của người dùng
+- **Khi** còn 5 s cuối của câu; nhận `reveal` đúng hoặc sai; nhận `final`; bấm nút 🔊 để tắt rồi tải lại trang
+- **Thì** tiếng tích tắc 5 s cuối, tiếng đúng, tiếng sai, nhạc chung cuộc đều tạo bằng Web Audio ngay trên máy (không tải file âm thanh); mặc định bật (câu hỏi mở 99) nhưng chỉ phát sau thao tác đầu tiên của người dùng trên trang; nút 🔊/🔇 có ở màn câu hỏi và phòng chờ, tắt thì không phát và không rung (AC-QUIZ-30); lựa chọn lưu trên máy (`localStorage`, bọc lỗi), tải lại vẫn giữ; không có Web Audio thì nút ẩn và game vẫn chạy bình thường
+- Ưu tiên: Tùy chọn
