@@ -470,6 +470,8 @@ a { color: var(--color-accent); }
 .quiz-history, .quiz-lobby ul { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--space-1); }
 .quiz-history button { width: 100%; text-align: left; white-space: normal; }
 .quiz-lobby li[aria-current='true'] { font-weight: 600; }
+.quiz-link { margin: var(--space-3) 0 0; overflow-wrap: anywhere; }
+.quiz-link span { font-family: var(--font-mono, monospace); user-select: all; }
 .quiz-actions { display: flex; flex-wrap: wrap; gap: var(--space-2); align-items: center; margin-top: var(--space-3); }
 .quiz-progress { margin: 0; color: var(--color-text-muted); font-variant-numeric: tabular-nums; }
 .quiz-timer { float: right; font-size: var(--text-lg); font-weight: 700; font-variant-numeric: tabular-nums; }

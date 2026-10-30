@@ -26,7 +26,7 @@
 ### AC-QUIZ-04: Vào phòng chờ
 - **Cho** phòng P ở phòng chờ có chủ phòng U1
 - **Khi** U2, U3 mở link, nhập nickname rồi kết nối WebSocket và gửi `join { uuid, nickname }`
-- **Thì** mỗi người nhận `lobby` gồm danh sách người chơi theo thứ tự vào, ai là chủ phòng, số câu, số giây; mọi socket trong phòng nhận danh sách mới trong ≤ 1 s sau mỗi lần có người vào hoặc rời; ô nickname điền sẵn nickname đã lưu của thực khách (nếu có), sửa được cho riêng phòng này. Nickname trùng (so sau `fold`) với người đã trong phòng thì được thêm hậu tố " 2", " 3"…; người thứ 51 nhận `error { code: "room_full" }` rồi socket đóng (tối đa 50 người, mặc định câu hỏi mở 92)
+- **Thì** mỗi người nhận `lobby` gồm danh sách người chơi theo thứ tự vào, ai là chủ phòng, số câu, số giây; mọi socket trong phòng nhận danh sách mới trong ≤ 1 s sau mỗi lần có người vào hoặc rời; ô nickname điền sẵn nickname đã lưu của thực khách (nếu có: nickname đã lưu ở Bàn lẩu, `GET /api/me`), sửa được cho riêng phòng này. Nickname trùng (so sau `fold`) với người đã trong phòng thì được thêm hậu tố " 2", " 3"…; người thứ 51 nhận `error { code: "room_full" }` rồi socket đóng (tối đa 50 người, mặc định câu hỏi mở 92)
 - Ưu tiên: Bắt buộc
 
 ### AC-QUIZ-05: Vào phòng không hợp lệ
@@ -157,8 +157,8 @@
 
 ### AC-QUIZ-26: Lối vào và màn hình
 - **Cho** thực khách ở trang game
-- **Khi** mở tab "mQuiz" (cạnh "Bàn lẩu" và "Bảng xếp hạng", AC-DAILY-17); chưa đồng ý gửi dữ liệu thì bấm "Tạo phòng"; bấm "Sao chép link" ở phòng chờ; xem trên khung nhìn 375 px
-- **Thì** tab có nút "Tạo phòng" (chọn số câu 5/10/15, số giây 10/20/30, mặc định 10 và 20) và mục "Lịch sử mQuiz"; chưa đồng ý thì hiện lời mời đồng ý (AC-PRIV-02), không gửi gì; "Sao chép link" chép link tuyệt đối của phòng và báo "Đã chép" (dùng chia sẻ hệ thống nếu có, như SHARE); màn câu hỏi hiện meme đề, 4 ô lựa chọn, đồng hồ, số câu, nút "Chốt" vừa trong khung nhìn 375 px không cuộn ngang; chuyển tab khi đang ở phòng không làm rời phòng (socket giữ)
+- **Khi** mở tab "mQuiz" (cạnh "Bàn lẩu" và "Bảng xếp hạng", AC-DAILY-17); chưa đồng ý gửi dữ liệu thì bấm "Tạo phòng"; bấm "Tạo phòng" khi đã đồng ý; bấm "Sao chép link" hoặc "Chia sẻ" ở phòng chờ; xem trên khung nhìn 375 px
+- **Thì** tab có nút "Tạo phòng" (chọn số câu 5/10/15, số giây 10/20/30, mặc định 10 và 20) và mục "Lịch sử mQuiz"; chưa đồng ý thì hiện lời mời đồng ý (AC-PRIV-02), không gửi gì; ô nickname của "Tạo phòng" điền sẵn nickname đã lưu như AC-QUIZ-04; tạo xong thì chủ phòng vào thẳng phòng chờ với nickname vừa nhập (không qua màn nhập nickname của người được mời) và thấy link mời của phòng; "Sao chép link" chép link tuyệt đối của phòng và báo "Đã chép"; nút "Chia sẻ" chỉ hiện khi trình duyệt có chia sẻ hệ thống và mở nó với link phòng (như SHARE); màn câu hỏi hiện meme đề, 4 ô lựa chọn, đồng hồ, số câu, nút "Chốt" vừa trong khung nhìn 375 px không cuộn ngang; chuyển tab khi đang ở phòng không làm rời phòng (socket giữ)
 - Ưu tiên: Bắt buộc
 
 ### Đã bỏ: AC-QUIZ-27 Đo chỉ số mQuiz (2026-10-28, câu hỏi mở 93)

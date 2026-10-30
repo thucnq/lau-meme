@@ -1,7 +1,7 @@
 import { useEffect, useId, useState } from 'react'
 import { readConsent } from '../privacy/consent'
 import { localStore } from '../storage'
-import { createRoom, getHistory, type HistoryItem } from './api'
+import { createRoom, getHistory, rememberHost, savedNickname, type HistoryItem } from './api'
 
 type Props = {
   onOpenRoom?: (code: string) => void
@@ -29,6 +29,16 @@ export function QuizPanel({ onOpenRoom, policyVersion }: Props) {
   const [history, setHistory] = useState<HistoryItem[] | null>(null)
   const allowed = consented(storage, policyVersion)
 
+  // the nickname saved at Bàn lẩu, unless the player already typed one (AC-QUIZ-26)
+  useEffect(() => {
+    if (!allowed) return
+    let live = true
+    void savedNickname(storage).then((saved) => live && saved && setNickname((typed) => typed || saved))
+    return () => {
+      live = false
+    }
+  }, [storage, allowed])
+
   useEffect(() => {
     if (!allowed) return
     let live = true
@@ -46,7 +56,10 @@ export function QuizPanel({ onOpenRoom, policyVersion }: Props) {
     if (!allowed) return setAskConsent(true)
     setBusy(true)
     try {
-      const room = await createRoom(storage, { nickname: nickname.trim(), questions, seconds })
+      const name = nickname.trim()
+      const room = await createRoom(storage, { nickname: name, questions, seconds })
+      // the host goes straight into the lobby with this nickname, not through the guests' join screen
+      rememberHost(storage, room.code, name)
       onOpenRoom?.(room.code)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Không tạo được phòng')
