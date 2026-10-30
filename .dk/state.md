@@ -2,9 +2,9 @@
 phase: build
 project: lau-meme
 stack: py-ts-cloudflare
-spec: approved 2026-10-30 by nguyenquythuc at 52f617d
-contract: approved 2026-10-30 by nguyenquythuc at 473b765
-feature: quiz
+spec: approved 2026-10-30 by nguyenquythuc at 04f097d
+contract: approved 2026-10-30 by nguyenquythuc at 8112ad7
+feature: game
 review-feat-seed: approved
 review-feat-graph: approved
 review-feat-daily: approved
@@ -44,3 +44,5 @@ review-feat-daily-reveal: approved
 review-feat-quiz: approved
 review-fix-quiz-uat-1030: approved
 review-feat-quiz-ui-1030: approved
+review-feat-not-meme-filter: approved
+review-feat-hint-pair: approved
