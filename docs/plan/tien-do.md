@@ -1,7 +1,7 @@
 # Tiến độ - ƯỚC LƯỢNG - LẨU MEME
 
 > Sinh bởi `/dk:plan` (gen-plan.py) từ `docs/estimate/items.json`. **Người sửa trực tiếp file này**: dấu `[x]` (hạng mục hoặc AC), `tiến độ: N%`, `người`, `bắt đầu`, `xong` (YYYY-MM-DD), `ghi chú` - giữ nguyên dấu ` · ` giữa các trường. Chạy lại `/dk:plan` để tính dự báo và vẽ lại `gantt.html`. `KH` là kế hoạch gốc, chỉ đổi bằng `/dk:plan rebaseline`.
-> Bắt đầu dự án: 2026-10-20 · Kỹ sư: 1 (Thuc) · Giờ/tuần: 20 · Nghiệm thu KH: 2029-01-18 · Dự báo: 2027-07-27 · Cập nhật: 2026-10-28
+> Bắt đầu dự án: 2026-10-20 · Kỹ sư: 1 (Thuc) · Giờ/tuần: 20 · Nghiệm thu KH: 2029-01-18 · Dự báo: 2027-07-27 · Cập nhật: 2026-10-30
 
 
 ## Nền tảng
@@ -37,7 +37,7 @@
   - [x] AC-GAME-03 Thả chồng trên mặt bàn
   - [x] AC-GAME-04 Ghép ra phần tử đã có
   - [x] AC-GAME-05 Nồi trào - câu cố định theo cặp
-  - [x] AC-GAME-06 Gợi ý khi trượt
+  - [x] AC-GAME-06 Gợi ý cặp khi trượt (cập nhật 2026-10-30: gợi ý cả cặp A + B thay câu Nồi trào ở lần trượt thứ 3, thẻ nháy sáng - câu hỏi mở 103)
   - [x] AC-GAME-07 Tìm trong Đĩa nhúng không dấu
   - [x] AC-GAME-08 Sắp xếp Đĩa nhúng
   - [x] AC-GAME-09 Nhãn "MỚI"
@@ -166,6 +166,11 @@
   - [x] AC-ADMIN-10 Trang quản trị
   - [ ] AC-ADMIN-11 Thống kê kết quả crawl (thêm 2026-10-23)
   - [ ] AC-ADMIN-12 Gán tier cho phần tử (thêm 2026-10-23)
+  - [ ] AC-ADMIN-13 Danh sách "Bị chặn" (thêm 2026-10-30)
+  - [ ] AC-ADMIN-14 Sửa tay và "Bỏ chặn" (thêm 2026-10-30)
+  - [ ] AC-ADMIN-15 "Duyệt luôn" không cần Gemini (thêm 2026-10-30)
+  - [ ] AC-ADMIN-16 Sửa mọi thuộc tính của meme trong "Nội dung" (thêm 2026-10-30)
+  - [ ] AC-ADMIN-17 Dọn danh sách "Bị chặn" sau 90 ngày (thêm 2026-10-30)
 
 ## Vận hành
 - [x] **METRIC** Đo chỉ số thành công · 5đ · rủi ro: MEDIUM · KH: 2027-05-28 → 2027-06-10 · tiến độ: 100% · người: Thuc · bắt đầu: 2026-10-23 · xong: 2026-10-23 · ghi chú: 
@@ -228,21 +233,21 @@
   - [x] AC-TIER-05 Admin sửa tier và trả về tự động (thêm 2026-10-24)
 
 ## Cộng đồng
-- [ ] **CONTRIB** Đóng góp meme · 13đ · rủi ro: HIGH · KH: 2027-10-25 → 2027-12-02 · tiến độ: 7% (theo AC) · người: Thuc · bắt đầu:  · xong:  · ghi chú: 
-  - [ ] AC-CONTRIB-01 Gửi đề xuất hợp lệ
-  - [ ] AC-CONTRIB-02 Đầu vào không hợp lệ
-  - [ ] AC-CONTRIB-03 Trùng cặp, trùng tên, gửi lặp
-  - [ ] AC-CONTRIB-04 Từ cấm và bí danh bị chặn
-  - [ ] AC-CONTRIB-05 Chưa đăng nhập, chưa đồng ý, giới hạn tần suất
-  - [ ] AC-CONTRIB-06 Thực khách xem đề xuất của mình
-  - [ ] AC-CONTRIB-07 Admin xem và sửa đề xuất
-  - [ ] AC-CONTRIB-08 Admin duyệt hoặc từ chối
-  - [ ] AC-CONTRIB-09 Ảnh và biểu tượng của meme đóng góp
-  - [ ] AC-CONTRIB-10 Hiện người tạo trên phần tử
+- [x] **CONTRIB** Đóng góp meme · 13đ · rủi ro: HIGH · KH: 2027-10-25 → 2027-12-02 · tiến độ: 100% · người: Thuc · bắt đầu: 2026-10-25 · xong: 2026-10-26 · ghi chú: 
+  - [x] AC-CONTRIB-01 Gửi đề xuất hợp lệ
+  - [x] AC-CONTRIB-02 Đầu vào không hợp lệ
+  - [x] AC-CONTRIB-03 Trùng cặp, trùng tên, gửi lặp
+  - [x] AC-CONTRIB-04 Từ cấm và bí danh bị chặn
+  - [x] AC-CONTRIB-05 Chưa đăng nhập, chưa đồng ý, giới hạn tần suất
+  - [x] AC-CONTRIB-06 Thực khách xem đề xuất của mình
+  - [x] AC-CONTRIB-07 Admin xem và sửa đề xuất
+  - [x] AC-CONTRIB-08 Admin duyệt hoặc từ chối
+  - [x] AC-CONTRIB-09 Ảnh và biểu tượng của meme đóng góp
+  - [x] AC-CONTRIB-10 Hiện người tạo trên phần tử
   - [x] AC-CONTRIB-13 Chọn hai phần tử cho đề xuất
-  - [ ] AC-CONTRIB-11 Bảng xếp hạng "Top cống hiến"
-  - [ ] AC-CONTRIB-12 Xóa tài khoản và xuất dữ liệu
-  - [ ] AC-CONTRIB-14 Admin biết meme đã duyệt khi nào lên danh mục
+  - [x] AC-CONTRIB-11 Bảng xếp hạng "Top cống hiến"
+  - [x] AC-CONTRIB-12 Xóa tài khoản và xuất dữ liệu
+  - [x] AC-CONTRIB-14 Admin biết meme đã duyệt khi nào lên danh mục
 
 ## Trò chơi
 - [x] **SYNC** Đĩa nhúng theo tài khoản · 10.5đ · rủi ro: HIGH · KH: 2027-12-20 → 2028-01-20 · tiến độ: 100% · người: Thuc · bắt đầu: 2026-10-24 · xong: 2026-10-25 · ghi chú: 2026-10-26 AC-SYNC-03 cập nhật và AC-SYNC-11 (PR #120, staging 592a5f9a)
@@ -275,7 +280,7 @@
   - [x] AC-GAME-03 Thả chồng trên mặt bàn
   - [x] AC-GAME-04 Ghép ra phần tử đã có
   - [x] AC-GAME-05 Nồi trào - câu cố định theo cặp
-  - [x] AC-GAME-06 Gợi ý khi trượt
+  - [x] AC-GAME-06 Gợi ý cặp khi trượt (cập nhật 2026-10-30: gợi ý cả cặp A + B thay câu Nồi trào ở lần trượt thứ 3, thẻ nháy sáng - câu hỏi mở 103)
   - [x] AC-GAME-07 Tìm trong Đĩa nhúng không dấu
   - [x] AC-GAME-08 Sắp xếp Đĩa nhúng
   - [x] AC-GAME-09 Nhãn "MỚI"
@@ -319,6 +324,9 @@
   - [x] AC-MOD-08 Hoãn nội dung nóng vì một người
   - [x] AC-MOD-09 Không bao giờ - cáo buộc và quấy rối
   - [x] AC-MOD-10 Tên bị quản trị chặn không quay lại
+  - [ ] AC-MOD-11 Bị chặn thì lưu lại, không bỏ đi (thêm 2026-10-30)
+  - [ ] AC-MOD-12 Không phải meme - lớp 1 theo dấu hiệu tiêu đề (thêm 2026-10-30)
+  - [ ] AC-MOD-13 Không phải meme - lớp 2 LLM phân loại (thêm 2026-10-30)
 - [x] **PIPE2** Pipeline Mẻ nhúng - crawl và tự động đăng (giai đoạn 2) · 14đ · rủi ro: HIGH · KH: 2027-09-03 → 2027-10-15 · tiến độ: 100% · người: Thuc · bắt đầu: 2026-10-21 · xong: 2026-10-21 · ghi chú: PR #34 (mẻ full), #40, #43; trên staging
   - [x] AC-PIPE-03 Một nguồn lỗi không làm hỏng cả đợt
   - [x] AC-PIPE-04 Adapter chỉ thu khái niệm, tôn trọng robots.txt
@@ -328,7 +336,7 @@
   - [x] AC-PIPE-08 Công thức bổ sung (cập nhật 2026-10-20)
   - [x] AC-PIPE-09 Giám khảo hài
   - [x] AC-PIPE-10 Idempotent
-  - [x] AC-PIPE-12 Gom lô Gemini, backoff, hết quota dừng êm
+  - [x] AC-PIPE-12 Gom lô Gemini, backoff, hết quota dừng êm (cập nhật 2026-10-30: chia đôi khi lỗi; lô mặc định vẫn 10)
 - [x] **PIPE3** Nguồn Tuổi Trẻ, Threads, mức mặn, thống kê crawl (giai đoạn 2) · 7.5đ · rủi ro: HIGH · KH: 2028-04-10 → 2028-05-03 · tiến độ: 100% · người: Thuc · bắt đầu: 2026-10-24 · xong: 2026-10-24 · ghi chú: 
   - [x] AC-ADMIN-11 Thống kê kết quả crawl (thêm 2026-10-23)
   - [x] AC-PIPE-15 Nguồn Tuổi Trẻ chuyên mục meme (thêm 2026-10-23)
@@ -376,33 +384,33 @@
   - [ ] AC-ART-14 Dùng link ảnh của đề xuất làm ảnh món (thêm 2026-10-25, câu hỏi mở 46) _(tùy chọn)_
 
 ## Cộng đồng
-- [ ] **QUIZ** mQuiz - đố meme theo phòng · 26đ · rủi ro: HIGH · KH: 2028-10-17 → 2029-01-04 · tiến độ: 0% (theo AC) · người: Thuc · bắt đầu:  · xong:  · ghi chú: 
-  - [ ] AC-QUIZ-01 Tạo phòng
-  - [ ] AC-QUIZ-02 Tạo phòng không hợp lệ
-  - [ ] AC-QUIZ-03 Mở link phòng
-  - [ ] AC-QUIZ-04 Vào phòng chờ
-  - [ ] AC-QUIZ-05 Vào phòng không hợp lệ
-  - [ ] AC-QUIZ-06 Phòng đã bắt đầu không nhận người mới (Q6)
-  - [ ] AC-QUIZ-07 Chủ phòng bắt đầu, chuyển quyền chủ phòng
-  - [ ] AC-QUIZ-08 Sinh đề
-  - [ ] AC-QUIZ-09 Không đủ câu hỏi
-  - [ ] AC-QUIZ-10 Phát câu hỏi không lộ đáp án
-  - [ ] AC-QUIZ-11 Nộp câu trả lời
-  - [ ] AC-QUIZ-12 Tính điểm (Q3)
-  - [ ] AC-QUIZ-13 Kết thúc câu và lộ đáp án
-  - [ ] AC-QUIZ-14 Bảng điểm trực tiếp
-  - [ ] AC-QUIZ-15 Bảng xếp hạng chung cuộc
-  - [ ] AC-QUIZ-16 Rớt mạng và vào lại
-  - [ ] AC-QUIZ-17 Chơi một mình offline (Q9, Q14)
-  - [ ] AC-QUIZ-18 Lưu lịch sử ván nhiều người (Q7, Q11)
-  - [ ] AC-QUIZ-19 Xem lịch sử của mình (Q12)
-  - [ ] AC-QUIZ-20 Xem bảng chung cuộc qua link phòng cũ (Q12)
-  - [ ] AC-QUIZ-21 Dọn lịch sử sau 90 ngày (Q13)
-  - [ ] AC-QUIZ-22 Lịch sử trong xem/xuất/xóa dữ liệu (PRIV)
-  - [ ] AC-QUIZ-23 Hủy phòng không ai dùng
-  - [ ] AC-QUIZ-24 Chơi lại
-  - [ ] AC-QUIZ-25 Chống lạm dụng WebSocket
-  - [ ] AC-QUIZ-26 Lối vào và màn hình
+- [x] **QUIZ** mQuiz - đố meme theo phòng · 26đ · rủi ro: HIGH · KH: 2028-10-17 → 2029-01-04 · tiến độ: 100% · người: Thuc · bắt đầu: 2026-10-28 · xong: 2026-10-30 · ghi chú: 
+  - [x] AC-QUIZ-01 Tạo phòng
+  - [x] AC-QUIZ-02 Tạo phòng không hợp lệ
+  - [x] AC-QUIZ-03 Mở link phòng
+  - [x] AC-QUIZ-04 Vào phòng chờ
+  - [x] AC-QUIZ-05 Vào phòng không hợp lệ
+  - [x] AC-QUIZ-06 Phòng đã bắt đầu không nhận người mới (Q6)
+  - [x] AC-QUIZ-07 Chủ phòng bắt đầu, chuyển quyền chủ phòng
+  - [x] AC-QUIZ-08 Sinh đề
+  - [x] AC-QUIZ-09 Không đủ câu hỏi
+  - [x] AC-QUIZ-10 Phát câu hỏi không lộ đáp án
+  - [x] AC-QUIZ-11 Nộp câu trả lời
+  - [x] AC-QUIZ-12 Tính điểm (Q3)
+  - [x] AC-QUIZ-13 Kết thúc câu và lộ đáp án
+  - [x] AC-QUIZ-14 Bảng điểm trực tiếp
+  - [x] AC-QUIZ-15 Bảng xếp hạng chung cuộc
+  - [x] AC-QUIZ-16 Rớt mạng và vào lại
+  - [x] AC-QUIZ-17 Chơi một mình offline (Q9, Q14)
+  - [x] AC-QUIZ-18 Lưu lịch sử ván nhiều người (Q7, Q11)
+  - [x] AC-QUIZ-19 Xem lịch sử của mình (Q12)
+  - [x] AC-QUIZ-20 Xem bảng chung cuộc qua link phòng cũ (Q12)
+  - [x] AC-QUIZ-21 Dọn lịch sử sau 90 ngày (Q13)
+  - [x] AC-QUIZ-22 Lịch sử trong xem/xuất/xóa dữ liệu (PRIV)
+  - [x] AC-QUIZ-23 Hủy phòng không ai dùng
+  - [x] AC-QUIZ-24 Chơi lại
+  - [x] AC-QUIZ-25 Chống lạm dụng WebSocket
+  - [x] AC-QUIZ-26 Lối vào và màn hình
 
 ## Kiểm thử
 - [ ] **UATQ** Kiểm thử nghiệm thu & sửa lỗi (mQuiz) · 4đ · rủi ro: MEDIUM · KH: 2029-01-05 → 2029-01-17 · tiến độ: 0% · người: Thuc · bắt đầu:  · xong:  · ghi chú: 

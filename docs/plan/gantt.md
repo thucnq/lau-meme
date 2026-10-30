@@ -1,6 +1,6 @@
 # Gantt - ƯỚC LƯỢNG - LẨU MEME
 
-Tiến độ 79% · nghiệm thu KH 2029-01-18 · dự báo 2027-07-27. Bản tương tác: `gantt.html`.
+Tiến độ 94% · nghiệm thu KH 2029-01-18 · dự báo 2027-07-27. Bản tương tác: `gantt.html`.
 
 ```mermaid
 gantt
@@ -44,12 +44,12 @@ gantt
     section Nội dung
     TIER Tier của meme (100%) :done, TIER, 2026-10-23, 1d
     section Cộng đồng
-    CONTRIB Đóng góp meme (7%) :active, CONTRIB, 2026-10-28, 27d
+    CONTRIB Đóng góp meme (100%) :done, CONTRIB, 2026-10-25, 1d
     section Trò chơi
     SYNC Đĩa nhúng theo tài khoản (100%) :done, SYNC, 2026-10-24, 1d
     UI3 Giao diện mới và cảm giác chơi - góp ý 2026-10-24 (100%) :done, UI3, 2026-10-24, 1d
     section Kiểm thử
-    UAT3 Kiểm thử nghiệm thu & sửa lỗi (góp ý 2026-10-24) (0%) :UAT3, 2026-12-04, 9d
+    UAT3 Kiểm thử nghiệm thu & sửa lỗi (góp ý 2026-10-24) (0%) :UAT3, 2026-10-30, 9d
     UAT Kiểm thử nghiệm thu & sửa lỗi (giai đoạn 1) (100%) :done, UAT, 2027-07-01, 1d
     section Nội dung
     MOD Kiểm duyệt nội dung tự động (giai đoạn 2) (100%) :done, MOD, 2026-10-20, 1d
@@ -61,9 +61,9 @@ gantt
     section Kiểm thử
     UAT2 Kiểm thử nghiệm thu & sửa lỗi (giai đoạn 2) (0%) :UAT2, 2027-07-02, 17d
     section Cộng đồng
-    QUIZ mQuiz - đố meme theo phòng (0%) :QUIZ, 2026-12-17, 58d
+    QUIZ mQuiz - đố meme theo phòng (100%) :done, QUIZ, 2026-10-28, 3d
     section Kiểm thử
-    UATQ Kiểm thử nghiệm thu & sửa lỗi (mQuiz) (0%) :UATQ, 2027-03-17, 9d
+    UATQ Kiểm thử nghiệm thu & sửa lỗi (mQuiz) (0%) :UATQ, 2026-11-12, 9d
     section Bàn giao
     UAT 0 tuần :uat, 2027-07-27, 0d
     Nghiệm thu :milestone, 2027-07-27, 0d
