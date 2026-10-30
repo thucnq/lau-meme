@@ -31,6 +31,7 @@
  */
 import { createHash, webcrypto } from 'node:crypto'
 import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
+import { useState } from 'react'
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import { fold } from '../graph/crypto'
 import { saveConsent } from '../privacy/consent'
@@ -619,5 +620,120 @@ describe('quiz ui: chơi một mình', () => {
     expect(await screen.findByText('Meme 2')).toBeTruthy()
     expect(screen.queryByText('Phòng đã bắt đầu')).toBeNull()
     expect(document.body.textContent).toMatch(/2\s*\/\s*5/)
+  })
+})
+
+// ================================================================ góp ý 2026-10-30: nickname điền sẵn, chủ phòng vào thẳng phòng chờ, link mời, Chia sẻ
+/** Thêm GET /lau-meme/api/me (MyData.nickname) lên trên fetch đã stub; các URL khác chuyển cho fetchMock để `calls()` vẫn ghi lại. */
+function stubMe(nickname: string | null): void {
+  const inner = fetchMock as unknown as typeof fetch
+  vi.stubGlobal('fetch', async (input: RequestInfo | URL, init?: RequestInit) => {
+    const url = urlOf(input).split('?')[0]!
+    if (url.endsWith('/api/me') && methodOf(input, init) === 'GET') return json({ nickname })
+    return inner(input, init)
+  })
+}
+const nicknameBox = (): HTMLInputElement => screen.getByRole('textbox', { name: /nickname/i }) as HTMLInputElement
+
+/**
+ * Giả lập trang game: tab mQuiz hiện QuizPanel; khi tạo phòng xong (onOpenRoom) thì thay bằng QuizRoom của phòng đó.
+ * Cách nối này chỉ giả định hợp đồng onOpenRoom(code) đã có; việc chủ phòng tự vào phòng chờ nằm ở phía cài đặt.
+ */
+function Host() {
+  const [code, setCode] = useState<string | null>(null)
+  return code ? <QuizRoom code={code} /> : <QuizPanel onOpenRoom={setCode} />
+}
+
+describe('quiz ui: góp ý 2026-10-30', () => {
+  it('AC-QUIZ-26: ô Nickname của "Tạo phòng" điền sẵn nickname đã lưu từ /api/me (đã đồng ý), vẫn sửa được và POST dùng giá trị đã sửa', async () => {
+    consent()
+    stubMe('Bếp Đã Lưu')
+    render(<QuizPanel onOpenRoom={vi.fn()} />)
+    await waitFor(() => expect(nicknameBox().value).toBe('Bếp Đã Lưu'))
+    fireEvent.change(nicknameBox(), { target: { value: 'Bếp Sửa' } })
+    expect(nicknameBox().value).toBe('Bếp Sửa')
+    fireEvent.click(screen.getByRole('button', { name: 'Tạo phòng' }))
+    await waitFor(() => expect(roomPosts()).toHaveLength(1))
+    expect(JSON.parse(roomPosts()[0]!.body!)).toMatchObject({ nickname: 'Bếp Sửa' })
+  })
+
+  it('AC-QUIZ-26: /api/me trả nickname null thì ô Nickname của "Tạo phòng" để trống', async () => {
+    consent()
+    stubMe(null)
+    render(<QuizPanel onOpenRoom={vi.fn()} />)
+    await flush()
+    await flush()
+    expect(nicknameBox().value).toBe('')
+  })
+
+  it('AC-QUIZ-04: ô Nickname ở màn "Vào phòng" điền sẵn nickname đã lưu từ /api/me, sửa được cho riêng phòng này', async () => {
+    consent()
+    stubMe('Bếp Đã Lưu')
+    render(<QuizRoom code={CODE} />)
+    await screen.findByRole('button', { name: 'Vào phòng' })
+    await waitFor(() => expect(nicknameBox().value).toBe('Bếp Đã Lưu'))
+    fireEvent.change(nicknameBox(), { target: { value: 'Tên Riêng Phòng' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Vào phòng' }))
+    await waitFor(() => expect(FakeWebSocket.instances.length).toBeGreaterThan(0))
+    await flush()
+    expect(sentOf('join')[0]).toMatchObject({ type: 'join', nickname: 'Tên Riêng Phòng' })
+  })
+
+  it('AC-QUIZ-04: /api/me trả nickname null thì ô Nickname ở màn "Vào phòng" để trống', async () => {
+    consent()
+    stubMe(null)
+    render(<QuizRoom code={CODE} />)
+    await screen.findByRole('button', { name: 'Vào phòng' })
+    await flush()
+    expect(nicknameBox().value).toBe('')
+  })
+
+  it('AC-QUIZ-26: tạo phòng xong chủ phòng vào thẳng phòng chờ: mở WebSocket của phòng và gửi join với nickname vừa nhập, không phải bấm "Vào phòng"', async () => {
+    consent()
+    stubMe(null)
+    render(<Host />)
+    fireEvent.change(nicknameBox(), { target: { value: 'Bếp Trưởng' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Tạo phòng' }))
+    await waitFor(() => expect(FakeWebSocket.instances.length).toBeGreaterThan(0))
+    await flush()
+    await flush()
+    expect(sock().url).toContain(`/lau-meme/api/quiz/rooms/${CODE}/ws`)
+    expect(sentOf('join')).toEqual([{ type: 'join', uuid: getPlayerId(localStorage), nickname: 'Bếp Trưởng' }])
+    expect(screen.queryByRole('button', { name: 'Vào phòng' })).toBeNull()
+  })
+
+  it('AC-QUIZ-26: ở phòng chờ hiện link mời tuyệt đối của phòng dạng chữ, đúng link "Sao chép link" chép', async () => {
+    consent()
+    stubMe(null)
+    render(<Host />)
+    fireEvent.change(nicknameBox(), { target: { value: 'Bếp Trưởng' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Tạo phòng' }))
+    await waitFor(() => expect(FakeWebSocket.instances.length).toBeGreaterThan(0))
+    await flush()
+    await flush()
+    sock().push(lobbyMsg(1, 1, ['Bếp Trưởng']))
+    const re = new RegExp(`https://[^/\\s]+/lau-meme/quiz/${CODE}`)
+    const shown = await screen.findByText(re)
+    const link = shown.textContent!.match(re)![0]
+    fireEvent.click(await screen.findByRole('button', { name: 'Sao chép link' }))
+    await waitFor(() => expect(clipboardWrites).toHaveLength(1))
+    expect(clipboardWrites[0]).toBe(link)
+  })
+
+  it('AC-QUIZ-26: có navigator.share thì phòng chờ hiện nút "Chia sẻ", bấm mở chia sẻ hệ thống với link phòng', async () => {
+    const share = vi.fn<(data?: ShareData) => Promise<void>>(async () => undefined)
+    Object.defineProperty(navigator, 'share', { configurable: true, value: share })
+    await enterRoom(1, 1, ['Bếp Tôi', 'Bếp Khách'])
+    fireEvent.click(await screen.findByRole('button', { name: 'Chia sẻ' }))
+    await waitFor(() => expect(share).toHaveBeenCalledTimes(1))
+    const arg = share.mock.calls[0]![0]!
+    const link = new RegExp(`^https://[^/]+/lau-meme/quiz/${CODE}$`)
+    expect(arg.url ? link.test(arg.url) : (arg.text ?? '').includes(`/lau-meme/quiz/${CODE}`)).toBe(true)
+  })
+
+  it('AC-QUIZ-26: không có navigator.share thì phòng chờ không có nút "Chia sẻ" (vẫn có "Sao chép link")', async () => {
+    await enterRoom(1, 1, ['Bếp Tôi', 'Bếp Khách'])
+    await screen.findByRole('button', { name: 'Sao chép link' })
+    expect(screen.queryByRole('button', { name: 'Chia sẻ' })).toBeNull()
   })
 })
