@@ -1,15 +1,19 @@
 {
  "red": {
-  "ts": "2026-10-30T08:29:14+00:00",
-  "commit": "ec229fa",
+  "ts": "2026-10-30T11:40:02+00:00",
+  "commit": "349c24c",
   "results": {
-   "AC-MOD-11": {
+   "AC-MOD-02": {
     "status": "FAIL",
-    "test": "admin-rejected.test.ts#rejected concepts + element edit "
+    "test": "test_mod#test_ac_mod_02_moi_danh_muc_bi_loai_va_dem_dung_nhan"
    },
-   "AC-MOD-VALIDATION": {
-    "status": "PASS",
-    "test": "admin-rejected.test.ts#rejected concepts + element edit "
+   "AC-MOD-12": {
+    "status": "FAIL",
+    "test": "rejected-not-meme.ui.test.tsx#admin ui: không phải meme trong mục \"Bị chặn\" "
+   },
+   "AC-MOD-13": {
+    "status": "FAIL",
+    "test": "test_mod_not_meme#test_ac_mod_13_luat_nguoi_that_van_ap_not_meme_tro_toi_nguoi_them_ten_va_bi_danh"
    }
   }
  },

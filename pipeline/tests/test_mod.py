@@ -175,7 +175,7 @@ def test_ac_mod_02_moi_danh_muc_bi_loai_va_dem_dung_nhan():
 
     assert set(CATEGORIES) == {
         "real_person", "politics", "religion", "sexual", "discrimination",
-        "body_shaming", "violence", "drugs", "self_harm", "harassment",
+        "body_shaming", "violence", "drugs", "self_harm", "harassment", "not_meme",
     }  # fmt: skip
     labels = {
         "politics": "chính trị",
@@ -188,6 +188,7 @@ def test_ac_mod_02_moi_danh_muc_bi_loai_va_dem_dung_nhan():
         "self_harm": "tự hại",
         "harassment": "quấy rối",
         "real_person": "người thật",
+        "not_meme": "không phải meme",
     }
     for category, label in labels.items():
         llm = FakeLlm(answers={"c": verdict("c", category=category, confidence=0.9)})
