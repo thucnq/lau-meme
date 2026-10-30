@@ -68,3 +68,15 @@
 - **Khi** đợt đăng
 - **Thì** 4 khái niệm không vào graph (như cũ) nhưng được ghi vào danh sách "Bị chặn" cùng lần ghi nguyên khối với nội dung đợt (AC-PIPE-11), mỗi dòng gồm: tên, emoji và mô tả nếu đã có, nguồn (tên nguồn + URL), đoạn ngữ cảnh nguồn tối đa 500 ký tự, mọi lý do (mã + nhãn, không chỉ lý do đầu tiên), bước bị chặn (lớp 1 / lớp 2), đợt, thời điểm; khái niệm thứ 5 không tạo dòng mới mà tăng số lần gặp, cập nhật lần gặp cuối và gộp lý do mới; đợt lỗi giữa chừng không ghi gì; không có dữ liệu người chơi (AC-PIPE-13); báo cáo đợt vẫn chỉ đếm theo danh mục (AC-ADMIN-11); khái niệm hoãn vì hết quota không tính là bị chặn (vào hàng chờ, AC-PIPE-12)
 - Ưu tiên: Bắt buộc
+
+### AC-MOD-12: Không phải meme - lớp 1 theo dấu hiệu tiêu đề (thêm 2026-10-30)
+- **Cho** các khái niệm crawl được có tên: "🔴 TRỰC TIẾP: BOX GAMING vs BOOM ESPORTS | GIAI ĐOẠN PLAYOFFS | ĐTDV MÙA ĐÔNG 2026", "🔴 TRỰC TIẾP: FPT POLYTECHNIC vs SAIGON PHANTOM | GIAI ĐOẠN PLAYOFFS | ĐTDV MÙA ĐÔNG 2026", "Ngày 1 | CKTG 2026 - Vòng Swiss Ngày 24.10.2026"; và các khái niệm đối chứng "Còn Cái Nịt", "Mèo vs Dưa Leo", "Live Laugh Love", "Mùa Đông Không Lạnh"
+- **Khi** kiểm duyệt chạy
+- **Thì** 3 khái niệm đầu bị loại ở lớp 1 (không gửi LLM) với lý do "không phải meme" khi **tên** có ít nhất một dấu hiệu: ký tự 🔴; cụm "trực tiếp", "livestream" hoặc "live stream" (không phân biệt dấu, hoa thường); từ 2 dấu "|" trở lên; ngày đủ ngày-tháng-năm (`24.10.2026`, `24/10/2026`, `24-10-2026`); cụm giải đấu "vòng bảng", "vòng loại", "vòng swiss", "vòng <số>", "giai đoạn", "playoff(s)", "mùa giải", "mùa xuân/hạ/hè/thu/đông <năm 4 chữ số>"; hoặc hơn 10 từ. Chỉ xét tên, không xét mô tả hay ngữ cảnh nguồn. Các khái niệm đối chứng đi tiếp sang lớp 2. Khái niệm bị loại vào danh sách "Bị chặn" với mã lý do `not_meme` (cùng mã với lớp 2, AC-MOD-13) và bước lớp 1 (AC-MOD-11); tab "Bị chặn" của trang quản trị hiện nhãn "Không phải meme" và lọc được theo lý do này; báo cáo đợt đếm vào "không phải meme"; admin Bỏ chặn thì mẻ sau bỏ qua lớp 1 và lớp 2 như AC-PIPE-21
+- Ưu tiên: Bắt buộc
+
+### AC-MOD-13: Không phải meme - lớp 2 LLM phân loại (thêm 2026-10-30)
+- **Cho** khái niệm qua lớp 1: "đội tuyển bóng đá quốc gia bồ đào nha", "thủy tiên", `AI Rumpelstiltskin "Tip Toein' In My Jordans"` với phản hồi LLM gắn danh mục `not_meme`; và "Còn Cái Nịt" với phản hồi "an toàn"
+- **Khi** kiểm duyệt chạy
+- **Thì** yêu cầu phân loại gửi LLM có danh mục `not_meme` kèm định nghĩa: tên người, đội, câu lạc bộ, nhóm nhạc hoặc tổ chức đứng một mình; tên bài hát, phim, chương trình; tiêu đề trận đấu, livestream, tin tức hoặc sự kiện - không phải câu nói, hình ảnh hay trào lưu được chế lại; 3 khái niệm đầu bị loại với lý do "không phải meme", bước lớp 2, vào danh sách "Bị chặn" (AC-MOD-11); "Còn Cái Nịt" đi tiếp; luật người thật (AC-MOD-05) vẫn áp như cũ: khái niệm vừa `not_meme` vừa trỏ tới người cụ thể thì tên và bí danh vẫn vào danh sách chặn bí danh
+- Ưu tiên: Bắt buộc

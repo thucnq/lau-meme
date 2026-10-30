@@ -1,4 +1,4 @@
-"""Automatic moderation of new content (AC-MOD-01..10, `ghi-chu-hop.md` sections 7 and 7.1).
+"""Automatic moderation of new content (AC-MOD-01..13, `ghi-chu-hop.md` sections 7 and 7.1).
 
 Pure logic: the LLM is a `classify` callable passed in (a network adapter in production, a fake in tests), the
 batch date is passed in, never read from the clock. Layer 1 (word lists) runs first and its rejects never reach
@@ -25,6 +25,7 @@ CATEGORIES = (
     "drugs",
     "self_harm",
     "harassment",
+    "not_meme",  # a bare name, title or event rather than a meme (AC-MOD-13)
 )
 HOLD_DAYS = 30  # "tin nguội" after a hot story about one person (7.1, AC-MOD-08)
 MIN_CONFIDENCE = 0.8  # open question #23
@@ -51,12 +52,31 @@ LABELS = {
     "drugs": "ma túy",
     "self_harm": "tự hại",
     "harassment": "quấy rối",
+    "not_meme": "không phải meme",
     "unsure": "không chắc",
     "invalid_response": "không chắc",
     "llm_error": "không chắc",
     "flagged_field": "không chắc",
 }
 QUOTA_LABEL = "hết quota"
+
+
+# Title signals of things that are not memes: livestreams, schedules, tournaments (AC-MOD-12, open question 102).
+# Matched on the folded name, so case and diacritics do not matter.
+NOT_MEME_PATTERNS = tuple(
+    re.compile(p)
+    for p in (
+        r"\btruc tiep\b",
+        r"\blive ?stream\b",
+        r"\b\d{1,2}([./-])\d{1,2}\1\d{4}\b",  # full day-month-year date
+        r"\bvong (bang|loai|swiss|\d+)\b",
+        r"\bgiai doan\b",
+        r"\bplayoffs?\b",
+        r"\bmua giai\b",
+        r"\bmua (xuan|ha|he|thu|dong) \d{4}\b",
+    )
+)
+NOT_MEME_MAX_WORDS = 10
 
 
 @dataclass(frozen=True)
@@ -118,14 +138,38 @@ def _tokens(text: str) -> set[str]:
     return out
 
 
+def not_meme_title(name: str) -> bool:
+    """A livestream, schedule or tournament title, judged on the name alone (AC-MOD-12)."""
+    folded = fold(name)
+    return (
+        "🔴" in name
+        or name.count("|") >= 2
+        or len(name.split()) > NOT_MEME_MAX_WORDS
+        or any(p.search(folded) for p in NOT_MEME_PATTERNS)
+    )
+
+
 def layer1(concept: Concept, lists: ModLists) -> str | None:
-    """Word lists only, no LLM (AC-MOD-01/06/10)."""
+    """Word lists and title signals, no LLM (AC-MOD-01/06/10/12)."""
     reasons = layer1_reasons(concept, lists)
     return reasons[0] if reasons else None
 
 
+def listed(concept: Concept, lists: ModLists) -> str | None:
+    """Word lists only: what published content must never match (AC-INV-07), whatever its title looks like."""
+    reasons = list_reasons(concept, lists)
+    return reasons[0] if reasons else None
+
+
 def layer1_reasons(concept: Concept, lists: ModLists) -> list[str]:
-    """Every word-list reason, most serious first: the admin sees them all, not only the first (AC-MOD-11)."""
+    """Every layer-1 reason, most serious first: the admin sees them all, not only the first (AC-MOD-11)."""
+    reasons = list_reasons(concept, lists)
+    if not_meme_title(concept.name):
+        reasons.append("not_meme")
+    return reasons
+
+
+def list_reasons(concept: Concept, lists: ModLists) -> list[str]:
     reasons = []
     if any(fold(concept.name) == fold(t) for t in lists.admin_blocked):
         reasons.append("admin_blocked")
