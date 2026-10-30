@@ -430,8 +430,8 @@ export function Game({ onDiscover, onItems, heirlooms = {}, onReport, blocklistR
     setMiss(null)
     setView(v)
   }
-  const glowOf = (id: string) =>
-    miss?.pair?.includes(id) ? (prefersReducedMotion() ? 'static' : 'pulse') : undefined
+  const glow = miss?.pair ? (prefersReducedMotion() ? 'static' : 'pulse') : undefined
+  const glowOf = (id: string) => (miss?.pair?.includes(id) ? glow : undefined)
 
   const blocklist = loaded?.blocklist ?? EMPTY_BLOCKLIST
   const ready = loaded !== null && progress !== null

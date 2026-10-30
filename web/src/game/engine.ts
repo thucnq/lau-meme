@@ -190,13 +190,13 @@ const HINT_MAX_LOOKUPS = 5000 // bounds the scan on a very full plate so the thi
 
 type Hint = { text: string; pair: [string, string] }
 
-/** First owned pair X + Y (in plate order) with a recipe whose result is not on the plate yet (AC-GAME-06). */
+/** First owned pair X + Y (in plate order, X != Y) with a recipe whose result is not on the plate yet (AC-GAME-06). */
 async function findHint(ctx: Ctx, items: Item[]): Promise<Hint | null> {
   const owned = new Set(items.map((i) => i.id))
   let budget = HINT_MAX_LOOKUPS
   for (let i = 0; i < items.length && budget > 0; i++) {
     const x = items[i]!
-    const partners = items.slice(i, i + budget)
+    const partners = items.slice(i + 1, i + 1 + budget) // A and B are two different elements, never X + X
     budget -= partners.length
     const results = await Promise.all(partners.map((y) => lookupRecipe(ctx, x.name, y.name)))
     const k = results.findIndex((r) => r && !owned.has(r.id))
