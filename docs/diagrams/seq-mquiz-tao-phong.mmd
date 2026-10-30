@@ -1,0 +1,23 @@
+%% mQuiz - tạo phòng và phòng chờ (ADR 0021, AC-QUIZ-01..06)
+sequenceDiagram
+  autonumber
+  actor H as Chủ phòng (trình duyệt)
+  actor P as Người chơi khác
+  participant W as Worker
+  participant R as DO QuizRoom (mã)
+  participant D as D1
+
+  H->>W: POST /quiz/rooms (X-Player-Id, nickname, số câu, số giây)
+  W->>D: UUID đã đồng ý gửi dữ liệu? (403 nếu chưa)<br/>đếm phòng/giờ theo UUID và IP băm (429 nếu vượt)
+  W->>D: INSERT quiz_room ON CONFLICT DO NOTHING
+  W->>R: init(chủ phòng, cấu hình)
+  W-->>H: 201 { code, url }
+  H->>W: GET /quiz/rooms/{mã}/ws (Upgrade)
+  W->>D: quiz_room có mã?
+  W->>R: chuyển request
+  R-->>H: 101; join → lobby
+  P->>W: mở link, WebSocket, join { uuid, nickname }
+  W->>R: chuyển request
+  R->>D: UUID đã đồng ý gửi dữ liệu?
+  R-->>H: lobby (danh sách mới)
+  R-->>P: lobby
