@@ -14,6 +14,7 @@ from lau_meme_pipeline.art_search import (
     parse_brave_images,
     pick_elements,
     run_art_search,
+    summary_lines,
 )
 from lau_meme_pipeline.links import LinkRefused
 
@@ -423,3 +424,161 @@ def test_ac_art_15_main_search_refused_returns_1():
     )
     assert rc == 1
     assert [eid for eid, _ in admin.puts] == ["1"]
+
+
+class FlakyAdmin(FakeAdmin):
+    """put_image lỗi với các id trong fail_ids (như API quản trị trả 429)."""
+
+    def __init__(self, items, fail_ids):
+        super().__init__(items)
+        self.fail_ids = set(fail_ids)
+
+    def put_image(self, element_id, webp):
+        if element_id in self.fail_ids:
+            raise RuntimeError(f"PUT /admin/elements/{element_id}/image: HTTP 429")
+        return super().put_image(element_id, webp)
+
+
+class FakeClock:
+    def __init__(self):
+        self.now = 1000.0
+
+    def __call__(self):
+        return self.now
+
+
+class TickingSearch(FakeSearch):
+    """Mỗi lần tìm ảnh làm đồng hồ giả chạy thêm một khoảng (theo kịch bản, lặp lại phần tử cuối)."""
+
+    def __init__(self, clock, steps, **kw):
+        super().__init__(**kw)
+        self.clock = clock
+        self.steps = list(steps)
+
+    def __call__(self, query):
+        step = self.steps.pop(0) if len(self.steps) > 1 else self.steps[0]
+        self.clock.now += step
+        return super().__call__(query)
+
+
+def test_ac_art_15_attach_failure_counted_and_job_continues():
+    """AC-ART-15: gắn ảnh lỗi thì đếm vào lỗi theo loại, phần tử không vào attached, job đi tiếp phần tử sau."""
+    admin = FlakyAdmin([_el("1", "Alpha", depth=3), _el("2", "Beta", depth=2), _el("3", "Gamma", depth=1)], {"2"})
+    search = FakeSearch(default=["https://x.test/p"])
+    fetch = FakeFetch(default=_png())
+    result = run_art_search(admin, search=search, fetch=fetch, log=lambda *_: None)
+    assert result["errors"] == {"RuntimeError": 1}
+    assert "2" not in result["attached"]
+    assert sorted(result["attached"]) == ["1", "3"]
+    assert sorted(eid for eid, _ in admin.puts) == ["1", "3"]
+    assert len(search.queries) == 3
+    assert result["considered"] == 3
+
+
+def test_ac_art_15_attach_failure_main_returns_0():
+    """AC-ART-15: gắn ảnh lỗi (không phải SearchRefused) thì main vẫn trả 0 và đi tiếp."""
+    admin = FlakyAdmin([_el("1", "Alpha", depth=2), _el("2", "Beta", depth=1)], {"1"})
+    rc = main(
+        [],
+        admin=admin,
+        search=FakeSearch(default=["https://x.test/p"]),
+        fetch=FakeFetch(default=_png()),
+    )
+    assert rc == 0
+    assert [eid for eid, _ in admin.puts] == ["2"]
+
+
+def test_ac_art_15_budget_stops_before_new_element_and_reports_remaining():
+    """AC-ART-15: hết ngân sách thì không xét phần tử mới, remaining là số phần tử chưa xử lý."""
+    clock = FakeClock()
+    items = [_el(str(i), f"N{i}", depth=10 - i) for i in range(4)]
+    admin = FakeAdmin(items)
+    search = TickingSearch(clock, [600], default=["https://x.test/p"])
+    fetch = FakeFetch(default=_png())
+    result = run_art_search(admin, search=search, fetch=fetch, clock=clock, budget_seconds=1000, log=lambda *_: None)
+    assert [eid for eid, _ in admin.puts] == ["0", "1"]
+    assert len(search.queries) == 2
+    assert len(fetch.calls) == 2
+    assert result["attached"] == ["0", "1"]
+    assert result["considered"] == 4
+    assert result["remaining"] == 2
+
+
+def test_ac_art_15_budget_zero_processes_nothing():
+    """AC-ART-15: ngân sách đã cạn từ đầu thì không tìm, không tải, không gắn; remaining là tất cả."""
+    clock = FakeClock()
+    admin = FakeAdmin([_el("a", "Alpha"), _el("b", "Beta")])
+    search = FakeSearch(default=["https://x.test/p"])
+    fetch = FakeFetch(default=_png())
+    result = run_art_search(admin, search=search, fetch=fetch, clock=clock, budget_seconds=0, log=lambda *_: None)
+    assert search.queries == []
+    assert fetch.calls == []
+    assert admin.puts == []
+    assert result["remaining"] == 2
+
+
+def test_ac_art_15_default_budget_is_1500_seconds():
+    """AC-ART-15: ngân sách mặc định 25 phút: 1499 giây còn chạy, đủ 1500 giây thì dừng."""
+    clock = FakeClock()
+    items = [_el(str(i), f"N{i}", depth=10 - i) for i in range(3)]
+    admin = FakeAdmin(items)
+    search = TickingSearch(clock, [1499, 1], default=["https://x.test/p"])
+    result = run_art_search(admin, search=search, fetch=FakeFetch(default=_png()), clock=clock, log=lambda *_: None)
+    assert [eid for eid, _ in admin.puts] == ["0", "1"]
+    assert len(search.queries) == 2
+    assert result["remaining"] == 1
+
+
+def test_ac_art_15_remaining_zero_when_finished_within_budget():
+    """AC-ART-15: chạy xong trong ngân sách thì remaining bằng 0."""
+    clock = FakeClock()
+    admin = FakeAdmin([_el("a", "Alpha"), _el("b", "Beta")])
+    search = TickingSearch(clock, [10], default=["https://x.test/p"])
+    result = run_art_search(admin, search=search, fetch=FakeFetch(default=_png()), clock=clock, log=lambda *_: None)
+    assert result["remaining"] == 0
+    assert sorted(result["attached"]) == ["a", "b"]
+
+
+def _result(**over):
+    base = {
+        "considered": 4,
+        "attached": ["1"],
+        "not_found": ["2"],
+        "errors": {"RuntimeError": 1},
+        "planned": [],
+        "remaining": 0,
+    }
+    base.update(over)
+    return base
+
+
+def test_ac_art_15_summary_mentions_timeout_with_remaining_count():
+    """AC-ART-15: còn phần tử chưa xử lý thì bản tóm tắt có dòng "Dừng vì hết thời gian, còn N phần tử"."""
+    lines = summary_lines(_result(remaining=7), dry_run=False)
+    assert any("Dừng vì hết thời gian, còn 7 phần tử" in line for line in lines)
+
+
+def test_ac_art_15_summary_no_timeout_line_when_finished():
+    """AC-ART-15: remaining bằng 0 thì không dòng nào nói hết thời gian."""
+    for dry in (False, True):
+        lines = summary_lines(_result(remaining=0), dry_run=dry)
+        assert lines
+        assert not any("hết thời gian" in line for line in lines)
+
+
+def test_ac_art_15_summary_from_real_run_reports_budget_stop():
+    """AC-ART-15: kết quả chạy thật bị cắt ngân sách đưa vào summary_lines ra dòng dừng với đúng N."""
+    clock = FakeClock()
+    admin = FakeAdmin([_el(str(i), f"N{i}", depth=10 - i) for i in range(3)])
+    search = TickingSearch(clock, [600], default=["https://x.test/p"])
+    result = run_art_search(
+        admin,
+        search=search,
+        fetch=FakeFetch(default=_png()),
+        clock=clock,
+        budget_seconds=500,
+        log=lambda *_: None,
+    )
+    assert result["remaining"] == 2
+    lines = summary_lines(result, dry_run=False)
+    assert any("Dừng vì hết thời gian, còn 2 phần tử" in line for line in lines)
