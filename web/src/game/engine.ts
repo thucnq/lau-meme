@@ -42,7 +42,7 @@ export type Blocklist = { elements: string[]; recipes: string[]; images: string[
 export type Ctx = { graph: Graph; manifest: Manifest; blocklist: Blocklist; now?: () => Date }
 export type CombineOutcome =
   | { kind: 'hit'; result: GraphResult; isNew: boolean; progress: Progress }
-  | { kind: 'miss'; line: string; hint: string | null; progress: Progress }
+  | { kind: 'miss'; line: string; hint: string | null; hint_pair: [string, string] | null; progress: Progress }
 
 export const PROGRESS_KEY = storageKey('game.progress')
 export const THEME_KEY = storageKey('theme')
@@ -188,8 +188,10 @@ export function missLine(lines: string[], a: string, b: string): string {
 
 const HINT_MAX_LOOKUPS = 5000 // bounds the scan on a very full plate so the third miss never freezes the UI
 
-/** First owned element X with a recipe X + Y (Y owned) whose result is not on the plate yet. */
-async function findHint(ctx: Ctx, items: Item[]): Promise<string | null> {
+type Hint = { text: string; pair: [string, string] }
+
+/** First owned pair X + Y (in plate order) with a recipe whose result is not on the plate yet (AC-GAME-06). */
+async function findHint(ctx: Ctx, items: Item[]): Promise<Hint | null> {
   const owned = new Set(items.map((i) => i.id))
   let budget = HINT_MAX_LOOKUPS
   for (let i = 0; i < items.length && budget > 0; i++) {
@@ -197,7 +199,9 @@ async function findHint(ctx: Ctx, items: Item[]): Promise<string | null> {
     const partners = items.slice(i, i + budget)
     budget -= partners.length
     const results = await Promise.all(partners.map((y) => lookupRecipe(ctx, x.name, y.name)))
-    if (results.some((r) => r && !owned.has(r.id))) return `Thử ${x.emoji} ${x.name} xem`
+    const k = results.findIndex((r) => r && !owned.has(r.id))
+    const y = partners[k]
+    if (y) return { text: `Thử ${x.emoji} ${x.name} + ${y.emoji} ${y.name} xem`, pair: [x.id, y.id] }
   }
   return null
 }
@@ -216,9 +220,10 @@ export async function combine(ctx: Ctx, p: Progress, a: string, b: string): Prom
   }
   const line = missLine(ctx.manifest.miss_lines, a, b)
   const streak = p.miss_streak + 1
-  if (streak < HINT_AFTER_MISSES) return { kind: 'miss', line, hint: null, progress: { ...p, miss_streak: streak } }
+  if (streak < HINT_AFTER_MISSES)
+    return { kind: 'miss', line, hint: null, hint_pair: null, progress: { ...p, miss_streak: streak } }
   const hint = await findHint(ctx, visibleItems(p, ctx.blocklist))
-  return { kind: 'miss', line, hint, progress: { ...p, miss_streak: 0 } }
+  return { kind: 'miss', line, hint: hint?.text ?? null, hint_pair: hint?.pair ?? null, progress: { ...p, miss_streak: 0 } }
 }
 
 export function filterItems(items: Item[], query: string): Item[] {
