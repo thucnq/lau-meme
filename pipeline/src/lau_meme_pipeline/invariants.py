@@ -136,13 +136,14 @@ def check_opaque(graph: Mapping, store: ContentStore) -> list[str]:
     return violations
 
 
-def check_moderation(store: ContentStore, lists: ModLists) -> list[str]:
+def check_moderation(store: ContentStore, lists: ModLists, exempt: frozenset[str] = frozenset()) -> list[str]:
     """AC-INV-07: layer 1 again (banned words, blocked aliases, admin-blocked names) on every active element - its
-    name, emoji and image hint; a recipe is published only with an active result, so its result covers it."""
+    name, emoji and image hint; a recipe is published only with an active result, so its result covers it. Elements
+    the admin unblocked or approved by hand (`exempt`, ADR 0022) skip it, as they skipped moderation."""
     violations = []
     for eid in sorted(store.elements):
         e = store.elements[eid]
-        if e.status != ACTIVE:
+        if e.status != ACTIVE or eid in exempt:
             continue
         reason = layer1(Concept(key=eid, name=e.name, emoji=e.emoji, image_hint=e.image_hint), lists)
         if reason:
@@ -168,7 +169,15 @@ def check_daily(manifest: Mapping, store: ContentStore, *, pinned: bool = False)
     return violations
 
 
-def check_all(graph: Mapping, manifest: Mapping, store: ContentStore, lists: ModLists, *, pinned: bool = False) -> None:
+def check_all(
+    graph: Mapping,
+    manifest: Mapping,
+    store: ContentStore,
+    lists: ModLists,
+    *,
+    pinned: bool = False,
+    exempt: frozenset[str] = frozenset(),
+) -> None:
     """Every blocking invariant (AC-INV-01..04, 07, 10); raises InvariantError listing all violations."""
     names = [store.elements[k].name for k in sorted(store.elements)]
     violations = [
@@ -176,7 +185,7 @@ def check_all(graph: Mapping, manifest: Mapping, store: ContentStore, lists: Mod
         *check_unique_pairs(store),
         *check_reachability(store),
         *check_opaque(graph, store),
-        *check_moderation(store, lists),
+        *check_moderation(store, lists, exempt),
         *check_daily(manifest, store, pinned=pinned),
     ]
     if violations:

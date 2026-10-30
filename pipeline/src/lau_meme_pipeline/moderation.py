@@ -92,6 +92,8 @@ class ModerationResult:
     passed: list[Passed] = field(default_factory=list)
     rejected: dict[str, str] = field(default_factory=dict)
     queued: list[Concept] = field(default_factory=list)
+    reasons: dict[str, list[str]] = field(default_factory=dict)  # every reason per rejected key (AC-MOD-11)
+    steps: dict[str, str] = field(default_factory=dict)  # "layer1" | "layer2" per rejected key
     new_aliases: frozenset[str] = frozenset()
     counts: dict[str, int] = field(default_factory=dict)
 
@@ -118,8 +120,15 @@ def _tokens(text: str) -> set[str]:
 
 def layer1(concept: Concept, lists: ModLists) -> str | None:
     """Word lists only, no LLM (AC-MOD-01/06/10)."""
+    reasons = layer1_reasons(concept, lists)
+    return reasons[0] if reasons else None
+
+
+def layer1_reasons(concept: Concept, lists: ModLists) -> list[str]:
+    """Every word-list reason, most serious first: the admin sees them all, not only the first (AC-MOD-11)."""
+    reasons = []
     if any(fold(concept.name) == fold(t) for t in lists.admin_blocked):
-        return "admin_blocked"
+        reasons.append("admin_blocked")
     # Daily/image hints are checked too and reject the whole concept: stricter than layer 2 (which only drops the
     # hint), on purpose - a listed word anywhere means the concept was about it.
     texts = [_key(getattr(concept, f)) for f in TEXT_FIELDS]
@@ -138,10 +147,10 @@ def layer1(concept: Concept, lists: ModLists) -> str | None:
         return False
 
     if hit(lists.aliases):
-        return "blocked_alias"
+        reasons.append("blocked_alias")
     if hit(lists.banned_words):
-        return "banned_word"
-    return None
+        reasons.append("banned_word")
+    return reasons
 
 
 def _request(c: Concept) -> dict:
@@ -207,15 +216,19 @@ def moderate(
     aliases: set[str] = set()
     pending: list[Concept] = []
     for c in concepts:
-        reason = layer1(c, lists)
-        if reason:
-            result.rejected[c.key] = reason
-            reasons[reason] += 1
+        found = layer1_reasons(c, lists)
+        if found:
+            result.rejected[c.key] = found[0]
+            result.reasons[c.key] = found
+            result.steps[c.key] = "layer1"
+            reasons[found[0]] += 1
         else:
             pending.append(c)
 
     def reject(c: Concept, reason: str) -> None:
         result.rejected[c.key] = reason
+        result.reasons[c.key] = [reason]
+        result.steps[c.key] = "layer2"
         reasons[reason] += 1
 
     for start in range(0, len(pending), batch_size):

@@ -305,7 +305,7 @@ export async function listAudit(req: Request, env: Env): Promise<Response> {
   const p = paging(new URL(req.url).searchParams)
   const db = env.DB
   // admin_audit (moderation states), admin_change (tier, contributions; ADR 0013), admin_image_change (drawings;
-  // ADR 0016) and daily_pin_change (ADR 0019) read as one log
+  // ADR 0016), daily_pin_change (ADR 0019) and content_change ("Bị chặn", element edits; ADR 0022) read as one log
   const [rows, total] = await db.batch([
     db
       .prepare(
@@ -322,12 +322,15 @@ export async function listAudit(req: Request, env: Env): Promise<Response> {
          SELECT id, action, 'element', COALESCE(json_extract(after_json, '$.element_id'), json_extract(before_json, '$.element_id')),
                 before_json, after_json, 1, NULL, token_fp, created_at
          FROM daily_pin_change
+         UNION ALL
+         SELECT id, action, target_kind, target_id, before_json, after_json, 1, NULL, token_fp, created_at
+         FROM content_change
          ORDER BY created_at DESC, id DESC LIMIT ? OFFSET ?`,
       )
       .bind(p.size, p.offset),
     db.prepare(
       'SELECT (SELECT COUNT(*) FROM admin_audit) + (SELECT COUNT(*) FROM admin_change) + (SELECT COUNT(*) FROM admin_image_change) + ' +
-        '(SELECT COUNT(*) FROM daily_pin_change) AS n',
+        '(SELECT COUNT(*) FROM daily_pin_change) + (SELECT COUNT(*) FROM content_change) AS n',
     ),
   ])
   type Row = {

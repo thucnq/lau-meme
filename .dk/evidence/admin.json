@@ -1,69 +1,37 @@
 {
  "red": {
-  "ts": "2026-10-24T06:29:24+00:00",
-  "commit": "1edee67",
+  "ts": "2026-10-30T08:29:14+00:00",
+  "commit": "ec229fa",
   "results": {
-   "AC-ADMIN-01": {
-    "status": "PASS",
-    "test": "admin.test.ts#admin > AC-ADMIN-01: thiếu token, token sai, sai sơ đồ "
-   },
-   "AC-ADMIN-02": {
-    "status": "PASS",
-    "test": "admin.test.ts#admin > AC-ADMIN-02: 5 yêu cầu sai token "
-   },
-   "AC-ADMIN-03": {
-    "status": "PASS",
-    "test": "admin.test.ts#admin > AC-ADMIN-03: ẩn P kèm lý do trả 200 và P vào blocklist ngay; hiện P trả 200, P ra khỏi blocklist, báo cáo mới được đánh dấu đã xử lý và bộ đếm tăng chu kỳ; P không tồn tại trả 404"
-   },
-   "AC-ADMIN-04": {
-    "status": "PASS",
-    "test": "admin.test.ts#admin > AC-ADMIN-04: ẩn công thức A+B và ảnh của P rồi hiện lại từng thứ: vào/ra blocklist.recipes / .images; phần tử C và P không bị ẩn theo"
-   },
-   "AC-ADMIN-05": {
-    "status": "PASS",
-    "test": "admin.test.ts#admin > AC-ADMIN-05: chặn P trả 200, P vào blocklist, fold của P vào banned_term "
-   },
-   "AC-ADMIN-06": {
-    "status": "PASS",
-    "test": "admin.test.ts#admin > AC-ADMIN-06: danh sách báo cáo gom theo đích, lọc new/resolved, xếp theo số UUID giảm dần, có tên/emoji/lý do/thời điểm/trạng thái ẩn, phân trang, không lộ UUID người báo cáo"
-   },
-   "AC-ADMIN-07": {
-    "status": "PASS",
-    "test": "admin.test.ts#admin > AC-ADMIN-07: bỏ qua báo cáo của P đang tự ẩn: báo cáo thành resolved_dismissed, P hiện lại, báo cáo mới đếm lại từ 0 "
-   },
-   "AC-ADMIN-08": {
-    "status": "PASS",
-    "test": "admin.test.ts#admin > AC-ADMIN-08: 20 đợt: trả mới nhất trước, mỗi đợt đủ version/batch_at/mode/status/failed_step/rollback_to/stats/issue_url/created_at; phân trang"
-   },
-   "AC-ADMIN-09": {
-    "status": "PASS",
-    "test": "admin.test.ts#admin > AC-ADMIN-09: mỗi lệnh ghi thành công "
-   },
-   "AC-ADMIN-10": {
-    "status": "PASS",
-    "test": "admin.html.test.ts#admin html > AC-ADMIN-10: web/admin.html có thẻ meta robots \"noindex, nofollow\""
-   },
-   "AC-ADMIN-11": {
+   "AC-ADMIN-13": {
     "status": "FAIL",
-    "test": "admin-batches.test.ts#admin batches: số liệu do pipeline gửi > AC-ADMIN-11: pipeline gửi stats.sources / queue_size / images / without_image kèm đợt "
+    "test": "admin-rejected.test.ts#rejected concepts + element edit "
    },
-   "AC-ADMIN-12": {
-    "status": "PASS",
-    "test": "tier.test.ts#tier "
+   "AC-ADMIN-14": {
+    "status": "FAIL",
+    "test": "admin-rejected.test.ts#rejected concepts + element edit "
+   },
+   "AC-ADMIN-15": {
+    "status": "FAIL",
+    "test": "admin-rejected.test.ts#rejected concepts + element edit "
+   },
+   "AC-ADMIN-16": {
+    "status": "FAIL",
+    "test": "admin-rejected.test.ts#rejected concepts + element edit "
+   },
+   "AC-ADMIN-17": {
+    "status": "FAIL",
+    "test": "admin-rejected.test.ts#rejected concepts + element edit "
    },
    "AC-ADMIN-VALIDATION": {
-    "status": "PASS",
-    "test": "admin.test.ts#admin > AC-ADMIN-VALIDATION: lệnh kiểm duyệt với trường lạ, id sai định dạng "
-   },
-   "AC-ADMIN-ABUSE": {
-    "status": "PASS",
-    "test": "admin.test.ts#admin > AC-ADMIN-ABUSE: id giả danh "
+    "status": "FAIL",
+    "test": "admin-rejected.test.ts#rejected concepts + element edit "
    }
   }
  },
  "green": {
-  "ts": "2026-10-24T06:40:47+00:00",
-  "commit": "1edee67",
+  "ts": "2026-10-30T09:13:20+00:00",
+  "commit": "ec229fa",
   "results": {
    "AC-ADMIN-01": {
     "status": "PASS",
@@ -111,11 +79,31 @@
    },
    "AC-ADMIN-12": {
     "status": "PASS",
-    "test": "tier.test.ts#tier "
+    "test": "tier.ui.test.tsx#admin tier ui > AC-ADMIN-12: bảng \"Nội dung\" có cột \"Tier\" và liệt kê từng phần tử"
+   },
+   "AC-ADMIN-13": {
+    "status": "PASS",
+    "test": "rejected.ui.test.tsx#admin ui: mục \"Bị chặn\" "
+   },
+   "AC-ADMIN-14": {
+    "status": "PASS",
+    "test": "rejected.ui.test.tsx#admin ui: sửa tay và \"Bỏ chặn\" "
+   },
+   "AC-ADMIN-15": {
+    "status": "PASS",
+    "test": "rejected.ui.test.tsx#admin ui: \"Duyệt luôn\" "
+   },
+   "AC-ADMIN-16": {
+    "status": "PASS",
+    "test": "test_mod_rejected#test_ac_admin_16_ban_sua_cua_admin_ap_vao_noi_dung_o_moi_me_va_gui_lai_rev_da_ap[core]"
+   },
+   "AC-ADMIN-17": {
+    "status": "PASS",
+    "test": "admin-rejected.test.ts#rejected concepts + element edit "
    },
    "AC-ADMIN-VALIDATION": {
     "status": "PASS",
-    "test": "admin.test.ts#admin > AC-ADMIN-VALIDATION: lệnh kiểm duyệt với trường lạ, id sai định dạng "
+    "test": "admin-rejected.test.ts#rejected concepts + element edit "
    },
    "AC-ADMIN-ABUSE": {
     "status": "PASS",

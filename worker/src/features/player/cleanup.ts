@@ -1,6 +1,6 @@
 /**
  * Daily retention job (Cron Trigger 03:00 GMT+7, ADR 0004, BRD 5.2): IP hashes > 7 days are nulled (AC-PRIV-06),
- * events and mQuiz history > 90 days, expired rate counters and sessions, admin audit (every audit table) > 12 months and the consent evidence of players erased
+ * events, mQuiz history and "Bị chặn" rows > 90 days, expired rate counters and sessions, admin audit (every audit table) > 12 months and the consent evidence of players erased
  * more than a year ago are deleted. Logs only row counts.
  */
 const DAY_MS = 86_400_000
@@ -16,6 +16,10 @@ export async function cleanup(db: D1Database, now: number): Promise<Record<strin
     db.prepare('DELETE FROM admin_change WHERE created_at < ?').bind(now - 365 * DAY_MS),
     db.prepare('DELETE FROM admin_image_change WHERE created_at < ?').bind(now - 365 * DAY_MS),
     db.prepare('DELETE FROM daily_pin_change WHERE created_at < ?').bind(now - 365 * DAY_MS),
+    db.prepare('DELETE FROM content_change WHERE created_at < ?').bind(now - 365 * DAY_MS),
+    // "Bị chặn" rows 90 days after they were last seen (AC-ADMIN-17, open question 96); an unblocked row still waits for
+    // a batch and an approved one feeds /pipeline/state.manual_approvals, so those stay
+    db.prepare("DELETE FROM rejected_concept WHERE last_seen_at < ? AND status IN ('blocked', 'added')").bind(now - 90 * DAY_MS),
     // mQuiz history 90 days (AC-QUIZ-21), then the codes of closed rooms with no game left
     db.prepare('DELETE FROM quiz_player WHERE game_id IN (SELECT id FROM quiz_game WHERE finished_at < ?)').bind(now - 90 * DAY_MS),
     db.prepare('DELETE FROM quiz_game WHERE finished_at < ?').bind(now - 90 * DAY_MS),
@@ -41,6 +45,8 @@ export async function cleanup(db: D1Database, now: number): Promise<Record<strin
     'admin_changes',
     'admin_image_changes',
     'daily_pin_changes',
+    'content_changes',
+    'rejected_concepts',
     'quiz_players',
     'quiz_games',
     'quiz_rooms',
