@@ -1,6 +1,6 @@
 # API - Lẩu Meme
 
-> Nguồn sự thật: [`openapi.yaml`](openapi.yaml) (OpenAPI 3, `lau-meme API 0.11.0`; tin WebSocket mQuiz ở [`quiz-ws.md`](quiz-ws.md)). File này chỉ là mục lục; khi hai nơi khác nhau thì `openapi.yaml` đúng. Mỗi endpoint mang `x-ac` trỏ về AC trong `docs/acceptance/`.
+> Nguồn sự thật: [`openapi.yaml`](openapi.yaml) (OpenAPI 3, `lau-meme API 0.11.1`; tin WebSocket mQuiz ở [`quiz-ws.md`](quiz-ws.md)). File này chỉ là mục lục; khi hai nơi khác nhau thì `openapi.yaml` đúng. Mỗi endpoint mang `x-ac` trỏ về AC trong `docs/acceptance/`.
 
 ## Địa chỉ
 | Nhóm | Production | Staging |

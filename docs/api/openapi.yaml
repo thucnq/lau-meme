@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: lau-meme API
-  version: 0.11.0
+  version: 0.11.1
   description: |
     API của Worker Lẩu Meme. Bốn chủ thể (BRD mục 2): thực khách ẩn danh (header `X-Player-Id` = UUID v4
     sinh trên trình duyệt), thực khách đã đăng nhập Google (cookie phiên `laumeme_sid`, ADR 0010 - kết quả Daily,
@@ -2748,7 +2748,7 @@ components:
     RejectedStep:
       type: string
       enum: [layer1, layer2]
-      description: '`layer1` = từ cấm / bí danh bị chặn, `layer2` = LLM (AC-MOD-11)'
+      description: '`layer1` = từ cấm / bí danh bị chặn / dấu hiệu "không phải meme" trong tên (AC-MOD-12), `layer2` = LLM (AC-MOD-11, AC-MOD-13)'
     RejectedStatus:
       type: string
       enum: [blocked, unblocked, added, approved]
@@ -2758,7 +2758,7 @@ components:
       additionalProperties: false
       required: [code, label]
       properties:
-        code: { type: string, minLength: 1, maxLength: 50, description: 'Mã lý do, vd `banned_term`, `banned_alias`, `admin_blocked`, `politics`, `unsure`' }
+        code: { type: string, minLength: 1, maxLength: 50, description: 'Mã lý do, vd `banned_term`, `banned_alias`, `admin_blocked`, `politics`, `unsure`, `not_meme` (AC-MOD-12, AC-MOD-13)' }
         label: { type: string, minLength: 1, maxLength: 100, description: Nhãn tiếng Việt }
     AdminRejected:
       type: object

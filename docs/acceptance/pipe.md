@@ -70,8 +70,8 @@
 - **Thì** manifest hiện hành vẫn là V; kho nội dung phục vụ người chơi không đổi; workflow kết thúc với trạng thái lỗi và báo cáo đợt ghi bước lỗi
 - Ưu tiên: Bắt buộc
 
-### AC-PIPE-12: Gom lô Gemini, backoff, hết quota dừng êm (cập nhật 2026-10-30: lô 30, chia đôi khi lỗi)
-- **Cho** 65 khái niệm cần xử lý, kích thước lô cấu hình 30 (trước 2026-10-30 là 10, câu hỏi mở 97); ở lô 1 Gemini trả 429 hai lần rồi thành công; ở lô 2 Gemini trả JSON bị cắt ngang; ở lô 3 Gemini báo hết quota
+### AC-PIPE-12: Gom lô Gemini, backoff, hết quota dừng êm (cập nhật 2026-10-30: chia đôi khi lỗi; lô mặc định vẫn 10)
+- **Cho** 65 khái niệm cần xử lý, kích thước lô cấu hình 30 (chạy thật mặc định 10, câu hỏi mở 97); ở lô 1 Gemini trả 429 hai lần rồi thành công; ở lô 2 Gemini trả JSON bị cắt ngang; ở lô 3 Gemini báo hết quota
 - **Khi** các bước gọi LLM chạy
 - **Thì** mỗi bước gọi theo lô 30, 30, 5; retry chờ theo backoff lũy thừa (thời gian chờ là tham số, test không ngủ thật); lô có câu trả lời bị cắt hoặc sai schema thì chia đôi (15 + 15) và gọi lại, vẫn lỗi thì chia tiếp đến lô tối thiểu 5; lô 5 vẫn lỗi thì ở bước kiểm duyệt các khái niệm đó bị loại theo AC-MOD-03, ở các bước khác thì vào hàng chờ; không khái niệm nào bị bỏ mất; khi hết quota thì dừng gọi, các khái niệm chưa xử lý vào hàng chờ, phần đã xử lý và đạt kiểm duyệt vẫn được đăng; báo cáo đợt ghi "hết quota" và số lần chia đôi
 - Ưu tiên: Bắt buộc
