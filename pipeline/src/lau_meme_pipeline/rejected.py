@@ -65,7 +65,8 @@ def rejected_rows(
             by_fold[row["fold"]] = row
         for code in codes:
             if all(r["code"] != code for r in row["reasons"]):
-                row["reasons"].append({"code": code, "label": LABELS.get(code, code)})
+                label = LABELS.get(code, code)
+                row["reasons"].append({"code": code, "label": label[:1].upper() + label[1:]})
     return [by_fold[f] for f in sorted(by_fold)]
 
 

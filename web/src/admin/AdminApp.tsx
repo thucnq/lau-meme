@@ -848,6 +848,7 @@ const KNOWN_REASONS: [string, string][] = [
   ['self_harm', 'Tự hại'],
   ['harassment', 'Quấy rối'],
   ['unsure', 'Không chắc'],
+  ['not_meme', 'Không phải meme'],
 ]
 
 function RejectedTab(ctx: Ctx) {

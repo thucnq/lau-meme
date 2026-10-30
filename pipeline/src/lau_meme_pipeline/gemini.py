@@ -43,7 +43,9 @@ PROMPTS = {
     '{"key", "category": "safe" | "unsure" | một trong ' + ", ".join(CATEGORIES) + ", "
     '"confidence": số 0..1, "person": {"targets": true nếu nhắm vào một người thật cụ thể, "name": tên người '
     'hoặc null, "aliases": [các cách gọi khác]}, "accusation": true nếu cáo buộc người thật, '
-    '"hot_person": true nếu là chuyện nóng về một người, "flagged_fields": [tên trường có nội dung xấu]}.',
+    '"hot_person": true nếu là chuyện nóng về một người, "flagged_fields": [tên trường có nội dung xấu]}. '
+    "not_meme: tên người, đội, câu lạc bộ, nhóm nhạc hoặc tổ chức đứng một mình; tên bài hát, phim, chương trình; "
+    "tiêu đề trận đấu, livestream, tin tức hoặc sự kiện - không phải câu nói, hình ảnh hay trào lưu được chế lại.",
     "link": "Mỗi phần tử có `name` (meme mới) và `candidates` (tên phần tử đã có). Đề xuất 2-3 cặp phần tử trong "
     "`candidates` mà ghép lại ra meme mới một cách hài hước, dễ hiểu. Trả mảng "
     '{"key", "pairs": [[tên A, tên B], ...]}.',

@@ -10,7 +10,7 @@ from dataclasses import dataclass, replace
 
 from lau_meme_pipeline.ids import element_id, recipe_id
 from lau_meme_pipeline.linking import Graph, bfs_depths
-from lau_meme_pipeline.moderation import Concept, ModLists, layer1
+from lau_meme_pipeline.moderation import Concept, ModLists, listed
 from lau_meme_pipeline.seed import ACTIVE, INACTIVE, ContentStore, StoredElement, StoredRecipe
 from lau_meme_pipeline.text import fold
 
@@ -54,7 +54,7 @@ def add_contributions(
         eid = element_id(row["name"])
         emoji = row.get("emoji") or DEFAULT_EMOJI
         hint = row.get("image_hint") or ""
-        if lists is not None and layer1(Concept(key=eid, name=row["name"], emoji=emoji, image_hint=hint), lists):
+        if lists is not None and listed(Concept(key=eid, name=row["name"], emoji=emoji, image_hint=hint), lists):
             waiting += 1
             continue
         a, b = elements.get(row["a"]), elements.get(row["b"])

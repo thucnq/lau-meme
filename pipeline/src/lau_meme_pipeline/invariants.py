@@ -10,7 +10,7 @@ from collections.abc import Mapping, Sequence
 from lau_meme_pipeline.daily import MAX_DEPTH, MIN_DEPTH
 from lau_meme_pipeline.graph import decrypt_entry, graph_to_bytes, open_entry
 from lau_meme_pipeline.ids import recipe_id
-from lau_meme_pipeline.moderation import Concept, ModLists, layer1
+from lau_meme_pipeline.moderation import Concept, ModLists, listed
 from lau_meme_pipeline.seed import ACTIVE, ContentStore
 
 MAX_FIRST20_MISS = 0.45
@@ -145,7 +145,7 @@ def check_moderation(store: ContentStore, lists: ModLists, exempt: frozenset[str
         e = store.elements[eid]
         if e.status != ACTIVE or eid in exempt:
             continue
-        reason = layer1(Concept(key=eid, name=e.name, emoji=e.emoji, image_hint=e.image_hint), lists)
+        reason = listed(Concept(key=eid, name=e.name, emoji=e.emoji, image_hint=e.image_hint), lists)
         if reason:
             violations.append(f"INV-07: {e.name} khớp danh mục cấm ({reason})")
     return violations
