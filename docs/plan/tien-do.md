@@ -228,21 +228,21 @@
   - [x] AC-TIER-05 Admin sửa tier và trả về tự động (thêm 2026-10-24)
 
 ## Cộng đồng
-- [ ] **CONTRIB** Đóng góp meme · 13đ · rủi ro: HIGH · KH: 2027-10-25 → 2027-12-02 · tiến độ: 7% (theo AC) · người: Thuc · bắt đầu:  · xong:  · ghi chú: 
-  - [ ] AC-CONTRIB-01 Gửi đề xuất hợp lệ
-  - [ ] AC-CONTRIB-02 Đầu vào không hợp lệ
-  - [ ] AC-CONTRIB-03 Trùng cặp, trùng tên, gửi lặp
-  - [ ] AC-CONTRIB-04 Từ cấm và bí danh bị chặn
-  - [ ] AC-CONTRIB-05 Chưa đăng nhập, chưa đồng ý, giới hạn tần suất
-  - [ ] AC-CONTRIB-06 Thực khách xem đề xuất của mình
-  - [ ] AC-CONTRIB-07 Admin xem và sửa đề xuất
-  - [ ] AC-CONTRIB-08 Admin duyệt hoặc từ chối
-  - [ ] AC-CONTRIB-09 Ảnh và biểu tượng của meme đóng góp
-  - [ ] AC-CONTRIB-10 Hiện người tạo trên phần tử
+- [x] **CONTRIB** Đóng góp meme · 13đ · rủi ro: HIGH · KH: 2027-10-25 → 2027-12-02 · tiến độ: 100% · người: Thuc · bắt đầu: 2026-10-25 · xong: 2026-10-26 · ghi chú: 
+  - [x] AC-CONTRIB-01 Gửi đề xuất hợp lệ
+  - [x] AC-CONTRIB-02 Đầu vào không hợp lệ
+  - [x] AC-CONTRIB-03 Trùng cặp, trùng tên, gửi lặp
+  - [x] AC-CONTRIB-04 Từ cấm và bí danh bị chặn
+  - [x] AC-CONTRIB-05 Chưa đăng nhập, chưa đồng ý, giới hạn tần suất
+  - [x] AC-CONTRIB-06 Thực khách xem đề xuất của mình
+  - [x] AC-CONTRIB-07 Admin xem và sửa đề xuất
+  - [x] AC-CONTRIB-08 Admin duyệt hoặc từ chối
+  - [x] AC-CONTRIB-09 Ảnh và biểu tượng của meme đóng góp
+  - [x] AC-CONTRIB-10 Hiện người tạo trên phần tử
   - [x] AC-CONTRIB-13 Chọn hai phần tử cho đề xuất
-  - [ ] AC-CONTRIB-11 Bảng xếp hạng "Top cống hiến"
-  - [ ] AC-CONTRIB-12 Xóa tài khoản và xuất dữ liệu
-  - [ ] AC-CONTRIB-14 Admin biết meme đã duyệt khi nào lên danh mục
+  - [x] AC-CONTRIB-11 Bảng xếp hạng "Top cống hiến"
+  - [x] AC-CONTRIB-12 Xóa tài khoản và xuất dữ liệu
+  - [x] AC-CONTRIB-14 Admin biết meme đã duyệt khi nào lên danh mục
 
 ## Trò chơi
 - [x] **SYNC** Đĩa nhúng theo tài khoản · 10.5đ · rủi ro: HIGH · KH: 2027-12-20 → 2028-01-20 · tiến độ: 100% · người: Thuc · bắt đầu: 2026-10-24 · xong: 2026-10-25 · ghi chú: 2026-10-26 AC-SYNC-03 cập nhật và AC-SYNC-11 (PR #120, staging 592a5f9a)
@@ -376,33 +376,33 @@
   - [ ] AC-ART-14 Dùng link ảnh của đề xuất làm ảnh món (thêm 2026-10-25, câu hỏi mở 46) _(tùy chọn)_
 
 ## Cộng đồng
-- [ ] **QUIZ** mQuiz - đố meme theo phòng · 26đ · rủi ro: HIGH · KH: 2028-10-17 → 2029-01-04 · tiến độ: 0% (theo AC) · người: Thuc · bắt đầu:  · xong:  · ghi chú: 
-  - [ ] AC-QUIZ-01 Tạo phòng
-  - [ ] AC-QUIZ-02 Tạo phòng không hợp lệ
-  - [ ] AC-QUIZ-03 Mở link phòng
-  - [ ] AC-QUIZ-04 Vào phòng chờ
-  - [ ] AC-QUIZ-05 Vào phòng không hợp lệ
-  - [ ] AC-QUIZ-06 Phòng đã bắt đầu không nhận người mới (Q6)
-  - [ ] AC-QUIZ-07 Chủ phòng bắt đầu, chuyển quyền chủ phòng
-  - [ ] AC-QUIZ-08 Sinh đề
-  - [ ] AC-QUIZ-09 Không đủ câu hỏi
-  - [ ] AC-QUIZ-10 Phát câu hỏi không lộ đáp án
-  - [ ] AC-QUIZ-11 Nộp câu trả lời
-  - [ ] AC-QUIZ-12 Tính điểm (Q3)
-  - [ ] AC-QUIZ-13 Kết thúc câu và lộ đáp án
-  - [ ] AC-QUIZ-14 Bảng điểm trực tiếp
-  - [ ] AC-QUIZ-15 Bảng xếp hạng chung cuộc
-  - [ ] AC-QUIZ-16 Rớt mạng và vào lại
-  - [ ] AC-QUIZ-17 Chơi một mình offline (Q9, Q14)
-  - [ ] AC-QUIZ-18 Lưu lịch sử ván nhiều người (Q7, Q11)
-  - [ ] AC-QUIZ-19 Xem lịch sử của mình (Q12)
-  - [ ] AC-QUIZ-20 Xem bảng chung cuộc qua link phòng cũ (Q12)
-  - [ ] AC-QUIZ-21 Dọn lịch sử sau 90 ngày (Q13)
-  - [ ] AC-QUIZ-22 Lịch sử trong xem/xuất/xóa dữ liệu (PRIV)
-  - [ ] AC-QUIZ-23 Hủy phòng không ai dùng
-  - [ ] AC-QUIZ-24 Chơi lại
-  - [ ] AC-QUIZ-25 Chống lạm dụng WebSocket
-  - [ ] AC-QUIZ-26 Lối vào và màn hình
+- [x] **QUIZ** mQuiz - đố meme theo phòng · 26đ · rủi ro: HIGH · KH: 2028-10-17 → 2029-01-04 · tiến độ: 100% · người: Thuc · bắt đầu: 2026-10-28 · xong: 2026-10-30 · ghi chú: 
+  - [x] AC-QUIZ-01 Tạo phòng
+  - [x] AC-QUIZ-02 Tạo phòng không hợp lệ
+  - [x] AC-QUIZ-03 Mở link phòng
+  - [x] AC-QUIZ-04 Vào phòng chờ
+  - [x] AC-QUIZ-05 Vào phòng không hợp lệ
+  - [x] AC-QUIZ-06 Phòng đã bắt đầu không nhận người mới (Q6)
+  - [x] AC-QUIZ-07 Chủ phòng bắt đầu, chuyển quyền chủ phòng
+  - [x] AC-QUIZ-08 Sinh đề
+  - [x] AC-QUIZ-09 Không đủ câu hỏi
+  - [x] AC-QUIZ-10 Phát câu hỏi không lộ đáp án
+  - [x] AC-QUIZ-11 Nộp câu trả lời
+  - [x] AC-QUIZ-12 Tính điểm (Q3)
+  - [x] AC-QUIZ-13 Kết thúc câu và lộ đáp án
+  - [x] AC-QUIZ-14 Bảng điểm trực tiếp
+  - [x] AC-QUIZ-15 Bảng xếp hạng chung cuộc
+  - [x] AC-QUIZ-16 Rớt mạng và vào lại
+  - [x] AC-QUIZ-17 Chơi một mình offline (Q9, Q14)
+  - [x] AC-QUIZ-18 Lưu lịch sử ván nhiều người (Q7, Q11)
+  - [x] AC-QUIZ-19 Xem lịch sử của mình (Q12)
+  - [x] AC-QUIZ-20 Xem bảng chung cuộc qua link phòng cũ (Q12)
+  - [x] AC-QUIZ-21 Dọn lịch sử sau 90 ngày (Q13)
+  - [x] AC-QUIZ-22 Lịch sử trong xem/xuất/xóa dữ liệu (PRIV)
+  - [x] AC-QUIZ-23 Hủy phòng không ai dùng
+  - [x] AC-QUIZ-24 Chơi lại
+  - [x] AC-QUIZ-25 Chống lạm dụng WebSocket
+  - [x] AC-QUIZ-26 Lối vào và màn hình
 
 ## Kiểm thử
 - [ ] **UATQ** Kiểm thử nghiệm thu & sửa lỗi (mQuiz) · 4đ · rủi ro: MEDIUM · KH: 2029-01-05 → 2029-01-17 · tiến độ: 0% · người: Thuc · bắt đầu:  · xong:  · ghi chú: 
