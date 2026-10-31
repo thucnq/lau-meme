@@ -1,6 +1,6 @@
 # Gantt - ƯỚC LƯỢNG - LẨU MEME
 
-Tiến độ 94% · nghiệm thu KH 2029-01-18 · dự báo 2027-07-27. Bản tương tác: `gantt.html`.
+Tiến độ 84% · nghiệm thu KH 2029-04-30 · dự báo 2027-10-04. Bản tương tác: `gantt.html`.
 
 ```mermaid
 gantt
@@ -49,7 +49,7 @@ gantt
     SYNC Đĩa nhúng theo tài khoản (100%) :done, SYNC, 2026-10-24, 1d
     UI3 Giao diện mới và cảm giác chơi - góp ý 2026-10-24 (100%) :done, UI3, 2026-10-24, 1d
     section Kiểm thử
-    UAT3 Kiểm thử nghiệm thu & sửa lỗi (góp ý 2026-10-24) (0%) :UAT3, 2026-10-30, 9d
+    UAT3 Kiểm thử nghiệm thu & sửa lỗi (góp ý 2026-10-24) (0%) :UAT3, 2026-11-02, 9d
     UAT Kiểm thử nghiệm thu & sửa lỗi (giai đoạn 1) (100%) :done, UAT, 2027-07-01, 1d
     section Nội dung
     MOD Kiểm duyệt nội dung tự động (giai đoạn 2) (100%) :done, MOD, 2026-10-20, 1d
@@ -63,8 +63,23 @@ gantt
     section Cộng đồng
     QUIZ mQuiz - đố meme theo phòng (100%) :done, QUIZ, 2026-10-28, 3d
     section Kiểm thử
-    UATQ Kiểm thử nghiệm thu & sửa lỗi (mQuiz) (0%) :UATQ, 2026-11-12, 9d
+    UATQ Kiểm thử nghiệm thu & sửa lỗi (mQuiz) (0%) :UATQ, 2026-11-13, 9d
+    section Nền tảng
+    BOT Trang chính sách tĩnh và robots.txt cho bot Meta (0%) :BOT, 2027-07-27, 4d
+    section Cộng đồng
+    CONTRIB2 Chọn hai phần tử cho đề xuất (0%) :CONTRIB2, 2026-11-26, 4d
+    section Trò chơi
+    SYNC2 Quay lại tab thì kéo Đĩa mới của tài khoản (0%) :SYNC2, 2026-12-02, 3d
+    DAILY5 Xem tên Món đặc biệt (0%) :DAILY5, 2026-12-07, 3d
+    section An toàn
+    MOD2 Lưu nội dung bị chặn  chặn nội dung không phải meme (0%) :MOD2, 2027-08-02, 9d
+    ADMIN2 Quản trị "Bị chặn" và sửa mọi thuộc tính meme (0%) :ADMIN2, 2027-08-13, 20d
+    ADMIN3 Trang quản trị - chi tiết tại dòng  sắp xếp  lọc ảnh (0%) :ADMIN3, 2027-09-13, 6d
+    section Cộng đồng
+    QUIZ3 mQuiz - giao diện kiểu game quiz (0%) :QUIZ3, 2026-12-10, 14d
+    section Kiểm thử
+    UAT4 Kiểm thử nghiệm thu & sửa lỗi (góp ý 2026-10-25..31) (0%) :UAT4, 2027-09-21, 9d
     section Bàn giao
-    UAT 0 tuần :uat, 2027-07-27, 0d
-    Nghiệm thu :milestone, 2027-07-27, 0d
+    UAT 0 tuần :uat, 2027-10-04, 0d
+    Nghiệm thu :milestone, 2027-10-04, 0d
 ```

@@ -266,13 +266,22 @@
       "id": "ADMIN",
       "module": "An toàn",
       "name": "Trang quản trị tối giản",
-      "desc": "ADMIN · AC-ADMIN-01..10 · token Cloudflare secret + chống dò, ẩn/hiện/chặn phần tử, công thức, ảnh, xem/bỏ qua báo cáo, nhật ký đợt, audit",
+      "desc": "ADMIN · AC-ADMIN-01..10 (AC-ADMIN-11 ở PIPE3, 12 ở TIER, 13..20 ở ADMIN2/ADMIN3) · token Cloudflare secret + chống dò, ẩn/hiện/chặn phần tử, công thức, ảnh, xem/bỏ qua báo cáo, nhật ký đợt, audit",
       "points": 6,
       "deps": [
         "REPORT"
       ],
       "ac": [
-        "AC-ADMIN"
+        "AC-ADMIN-01",
+        "AC-ADMIN-02",
+        "AC-ADMIN-03",
+        "AC-ADMIN-04",
+        "AC-ADMIN-05",
+        "AC-ADMIN-06",
+        "AC-ADMIN-07",
+        "AC-ADMIN-08",
+        "AC-ADMIN-09",
+        "AC-ADMIN-10"
       ],
       "risk": "MEDIUM",
       "owner": "Thuc"
@@ -320,7 +329,18 @@
         "PIPE"
       ],
       "ac": [
-        "AC-SUBPATH"
+        "AC-SUBPATH-01",
+        "AC-SUBPATH-02",
+        "AC-SUBPATH-03",
+        "AC-SUBPATH-04",
+        "AC-SUBPATH-05",
+        "AC-SUBPATH-06",
+        "AC-SUBPATH-07",
+        "AC-SUBPATH-08",
+        "AC-SUBPATH-09",
+        "AC-SUBPATH-10",
+        "AC-SUBPATH-11",
+        "AC-SUBPATH-12"
       ],
       "risk": "MEDIUM",
       "owner": "Thuc"
@@ -373,7 +393,18 @@
         "TIER"
       ],
       "ac": [
-        "AC-CONTRIB"
+        "AC-CONTRIB-01",
+        "AC-CONTRIB-02",
+        "AC-CONTRIB-03",
+        "AC-CONTRIB-04",
+        "AC-CONTRIB-05",
+        "AC-CONTRIB-06",
+        "AC-CONTRIB-07",
+        "AC-CONTRIB-08",
+        "AC-CONTRIB-09",
+        "AC-CONTRIB-10",
+        "AC-CONTRIB-11",
+        "AC-CONTRIB-12"
       ],
       "risk": "HIGH",
       "owner": "Thuc"
@@ -390,7 +421,16 @@
         "PRIV"
       ],
       "ac": [
-        "AC-SYNC"
+        "AC-SYNC-01",
+        "AC-SYNC-02",
+        "AC-SYNC-03",
+        "AC-SYNC-04",
+        "AC-SYNC-05",
+        "AC-SYNC-06",
+        "AC-SYNC-07",
+        "AC-SYNC-08",
+        "AC-SYNC-09",
+        "AC-SYNC-10"
       ],
       "risk": "HIGH",
       "owner": "Thuc"
@@ -456,7 +496,10 @@
         "PIPE"
       ],
       "ac": [
-        "AC-FEEDBACK"
+        "AC-FEEDBACK-01",
+        "AC-FEEDBACK-02",
+        "AC-FEEDBACK-03",
+        "AC-FEEDBACK-04"
       ],
       "risk": "LOW",
       "owner": "Thuc"
@@ -471,7 +514,16 @@
         "UAT"
       ],
       "ac": [
-        "AC-MOD"
+        "AC-MOD-01",
+        "AC-MOD-02",
+        "AC-MOD-03",
+        "AC-MOD-04",
+        "AC-MOD-05",
+        "AC-MOD-06",
+        "AC-MOD-07",
+        "AC-MOD-08",
+        "AC-MOD-09",
+        "AC-MOD-10"
       ],
       "risk": "HIGH",
       "owner": "Thuc"
@@ -551,7 +603,16 @@
         "MOD"
       ],
       "ac": [
-        "AC-ART"
+        "AC-ART-01",
+        "AC-ART-02",
+        "AC-ART-03",
+        "AC-ART-04",
+        "AC-ART-05",
+        "AC-ART-06",
+        "AC-ART-07",
+        "AC-ART-08",
+        "AC-ART-09",
+        "AC-ART-10"
       ],
       "risk": "HIGH",
       "owner": "Thuc",
@@ -722,6 +783,247 @@
       "points": 4,
       "deps": [
         "QUIZ"
+      ],
+      "risk": "MEDIUM",
+      "owner": "Thuc"
+    },
+    {
+      "id": "BOT",
+      "module": "Nền tảng",
+      "name": "Trang chính sách tĩnh và robots.txt cho bot Meta",
+      "desc": "SUBPATH · AC-SUBPATH-14..15 (thêm 2026-10-25) · /lau-meme/chinh-sach-tinh HTML tĩnh không JS cho GET/HEAD, cùng chữ với /chinh-sach (1); /robots.txt theo APP_ENV, staging chỉ cho facebookexternalhit, 405 problem+json (0.5)",
+      "points": 1.5,
+      "deps": [
+        "PIPE4"
+      ],
+      "ac": [
+        "AC-SUBPATH-14",
+        "AC-SUBPATH-15"
+      ],
+      "risk": "LOW",
+      "owner": "Thuc"
+    },
+    {
+      "id": "CONTRIB2",
+      "module": "Cộng đồng",
+      "name": "Chọn hai phần tử cho đề xuất",
+      "desc": "CONTRIB · AC-CONTRIB-13 (thêm 2026-10-25) · ô chọn phần tử có danh sách lọc theo fold, phím mũi tên + Enter (0.5); kéo thả từ Đĩa và từ bàn vào ô mà không đưa món khỏi bàn/vào nồi, nút bỏ chọn, chỉ phần tử trong Đĩa (1)",
+      "points": 1.5,
+      "deps": [
+        "CONTRIB"
+      ],
+      "ac": [
+        "AC-CONTRIB-13"
+      ],
+      "risk": "LOW",
+      "owner": "Thuc"
+    },
+    {
+      "id": "SYNC2",
+      "module": "Trò chơi",
+      "name": "Quay lại tab thì kéo Đĩa mới của tài khoản",
+      "desc": "SYNC · AC-SYNC-11 (thêm 2026-10-26) · visibilitychange + giãn cách 30 s, gộp Đĩa không tải lại trang, giữ bàn/nồi/món đang kéo, gửi bù phần tử còn thiếu",
+      "points": 1,
+      "deps": [
+        "SYNC"
+      ],
+      "ac": [
+        "AC-SYNC-11"
+      ],
+      "risk": "LOW",
+      "owner": "Thuc"
+    },
+    {
+      "id": "DAILY5",
+      "module": "Trò chơi",
+      "name": "Xem tên Món đặc biệt",
+      "desc": "DAILY · AC-DAILY-20 (thêm 2026-10-27, câu hỏi mở 86) · nút \"Xem đáp án\" + hộp xác nhận, lộ tên nhưng chưa tính giải, giữ trạng thái qua tải lại trong mẻ, ghép ra sau đó vẫn nộp và xếp hạng",
+      "points": 1,
+      "deps": [
+        "DAILY3"
+      ],
+      "ac": [
+        "AC-DAILY-20"
+      ],
+      "risk": "LOW",
+      "owner": "Thuc"
+    },
+    {
+      "id": "FEEDBACK2",
+      "module": "Cộng đồng",
+      "name": "Ngon / Nhạt - chỉ tính phiếu của người đã chơi",
+      "desc": "FEEDBACK · AC-FEEDBACK-05 (thêm 2026-10-27, câu hỏi mở 85, Tùy chọn) · state.feedback chỉ đếm phiếu của UUID có Công thức gia truyền hoặc combine_summary ok ≥ 1 trong 90 ngày; phiếu vẫn lưu",
+      "points": 1,
+      "optional": true,
+      "deps": [
+        "FEEDBACK",
+        "METRIC"
+      ],
+      "ac": [
+        "AC-FEEDBACK-05"
+      ],
+      "risk": "LOW",
+      "owner": "Thuc"
+    },
+    {
+      "id": "BAN",
+      "module": "Trò chơi",
+      "name": "Đổi kiểu mặt bàn",
+      "desc": "GAME · AC-GAME-28 (thêm 2026-10-25, Tùy chọn) · bàn nhựa vỉa hè mặc định / bàn vân gỗ, sáng và tối, nút trong hàng nút trên bàn có tên truy cập, nhớ ở localStorage laumeme:",
+      "points": 1,
+      "optional": true,
+      "deps": [
+        "UI3"
+      ],
+      "ac": [
+        "AC-GAME-28"
+      ],
+      "risk": "LOW",
+      "owner": "Thuc"
+    },
+    {
+      "id": "ART4",
+      "module": "Nội dung",
+      "name": "Dùng link ảnh của đề xuất làm ảnh món",
+      "desc": "ART · AC-ART-14 (thêm 2026-10-25, câu hỏi mở 46, Tùy chọn) · lựa chọn khi duyệt + audit, 400 khi không có link (0.5); pipeline tải https ≤ 1 MB, 15 s, chặn chuyển hướng http và địa chỉ nội bộ, chuẩn hóa WebP 256×256 như AC-ART-13, lỗi thì giữ emoji + dòng báo cáo đợt (1.5)",
+      "points": 2,
+      "optional": true,
+      "deps": [
+        "ART3",
+        "CONTRIB"
+      ],
+      "ac": [
+        "AC-ART-14"
+      ],
+      "risk": "MEDIUM",
+      "owner": "Thuc"
+    },
+    {
+      "id": "ART5",
+      "module": "Nội dung",
+      "name": "Job tìm ảnh trên web cho meme chưa có ảnh",
+      "desc": "ART · AC-ART-15 (thêm 2026-10-30, ADR 0024, câu hỏi mở 104, Tùy chọn) · workflow chạy tay art-search chọn môi trường, số phần tử, chạy thử (0.5); adapter API tìm ảnh tách riêng + mock (1); chọn phần tử chưa có ảnh qua GET /admin/elements, thử tối đa 3 kết quả với cùng luật tải an toàn, gắn qua API quản trị, lỗi đi tiếp, ngân sách 25 phút, báo cáo (2)",
+      "points": 3.5,
+      "optional": true,
+      "deps": [
+        "ART4",
+        "ADMIN"
+      ],
+      "ac": [
+        "AC-ART-15"
+      ],
+      "risk": "MEDIUM",
+      "owner": "Thuc",
+      "open": true,
+      "question": "Brave Search API (IMAGE_SEARCH_API_KEY): gói miễn phí/hạn mức tháng có đủ cho 50 phần tử mỗi lần chạy, ai giữ khóa; production cần duyệt riêng (ADR 0024)"
+    },
+    {
+      "id": "MOD2",
+      "module": "An toàn",
+      "name": "Lưu nội dung bị chặn, chặn nội dung không phải meme",
+      "desc": "MOD · AC-MOD-11..13 (thêm 2026-10-30, câu hỏi mở 102) · lưu khái niệm bị chặn kèm mọi lý do, nguồn, ngữ cảnh, bước, gộp theo fold, số lần gặp, ghi nguyên khối với đợt + migration expand-only (2); lớp 1 dấu hiệu tiêu đề không phải meme (🔴, trực tiếp/livestream, ≥ 2 dấu |, ngày đủ, cụm giải đấu) (1); lớp 2 danh mục not_meme kèm định nghĩa trong prompt + contract (1)",
+      "points": 4,
+      "deps": [
+        "MOD"
+      ],
+      "ac": [
+        "AC-MOD-11",
+        "AC-MOD-12",
+        "AC-MOD-13"
+      ],
+      "risk": "MEDIUM",
+      "owner": "Thuc"
+    },
+    {
+      "id": "ADMIN2",
+      "module": "An toàn",
+      "name": "Quản trị \"Bị chặn\" và sửa mọi thuộc tính meme",
+      "desc": "ADMIN + PIPE · AC-ADMIN-13..17, AC-PIPE-21 (thêm 2026-10-30, câu hỏi mở 98, 100) · danh sách Bị chặn lọc/tìm/phân trang/chi tiết (2); sửa tay + Bỏ chặn, 400/409, audit (1.5); Duyệt luôn theo luồng CONTRIB không gọi Gemini (1.5); sửa mọi thuộc tính phần tử, nhãn Chờ mẻ kế tiếp, pipeline không ghi đè trường admin đã sửa (2); dọn 90 ngày cùng cron PRIV (0.5); pipeline đưa khái niệm được bỏ chặn vào đầu hàng chờ, bỏ qua kiểm duyệt, chuyển Đã thêm (1.5)",
+      "points": 9,
+      "deps": [
+        "MOD2",
+        "ADMIN",
+        "CONTRIB"
+      ],
+      "ac": [
+        "AC-ADMIN-13",
+        "AC-ADMIN-14",
+        "AC-ADMIN-15",
+        "AC-ADMIN-16",
+        "AC-ADMIN-17",
+        "AC-PIPE-21"
+      ],
+      "risk": "HIGH",
+      "owner": "Thuc"
+    },
+    {
+      "id": "ADMIN3",
+      "module": "An toàn",
+      "name": "Trang quản trị - chi tiết tại dòng, sắp xếp, lọc ảnh",
+      "desc": "ADMIN · AC-ADMIN-18..20 (thêm 2026-10-31, câu hỏi mở 105) · chi tiết mở ngay dưới dòng vừa bấm (0.5); sắp xếp theo tên, ngày tạo, ngày cập nhật, độ sâu, tier hiệu lực tăng/giảm, khóa phụ ổn định, cột ngày tạo/cập nhật + migration expand-only, 400 problem+json (1.5); lọc ảnh Chưa có / Đang hiện / Đang ẩn (0.5)",
+      "points": 2.5,
+      "deps": [
+        "ADMIN2"
+      ],
+      "ac": [
+        "AC-ADMIN-18",
+        "AC-ADMIN-19",
+        "AC-ADMIN-20"
+      ],
+      "risk": "LOW",
+      "owner": "Thuc"
+    },
+    {
+      "id": "QUIZ3",
+      "module": "Cộng đồng",
+      "name": "mQuiz - giao diện kiểu game quiz",
+      "desc": "QUIZ · AC-QUIZ-29..37 (thêm 2026-10-30, câu hỏi mở 101) · ô lựa chọn ký hiệu + màu, tương phản 4,5:1 (0.5); đồng hồ dạng thanh, rung 5 s cuối (0.5); chuyển cảnh giữa câu (0.5); dải đúng/sai + chuỗi đúng (0.5); bảng điểm động mũi tên hạng, trượt, chạy số (1); bục nhận giải + pháo giấy (1); phòng chờ sinh động (0.5); giảm chuyển động (0.5); tin progress đếm người đã chốt từ Durable Object (1)",
+      "points": 6,
+      "deps": [
+        "QUIZ"
+      ],
+      "ac": [
+        "AC-QUIZ-29",
+        "AC-QUIZ-30",
+        "AC-QUIZ-31",
+        "AC-QUIZ-32",
+        "AC-QUIZ-33",
+        "AC-QUIZ-34",
+        "AC-QUIZ-35",
+        "AC-QUIZ-36",
+        "AC-QUIZ-37"
+      ],
+      "risk": "MEDIUM",
+      "owner": "Thuc"
+    },
+    {
+      "id": "QUIZ4",
+      "module": "Cộng đồng",
+      "name": "mQuiz - mã QR, âm thanh và rung",
+      "desc": "QUIZ · AC-QUIZ-38..39 (Tùy chọn, câu hỏi mở 99) · mã QR tạo trên trình duyệt (0.5); tiếng Web Audio tích tắc/đúng/sai/chung cuộc, chỉ phát sau thao tác, nút 🔊/🔇 nhớ lựa chọn (1)",
+      "points": 1.5,
+      "optional": true,
+      "deps": [
+        "QUIZ3"
+      ],
+      "ac": [
+        "AC-QUIZ-38",
+        "AC-QUIZ-39"
+      ],
+      "risk": "LOW",
+      "owner": "Thuc"
+    },
+    {
+      "id": "UAT4",
+      "module": "Kiểm thử",
+      "name": "Kiểm thử nghiệm thu & sửa lỗi (góp ý 2026-10-25..31)",
+      "desc": "15% của BOT, CONTRIB2, SYNC2, DAILY5, MOD2, ADMIN2, ADMIN3, QUIZ3",
+      "points": 4,
+      "deps": [
+        "MOD2",
+        "ADMIN2",
+        "ADMIN3",
+        "QUIZ3"
       ],
       "risk": "MEDIUM",
       "owner": "Thuc"

@@ -1,7 +1,7 @@
 # Tiến độ - ƯỚC LƯỢNG - LẨU MEME
 
 > Sinh bởi `/dk:plan` (gen-plan.py) từ `docs/estimate/items.json`. **Người sửa trực tiếp file này**: dấu `[x]` (hạng mục hoặc AC), `tiến độ: N%`, `người`, `bắt đầu`, `xong` (YYYY-MM-DD), `ghi chú` - giữ nguyên dấu ` · ` giữa các trường. Chạy lại `/dk:plan` để tính dự báo và vẽ lại `gantt.html`. `KH` là kế hoạch gốc, chỉ đổi bằng `/dk:plan rebaseline`.
-> Bắt đầu dự án: 2026-10-20 · Kỹ sư: 1 (Thuc) · Giờ/tuần: 20 · Nghiệm thu KH: 2029-01-18 · Dự báo: 2027-07-27 · Cập nhật: 2026-10-30
+> Bắt đầu dự án: 2026-10-20 · Kỹ sư: 1 (Thuc) · Giờ/tuần: 20 · Nghiệm thu KH: 2029-04-30 · Dự báo: 2027-10-04 · Cập nhật: 2026-10-31
 
 
 ## Nền tảng
@@ -164,13 +164,6 @@
   - [x] AC-ADMIN-08 Nhật ký các đợt
   - [x] AC-ADMIN-09 Audit mọi thao tác quản trị
   - [x] AC-ADMIN-10 Trang quản trị
-  - [ ] AC-ADMIN-11 Thống kê kết quả crawl (thêm 2026-10-23)
-  - [ ] AC-ADMIN-12 Gán tier cho phần tử (thêm 2026-10-23)
-  - [ ] AC-ADMIN-13 Danh sách "Bị chặn" (thêm 2026-10-30)
-  - [ ] AC-ADMIN-14 Sửa tay và "Bỏ chặn" (thêm 2026-10-30)
-  - [ ] AC-ADMIN-15 "Duyệt luôn" không cần Gemini (thêm 2026-10-30)
-  - [ ] AC-ADMIN-16 Sửa mọi thuộc tính của meme trong "Nội dung" (thêm 2026-10-30)
-  - [ ] AC-ADMIN-17 Dọn danh sách "Bị chặn" sau 90 ngày (thêm 2026-10-30)
 
 ## Vận hành
 - [x] **METRIC** Đo chỉ số thành công · 5đ · rủi ro: MEDIUM · KH: 2027-05-28 → 2027-06-10 · tiến độ: 100% · người: Thuc · bắt đầu: 2026-10-23 · xong: 2026-10-23 · ghi chú: 
@@ -212,9 +205,6 @@
   - [x] AC-SUBPATH-10 Link chia sẻ tuyệt đối
   - [x] AC-SUBPATH-11 Thẻ xem trước link và favicon
   - [x] AC-SUBPATH-12 Pipeline gọi API dưới tiền tố
-  - [ ] AC-SUBPATH-13 Trang chính sách trả về cho mọi GET (thêm 2026-10-24)
-  - [ ] AC-SUBPATH-14 Trang chính sách tĩnh cho bot (thêm 2026-10-25)
-  - [ ] AC-SUBPATH-15 robots.txt của host game (thêm 2026-10-25)
 
 ## Trò chơi
 - [x] **DAILY3** Món đặc biệt - pool mặn/mới, lịch mẻ theo manifest · 4đ · rủi ro: MEDIUM · KH: 2027-09-29 → 2027-10-11 · tiến độ: 100% · người: Thuc · bắt đầu: 2026-10-24 · xong: 2026-10-24 · ghi chú: 
@@ -244,10 +234,8 @@
   - [x] AC-CONTRIB-08 Admin duyệt hoặc từ chối
   - [x] AC-CONTRIB-09 Ảnh và biểu tượng của meme đóng góp
   - [x] AC-CONTRIB-10 Hiện người tạo trên phần tử
-  - [x] AC-CONTRIB-13 Chọn hai phần tử cho đề xuất
   - [x] AC-CONTRIB-11 Bảng xếp hạng "Top cống hiến"
   - [x] AC-CONTRIB-12 Xóa tài khoản và xuất dữ liệu
-  - [x] AC-CONTRIB-14 Admin biết meme đã duyệt khi nào lên danh mục
 
 ## Trò chơi
 - [x] **SYNC** Đĩa nhúng theo tài khoản · 10.5đ · rủi ro: HIGH · KH: 2027-12-20 → 2028-01-20 · tiến độ: 100% · người: Thuc · bắt đầu: 2026-10-24 · xong: 2026-10-25 · ghi chú: 2026-10-26 AC-SYNC-03 cập nhật và AC-SYNC-11 (PR #120, staging 592a5f9a)
@@ -261,7 +249,6 @@
   - [x] AC-SYNC-08 Phần tử bị chặn và graph đổi version
   - [x] AC-SYNC-09 Giới hạn tần suất và kích thước
   - [x] AC-SYNC-10 Xóa và xuất dữ liệu
-  - [x] AC-SYNC-11 Quay lại tab thì kéo Đĩa mới của tài khoản (thêm 2026-10-26)
 - [x] **UI3** Giao diện mới và cảm giác chơi - góp ý 2026-10-24 · 10đ · rủi ro: MEDIUM · KH: 2028-01-21 → 2028-02-21 · tiến độ: 100% · người: Thuc · bắt đầu: 2026-10-24 · xong: 2026-10-25 · ghi chú: AC-GAME-27 cập nhật 2026-10-25 (không cuộn ngang khi đã đăng nhập)
   - [x] AC-GAME-11 Dọn bàn (cập nhật 2026-10-24: bỏ "Chơi lại từ đầu" - câu hỏi mở 71)
   - [x] AC-GAME-18 Nồi lẩu nằm trong màn hình đầu tiên (thêm 2026-10-21)
@@ -324,9 +311,6 @@
   - [x] AC-MOD-08 Hoãn nội dung nóng vì một người
   - [x] AC-MOD-09 Không bao giờ - cáo buộc và quấy rối
   - [x] AC-MOD-10 Tên bị quản trị chặn không quay lại
-  - [ ] AC-MOD-11 Bị chặn thì lưu lại, không bỏ đi (thêm 2026-10-30)
-  - [ ] AC-MOD-12 Không phải meme - lớp 1 theo dấu hiệu tiêu đề (thêm 2026-10-30)
-  - [ ] AC-MOD-13 Không phải meme - lớp 2 LLM phân loại (thêm 2026-10-30)
 - [x] **PIPE2** Pipeline Mẻ nhúng - crawl và tự động đăng (giai đoạn 2) · 14đ · rủi ro: HIGH · KH: 2027-09-03 → 2027-10-15 · tiến độ: 100% · người: Thuc · bắt đầu: 2026-10-21 · xong: 2026-10-21 · ghi chú: PR #34 (mẻ full), #40, #43; trên staging
   - [x] AC-PIPE-03 Một nguồn lỗi không làm hỏng cả đợt
   - [x] AC-PIPE-04 Adapter chỉ thu khái niệm, tôn trọng robots.txt
@@ -358,10 +342,6 @@
   - [x] AC-ART-08 Phóng lớn bất ngờ khi ghép ra món lần đầu (thêm 2026-10-20)
   - [x] AC-ART-09 Mẻ full vẽ ảnh cho phần tử mới (thêm 2026-10-21, ADR 0012)
   - [x] AC-ART-10 Thiếu cấu hình hoặc lỗi vẽ kéo dài không làm hỏng mẻ (thêm 2026-10-21, ADR 0012)
-  - [ ] AC-ART-11 Vẽ bù ảnh cho phần tử lõi (thêm 2026-10-23)
-  - [ ] AC-ART-12 Ưu tiên vẽ ảnh cho món sắp lên Vàng/Đỏ (thêm 2026-10-24)
-  - [x] AC-ART-13 Admin tải tranh vẽ tay cho phần tử (thêm 2026-10-24) _(tùy chọn)_
-  - [x] AC-ART-14 Dùng link ảnh của đề xuất làm ảnh món (thêm 2026-10-25, câu hỏi mở 46) _(tùy chọn)_
 - [x] **ART2** Vẽ bù ảnh phần tử lõi, ưu tiên món Vàng/Đỏ (giai đoạn 2) · 2.5đ · rủi ro: LOW · KH: 2028-06-01 → 2028-06-05 · tiến độ: 100% · người: Thuc · bắt đầu: 2026-10-23 · xong: 2026-10-25 · ghi chú: AC-ART-12 GREEN chạy tay 2026-10-25, .dk/evidence/art.json chưa ghi lại GREEN
   - [x] AC-ART-11 Vẽ bù ảnh cho phần tử lõi (thêm 2026-10-23)
   - [x] AC-ART-12 Ưu tiên vẽ ảnh cho món sắp lên Vàng/Đỏ (thêm 2026-10-24)
@@ -382,6 +362,7 @@
   - [ ] AC-ART-12 Ưu tiên vẽ ảnh cho món sắp lên Vàng/Đỏ (thêm 2026-10-24)
   - [ ] AC-ART-13 Admin tải tranh vẽ tay cho phần tử (thêm 2026-10-24) _(tùy chọn)_
   - [ ] AC-ART-14 Dùng link ảnh của đề xuất làm ảnh món (thêm 2026-10-25, câu hỏi mở 46) _(tùy chọn)_
+  - [ ] AC-ART-15 Job tìm ảnh trên web cho meme chưa có ảnh (thêm 2026-10-30, ADR 0024, câu hỏi mở 104) _(tùy chọn)_
 
 ## Cộng đồng
 - [x] **QUIZ** mQuiz - đố meme theo phòng · 26đ · rủi ro: HIGH · KH: 2028-10-17 → 2029-01-04 · tiến độ: 100% · người: Thuc · bắt đầu: 2026-10-28 · xong: 2026-10-30 · ghi chú: 
@@ -414,3 +395,50 @@
 
 ## Kiểm thử
 - [ ] **UATQ** Kiểm thử nghiệm thu & sửa lỗi (mQuiz) · 4đ · rủi ro: MEDIUM · KH: 2029-01-05 → 2029-01-17 · tiến độ: 0% · người: Thuc · bắt đầu:  · xong:  · ghi chú: 
+
+## Nền tảng
+- [ ] **BOT** Trang chính sách tĩnh và robots.txt cho bot Meta · 1.5đ · rủi ro: LOW · KH: 2029-01-18 → 2029-01-23 · tiến độ: 0% (theo AC) · người: Thuc · bắt đầu:  · xong:  · ghi chú: 
+  - [ ] AC-SUBPATH-14 Trang chính sách tĩnh cho bot (thêm 2026-10-25)
+  - [ ] AC-SUBPATH-15 robots.txt của host game (thêm 2026-10-25)
+
+## Cộng đồng
+- [ ] **CONTRIB2** Chọn hai phần tử cho đề xuất · 1.5đ · rủi ro: LOW · KH: 2029-01-24 → 2029-01-29 · tiến độ: 0% (theo AC) · người: Thuc · bắt đầu:  · xong:  · ghi chú: 
+  - [ ] AC-CONTRIB-13 Chọn hai phần tử cho đề xuất
+
+## Trò chơi
+- [ ] **SYNC2** Quay lại tab thì kéo Đĩa mới của tài khoản · 1đ · rủi ro: LOW · KH: 2029-01-30 → 2029-02-01 · tiến độ: 0% (theo AC) · người: Thuc · bắt đầu:  · xong:  · ghi chú: 
+  - [ ] AC-SYNC-11 Quay lại tab thì kéo Đĩa mới của tài khoản (thêm 2026-10-26)
+- [ ] **DAILY5** Xem tên Món đặc biệt · 1đ · rủi ro: LOW · KH: 2029-02-02 → 2029-02-06 · tiến độ: 0% (theo AC) · người: Thuc · bắt đầu:  · xong:  · ghi chú: 
+  - [ ] AC-DAILY-20 Xem tên Món đặc biệt (thêm 2026-10-27, câu hỏi mở 86)
+
+## An toàn
+- [ ] **MOD2** Lưu nội dung bị chặn, chặn nội dung không phải meme · 4đ · rủi ro: MEDIUM · KH: 2029-02-07 → 2029-02-19 · tiến độ: 0% (theo AC) · người: Thuc · bắt đầu:  · xong:  · ghi chú: 
+  - [ ] AC-MOD-11 Bị chặn thì lưu lại, không bỏ đi (thêm 2026-10-30)
+  - [ ] AC-MOD-12 Không phải meme - lớp 1 theo dấu hiệu tiêu đề (thêm 2026-10-30)
+  - [ ] AC-MOD-13 Không phải meme - lớp 2 LLM phân loại (thêm 2026-10-30)
+- [ ] **ADMIN2** Quản trị "Bị chặn" và sửa mọi thuộc tính meme · 9đ · rủi ro: HIGH · KH: 2029-02-20 → 2029-03-19 · tiến độ: 0% (theo AC) · người: Thuc · bắt đầu:  · xong:  · ghi chú: 
+  - [ ] AC-ADMIN-13 Danh sách "Bị chặn" (thêm 2026-10-30)
+  - [ ] AC-ADMIN-14 Sửa tay và "Bỏ chặn" (thêm 2026-10-30)
+  - [ ] AC-ADMIN-15 "Duyệt luôn" không cần Gemini (thêm 2026-10-30)
+  - [ ] AC-ADMIN-16 Sửa mọi thuộc tính của meme trong "Nội dung" (thêm 2026-10-30)
+  - [ ] AC-ADMIN-17 Dọn danh sách "Bị chặn" sau 90 ngày (thêm 2026-10-30)
+  - [ ] AC-PIPE-21 Khái niệm được bỏ chặn đi tiếp, không kiểm duyệt lại (thêm 2026-10-30)
+- [ ] **ADMIN3** Trang quản trị - chi tiết tại dòng, sắp xếp, lọc ảnh · 2.5đ · rủi ro: LOW · KH: 2029-03-20 → 2029-03-27 · tiến độ: 0% (theo AC) · người: Thuc · bắt đầu:  · xong:  · ghi chú: 
+  - [ ] AC-ADMIN-18 Chi tiết hiện ngay dưới dòng vừa bấm (thêm 2026-10-31)
+  - [ ] AC-ADMIN-19 Sắp xếp "Nội dung" theo ngày tạo, ngày cập nhật, độ sâu, tier (thêm 2026-10-31)
+  - [ ] AC-ADMIN-20 Lọc "Nội dung" theo ảnh (thêm 2026-10-31)
+
+## Cộng đồng
+- [ ] **QUIZ3** mQuiz - giao diện kiểu game quiz · 6đ · rủi ro: MEDIUM · KH: 2029-03-28 → 2029-04-16 · tiến độ: 0% (theo AC) · người: Thuc · bắt đầu:  · xong:  · ghi chú: 
+  - [ ] AC-QUIZ-29 Ô lựa chọn có màu và ký hiệu riêng
+  - [ ] AC-QUIZ-30 Đồng hồ dạng thanh
+  - [ ] AC-QUIZ-31 Chuyển cảnh giữa các câu
+  - [ ] AC-QUIZ-32 Phản hồi đúng/sai và chuỗi đúng
+  - [ ] AC-QUIZ-33 Bảng điểm động
+  - [ ] AC-QUIZ-34 Bục nhận giải chung cuộc
+  - [ ] AC-QUIZ-35 Phòng chờ sinh động
+  - [ ] AC-QUIZ-36 Tôn trọng giảm chuyển động
+  - [ ] AC-QUIZ-37 Đếm người đã chốt
+
+## Kiểm thử
+- [ ] **UAT4** Kiểm thử nghiệm thu & sửa lỗi (góp ý 2026-10-25..31) · 4đ · rủi ro: MEDIUM · KH: 2029-04-17 → 2029-04-27 · tiến độ: 0% · người: Thuc · bắt đầu:  · xong:  · ghi chú: 
