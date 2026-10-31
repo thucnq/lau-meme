@@ -49,7 +49,7 @@ gantt
     SYNC Đĩa nhúng theo tài khoản (100%) :done, SYNC, 2026-10-24, 1d
     UI3 Giao diện mới và cảm giác chơi - góp ý 2026-10-24 (100%) :done, UI3, 2026-10-24, 1d
     section Kiểm thử
-    UAT3 Kiểm thử nghiệm thu & sửa lỗi (góp ý 2026-10-24) (0%) :UAT3, 2026-10-30, 9d
+    UAT3 Kiểm thử nghiệm thu & sửa lỗi (góp ý 2026-10-24) (0%) :UAT3, 2026-11-02, 9d
     UAT Kiểm thử nghiệm thu & sửa lỗi (giai đoạn 1) (100%) :done, UAT, 2027-07-01, 1d
     section Nội dung
     MOD Kiểm duyệt nội dung tự động (giai đoạn 2) (100%) :done, MOD, 2026-10-20, 1d
@@ -63,7 +63,7 @@ gantt
     section Cộng đồng
     QUIZ mQuiz - đố meme theo phòng (100%) :done, QUIZ, 2026-10-28, 3d
     section Kiểm thử
-    UATQ Kiểm thử nghiệm thu & sửa lỗi (mQuiz) (0%) :UATQ, 2026-11-12, 9d
+    UATQ Kiểm thử nghiệm thu & sửa lỗi (mQuiz) (0%) :UATQ, 2026-11-13, 9d
     section Bàn giao
     UAT 0 tuần :uat, 2027-07-27, 0d
     Nghiệm thu :milestone, 2027-07-27, 0d
