@@ -38,8 +38,8 @@
   }
  },
  "green": {
-  "ts": "2026-10-30T09:13:20+00:00",
-  "commit": "ec229fa",
+  "ts": "2026-10-31T02:50:37+00:00",
+  "commit": "61c9f0d",
   "results": {
    "AC-ADMIN-01": {
     "status": "PASS",
@@ -108,6 +108,10 @@
    "AC-ADMIN-17": {
     "status": "PASS",
     "test": "admin-rejected.test.ts#rejected concepts + element edit "
+   },
+   "AC-ADMIN-18": {
+    "status": "PASS",
+    "test": "detail-inline.ui.test.tsx#AC-ADMIN-18 chi tiết ngay dưới dòng vừa bấm > AC-ADMIN-18: \"Sửa\" và \"Công thức\" ở \"Nội dung\" hiện ngay dưới dòng giữa trang, bấm lại thì đóng"
    },
    "AC-ADMIN-VALIDATION": {
     "status": "PASS",

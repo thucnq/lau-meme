@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react'
+import { Fragment, useCallback, useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react'
 import {
   ApiError,
   AuthError,
@@ -635,82 +635,91 @@ function ContentTab(ctx: Ctx) {
         </thead>
         <tbody>
           {data?.items.map((e) => (
-            <tr key={e.id}>
-              <td>
-                {e.emoji} {e.name}
-              </td>
-              <td>{e.depth}</td>
-              <td>{STATE_LABEL[e.state]}</td>
-              <td>
-                {e.image_key && <img className="admin-thumb" src={withBase(`img/${e.image_key}`)} alt={`Ảnh của ${e.name}`} width={48} height={48} />}
-                {STATE_LABEL[e.image_state]}
-                {e.image_source === 'admin' && ' · admin tải'}
-                {e.image_state === 'active' && button('Ẩn ảnh', 'image', e.id, 'hide')}
-                {e.image_state === 'hidden' && button('Hiện ảnh', 'image', e.id, 'show')}
-                <label className="admin-upload">
-                  Tải tranh vẽ
-                  <input
-                    type="file"
-                    accept={DRAWING_TYPES.join(',')}
-                    aria-label={`Tải tranh vẽ cho ${e.name}`}
-                    onChange={(ev) => {
-                      uploadDrawing(e.id, ev.target.files?.[0])
-                      ev.target.value = ''
-                    }}
-                  />
-                </label>
-              </td>
-              <td>
-                {tierName(e.tier)} · {e.tier_source === 'admin' ? 'Admin gán' : 'Tự động'}
-                <br />
-                Tự động: {e.auto_tier === null ? 'chưa có' : tierName(e.auto_tier)}
-                <br />
-                <select
-                  aria-label={`Tier của ${e.name}`}
-                  value={e.tier_source === 'admin' ? String(e.tier) : 'auto'}
-                  onChange={(ev) => changeTier(e.id, ev.target.value)}
-                >
-                  <option value="auto">Tự động (theo độ sâu)</option>
-                  {TIER_NAMES.map((name, i) => (
-                    <option key={name} value={i + 1}>
-                      {i + 1} {name}
-                    </option>
-                  ))}
-                </select>
-              </td>
-              <td>
-                {e.state === 'active' && button('Ẩn', 'element', e.id, 'hide')}
-                {e.state === 'hidden' && button('Hiện', 'element', e.id, 'show')}
-                {e.state === 'blocked' ? button('Gỡ chặn', 'element', e.id, 'unblock') : button('Chặn vĩnh viễn', 'element', e.id, 'block')}
-                <button type="button" onClick={() => setOpen(open?.id === e.id ? null : e)}>
-                  Công thức
-                </button>
-                <button type="button" aria-label={`Sửa ${e.name}`} onClick={() => setEditing(editing?.id === e.id ? null : e)}>
-                  Sửa
-                </button>
-              </td>
-            </tr>
+            <Fragment key={e.id}>
+              <tr>
+                <td>
+                  {e.emoji} {e.name}
+                </td>
+                <td>{e.depth}</td>
+                <td>{STATE_LABEL[e.state]}</td>
+                <td>
+                  {e.image_key && <img className="admin-thumb" src={withBase(`img/${e.image_key}`)} alt={`Ảnh của ${e.name}`} width={48} height={48} />}
+                  {STATE_LABEL[e.image_state]}
+                  {e.image_source === 'admin' && ' · admin tải'}
+                  {e.image_state === 'active' && button('Ẩn ảnh', 'image', e.id, 'hide')}
+                  {e.image_state === 'hidden' && button('Hiện ảnh', 'image', e.id, 'show')}
+                  <label className="admin-upload">
+                    Tải tranh vẽ
+                    <input
+                      type="file"
+                      accept={DRAWING_TYPES.join(',')}
+                      aria-label={`Tải tranh vẽ cho ${e.name}`}
+                      onChange={(ev) => {
+                        uploadDrawing(e.id, ev.target.files?.[0])
+                        ev.target.value = ''
+                      }}
+                    />
+                  </label>
+                </td>
+                <td>
+                  {tierName(e.tier)} · {e.tier_source === 'admin' ? 'Admin gán' : 'Tự động'}
+                  <br />
+                  Tự động: {e.auto_tier === null ? 'chưa có' : tierName(e.auto_tier)}
+                  <br />
+                  <select
+                    aria-label={`Tier của ${e.name}`}
+                    value={e.tier_source === 'admin' ? String(e.tier) : 'auto'}
+                    onChange={(ev) => changeTier(e.id, ev.target.value)}
+                  >
+                    <option value="auto">Tự động (theo độ sâu)</option>
+                    {TIER_NAMES.map((name, i) => (
+                      <option key={name} value={i + 1}>
+                        {i + 1} {name}
+                      </option>
+                    ))}
+                  </select>
+                </td>
+                <td>
+                  {e.state === 'active' && button('Ẩn', 'element', e.id, 'hide')}
+                  {e.state === 'hidden' && button('Hiện', 'element', e.id, 'show')}
+                  {e.state === 'blocked' ? button('Gỡ chặn', 'element', e.id, 'unblock') : button('Chặn vĩnh viễn', 'element', e.id, 'block')}
+                  <button type="button" onClick={() => setOpen(open?.id === e.id ? null : e)}>
+                    Công thức
+                  </button>
+                  <button type="button" aria-label={`Sửa ${e.name}`} onClick={() => setEditing(editing?.id === e.id ? null : e)}>
+                    Sửa
+                  </button>
+                </td>
+              </tr>
+              {/* AC-ADMIN-18: details open right below the row that asked for them, not at the end of a long page */}
+              {(editing?.id === e.id || open?.id === e.id) && (
+                <tr className="admin-detail">
+                  <td colSpan={6}>
+                    {editing?.id === e.id && <ElementEditor key={editing.id} {...ctx} item={editing} onSaved={() => setReload((n) => n + 1)} />}
+                    {open?.id === e.id && (
+                      <section aria-label={`Công thức của ${open.name}`}>
+                        <h2>
+                          Công thức có {open.emoji} {open.name}
+                        </h2>
+                        <ul className="admin-recipes">
+                          {recipes.data?.items.map((r) => (
+                            <li key={r.id}>
+                              {r.a.emoji} {r.a.name} + {r.b.emoji} {r.b.name} = {r.result.emoji} {r.result.name} ({STATE_LABEL[r.state]}){' '}
+                              {r.state === 'active' ? button('Ẩn công thức', 'recipe', r.id, 'hide') : button('Hiện công thức', 'recipe', r.id, 'show')}
+                            </li>
+                          ))}
+                        </ul>
+                        {recipes.data?.items.length === 0 && <p>Không có công thức.</p>}
+                      </section>
+                    )}
+                  </td>
+                </tr>
+              )}
+            </Fragment>
           ))}
         </tbody>
       </table>
       <Pager page={data} onPage={setPage} />
-      {editing && <ElementEditor key={editing.id} {...ctx} item={editing} onSaved={() => setReload((n) => n + 1)} />}
-      {open && (
-        <section aria-label={`Công thức của ${open.name}`}>
-          <h2>
-            Công thức có {open.emoji} {open.name}
-          </h2>
-          <ul className="admin-recipes">
-            {recipes.data?.items.map((r) => (
-              <li key={r.id}>
-                {r.a.emoji} {r.a.name} + {r.b.emoji} {r.b.name} = {r.result.emoji} {r.result.name} ({STATE_LABEL[r.state]}){' '}
-                {r.state === 'active' ? button('Ẩn công thức', 'recipe', r.id, 'hide') : button('Hiện công thức', 'recipe', r.id, 'show')}
-              </li>
-            ))}
-          </ul>
-          {recipes.data?.items.length === 0 && <p>Không có công thức.</p>}
-        </section>
-      )}
     </>
   )
 }
@@ -942,28 +951,36 @@ function RejectedTab(ctx: Ctx) {
           </thead>
           <tbody>
             {data?.items.map((r) => (
-              <tr key={r.id}>
-                <td>
-                  {r.emoji} {r.name}
-                </td>
-                <td>{r.reasons.map((x) => x.label).join(', ')}</td>
-                <td>{STEP_LABEL[r.step]}</td>
-                <td>{r.source_name}</td>
-                <td>{r.seen_count} lần</td>
-                <td>{when(r.last_seen_at)}</td>
-                <td>{REJECTED_STATUS[r.status]}</td>
-                <td>
-                  <button type="button" aria-label={`Xem ${r.name}`} onClick={() => show(r)}>
-                    Xem
-                  </button>
-                </td>
-              </tr>
+              <Fragment key={r.id}>
+                <tr>
+                  <td>
+                    {r.emoji} {r.name}
+                  </td>
+                  <td>{r.reasons.map((x) => x.label).join(', ')}</td>
+                  <td>{STEP_LABEL[r.step]}</td>
+                  <td>{r.source_name}</td>
+                  <td>{r.seen_count} lần</td>
+                  <td>{when(r.last_seen_at)}</td>
+                  <td>{REJECTED_STATUS[r.status]}</td>
+                  <td>
+                    <button type="button" aria-label={`Xem ${r.name}`} onClick={() => show(r)}>
+                      Xem
+                    </button>
+                  </td>
+                </tr>
+                {open?.id === r.id && (
+                  <tr className="admin-detail">
+                    <td colSpan={8}>
+                      <RejectedDetail key={JSON.stringify(open)} {...ctx} row={open} onDone={done} />
+                    </td>
+                  </tr>
+                )}
+              </Fragment>
             ))}
           </tbody>
         </table>
       )}
       <Pager page={data} onPage={setPage} />
-      {open && <RejectedDetail key={JSON.stringify(open)} {...ctx} row={open} onDone={done} />}
     </>
   )
 }

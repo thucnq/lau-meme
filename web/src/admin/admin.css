@@ -19,3 +19,4 @@
 @media (max-width: 40rem) { .admin-table { display: block; overflow-x: auto; } }
 .admin-thumb { display: block; margin-bottom: 0.25rem; border-radius: 4px; }
 .admin-upload { display: block; margin-top: 0.25rem; font-size: 0.85rem; }
+.admin-detail > td { padding: 0.75rem; border-left: 3px solid var(--color-accent); }
