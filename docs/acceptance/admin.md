@@ -104,3 +104,9 @@
 - **Khi** tác vụ dọn hằng ngày chạy (cùng cron AC-PRIV-06); rồi một đợt sau đó crawl lại tên của dòng đã xóa
 - **Thì** dòng 91 ngày (cả dòng "Đã thêm") bị xóa, dòng 89 và 90 ngày còn; tên crawl lại sau khi đã xóa được coi là khái niệm mới (qua kiểm duyệt lại, nếu bị chặn thì tạo dòng mới với số lần gặp 1); audit của các dòng đã xóa vẫn giữ theo AC-ADMIN-09
 - Ưu tiên: Bắt buộc
+
+### AC-ADMIN-18: Chi tiết hiện ngay dưới dòng vừa bấm (thêm 2026-10-31)
+- **Cho** token đúng; mục "Nội dung" có nhiều phần tử trên một trang; mục "Bị chặn" có nhiều dòng
+- **Khi** bấm "Sửa" hoặc "Công thức" ở một dòng giữa trang "Nội dung"; bấm "Xem" ở một dòng giữa trang "Bị chặn"; bấm lại cùng nút đó
+- **Thì** phần chi tiết (form sửa AC-ADMIN-16, danh sách công thức AC-ADMIN-04, chi tiết AC-ADMIN-13/14) hiện thành một dòng trải hết bảng ngay dưới dòng vừa bấm, không hiện ở cuối trang; cùng lúc chỉ một dòng mở chi tiết mỗi loại; bấm lại "Sửa" hoặc "Công thức" thì đóng phần đó
+- Ưu tiên: Bắt buộc
