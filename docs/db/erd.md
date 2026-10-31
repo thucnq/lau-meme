@@ -21,13 +21,14 @@ erDiagram
     TEXT image_key
     INTEGER first_version
     INTEGER last_version
-    INTEGER updated_at
+    INTEGER updated_at "admin ghi hoặc mẻ đổi giá trị, ADR 0025"
     INTEGER trend_peak "AC-PIPE-16"
     INTEGER auto_tier "AC-TIER-04, theo độ sâu"
     TEXT image_source "ai | admin"
     TEXT description "mẻ gần nhất, AC-ADMIN-16"
     TEXT daily_hint
     TEXT image_hint
+    INTEGER created_at "mẻ thêm phần tử, AC-ADMIN-19"
   }
   element_tier {
     TEXT element_id PK
