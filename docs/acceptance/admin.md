@@ -110,3 +110,15 @@
 - **Khi** bấm "Sửa" hoặc "Công thức" ở một dòng giữa trang "Nội dung"; bấm "Xem" ở một dòng giữa trang "Bị chặn"; bấm lại cùng nút đó
 - **Thì** phần chi tiết (form sửa AC-ADMIN-16, danh sách công thức AC-ADMIN-04, chi tiết AC-ADMIN-13/14) hiện thành một dòng trải hết bảng ngay dưới dòng vừa bấm, không hiện ở cuối trang; cùng lúc chỉ một dòng mở chi tiết mỗi loại; bấm lại "Sửa" hoặc "Công thức" thì đóng phần đó
 - Ưu tiên: Bắt buộc
+
+### AC-ADMIN-19: Sắp xếp "Nội dung" theo ngày tạo, ngày cập nhật, độ sâu, tier (thêm 2026-10-31)
+- **Cho** token đúng; các phần tử P1, P2, P3 khác nhau về ngày tạo, ngày cập nhật, độ sâu và tier; P2 và P3 cùng độ sâu
+- **Khi** chọn "Sắp xếp" là Tên, Ngày tạo, Ngày cập nhật, Độ sâu hoặc Tier và chiều Tăng dần / Giảm dần (kèm tìm, lọc trạng thái, tier, ảnh và phân trang như cũ); gửi giá trị sắp xếp hoặc chiều không hợp lệ; admin sửa P1 (AC-ADMIN-16), gán tier, tải ảnh, ẩn/hiện/chặn P1 hoặc ảnh của P1; một mẻ ghi lại P2 không đổi giá trị nào và đổi một giá trị của P3; một mẻ thêm phần tử mới P4
+- **Thì** danh sách xếp đúng theo trường đã chọn (Tier là tier hiệu lực - admin gán, không thì tự động), giá trị bằng nhau xếp tiếp theo tên rồi id để phân trang ổn định; mặc định Tên tăng dần như trước; giá trị không hợp lệ trả 400 problem+json; bảng hiện ngày tạo và ngày cập nhật của từng phần tử. Ngày cập nhật đổi theo mọi lệnh ghi của admin lên phần tử hoặc ảnh của nó, và theo mẻ chỉ khi mẻ thật sự đổi một giá trị của phần tử (P2 giữ nguyên, P3 đổi); ngày tạo là lúc mẻ thêm phần tử (P4), phần tử có trước khi thêm cột lấy theo mẻ đầu tiên có nó (câu hỏi mở 105)
+- Ưu tiên: Bắt buộc
+
+### AC-ADMIN-20: Lọc "Nội dung" theo ảnh (thêm 2026-10-31)
+- **Cho** token đúng; phần tử không có ảnh, phần tử có ảnh đang hiện, phần tử có ảnh đang ẩn
+- **Khi** chọn bộ lọc "Ảnh" là Tất cả, Chưa có ảnh, Đang hiện hoặc Đang ẩn (kèm các bộ lọc khác); gửi giá trị lọc ảnh không hợp lệ
+- **Thì** chỉ hiện đúng các phần tử có trạng thái ảnh đã chọn ("Chưa có ảnh" là không có ảnh nào; ảnh đang ẩn chỉ hiện ở "Đang ẩn"), tổng số và phân trang tính theo bộ lọc; giá trị không hợp lệ trả 400 problem+json
+- Ưu tiên: Bắt buộc
