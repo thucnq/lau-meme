@@ -579,7 +579,7 @@
       "id": "UAT2",
       "module": "Kiểm thử",
       "name": "Kiểm thử nghiệm thu & sửa lỗi (giai đoạn 2)",
-      "desc": "15% điểm tính năng giai đoạn 2; chạy pipeline crawl thật vài đợt trên staging trước khi bật tự động đăng; thêm PIPE3, ART-11 2026-10-23; thêm PIPE4 2026-10-24; thêm AC-ART-12 2026-10-24",
+      "desc": "15% điểm tính năng giai đoạn 2; chạy pipeline crawl thật vài đợt trên staging trước khi bật tự động đăng; thêm PIPE3, ART-11 2026-10-23; thêm PIPE4 2026-10-24; thêm AC-ART-12 2026-10-24; thêm AC-ART-15 2026-10-31 (+0.3, làm tròn giữ 7.5)",
       "points": 7.5,
       "deps": [
         "*"
@@ -619,6 +619,24 @@
       ],
       "risk": "MEDIUM",
       "owner": "Thuc"
+    },
+    {
+      "id": "ART4",
+      "module": "Nội dung",
+      "name": "Job tìm ảnh trên web cho meme chưa có ảnh",
+      "desc": "ART · AC-ART-15 (thêm 2026-10-30, Tùy chọn, ADR 0024) · workflow chạy tay, đọc danh mục qua API quản trị, chọn meme chưa có ảnh theo độ sâu (0.5); adapter Brave Search + tải an toàn như AC-ART-14, WebP 256×256, gắn qua PUT /admin/elements/{id}/image, chạy thử (1); lỗi gắn ảnh đi tiếp, ngân sách 25 phút, tóm tắt (0.5)",
+      "points": 2,
+      "optional": true,
+      "deps": [
+        "ART3"
+      ],
+      "ac": [
+        "AC-ART-15"
+      ],
+      "risk": "LOW",
+      "owner": "Thuc",
+      "open": true,
+      "question": "Câu hỏi mở 104: API tìm ảnh nào (mặc định Brave Search API, safesearch strict) và chi phí/hạn mức"
     },
     {
       "id": "DAILY4",

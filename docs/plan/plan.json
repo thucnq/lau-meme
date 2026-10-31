@@ -2,7 +2,7 @@
  "meta": {
   "title": "ƯỚC LƯỢNG - LẨU MEME",
   "start": "2026-10-20",
-  "today": "2026-10-30",
+  "today": "2026-10-31",
   "lanes": [
    "Thuc"
   ],
@@ -2443,8 +2443,8 @@
     "2028-03-03"
    ],
    "fc": [
-    "2026-10-30",
-    "2026-11-11"
+    "2026-11-02",
+    "2026-11-12"
    ],
    "line": 275,
    "acs": []
@@ -3274,6 +3274,14 @@
      "tested": true,
      "done": true,
      "line": 363
+    },
+    {
+     "id": "AC-ART-15",
+     "title": "Job tìm ảnh trên web cho meme chưa có ảnh (thêm 2026-10-30, ADR 0024, câu hỏi mở 104)",
+     "optional": true,
+     "tested": true,
+     "done": false,
+     "line": 364
     }
    ]
   },
@@ -3305,7 +3313,7 @@
     "2026-10-23",
     "2026-10-25"
    ],
-   "line": 364,
+   "line": 365,
    "acs": [
     {
      "id": "AC-ART-11",
@@ -3313,7 +3321,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 365
+     "line": 366
     },
     {
      "id": "AC-ART-12",
@@ -3321,7 +3329,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 366
+     "line": 367
     }
    ]
   },
@@ -3352,7 +3360,7 @@
     "2027-07-02",
     "2027-07-26"
    ],
-   "line": 369,
+   "line": 370,
    "acs": [
     {
      "id": "AC-ART-01",
@@ -3360,7 +3368,7 @@
      "optional": false,
      "tested": true,
      "done": false,
-     "line": 370
+     "line": 371
     },
     {
      "id": "AC-ART-02",
@@ -3368,7 +3376,7 @@
      "optional": false,
      "tested": true,
      "done": false,
-     "line": 371
+     "line": 372
     },
     {
      "id": "AC-ART-03",
@@ -3376,7 +3384,7 @@
      "optional": false,
      "tested": true,
      "done": false,
-     "line": 372
+     "line": 373
     },
     {
      "id": "AC-ART-04",
@@ -3384,7 +3392,7 @@
      "optional": false,
      "tested": true,
      "done": false,
-     "line": 373
+     "line": 374
     },
     {
      "id": "AC-ART-05",
@@ -3392,7 +3400,7 @@
      "optional": false,
      "tested": true,
      "done": false,
-     "line": 374
+     "line": 375
     },
     {
      "id": "AC-ART-06",
@@ -3400,7 +3408,7 @@
      "optional": false,
      "tested": true,
      "done": false,
-     "line": 375
+     "line": 376
     },
     {
      "id": "AC-ART-07",
@@ -3408,7 +3416,7 @@
      "optional": false,
      "tested": true,
      "done": false,
-     "line": 376
+     "line": 377
     },
     {
      "id": "AC-ART-08",
@@ -3416,7 +3424,7 @@
      "optional": false,
      "tested": true,
      "done": false,
-     "line": 377
+     "line": 378
     },
     {
      "id": "AC-ART-09",
@@ -3424,7 +3432,7 @@
      "optional": false,
      "tested": true,
      "done": false,
-     "line": 378
+     "line": 379
     },
     {
      "id": "AC-ART-10",
@@ -3432,7 +3440,7 @@
      "optional": false,
      "tested": true,
      "done": false,
-     "line": 379
+     "line": 380
     },
     {
      "id": "AC-ART-11",
@@ -3440,7 +3448,7 @@
      "optional": false,
      "tested": true,
      "done": false,
-     "line": 380
+     "line": 381
     },
     {
      "id": "AC-ART-12",
@@ -3448,7 +3456,7 @@
      "optional": false,
      "tested": true,
      "done": false,
-     "line": 381
+     "line": 382
     },
     {
      "id": "AC-ART-13",
@@ -3456,7 +3464,7 @@
      "optional": true,
      "tested": true,
      "done": false,
-     "line": 382
+     "line": 383
     },
     {
      "id": "AC-ART-14",
@@ -3464,7 +3472,15 @@
      "optional": true,
      "tested": true,
      "done": false,
-     "line": 383
+     "line": 384
+    },
+    {
+     "id": "AC-ART-15",
+     "title": "Job tìm ảnh trên web cho meme chưa có ảnh (thêm 2026-10-30, ADR 0024, câu hỏi mở 104)",
+     "optional": true,
+     "tested": true,
+     "done": false,
+     "line": 385
     }
    ]
   },
@@ -3497,7 +3513,7 @@
     "2026-10-28",
     "2026-10-30"
    ],
-   "line": 386,
+   "line": 388,
    "acs": [
     {
      "id": "AC-QUIZ-01",
@@ -3505,7 +3521,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 387
+     "line": 389
     },
     {
      "id": "AC-QUIZ-02",
@@ -3513,7 +3529,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 388
+     "line": 390
     },
     {
      "id": "AC-QUIZ-03",
@@ -3521,7 +3537,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 389
+     "line": 391
     },
     {
      "id": "AC-QUIZ-04",
@@ -3529,7 +3545,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 390
+     "line": 392
     },
     {
      "id": "AC-QUIZ-05",
@@ -3537,7 +3553,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 391
+     "line": 393
     },
     {
      "id": "AC-QUIZ-06",
@@ -3545,7 +3561,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 392
+     "line": 394
     },
     {
      "id": "AC-QUIZ-07",
@@ -3553,7 +3569,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 393
+     "line": 395
     },
     {
      "id": "AC-QUIZ-08",
@@ -3561,7 +3577,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 394
+     "line": 396
     },
     {
      "id": "AC-QUIZ-09",
@@ -3569,7 +3585,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 395
+     "line": 397
     },
     {
      "id": "AC-QUIZ-10",
@@ -3577,7 +3593,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 396
+     "line": 398
     },
     {
      "id": "AC-QUIZ-11",
@@ -3585,7 +3601,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 397
+     "line": 399
     },
     {
      "id": "AC-QUIZ-12",
@@ -3593,7 +3609,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 398
+     "line": 400
     },
     {
      "id": "AC-QUIZ-13",
@@ -3601,7 +3617,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 399
+     "line": 401
     },
     {
      "id": "AC-QUIZ-14",
@@ -3609,7 +3625,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 400
+     "line": 402
     },
     {
      "id": "AC-QUIZ-15",
@@ -3617,7 +3633,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 401
+     "line": 403
     },
     {
      "id": "AC-QUIZ-16",
@@ -3625,7 +3641,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 402
+     "line": 404
     },
     {
      "id": "AC-QUIZ-17",
@@ -3633,7 +3649,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 403
+     "line": 405
     },
     {
      "id": "AC-QUIZ-18",
@@ -3641,7 +3657,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 404
+     "line": 406
     },
     {
      "id": "AC-QUIZ-19",
@@ -3649,7 +3665,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 405
+     "line": 407
     },
     {
      "id": "AC-QUIZ-20",
@@ -3657,7 +3673,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 406
+     "line": 408
     },
     {
      "id": "AC-QUIZ-21",
@@ -3665,7 +3681,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 407
+     "line": 409
     },
     {
      "id": "AC-QUIZ-22",
@@ -3673,7 +3689,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 408
+     "line": 410
     },
     {
      "id": "AC-QUIZ-23",
@@ -3681,7 +3697,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 409
+     "line": 411
     },
     {
      "id": "AC-QUIZ-24",
@@ -3689,7 +3705,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 410
+     "line": 412
     },
     {
      "id": "AC-QUIZ-25",
@@ -3697,7 +3713,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 411
+     "line": 413
     },
     {
      "id": "AC-QUIZ-26",
@@ -3705,7 +3721,7 @@
      "optional": false,
      "tested": true,
      "done": true,
-     "line": 412
+     "line": 414
     }
    ]
   },
@@ -3733,10 +3749,10 @@
     "2029-01-17"
    ],
    "fc": [
-    "2026-11-12",
-    "2026-11-24"
+    "2026-11-13",
+    "2026-11-25"
    ],
-   "line": 415,
+   "line": 417,
    "acs": []
   }
  ],
@@ -3744,7 +3760,7 @@
   "# Tiến độ - ƯỚC LƯỢNG - LẨU MEME",
   "",
   "> Sinh bởi `/dk:plan` (gen-plan.py) từ `docs/estimate/items.json`. **Người sửa trực tiếp file này**: dấu `[x]` (hạng mục hoặc AC), `tiến độ: N%`, `người`, `bắt đầu`, `xong` (YYYY-MM-DD), `ghi chú` - giữ nguyên dấu ` · ` giữa các trường. Chạy lại `/dk:plan` để tính dự báo và vẽ lại `gantt.html`. `KH` là kế hoạch gốc, chỉ đổi bằng `/dk:plan rebaseline`.",
-  "> Bắt đầu dự án: 2026-10-20 · Kỹ sư: 1 (Thuc) · Giờ/tuần: 20 · Nghiệm thu KH: 2029-01-18 · Dự báo: 2027-07-27 · Cập nhật: 2026-10-30",
+  "> Bắt đầu dự án: 2026-10-20 · Kỹ sư: 1 (Thuc) · Giờ/tuần: 20 · Nghiệm thu KH: 2029-01-18 · Dự báo: 2027-07-27 · Cập nhật: 2026-10-31",
   "",
   "",
   "## Nền tảng",
@@ -4105,6 +4121,7 @@
   "  - [ ] AC-ART-12 Ưu tiên vẽ ảnh cho món sắp lên Vàng/Đỏ (thêm 2026-10-24)",
   "  - [x] AC-ART-13 Admin tải tranh vẽ tay cho phần tử (thêm 2026-10-24) _(tùy chọn)_",
   "  - [x] AC-ART-14 Dùng link ảnh của đề xuất làm ảnh món (thêm 2026-10-25, câu hỏi mở 46) _(tùy chọn)_",
+  "  - [ ] AC-ART-15 Job tìm ảnh trên web cho meme chưa có ảnh (thêm 2026-10-30, ADR 0024, câu hỏi mở 104) _(tùy chọn)_",
   "- [x] **ART2** Vẽ bù ảnh phần tử lõi, ưu tiên món Vàng/Đỏ (giai đoạn 2) · 2.5đ · rủi ro: LOW · KH: 2028-06-01 → 2028-06-05 · tiến độ: 100% · người: Thuc · bắt đầu: 2026-10-23 · xong: 2026-10-25 · ghi chú: AC-ART-12 GREEN chạy tay 2026-10-25, .dk/evidence/art.json chưa ghi lại GREEN",
   "  - [x] AC-ART-11 Vẽ bù ảnh cho phần tử lõi (thêm 2026-10-23)",
   "  - [x] AC-ART-12 Ưu tiên vẽ ảnh cho món sắp lên Vàng/Đỏ (thêm 2026-10-24)",
@@ -4125,6 +4142,7 @@
   "  - [ ] AC-ART-12 Ưu tiên vẽ ảnh cho món sắp lên Vàng/Đỏ (thêm 2026-10-24)",
   "  - [ ] AC-ART-13 Admin tải tranh vẽ tay cho phần tử (thêm 2026-10-24) _(tùy chọn)_",
   "  - [ ] AC-ART-14 Dùng link ảnh của đề xuất làm ảnh món (thêm 2026-10-25, câu hỏi mở 46) _(tùy chọn)_",
+  "  - [ ] AC-ART-15 Job tìm ảnh trên web cho meme chưa có ảnh (thêm 2026-10-30, ADR 0024, câu hỏi mở 104) _(tùy chọn)_",
   "",
   "## Cộng đồng",
   "- [x] **QUIZ** mQuiz - đố meme theo phòng · 26đ · rủi ro: HIGH · KH: 2028-10-17 → 2029-01-04 · tiến độ: 100% · người: Thuc · bắt đầu: 2026-10-28 · xong: 2026-10-30 · ghi chú: ",
