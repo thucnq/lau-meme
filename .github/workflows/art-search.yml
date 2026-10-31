@@ -1,5 +1,4 @@
-# Tìm ảnh trên web cho meme chưa có ảnh (AC-ART-15, ADR 0024). Đề xuất - người chép vào
-# .github/workflows/art-search.yml (guard chặn agent sửa workflow). Chỉ chạy tay, không cron.
+# Tìm ảnh trên web cho meme chưa có ảnh (AC-ART-15, ADR 0024). Chỉ chạy tay, không cron.
 # Gắn ảnh qua API quản trị (`PUT /admin/elements/{id}/image`) như ảnh admin tải: mẻ sau không vẽ đè,
 # ảnh có trong graph từ mẻ kế tiếp. Không kiểm duyệt ảnh (chủ dự án chốt 2026-10-30).
 # Cần ở mỗi environment: secret ADMIN_TOKEN, IMAGE_SEARCH_API_KEY; variable ADMIN_API_BASE_URL
