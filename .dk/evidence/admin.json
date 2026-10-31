@@ -1,31 +1,39 @@
 {
  "red": {
-  "ts": "2026-10-30T08:29:14+00:00",
-  "commit": "ec229fa",
+  "ts": "2026-10-31T02:47:10+00:00",
+  "commit": "080325b",
   "results": {
+   "AC-ADMIN-10": {
+    "status": "PASS",
+    "test": "admin.html.test.ts#admin html > AC-ADMIN-10: web/admin.html có thẻ meta robots \"noindex, nofollow\""
+   },
+   "AC-ADMIN-11": {
+    "status": "PASS",
+    "test": "admin.batches.ui.test.tsx#admin ui: mục Đợt - thống kê crawl > AC-ADMIN-11: mở mục Đợt gọi API danh sách đợt kèm token quản trị"
+   },
+   "AC-ADMIN-12": {
+    "status": "PASS",
+    "test": "tier.ui.test.tsx#admin tier ui > AC-ADMIN-12: bảng \"Nội dung\" có cột \"Tier\" và liệt kê từng phần tử"
+   },
    "AC-ADMIN-13": {
-    "status": "FAIL",
-    "test": "admin-rejected.test.ts#rejected concepts + element edit "
+    "status": "PASS",
+    "test": "rejected.ui.test.tsx#admin ui: mục \"Bị chặn\" "
    },
    "AC-ADMIN-14": {
-    "status": "FAIL",
-    "test": "admin-rejected.test.ts#rejected concepts + element edit "
+    "status": "PASS",
+    "test": "rejected.ui.test.tsx#admin ui: sửa tay và \"Bỏ chặn\" "
    },
    "AC-ADMIN-15": {
-    "status": "FAIL",
-    "test": "admin-rejected.test.ts#rejected concepts + element edit "
+    "status": "PASS",
+    "test": "rejected.ui.test.tsx#admin ui: \"Duyệt luôn\" "
    },
    "AC-ADMIN-16": {
-    "status": "FAIL",
-    "test": "admin-rejected.test.ts#rejected concepts + element edit "
+    "status": "PASS",
+    "test": "rejected.ui.test.tsx#admin ui: sửa phần tử trong \"Nội dung\" "
    },
-   "AC-ADMIN-17": {
+   "AC-ADMIN-18": {
     "status": "FAIL",
-    "test": "admin-rejected.test.ts#rejected concepts + element edit "
-   },
-   "AC-ADMIN-VALIDATION": {
-    "status": "FAIL",
-    "test": "admin-rejected.test.ts#rejected concepts + element edit "
+    "test": "detail-inline.ui.test.tsx#AC-ADMIN-18 chi tiết ngay dưới dòng vừa bấm > AC-ADMIN-18: \"Xem\" ở \"Bị chặn\" hiện chi tiết ngay dưới dòng giữa trang"
    }
   }
  },
