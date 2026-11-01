@@ -1,0 +1,30 @@
+%% Tìm ảnh cho meme chưa có ảnh: job chạy tay, không cron (AC-ART-15, ADR 0024)
+sequenceDiagram
+  autonumber
+  actor A as Người vận hành
+  participant CI as GitHub Actions art-search
+  participant W as Worker (host quản trị)
+  participant B as Brave Search API
+  participant S as Máy chủ ảnh công khai
+
+  A->>CI: Run workflow (target, limit, dry_run)
+  CI->>W: GET /api/admin/elements?state=active (Bearer ADMIN_TOKEN)
+  W-->>CI: danh mục (items, total)
+  loop Phần tử đang hoạt động chưa có ảnh, sâu nhất trước (tối đa limit, 25 phút)
+    CI->>B: GET images/search, q = tên phần tử + meme, safesearch strict
+    B-->>CI: kết quả (properties.url, chỉ https)
+    loop Tối đa 3 URL, dừng khi có ảnh dùng được
+      CI->>S: GET ảnh (tối đa 1 MB, 15 giây, địa chỉ công khai)
+      S-->>CI: bytes ảnh
+      CI->>CI: đổi WebP 256x256
+    end
+    alt Không có ảnh dùng được
+      CI->>CI: ghi "Không tìm được ảnh"
+    else dry_run
+      CI->>CI: ghi "Sẽ gắn" (không gọi API)
+    else Có ảnh
+      CI->>W: PUT /api/admin/elements/{id}/image (WebP, ghi audit set_image)
+      W-->>CI: 200
+    end
+  end
+  CI-->>A: bản tóm tắt của run
