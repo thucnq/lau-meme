@@ -533,6 +533,9 @@ function ContentTab(ctx: Ctx) {
   const [query, setQuery] = useState('')
   const [state, setState] = useState('')
   const [tier, setTierFilter] = useState('')
+  const [image, setImageFilter] = useState('')
+  const [sort, setSort] = useState('name')
+  const [order, setOrder] = useState('asc')
   const [page, setPage] = useState(1)
   const [reload, setReload] = useState(0)
   const [open, setOpen] = useState<ElementItem | null>(null)
@@ -543,6 +546,9 @@ function ContentTab(ctx: Ctx) {
   if (query) params.set('q', query)
   if (state) params.set('state', state)
   if (tier) params.set('tier', tier)
+  if (image) params.set('image', image)
+  params.set('sort', sort)
+  params.set('order', order)
   const { data, error } = useList<ElementItem>(ctx, `elements?${params}`, reload)
   const recipes = useList<RecipeItem>(ctx, open ? `recipes?element_id=${open.id}` : null, reload)
   const mod = useModerate(ctx, () => setReload((n) => n + 1))
@@ -618,6 +624,50 @@ function ContentTab(ctx: Ctx) {
             ))}
           </select>
         </label>
+        <label>
+          Ảnh
+          <select
+            value={image}
+            onChange={(e) => {
+              setImageFilter(e.target.value)
+              setPage(1)
+            }}
+          >
+            <option value="">Tất cả</option>
+            <option value="none">Chưa có ảnh</option>
+            <option value="active">Đang hiện</option>
+            <option value="hidden">Đang ẩn</option>
+          </select>
+        </label>
+        <label>
+          Sắp xếp
+          <select
+            value={sort}
+            onChange={(e) => {
+              setSort(e.target.value)
+              setPage(1)
+            }}
+          >
+            <option value="name">Tên</option>
+            <option value="created">Ngày tạo</option>
+            <option value="updated">Ngày cập nhật</option>
+            <option value="depth">Độ sâu</option>
+            <option value="tier">Tier</option>
+          </select>
+        </label>
+        <label>
+          Chiều sắp xếp
+          <select
+            value={order}
+            onChange={(e) => {
+              setOrder(e.target.value)
+              setPage(1)
+            }}
+          >
+            <option value="asc">Tăng dần</option>
+            <option value="desc">Giảm dần</option>
+          </select>
+        </label>
         <button type="submit">Tìm</button>
         {mod.reasonBox}
       </form>
@@ -630,6 +680,8 @@ function ContentTab(ctx: Ctx) {
             <th>Trạng thái</th>
             <th>Ảnh</th>
             <th>Tier</th>
+            <th>Ngày tạo</th>
+            <th>Ngày cập nhật</th>
             <th>Thao tác</th>
           </tr>
         </thead>
@@ -679,6 +731,8 @@ function ContentTab(ctx: Ctx) {
                     ))}
                   </select>
                 </td>
+                <td>{when(e.created_at)}</td>
+                <td>{when(e.updated_at)}</td>
                 <td>
                   {e.state === 'active' && button('Ẩn', 'element', e.id, 'hide')}
                   {e.state === 'hidden' && button('Hiện', 'element', e.id, 'show')}
@@ -694,7 +748,7 @@ function ContentTab(ctx: Ctx) {
               {/* AC-ADMIN-18: details open right below the row that asked for them, not at the end of a long page */}
               {(editing?.id === e.id || open?.id === e.id) && (
                 <tr className="admin-detail">
-                  <td colSpan={6}>
+                  <td colSpan={8}>
                     {editing?.id === e.id && <ElementEditor key={editing.id} {...ctx} item={editing} onSaved={() => setReload((n) => n + 1)} />}
                     {open?.id === e.id && (
                       <section aria-label={`Công thức của ${open.name}`}>

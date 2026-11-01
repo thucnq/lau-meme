@@ -143,7 +143,7 @@ export async function listReports(req: Request, env: Env): Promise<Response> {
   return page(p, totalOf(total), items)
 }
 
-/** GET /api/admin/elements - catalog, accent-insensitive search on the folded name, state filter. */
+/** GET /api/admin/elements - catalog, accent-insensitive search on the folded name, state/tier/image filters, sort. */
 export async function listElements(req: Request, env: Env): Promise<Response> {
   const params = new URL(req.url).searchParams
   const p = paging(params)
@@ -151,32 +151,45 @@ export async function listElements(req: Request, env: Env): Promise<Response> {
   if (q.length > 100) bad('q: tối đa 100 ký tự')
   const state = choice(params, 'state', ['active', 'hidden', 'blocked'] as const) ?? ''
   const tier = Number(choice(params, 'tier', ['1', '2', '3', '4', '5'] as const) ?? 0)
+  const image = choice(params, 'image', ['none', 'active', 'hidden'] as const) ?? ''
+  const sort = choice(params, 'sort', ['name', 'created', 'updated', 'depth', 'tier'] as const) ?? 'name'
+  const order = choice(params, 'order', ['asc', 'desc'] as const) ?? 'asc'
   const db = env.DB
+  // AC-ADMIN-19 (ADR 0025): the sort key and direction are bound values picked by a fixed CASE, ties go by name then id
   const [rows, total] = await db.batch([
     db
       .prepare(
         `SELECT e.id, e.name, e.emoji, e.depth, e.image_key, e.last_version, COALESCE(be.state, 'active') AS state,
                 CASE WHEN e.image_key IS NULL THEN 'none' WHEN bi.target_id IS NULL THEN 'active' ELSE 'hidden' END AS image_state,
                 COALESCE(t.tier, e.auto_tier, 1) AS tier, CASE WHEN t.tier IS NULL THEN 'auto' ELSE 'admin' END AS tier_source,
-                e.auto_tier, e.image_source
+                e.auto_tier, e.image_source, e.created_at, e.updated_at
          FROM element e
          LEFT JOIN block be ON be.kind = 'element' AND be.target_id = e.id
          LEFT JOIN block bi ON bi.kind = 'image' AND bi.target_id = e.id
          LEFT JOIN element_tier t ON t.element_id = e.id
          WHERE (?1 = '' OR instr(e.name_fold, ?1) > 0) AND (?2 = '' OR COALESCE(be.state, 'active') = ?2)
-           AND (?5 = 0 OR COALESCE(t.tier, e.auto_tier, 1) = ?5)
-         ORDER BY e.name_fold, e.id LIMIT ?3 OFFSET ?4`,
+           AND (?3 = 0 OR COALESCE(t.tier, e.auto_tier, 1) = ?3)
+           AND (?4 = '' OR CASE WHEN e.image_key IS NULL THEN 'none' WHEN bi.target_id IS NULL THEN 'active' ELSE 'hidden' END = ?4)
+         ORDER BY
+           CASE WHEN ?8 = 'asc' THEN CASE ?7 WHEN 'created' THEN e.created_at WHEN 'updated' THEN e.updated_at WHEN 'depth' THEN e.depth
+             WHEN 'tier' THEN COALESCE(t.tier, e.auto_tier, 1) ELSE e.name_fold END END ASC,
+           CASE WHEN ?8 = 'desc' THEN CASE ?7 WHEN 'created' THEN e.created_at WHEN 'updated' THEN e.updated_at WHEN 'depth' THEN e.depth
+             WHEN 'tier' THEN COALESCE(t.tier, e.auto_tier, 1) ELSE e.name_fold END END DESC,
+           e.name_fold, e.id
+         LIMIT ?5 OFFSET ?6`,
       )
-      .bind(fold(q), state, p.size, p.offset, tier),
+      .bind(fold(q), state, tier, image, p.size, p.offset, sort, order),
     db
       .prepare(
         `SELECT COUNT(*) AS n FROM element e
          LEFT JOIN block be ON be.kind = 'element' AND be.target_id = e.id
+         LEFT JOIN block bi ON bi.kind = 'image' AND bi.target_id = e.id
          LEFT JOIN element_tier t ON t.element_id = e.id
          WHERE (?1 = '' OR instr(e.name_fold, ?1) > 0) AND (?2 = '' OR COALESCE(be.state, 'active') = ?2)
-           AND (?3 = 0 OR COALESCE(t.tier, e.auto_tier, 1) = ?3)`,
+           AND (?3 = 0 OR COALESCE(t.tier, e.auto_tier, 1) = ?3)
+           AND (?4 = '' OR CASE WHEN e.image_key IS NULL THEN 'none' WHEN bi.target_id IS NULL THEN 'active' ELSE 'hidden' END = ?4)`,
       )
-      .bind(fold(q), state, tier),
+      .bind(fold(q), state, tier, image),
   ])
   type Row = {
     id: string
@@ -191,6 +204,8 @@ export async function listElements(req: Request, env: Env): Promise<Response> {
     tier_source: 'auto' | 'admin'
     auto_tier: number | null
     image_source: 'ai' | 'admin' | null
+    created_at: number
+    updated_at: number
   }
   const items = ((rows?.results ?? []) as Row[]).map((r) => ({
     id: r.id,
@@ -205,6 +220,8 @@ export async function listElements(req: Request, env: Env): Promise<Response> {
     tier_source: r.tier_source,
     auto_tier: r.auto_tier,
     image_source: r.image_source,
+    created_at: iso(r.created_at),
+    updated_at: iso(r.updated_at),
   }))
   return page(p, totalOf(total), items)
 }
@@ -360,6 +377,9 @@ export async function listAudit(req: Request, env: Env): Promise<Response> {
 
 // ------------------------------------------------------------------------------------------------ moderation
 
+/** "Ngày cập nhật" of the admin list (AC-ADMIN-19, ADR 0025): goes into the same batch as the write and its audit. */
+export const touchElement = (db: D1Database, id: string, now: number) => db.prepare('UPDATE element SET updated_at = ? WHERE id = ?').bind(now, id)
+
 const KINDS = ['element', 'recipe', 'image'] as const
 const ACTIONS = ['hide', 'show', 'block', 'unblock', 'dismiss_reports'] as const
 type Kind = (typeof KINDS)[number]
@@ -462,6 +482,8 @@ export async function moderate(req: Request, env: Env): Promise<Response> {
       break
     }
   }
+  // ADR 0025: an admin command on an element or its image moves the element's "Ngày cập nhật"
+  if (kind !== 'recipe') writes.push(touchElement(db, id, now))
   const fp = (await sha256hex(env.ADMIN_TOKEN ?? '')).slice(0, 8)
   writes.push(
     db
@@ -526,6 +548,7 @@ export async function setElementTier(req: Request, env: Env, _ctx: ExecutionCont
          VALUES (?, 'set_tier', 'element', ?, ?, ?, NULL, ?, ?)`,
       )
       .bind(uuidv7(now), id, JSON.stringify(before), JSON.stringify(after), fp, now),
+    touchElement(db, id, now),
   ])
   return json({ element_id: id, before: before.tier, after: after.tier, before_source: before.source, after_source: after.source })
 }

@@ -94,8 +94,8 @@
   }
  },
  "green": {
-  "ts": "2026-10-31T02:50:37+00:00",
-  "commit": "61c9f0d",
+  "ts": "2026-10-31T04:06:46+00:00",
+  "commit": "1535f88",
   "results": {
    "AC-ADMIN-01": {
     "status": "PASS",
@@ -139,7 +139,7 @@
    },
    "AC-ADMIN-11": {
     "status": "PASS",
-    "test": "test_pipe3#test_ac_admin_11_pipeline_gui_thong_ke_nguon_va_hang_cho_cung_nhat_ky_dot"
+    "test": "admin.batches.ui.test.tsx#admin ui: mục Đợt - thống kê crawl > AC-ADMIN-11: mở mục Đợt gọi API danh sách đợt kèm token quản trị"
    },
    "AC-ADMIN-12": {
     "status": "PASS",
@@ -159,7 +159,7 @@
    },
    "AC-ADMIN-16": {
     "status": "PASS",
-    "test": "test_mod_rejected#test_ac_admin_16_ban_sua_cua_admin_ap_vao_noi_dung_o_moi_me_va_gui_lai_rev_da_ap[core]"
+    "test": "rejected.ui.test.tsx#admin ui: sửa phần tử trong \"Nội dung\" "
    },
    "AC-ADMIN-17": {
     "status": "PASS",
@@ -168,6 +168,14 @@
    "AC-ADMIN-18": {
     "status": "PASS",
     "test": "detail-inline.ui.test.tsx#AC-ADMIN-18 chi tiết ngay dưới dòng vừa bấm > AC-ADMIN-18: \"Sửa\" và \"Công thức\" ở \"Nội dung\" hiện ngay dưới dòng giữa trang, bấm lại thì đóng"
+   },
+   "AC-ADMIN-19": {
+    "status": "PASS",
+    "test": "sort-filter.ui.test.tsx#AC-ADMIN-19 sắp xếp \"Nội dung\" > AC-ADMIN-19: ô \"Sắp xếp\" có Tên, Ngày tạo, Ngày cập nhật, Độ sâu, Tier và ô chiều có Tăng dần, Giảm dần"
+   },
+   "AC-ADMIN-20": {
+    "status": "PASS",
+    "test": "sort-filter.ui.test.tsx#AC-ADMIN-20 lọc \"Nội dung\" theo ảnh > AC-ADMIN-20: bộ lọc \"Ảnh\" có Tất cả, Chưa có ảnh, Đang hiện, Đang ẩn và gửi image none, active, hidden; Tất cả không gửi image"
    },
    "AC-ADMIN-VALIDATION": {
     "status": "PASS",
