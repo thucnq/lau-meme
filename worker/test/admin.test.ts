@@ -95,8 +95,8 @@ const IMG2_KEY = 'bbbbbbbbbbbb.webp'
 const elementRow = (name: string, imageKey: string | null) =>
   elementId(name).then((id) =>
     env.DB.prepare(
-      'INSERT OR IGNORE INTO element (id, name, name_fold, emoji, depth, origin, image_key, first_version, last_version, updated_at) VALUES (?, ?, ?, ?, 1, ?, ?, 1, 1, ?)',
-    ).bind(id, name, fold(name), '🍲', 'vn', imageKey, Date.now()),
+      'INSERT OR IGNORE INTO element (id, name, name_fold, emoji, depth, origin, image_key, first_version, last_version, updated_at, created_at) VALUES (?, ?, ?, ?, 1, ?, ?, 1, 1, ?, ?)',
+    ).bind(id, name, fold(name), '🍲', 'vn', imageKey, Date.now(), Date.now()),
   )
 
 async function recipeRow() {
@@ -361,7 +361,7 @@ describe('admin', () => {
     expect(found.status).toBe(200)
     const foundBody = await json<Page<ElementItem>>(found)
     expect(foundBody).toMatchObject({ page: 1, size: 50, total: 1 })
-    expect(foundBody.items).toEqual([{ id: p, name: PLAIN, emoji: '🍲', depth: 1, state: 'hidden', image_key: null, image_state: 'none', last_version: 1, tier: 1, tier_source: 'auto', auto_tier: null, image_source: null }])
+    expect(foundBody.items).toEqual([{ id: p, name: PLAIN, emoji: '🍲', depth: 1, state: 'hidden', image_key: null, image_state: 'none', last_version: 1, tier: 1, tier_source: 'auto', auto_tier: null, image_source: null, created_at: expect.any(String), updated_at: expect.any(String) }])
 
     const accented = await json<Page<ElementItem>>(await A(`/elements?q=${encodeURIComponent('MÓN THƯỜNG')}`))
     expect(accented.items.map((i) => i.id)).toEqual([p])

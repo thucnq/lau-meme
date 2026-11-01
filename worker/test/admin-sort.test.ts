@@ -101,9 +101,10 @@ const patchEl = (id: string, body: unknown) => A(`/elements/${id}`, { method: 'P
 /** A 256x256 lossless WebP header (VP8L, 14-bit width-1 / height-1), enough for the admin image check. */
 const webp256 = (salt: number) =>
   new Uint8Array([
-    0x52, 0x49, 0x46, 0x46, 18, 0, 0, 0, 0x57, 0x45, 0x42, 0x50, // RIFF....WEBP
-    0x56, 0x50, 0x38, 0x4c, 6, 0, 0, 0, // VP8L, chunk size 6
-    0x2f, 0xff, 0xc0, 0x3f, 0x00, salt & 255, // signature + 255 | 255 << 14, one payload byte
+    0x52, 0x49, 0x46, 0x46, 26, 0, 0, 0, 0x57, 0x45, 0x42, 0x50, // RIFF (size 26 = file length 34 - 8) WEBP
+    0x56, 0x50, 0x38, 0x4c, 14, 0, 0, 0, // VP8L, chunk size 14 (even)
+    0x2f, 0xff, 0xc0, 0x3f, 0x00, // signature + 255 | 255 << 14
+    salt & 255, 1, 2, 3, 4, 5, 6, 7, 8, // 9 filler bytes incl. salt
   ]) // fmt: skip
 
 type Seed = { name: string; depth?: number; created?: number; updated?: number; auto_tier?: number | null; image_key?: string | null }
