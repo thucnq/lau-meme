@@ -1,6 +1,6 @@
 # API - Lẩu Meme
 
-> Nguồn sự thật: [`openapi.yaml`](openapi.yaml) (OpenAPI 3, `lau-meme API 0.11.1`; tin WebSocket mQuiz ở [`quiz-ws.md`](quiz-ws.md)). File này chỉ là mục lục; khi hai nơi khác nhau thì `openapi.yaml` đúng. Mỗi endpoint mang `x-ac` trỏ về AC trong `docs/acceptance/`.
+> Nguồn sự thật: [`openapi.yaml`](openapi.yaml) (OpenAPI 3, `lau-meme API 0.12.0`; tin WebSocket mQuiz ở [`quiz-ws.md`](quiz-ws.md)). File này chỉ là mục lục; khi hai nơi khác nhau thì `openapi.yaml` đúng. Mỗi endpoint mang `x-ac` trỏ về AC trong `docs/acceptance/`.
 
 ## Địa chỉ
 | Nhóm | Production | Staging |
@@ -89,7 +89,7 @@ Mọi lỗi là RFC 9457 `application/problem+json` (`type`, `title`, `status`, 
 | Method | Path | Mô tả | Xác thực | AC chính |
 |---|---|---|---|---|
 | GET | `/admin/reports` | Báo cáo gom theo đích | AdminToken | AC-ADMIN-06 |
-| GET | `/admin/elements` | Danh mục phần tử (tìm không dấu, lọc trạng thái) | AdminToken | AC-ADMIN-03, AC-ADMIN-05 |
+| GET | `/admin/elements` | Danh mục phần tử (tìm không dấu, lọc trạng thái, tier, ảnh; sắp xếp theo tên, ngày tạo, ngày cập nhật, độ sâu, tier, ADR 0025) | AdminToken | AC-ADMIN-03, AC-ADMIN-05, AC-ADMIN-19, AC-ADMIN-20 |
 | PUT | `/admin/elements/{id}/tier` | Gán tier 1-5, hoặc `"auto"` để trả về tier theo độ sâu; gán 4-5 khi chưa có ảnh → 409 | AdminToken | AC-ADMIN-12, AC-ADMIN-09, AC-TIER-01, AC-TIER-04, AC-TIER-05 |
 | PUT | `/admin/elements/{id}/image` | Tải tranh vẽ tay WebP 256×256 cho phần tử (Tùy chọn, ADR 0016) | AdminToken | AC-ART-13, AC-ADMIN-09 |
 | GET | `/admin/elements/{id}` | Chi tiết một phần tử để sửa trong mục "Nội dung" | AdminToken | AC-ADMIN-16 |

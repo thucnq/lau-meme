@@ -2,7 +2,7 @@ import { HttpError, json, problem, readJson } from '../../http'
 import { elementId, fold } from '../../ids'
 import { uuidv7 } from '../../uuid'
 import { ID43 } from '../../validate'
-import { bad, choice, page, paging, sha256hex, totalOf } from './admin'
+import { bad, choice, page, paging, sha256hex, totalOf, touchElement } from './admin'
 
 /**
  * "Bị chặn" (AC-ADMIN-13..15, ADR 0022): concepts the pipeline blocked at moderation, kept in rejected_concept by
@@ -445,6 +445,7 @@ export async function editElement(req: Request, env: Env, _ctx: ExecutionContext
       )
       .bind(id, merged.name, merged.name === null ? null : fold(merged.name), merged.emoji, merged.description, merged.daily_hint, merged.image_hint, merged.origin, now),
     contentChange(db, 'edit_element', 'element', id, before, after, await tokenFp(env), now),
+    touchElement(db, id, now),
   ]
   if (newFold !== oldFold)
     writes.push(db.prepare('INSERT OR IGNORE INTO element_alias (fold, element_id, created_at) VALUES (?, ?, ?)').bind(oldFold, id, now))

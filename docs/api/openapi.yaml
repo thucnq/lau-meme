@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: lau-meme API
-  version: 0.11.1
+  version: 0.12.0
   description: |
     API của Worker Lẩu Meme. Bốn chủ thể (BRD mục 2): thực khách ẩn danh (header `X-Player-Id` = UUID v4
     sinh trên trình duyệt), thực khách đã đăng nhập Google (cookie phiên `laumeme_sid`, ADR 0010 - kết quả Daily,
@@ -922,9 +922,13 @@ paths:
     get:
       operationId: adminListElements
       tags: [admin]
-      summary: Danh mục phần tử (tìm không dấu, lọc trạng thái)
+      summary: Danh mục phần tử (tìm không dấu, lọc trạng thái, tier, ảnh; sắp xếp)
+      description: |
+        Mọi bộ lọc kết hợp với nhau; `total` và phân trang tính theo bộ lọc. Giá trị bằng nhau của trường sắp xếp
+        xếp tiếp theo tên đã `fold` rồi `id` (cùng chiều tăng dần) để phân trang ổn định. Giá trị `sort`, `order`,
+        `image` ngoài danh sách → 400 problem+json (AC-ADMIN-19, AC-ADMIN-20, ADR 0025).
       security: [{ AdminToken: [] }]
-      x-ac: [AC-ADMIN-01, AC-ADMIN-03, AC-ADMIN-05, AC-ADMIN-10, AC-ADMIN-12]
+      x-ac: [AC-ADMIN-01, AC-ADMIN-03, AC-ADMIN-05, AC-ADMIN-10, AC-ADMIN-12, AC-ADMIN-19, AC-ADMIN-20]
       parameters:
         - name: q
           in: query
@@ -935,6 +939,18 @@ paths:
         - name: tier
           in: query
           schema: { $ref: '#/components/schemas/Tier' }
+        - name: image
+          in: query
+          description: 'Lọc theo trạng thái ảnh (`image_state`): `none` = Chưa có ảnh, `active` = Đang hiện, `hidden` = Đang ẩn (ẩn hoặc chặn; ảnh ẩn không tính là chưa có ảnh). Bỏ trống = Tất cả'
+          schema: { type: string, enum: [none, active, hidden] }
+        - name: sort
+          in: query
+          description: '`name` = Tên (mặc định), `created` = Ngày tạo, `updated` = Ngày cập nhật, `depth` = Độ sâu, `tier` = tier hiệu lực (admin gán, không thì tự động, chưa có → 1)'
+          schema: { type: string, enum: [name, created, updated, depth, tier], default: name }
+        - name: order
+          in: query
+          description: Tăng dần (mặc định) / Giảm dần
+          schema: { type: string, enum: [asc, desc], default: asc }
         - $ref: '#/components/parameters/Page'
         - $ref: '#/components/parameters/Size'
       responses:
@@ -2731,12 +2747,14 @@ components:
               items:
                 type: object
                 additionalProperties: false
-                required: [id, name, emoji, depth, state, image_state, last_version, tier, tier_source, auto_tier]
+                required: [id, name, emoji, depth, state, image_state, last_version, tier, tier_source, auto_tier, created_at, updated_at]
                 properties:
                   id: { $ref: '#/components/schemas/ElementId' }
                   name: { type: string }
                   emoji: { type: string }
                   depth: { type: integer }
+                  created_at: { $ref: '#/components/schemas/Instant', description: 'Ngày tạo: lúc mẻ thêm phần tử; phần tử có trước cột này lấy theo mẻ đầu tiên có nó (AC-ADMIN-19)' }
+                  updated_at: { $ref: '#/components/schemas/Instant', description: 'Ngày cập nhật: đổi theo mọi lệnh ghi của admin lên phần tử hoặc ảnh của nó, và theo mẻ chỉ khi mẻ đổi một giá trị (AC-ADMIN-19, ADR 0025)' }
                   state: { $ref: '#/components/schemas/TargetState' }
                   image_key: { type: [string, 'null'] }
                   image_state: { type: string, enum: [none, active, hidden] }

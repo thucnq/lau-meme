@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react'
+import { Fragment, useCallback, useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react'
 import {
   ApiError,
   AuthError,
@@ -533,6 +533,9 @@ function ContentTab(ctx: Ctx) {
   const [query, setQuery] = useState('')
   const [state, setState] = useState('')
   const [tier, setTierFilter] = useState('')
+  const [image, setImageFilter] = useState('')
+  const [sort, setSort] = useState('name')
+  const [order, setOrder] = useState('asc')
   const [page, setPage] = useState(1)
   const [reload, setReload] = useState(0)
   const [open, setOpen] = useState<ElementItem | null>(null)
@@ -543,14 +546,23 @@ function ContentTab(ctx: Ctx) {
   if (query) params.set('q', query)
   if (state) params.set('state', state)
   if (tier) params.set('tier', tier)
+  if (image) params.set('image', image)
+  params.set('sort', sort)
+  params.set('order', order)
   const { data, error } = useList<ElementItem>(ctx, `elements?${params}`, reload)
   const recipes = useList<RecipeItem>(ctx, open ? `recipes?element_id=${open.id}` : null, reload)
   const mod = useModerate(ctx, () => setReload((n) => n + 1))
+  // a filter, sort or page change can drop the row whose details are open: close them with it
+  const goToPage = (n: number) => {
+    setPage(n)
+    setOpen(null)
+    setEditing(null)
+  }
 
   const search = (e: FormEvent) => {
     e.preventDefault()
     setQuery(q.trim().slice(0, 100))
-    setPage(1)
+    goToPage(1)
   }
   const changeTier = (id: string, value: string) => {
     setTierError(null)
@@ -592,7 +604,7 @@ function ContentTab(ctx: Ctx) {
             value={state}
             onChange={(e) => {
               setState(e.target.value)
-              setPage(1)
+              goToPage(1)
             }}
           >
             <option value="">Tất cả</option>
@@ -607,7 +619,7 @@ function ContentTab(ctx: Ctx) {
             value={tier}
             onChange={(e) => {
               setTierFilter(e.target.value)
-              setPage(1)
+              goToPage(1)
             }}
           >
             <option value="">Tất cả</option>
@@ -616,6 +628,50 @@ function ContentTab(ctx: Ctx) {
                 {i + 1} {name}
               </option>
             ))}
+          </select>
+        </label>
+        <label>
+          Ảnh
+          <select
+            value={image}
+            onChange={(e) => {
+              setImageFilter(e.target.value)
+              goToPage(1)
+            }}
+          >
+            <option value="">Tất cả</option>
+            <option value="none">Chưa có ảnh</option>
+            <option value="active">Đang hiện</option>
+            <option value="hidden">Đang ẩn</option>
+          </select>
+        </label>
+        <label>
+          Sắp xếp
+          <select
+            value={sort}
+            onChange={(e) => {
+              setSort(e.target.value)
+              goToPage(1)
+            }}
+          >
+            <option value="name">Tên</option>
+            <option value="created">Ngày tạo</option>
+            <option value="updated">Ngày cập nhật</option>
+            <option value="depth">Độ sâu</option>
+            <option value="tier">Tier</option>
+          </select>
+        </label>
+        <label>
+          Chiều sắp xếp
+          <select
+            value={order}
+            onChange={(e) => {
+              setOrder(e.target.value)
+              goToPage(1)
+            }}
+          >
+            <option value="asc">Tăng dần</option>
+            <option value="desc">Giảm dần</option>
           </select>
         </label>
         <button type="submit">Tìm</button>
@@ -630,87 +686,100 @@ function ContentTab(ctx: Ctx) {
             <th>Trạng thái</th>
             <th>Ảnh</th>
             <th>Tier</th>
+            <th>Ngày tạo</th>
+            <th>Ngày cập nhật</th>
             <th>Thao tác</th>
           </tr>
         </thead>
         <tbody>
           {data?.items.map((e) => (
-            <tr key={e.id}>
-              <td>
-                {e.emoji} {e.name}
-              </td>
-              <td>{e.depth}</td>
-              <td>{STATE_LABEL[e.state]}</td>
-              <td>
-                {e.image_key && <img className="admin-thumb" src={withBase(`img/${e.image_key}`)} alt={`Ảnh của ${e.name}`} width={48} height={48} />}
-                {STATE_LABEL[e.image_state]}
-                {e.image_source === 'admin' && ' · admin tải'}
-                {e.image_state === 'active' && button('Ẩn ảnh', 'image', e.id, 'hide')}
-                {e.image_state === 'hidden' && button('Hiện ảnh', 'image', e.id, 'show')}
-                <label className="admin-upload">
-                  Tải tranh vẽ
-                  <input
-                    type="file"
-                    accept={DRAWING_TYPES.join(',')}
-                    aria-label={`Tải tranh vẽ cho ${e.name}`}
-                    onChange={(ev) => {
-                      uploadDrawing(e.id, ev.target.files?.[0])
-                      ev.target.value = ''
-                    }}
-                  />
-                </label>
-              </td>
-              <td>
-                {tierName(e.tier)} · {e.tier_source === 'admin' ? 'Admin gán' : 'Tự động'}
-                <br />
-                Tự động: {e.auto_tier === null ? 'chưa có' : tierName(e.auto_tier)}
-                <br />
-                <select
-                  aria-label={`Tier của ${e.name}`}
-                  value={e.tier_source === 'admin' ? String(e.tier) : 'auto'}
-                  onChange={(ev) => changeTier(e.id, ev.target.value)}
-                >
-                  <option value="auto">Tự động (theo độ sâu)</option>
-                  {TIER_NAMES.map((name, i) => (
-                    <option key={name} value={i + 1}>
-                      {i + 1} {name}
-                    </option>
-                  ))}
-                </select>
-              </td>
-              <td>
-                {e.state === 'active' && button('Ẩn', 'element', e.id, 'hide')}
-                {e.state === 'hidden' && button('Hiện', 'element', e.id, 'show')}
-                {e.state === 'blocked' ? button('Gỡ chặn', 'element', e.id, 'unblock') : button('Chặn vĩnh viễn', 'element', e.id, 'block')}
-                <button type="button" onClick={() => setOpen(open?.id === e.id ? null : e)}>
-                  Công thức
-                </button>
-                <button type="button" aria-label={`Sửa ${e.name}`} onClick={() => setEditing(editing?.id === e.id ? null : e)}>
-                  Sửa
-                </button>
-              </td>
-            </tr>
+            <Fragment key={e.id}>
+              <tr>
+                <td>
+                  {e.emoji} {e.name}
+                </td>
+                <td>{e.depth}</td>
+                <td>{STATE_LABEL[e.state]}</td>
+                <td>
+                  {e.image_key && <img className="admin-thumb" src={withBase(`img/${e.image_key}`)} alt={`Ảnh của ${e.name}`} width={48} height={48} />}
+                  {STATE_LABEL[e.image_state]}
+                  {e.image_source === 'admin' && ' · admin tải'}
+                  {e.image_state === 'active' && button('Ẩn ảnh', 'image', e.id, 'hide')}
+                  {e.image_state === 'hidden' && button('Hiện ảnh', 'image', e.id, 'show')}
+                  <label className="admin-upload">
+                    Tải tranh vẽ
+                    <input
+                      type="file"
+                      accept={DRAWING_TYPES.join(',')}
+                      aria-label={`Tải tranh vẽ cho ${e.name}`}
+                      onChange={(ev) => {
+                        uploadDrawing(e.id, ev.target.files?.[0])
+                        ev.target.value = ''
+                      }}
+                    />
+                  </label>
+                </td>
+                <td>
+                  {tierName(e.tier)} · {e.tier_source === 'admin' ? 'Admin gán' : 'Tự động'}
+                  <br />
+                  Tự động: {e.auto_tier === null ? 'chưa có' : tierName(e.auto_tier)}
+                  <br />
+                  <select
+                    aria-label={`Tier của ${e.name}`}
+                    value={e.tier_source === 'admin' ? String(e.tier) : 'auto'}
+                    onChange={(ev) => changeTier(e.id, ev.target.value)}
+                  >
+                    <option value="auto">Tự động (theo độ sâu)</option>
+                    {TIER_NAMES.map((name, i) => (
+                      <option key={name} value={i + 1}>
+                        {i + 1} {name}
+                      </option>
+                    ))}
+                  </select>
+                </td>
+                <td>{when(e.created_at)}</td>
+                <td>{when(e.updated_at)}</td>
+                <td>
+                  {e.state === 'active' && button('Ẩn', 'element', e.id, 'hide')}
+                  {e.state === 'hidden' && button('Hiện', 'element', e.id, 'show')}
+                  {e.state === 'blocked' ? button('Gỡ chặn', 'element', e.id, 'unblock') : button('Chặn vĩnh viễn', 'element', e.id, 'block')}
+                  <button type="button" onClick={() => setOpen(open?.id === e.id ? null : e)}>
+                    Công thức
+                  </button>
+                  <button type="button" aria-label={`Sửa ${e.name}`} onClick={() => setEditing(editing?.id === e.id ? null : e)}>
+                    Sửa
+                  </button>
+                </td>
+              </tr>
+              {/* AC-ADMIN-18: details open right below the row that asked for them, not at the end of a long page */}
+              {(editing?.id === e.id || open?.id === e.id) && (
+                <tr className="admin-detail">
+                  <td colSpan={8}>
+                    {editing?.id === e.id && <ElementEditor key={editing.id} {...ctx} item={editing} onSaved={() => setReload((n) => n + 1)} />}
+                    {open?.id === e.id && (
+                      <section aria-label={`Công thức của ${open.name}`}>
+                        <h2>
+                          Công thức có {open.emoji} {open.name}
+                        </h2>
+                        <ul className="admin-recipes">
+                          {recipes.data?.items.map((r) => (
+                            <li key={r.id}>
+                              {r.a.emoji} {r.a.name} + {r.b.emoji} {r.b.name} = {r.result.emoji} {r.result.name} ({STATE_LABEL[r.state]}){' '}
+                              {r.state === 'active' ? button('Ẩn công thức', 'recipe', r.id, 'hide') : button('Hiện công thức', 'recipe', r.id, 'show')}
+                            </li>
+                          ))}
+                        </ul>
+                        {recipes.data?.items.length === 0 && <p>Không có công thức.</p>}
+                      </section>
+                    )}
+                  </td>
+                </tr>
+              )}
+            </Fragment>
           ))}
         </tbody>
       </table>
-      <Pager page={data} onPage={setPage} />
-      {editing && <ElementEditor key={editing.id} {...ctx} item={editing} onSaved={() => setReload((n) => n + 1)} />}
-      {open && (
-        <section aria-label={`Công thức của ${open.name}`}>
-          <h2>
-            Công thức có {open.emoji} {open.name}
-          </h2>
-          <ul className="admin-recipes">
-            {recipes.data?.items.map((r) => (
-              <li key={r.id}>
-                {r.a.emoji} {r.a.name} + {r.b.emoji} {r.b.name} = {r.result.emoji} {r.result.name} ({STATE_LABEL[r.state]}){' '}
-                {r.state === 'active' ? button('Ẩn công thức', 'recipe', r.id, 'hide') : button('Hiện công thức', 'recipe', r.id, 'show')}
-              </li>
-            ))}
-          </ul>
-          {recipes.data?.items.length === 0 && <p>Không có công thức.</p>}
-        </section>
-      )}
+      <Pager page={data} onPage={goToPage} />
     </>
   )
 }
@@ -942,28 +1011,36 @@ function RejectedTab(ctx: Ctx) {
           </thead>
           <tbody>
             {data?.items.map((r) => (
-              <tr key={r.id}>
-                <td>
-                  {r.emoji} {r.name}
-                </td>
-                <td>{r.reasons.map((x) => x.label).join(', ')}</td>
-                <td>{STEP_LABEL[r.step]}</td>
-                <td>{r.source_name}</td>
-                <td>{r.seen_count} lần</td>
-                <td>{when(r.last_seen_at)}</td>
-                <td>{REJECTED_STATUS[r.status]}</td>
-                <td>
-                  <button type="button" aria-label={`Xem ${r.name}`} onClick={() => show(r)}>
-                    Xem
-                  </button>
-                </td>
-              </tr>
+              <Fragment key={r.id}>
+                <tr>
+                  <td>
+                    {r.emoji} {r.name}
+                  </td>
+                  <td>{r.reasons.map((x) => x.label).join(', ')}</td>
+                  <td>{STEP_LABEL[r.step]}</td>
+                  <td>{r.source_name}</td>
+                  <td>{r.seen_count} lần</td>
+                  <td>{when(r.last_seen_at)}</td>
+                  <td>{REJECTED_STATUS[r.status]}</td>
+                  <td>
+                    <button type="button" aria-label={`Xem ${r.name}`} onClick={() => show(r)}>
+                      Xem
+                    </button>
+                  </td>
+                </tr>
+                {open?.id === r.id && (
+                  <tr className="admin-detail">
+                    <td colSpan={8}>
+                      <RejectedDetail key={JSON.stringify(open)} {...ctx} row={open} onDone={done} />
+                    </td>
+                  </tr>
+                )}
+              </Fragment>
             ))}
           </tbody>
         </table>
       )}
       <Pager page={data} onPage={setPage} />
-      {open && <RejectedDetail key={JSON.stringify(open)} {...ctx} row={open} onDone={done} />}
     </>
   )
 }

@@ -28,6 +28,9 @@ export type ElementItem = Ref & {
   auto_tier: number | null
   /** Ai làm ra ảnh: Workers AI hay admin tải tay (AC-ART-13); null = không có ảnh hoặc mẻ trước cột này. */
   image_source?: 'ai' | 'admin' | null
+  /** Ngày tạo, ngày cập nhật (AC-ADMIN-19, ADR 0025), ISO 8601. */
+  created_at: string
+  updated_at: string
 }
 export type RecipeItem = { id: string; a: Ref; b: Ref; result: Ref; state: 'active' | 'hidden' }
 /** Số liệu do pipeline gửi kèm nhật ký đợt (BatchStats, AC-ADMIN-11): nguồn lỗi có `error` và `concepts` null. */

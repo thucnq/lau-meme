@@ -356,7 +356,7 @@ export async function publishBatch(req: Request, env: Env): Promise<Response> {
     db
       .prepare(
         `INSERT INTO element (id, name, name_fold, emoji, depth, origin, image_key, image_source, trend_peak, auto_tier, first_version, last_version, updated_at,
-                              description, daily_hint, image_hint)
+                              description, daily_hint, image_hint, created_at)
          SELECT json_extract(value, '$.id'), json_extract(value, '$.name'), json_extract(value, '$.fold'),
                 json_extract(value, '$.emoji'), json_extract(value, '$.depth'), json_extract(value, '$.origin'),
                 json_extract(value, '$.image_key'),
@@ -366,7 +366,7 @@ export async function publishBatch(req: Request, env: Env): Promise<Response> {
                     THEN 'admin'
                   ELSE 'ai' END,
                 json_extract(value, '$.trend_peak'), json_extract(value, '$.auto_tier'), ?2, ?2, ?3,
-                json_extract(value, '$.description'), json_extract(value, '$.daily_hint'), json_extract(value, '$.image_hint')
+                json_extract(value, '$.description'), json_extract(value, '$.daily_hint'), json_extract(value, '$.image_hint'), ?3
          FROM json_each(?1) WHERE true
          ON CONFLICT (id) DO UPDATE SET name = excluded.name, name_fold = excluded.name_fold, emoji = excluded.emoji,
            depth = excluded.depth, origin = excluded.origin,
@@ -380,7 +380,21 @@ export async function publishBatch(req: Request, env: Env): Promise<Response> {
            description = COALESCE(excluded.description, element.description),
            daily_hint = COALESCE(excluded.daily_hint, element.daily_hint),
            image_hint = COALESCE(excluded.image_hint, element.image_hint),
-           last_version = excluded.last_version, updated_at = excluded.updated_at`,
+           -- "Ngày cập nhật" moves only when a value really changes (AC-ADMIN-19, ADR 0025); SET reads the old row.
+           -- Each comparison repeats the value its column gets above: change both together
+           updated_at = CASE WHEN element.name IS NOT excluded.name OR element.name_fold IS NOT excluded.name_fold
+               OR element.emoji IS NOT excluded.emoji OR element.depth IS NOT excluded.depth OR element.origin IS NOT excluded.origin
+               OR element.image_key IS NOT (CASE WHEN element.image_source = 'admin' THEN element.image_key ELSE excluded.image_key END)
+               OR element.image_source IS NOT (CASE WHEN element.image_source = 'admin' THEN 'admin' WHEN excluded.image_key IS NULL THEN NULL
+                 WHEN excluded.id IN (SELECT element_id FROM contribution WHERE status = 'approved' AND use_image_url = 1) THEN 'admin'
+                 ELSE 'ai' END)
+               OR element.trend_peak IS NOT COALESCE(excluded.trend_peak, element.trend_peak)
+               OR element.auto_tier IS NOT COALESCE(excluded.auto_tier, element.auto_tier)
+               OR element.description IS NOT COALESCE(excluded.description, element.description)
+               OR element.daily_hint IS NOT COALESCE(excluded.daily_hint, element.daily_hint)
+               OR element.image_hint IS NOT COALESCE(excluded.image_hint, element.image_hint)
+             THEN excluded.updated_at ELSE element.updated_at END,
+           last_version = excluded.last_version`,
       )
       .bind(JSON.stringify(elements), version, now),
     db
