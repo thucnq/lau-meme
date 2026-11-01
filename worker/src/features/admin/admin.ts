@@ -162,7 +162,7 @@ export async function listElements(req: Request, env: Env): Promise<Response> {
         `SELECT e.id, e.name, e.emoji, e.depth, e.image_key, e.last_version, COALESCE(be.state, 'active') AS state,
                 CASE WHEN e.image_key IS NULL THEN 'none' WHEN bi.target_id IS NULL THEN 'active' ELSE 'hidden' END AS image_state,
                 COALESCE(t.tier, e.auto_tier, 1) AS tier, CASE WHEN t.tier IS NULL THEN 'auto' ELSE 'admin' END AS tier_source,
-                e.auto_tier, e.image_source, e.created_at, e.updated_at
+                e.auto_tier, e.image_source, COALESCE(e.created_at, e.updated_at) AS created_at, e.updated_at
          FROM element e
          LEFT JOIN block be ON be.kind = 'element' AND be.target_id = e.id
          LEFT JOIN block bi ON bi.kind = 'image' AND bi.target_id = e.id
@@ -482,8 +482,9 @@ export async function moderate(req: Request, env: Env): Promise<Response> {
       break
     }
   }
-  // ADR 0025: an admin command on an element or its image moves the element's "Ngày cập nhật"
-  if (kind !== 'recipe') writes.push(touchElement(db, id, now))
+  // ADR 0025: an admin command that changes an element or its image moves the element's "Ngày cập nhật"; dismissing
+  // reports without lifting an automatic hide changes neither
+  if (kind !== 'recipe' && after !== before) writes.push(touchElement(db, id, now))
   const fp = (await sha256hex(env.ADMIN_TOKEN ?? '')).slice(0, 8)
   writes.push(
     db

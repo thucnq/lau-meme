@@ -552,11 +552,17 @@ function ContentTab(ctx: Ctx) {
   const { data, error } = useList<ElementItem>(ctx, `elements?${params}`, reload)
   const recipes = useList<RecipeItem>(ctx, open ? `recipes?element_id=${open.id}` : null, reload)
   const mod = useModerate(ctx, () => setReload((n) => n + 1))
+  // a filter, sort or page change can drop the row whose details are open: close them with it
+  const goToPage = (n: number) => {
+    setPage(n)
+    setOpen(null)
+    setEditing(null)
+  }
 
   const search = (e: FormEvent) => {
     e.preventDefault()
     setQuery(q.trim().slice(0, 100))
-    setPage(1)
+    goToPage(1)
   }
   const changeTier = (id: string, value: string) => {
     setTierError(null)
@@ -598,7 +604,7 @@ function ContentTab(ctx: Ctx) {
             value={state}
             onChange={(e) => {
               setState(e.target.value)
-              setPage(1)
+              goToPage(1)
             }}
           >
             <option value="">Tất cả</option>
@@ -613,7 +619,7 @@ function ContentTab(ctx: Ctx) {
             value={tier}
             onChange={(e) => {
               setTierFilter(e.target.value)
-              setPage(1)
+              goToPage(1)
             }}
           >
             <option value="">Tất cả</option>
@@ -630,7 +636,7 @@ function ContentTab(ctx: Ctx) {
             value={image}
             onChange={(e) => {
               setImageFilter(e.target.value)
-              setPage(1)
+              goToPage(1)
             }}
           >
             <option value="">Tất cả</option>
@@ -645,7 +651,7 @@ function ContentTab(ctx: Ctx) {
             value={sort}
             onChange={(e) => {
               setSort(e.target.value)
-              setPage(1)
+              goToPage(1)
             }}
           >
             <option value="name">Tên</option>
@@ -661,7 +667,7 @@ function ContentTab(ctx: Ctx) {
             value={order}
             onChange={(e) => {
               setOrder(e.target.value)
-              setPage(1)
+              goToPage(1)
             }}
           >
             <option value="asc">Tăng dần</option>
@@ -773,7 +779,7 @@ function ContentTab(ctx: Ctx) {
           ))}
         </tbody>
       </table>
-      <Pager page={data} onPage={setPage} />
+      <Pager page={data} onPage={goToPage} />
     </>
   )
 }

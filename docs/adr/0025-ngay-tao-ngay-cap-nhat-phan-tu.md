@@ -1,6 +1,6 @@
 # 0025 - Ngày tạo, ngày cập nhật của phần tử: thêm `created_at`, `updated_at` chỉ đổi khi giá trị thật sự khác
 
-- Trạng thái: Đề xuất
+- Trạng thái: Đã chấp nhận (2026-10-31, cổng contract duyệt tại 4778433)
 - Ngày: 2026-10-31
 - Nguồn: AC-ADMIN-19, AC-ADMIN-20; câu hỏi mở 105
 
@@ -11,12 +11,13 @@
 - Chủ dự án chốt (câu hỏi mở 105): ngày cập nhật đổi theo mọi lệnh ghi của admin lên phần tử hoặc ảnh của nó, mẻ chỉ đổi khi giá trị thật sự khác; phần tử cũ lấy ngày tạo theo mẻ đầu tiên có nó.
 
 ## Quyết định
-- **Ngày tạo:** cột mới `element.created_at` (migration `0013`, nullable vì expand-only). Upsert chỉ đặt khi chèn dòng mới (`now` của lần đăng mẻ), nhánh `ON CONFLICT DO UPDATE` không đụng. Phần tử có sẵn được điền một lần trong migration bằng `batch_run.created_at` của `first_version`, thiếu dòng đó thì lấy `updated_at`.
+- **Ngày tạo:** cột mới `element.created_at` (migration `0013`, nullable vì expand-only). Upsert chỉ đặt khi chèn dòng mới (`now` của lần đăng mẻ), nhánh `ON CONFLICT DO UPDATE` không đụng. Phần tử có sẵn được điền một lần trong migration bằng `batch_run.created_at` của `first_version`, thiếu dòng đó thì lấy `updated_at`. API đọc `COALESCE(created_at, updated_at)` nên `created_at` trả về không bao giờ null, đúng contract.
 - **Ngày cập nhật:** giữ cột `updated_at`, đổi nghĩa thay vì thêm cột thứ ba - không còn chỗ nào đọc nghĩa cũ (nghĩa "mẻ gần nhất ghi lại" đã có ở `last_version`).
   - Mẻ: `updated_at = CASE WHEN <một cột khác giá trị> THEN now ELSE element.updated_at END`, so bằng `IS NOT` (đúng cả với null) trên mọi cột mẻ ghi: `name`, `name_fold`, `emoji`, `depth`, `origin`, `image_key` và `image_source` hiệu lực, `trend_peak`, `auto_tier`, `description`, `daily_hint`, `image_hint` (giá trị sau `COALESCE`). SQLite tính mọi biểu thức `SET` trên dòng cũ nên so được trong cùng một lệnh. `last_version` vẫn đổi mỗi mẻ và không tính là thay đổi.
   - Admin: mọi lệnh ghi thành công lên phần tử hoặc ảnh của nó (`PATCH /admin/elements/{id}`, gán / trả tier, tải ảnh tay, ẩn / hiện / chặn / gỡ chặn phần tử hoặc ảnh) thêm `UPDATE element SET updated_at = ?` vào cùng `DB.batch` với audit. Lệnh 4xx không ghi gì, như audit.
+  - "Bỏ qua báo cáo" (`dismiss_reports`) chỉ đổi ngày cập nhật khi nó gỡ được một lần tự ẩn (trạng thái đổi); chỉ đóng báo cáo thì phần tử và ảnh không đổi nên ngày cập nhật giữ nguyên.
   - Tự ẩn do 3 báo cáo của thực khách (AC-REPORT-03) không phải lệnh của admin nên không đổi ngày cập nhật.
-- **Sắp xếp và lọc:** `GET /admin/elements` thêm `sort` (`name|created|updated|depth|tier`), `order` (`asc|desc`), `image` (`none|active|hidden`); mặc định `name asc` như cũ. Khóa phụ luôn `name_fold, id` tăng dần. Tier là tier hiệu lực `COALESCE(element_tier.tier, auto_tier, 1)` - tính khi truy vấn, không có index; danh mục vài nghìn dòng nên chấp nhận được. `ORDER BY` là một `CASE` cố định trong câu SQL, khóa và chiều sắp xếp đi vào bằng `bind` (giá trị lạ đã bị 400 trước đó); không ghép chuỗi vào SQL, kể cả hằng trong code (lint `no-restricted-syntax`). Vì vậy SQLite không dùng index cho sắp xếp; danh mục vài nghìn dòng nên chấp nhận được. Index mới: `element_created`, `element_updated`, `element_depth`.
+- **Sắp xếp và lọc:** `GET /admin/elements` thêm `sort` (`name|created|updated|depth|tier`), `order` (`asc|desc`), `image` (`none|active|hidden`); mặc định `name asc` như cũ. Khóa phụ luôn `name_fold, id` tăng dần. Tier là tier hiệu lực `COALESCE(element_tier.tier, auto_tier, 1)` - tính khi truy vấn, không có index; danh mục vài nghìn dòng nên chấp nhận được. `ORDER BY` là một `CASE` cố định trong câu SQL, khóa và chiều sắp xếp đi vào bằng `bind` (giá trị lạ đã bị 400 trước đó); không ghép chuỗi vào SQL, kể cả hằng trong code (lint `no-restricted-syntax`). Vì vậy SQLite không dùng index cho sắp xếp. Migration `0013` đã tạo `element_created`, `element_updated`, `element_depth` trước khi biết điều này; hiện chưa truy vấn nào dùng chúng, nhưng migration đã commit thì không sửa và expand-only thì không xóa, nên giữ lại (chi phí ghi nhỏ với vài nghìn dòng).
 - **Ảnh:** "Đang ẩn" là mọi dòng `block` loại `image` (ẩn hoặc chặn), đúng `image_state` đang trả về; ảnh ẩn không tính là "Chưa có ảnh".
 
 ## Hệ quả

@@ -380,7 +380,8 @@ export async function publishBatch(req: Request, env: Env): Promise<Response> {
            description = COALESCE(excluded.description, element.description),
            daily_hint = COALESCE(excluded.daily_hint, element.daily_hint),
            image_hint = COALESCE(excluded.image_hint, element.image_hint),
-           -- "Ngày cập nhật" moves only when a value really changes (AC-ADMIN-19, ADR 0025); SET reads the old row
+           -- "Ngày cập nhật" moves only when a value really changes (AC-ADMIN-19, ADR 0025); SET reads the old row.
+           -- Each comparison repeats the value its column gets above: change both together
            updated_at = CASE WHEN element.name IS NOT excluded.name OR element.name_fold IS NOT excluded.name_fold
                OR element.emoji IS NOT excluded.emoji OR element.depth IS NOT excluded.depth OR element.origin IS NOT excluded.origin
                OR element.image_key IS NOT (CASE WHEN element.image_source = 'admin' THEN element.image_key ELSE excluded.image_key END)
