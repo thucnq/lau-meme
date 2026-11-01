@@ -640,7 +640,7 @@
       "id": "UAT2",
       "module": "Kiểm thử",
       "name": "Kiểm thử nghiệm thu & sửa lỗi (giai đoạn 2)",
-      "desc": "15% điểm tính năng giai đoạn 2; chạy pipeline crawl thật vài đợt trên staging trước khi bật tự động đăng; thêm PIPE3, ART-11 2026-10-23; thêm PIPE4 2026-10-24; thêm AC-ART-12 2026-10-24",
+      "desc": "15% điểm tính năng giai đoạn 2; chạy pipeline crawl thật vài đợt trên staging trước khi bật tự động đăng; thêm PIPE3, ART-11 2026-10-23; thêm PIPE4 2026-10-24; thêm AC-ART-12 2026-10-24; thêm AC-ART-15 2026-10-31 (+0.3, làm tròn giữ 7.5)",
       "points": 7.5,
       "deps": [
         "*"
