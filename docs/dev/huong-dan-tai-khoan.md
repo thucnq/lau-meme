@@ -117,7 +117,7 @@ Rồi mở `https://laumeme-admin-staging.dinoduct.fun/`, dán `ADMIN_TOKEN`, th
 GitHub → Settings → Environments:
 - `production` (bật Required reviewers) và `production-no-approval` (không duyệt, cho cron mẻ nhúng): variable (Environment variables, không phải secret) `API_BASE_URL` = `https://dinoduct.fun/lau-meme` (**có tiền tố**, không có `/` cuối); secret `PIPELINE_TOKEN` = giá trị production ở mục 4.2, `BANNED_WORDS` = danh sách từ cấm (mỗi dòng một từ).
 - `staging`: variable `API_BASE_URL` = `https://staging.dinoduct.fun/lau-meme`; secret `PIPELINE_TOKEN` = giá trị staging, `BANNED_WORDS`.
-- `ADMIN_TOKEN` và `IP_HASH_KEY` **không** đặt ở GitHub: không workflow nào cần.
+- `IP_HASH_KEY` **không** đặt ở GitHub: không workflow nào cần. `ADMIN_TOKEN` chỉ đặt ở `staging` và `production` cho workflow tìm ảnh `art-search` (mục 9), **không** đặt ở `production-no-approval`.
 - Mẻ `full` (giai đoạn 2, crawl + Gemini - xem mục 8): thêm vào **cả** `staging` và `production-no-approval`.
 
 Deploy (trên `main` đã merge, máy sạch):
@@ -399,3 +399,45 @@ NEW=$(curl -fsS -G https://graph.threads.com/refresh_access_token -d grant_type=
 for e in staging production-no-approval; do printf %s "$NEW" | gh secret set THREADS_ACCESS_TOKEN --env "$e"; done
 unset LONG NEW
 ```
+
+## 9. Tìm ảnh trên web - workflow `art-search` (AC-ART-15, ADR 0024)
+Workflow chạy tay `art-search` tìm ảnh cho meme chưa có ảnh bằng Brave Search API (câu hỏi mở 104) rồi gắn qua API quản trị (`PUT /admin/elements/{id}/image`), như ảnh admin tải. Mỗi meme tốn **1 lượt tìm**; một lần chạy tốn tối đa `Số meme tối đa` lượt (mặc định 50). Production chạy trong environment `production` (có người duyệt) vì `ADMIN_TOKEN` có toàn quyền quản trị.
+
+Cần ở **mỗi** environment `staging` và `production` (không đặt ở `production-no-approval`):
+
+| Tên | Loại | Giá trị |
+|---|---|---|
+| `ADMIN_API_BASE_URL` | Variable | `https://laumeme-admin-staging.dinoduct.fun` (staging) / `https://laumeme-admin.dinoduct.fun` (production) - **không** có `/` cuối, **không** có `/lau-meme` |
+| `ADMIN_TOKEN` | Secret | Đúng giá trị `ADMIN_TOKEN` của Worker cùng môi trường (mục 4.2), lấy từ trình quản lý mật khẩu |
+| `IMAGE_SEARCH_API_KEY` | Secret | Khóa Brave Search API (bước 1); staging và production dùng chung một khóa được |
+
+**Bước 1 - Khóa Brave Search API**
+1. Vào https://api-dashboard.search.brave.com → đăng ký → **Subscriptions** → chọn một gói có tìm ảnh (Image Search). Ghi gói đã chọn và hạn mức vào bảng dưới (repo chưa ghi gói, xem câu hỏi mở 104).
+2. **API Keys** → **Add API key** → chép khóa. Khóa là bí mật: không dán vào chat, issue, commit.
+
+| Gói Brave | Hạn mức lượt tìm | Chi phí | Ngày đăng ký |
+|---|---|---|---|
+| _(chủ dự án điền)_ | | | |
+
+**Bước 2 - Đặt vào GitHub** (cần `gh auth login`; `read -s` không hiện chữ và không ghi vào lịch sử shell). Lặp cho từng environment, `ENV` là `staging` rồi `production`:
+```bash
+ENV=staging   # lần hai: ENV=production
+read -rsp "IMAGE_SEARCH_API_KEY: " KEY; echo
+printf %s "$KEY" | gh secret set IMAGE_SEARCH_API_KEY --env "$ENV"
+read -rsp "ADMIN_TOKEN của Worker $ENV: " T; echo
+printf %s "$T" | gh secret set ADMIN_TOKEN --env "$ENV"
+unset KEY T
+gh variable set ADMIN_API_BASE_URL --env "$ENV" --body https://laumeme-admin-staging.dinoduct.fun   # production: https://laumeme-admin.dinoduct.fun
+gh secret list --env "$ENV"; gh variable list --env "$ENV"   # phải có đủ 3 tên
+```
+Hoặc qua giao diện: GitHub → Settings → Environments → `staging` (rồi `production`) → **Add environment secret** / **Add environment variable**.
+
+**Bước 3 - Thử**
+1. Actions → **art-search** → **Run workflow** → `target` = `staging`, `limit` = `3`, bật `dry_run`. Bản chạy thử chỉ in tên meme và link ảnh tìm được vào Summary, không gắn ảnh nhưng vẫn tốn lượt tìm.
+2. Ổn thì chạy lại không `dry_run`. Mở `https://laumeme-admin-staging.dinoduct.fun/` → "Nội dung" → lọc "Ảnh" = "Đang hiện": meme vừa gắn có ảnh "admin tải"; game hiện ảnh từ mẻ kế tiếp.
+
+**Lỗi thường gặp**
+- `API tìm ảnh trả HTTP 401/403`: khóa Brave sai hoặc gói không có tìm ảnh. `HTTP 429`: hết hạn mức hoặc gọi quá nhanh. Cả ba làm job dừng ngay, không thử meme tiếp theo.
+- API quản trị trả 401: `ADMIN_TOKEN` ở GitHub khác giá trị của Worker cùng môi trường. Đừng chạy lại liên tục: 5 lần sai trong 1 phút khóa IP của runner 15 phút (AC-ADMIN-02).
+- Báo thiếu biến môi trường: chưa đặt đủ 3 tên ở environment đang chạy.
+- Đổi `ADMIN_TOKEN` của Worker (`wrangler secret put`) thì đặt lại secret `ADMIN_TOKEN` ở GitHub cùng môi trường.
